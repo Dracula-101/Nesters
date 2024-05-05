@@ -51,4 +51,7 @@ app.*.map.json
 #FVM
 /.fvm/
 
+# Freezed Classes
+**.freezed.dart
+
 devtools_options.yaml
