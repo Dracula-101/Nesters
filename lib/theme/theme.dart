@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nesters/app/app.dart';
+import 'package:nesters/app/routes/app_routes.dart';
 part 'color.dart';
 
 ColorScheme _lightColorScheme = ColorScheme.light(
@@ -142,7 +143,8 @@ ThemeData _lightThemeData = ThemeData(
 class AppTheme {
   AppTheme._();
 
-  static final BuildContext _context = RootApp.navigatorKey.currentContext!;
+  static final BuildContext _context =
+      AppRouterService.navigatorKey.currentContext!;
   static ThemeData get lightTheme => _lightThemeData;
 
   static Color get primary => Theme.of(_context).primaryColor;

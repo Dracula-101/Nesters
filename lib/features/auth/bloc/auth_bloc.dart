@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/auth/error/auth_error.dart';
 import 'package:nesters/domain/models/user.dart';
@@ -9,13 +10,13 @@ part 'auth_event.dart';
 part 'auth_bloc.freezed.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc(this._authRepository) : super(const AuthState.initial()) {
+  AuthBloc() : super(const AuthState.initial()) {
     on<AuthGoogleSiginInEvent>(_onGoogleSignIn);
     on<AuthSignOutEvent>(_onSignOut);
     on<AuthUserChangedEvent>(_onUserChanged);
   }
 
-  final AuthRepository _authRepository;
+  final AuthRepository _authRepository = GetIt.I<AuthRepository>();
 
   void _onGoogleSignIn(
     AuthGoogleSiginInEvent event,
