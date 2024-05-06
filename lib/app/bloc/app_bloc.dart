@@ -1,10 +1,12 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/local_storage/local_storage_repository.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -19,7 +21,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       event.when(
         () => null,
         load: () => _loadApp(event, emit),
-        loaded: (isSuccessful) => _loadedApp(event, emit, isSuccessful),
+        loaded: (isSuccessful, _) => _loadedApp(event, emit, isSuccessful),
       );
     });
     add(const AppEvent.load());
@@ -28,16 +30,24 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
   final LocalStorageRepository _localStorageRepository =
       GetIt.I<LocalStorageRepository>();
-  final LoggerService _loggerService = GetIt.I<LoggerService>();
+  final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
+  final UserRepository _userRepository = GetIt.I<UserRepository>();
+  bool isCompletedOnboarding = false;
 
   Future<void> _loadApp(AppEvent event, Emitter<AppState> emit) async {
     emit(const AppState.loadInProgress());
     try {
       int storageInitTime =
           await _localStorageRepository.init().timeInMilliseconds;
-      await Future.delayed(const Duration(milliseconds: 1500));
+      int checkOnboardingTime = await _userRepository
+          .checkUserOnboardingStatus()
+          .then((value) => isCompletedOnboarding = value)
+          .timeInMilliseconds;
+      await Future.delayed(
+          Duration(milliseconds: 1500 - checkOnboardingTime - storageInitTime));
       _loggerService.info('Storage Intialized in : $storageInitTime ms');
-      add(const AppEvent.loaded(true));
+      add(AppEvent.loaded(
+          isSuccessful: true, isOnboaringComplete: isCompletedOnboarding));
     } catch (e) {
       _loggerService.error('Error loading app: $e');
       emit(const AppState.loadFailure());
@@ -59,14 +69,18 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else {
       _loggerService.info('User is not logged in');
     }
-    _intializeNavigationHandler(user != null);
+    _intializeNavigationHandler(user != null, isCompletedOnboarding);
   }
 
-  void _intializeNavigationHandler(bool isLoggedIn) {
-    AppRouterService.navigatorKey.currentContext!.go(
-      isLoggedIn
+  void _intializeNavigationHandler(bool isLoggedIn, bool isOnboardingComplete) {
+    String? initialRoute;
+    if (isOnboardingComplete) {
+      initialRoute = isLoggedIn
           ? AppRouterService.homeScreen
-          : AppRouterService.onboardingScreen,
-    );
+          : AppRouterService.loginScreen;
+    } else {
+      initialRoute = AppRouterService.onboardingScreen;
+    }
+    AppRouterService.navigatorKey.currentContext!.go(initialRoute);
   }
 }

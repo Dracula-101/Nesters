@@ -80,6 +80,25 @@ class SharedPrefRepository extends LocalStorageRepository {
   }
 
   @override
+  Future<bool?> getBool(String key) async {
+    try {
+      final value = _sharedPreferences.getBool(key);
+      return value;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> saveBool(String key, bool value) async {
+    try {
+      await _sharedPreferences.setBool(key, value);
+    } catch (e) {
+      throw LocalStorageSaveError.fromKey(key);
+    }
+  }
+
+  @override
   Future<double?> getDouble(String key) async {
     try {
       final value = _sharedPreferences.getDouble(key);

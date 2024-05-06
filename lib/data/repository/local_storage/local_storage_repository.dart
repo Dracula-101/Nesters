@@ -10,6 +10,10 @@ abstract class LocalStorageRepository {
   Future<String?> getString(String key);
   Future<void> saveString(String key, String value);
 
+  // ================= Bool =================
+  Future<bool?> getBool(String key);
+  Future<void> saveBool(String key, bool value);
+
   // ================= Int =================
   Future<int?> getInt(String key);
   Future<void> saveInt(String key, int value);
@@ -39,4 +43,8 @@ abstract class LocalStorageRepository {
 
   // ================= Clear =================
   Future<void> clear();
+}
+
+class LocalStorageKeys {
+  static const userOnboardingComplete = 'userOnboardingComplete';
 }

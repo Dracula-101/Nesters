@@ -63,6 +63,29 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
+  Future<bool?> getBool(String key) async {
+    try {
+      final value = _getStorage.read(key);
+      if (value is! bool?) {
+        throw LocalStorageObjectMisMatchError.fromMisMatchType(
+            bool, value.runtimeType);
+      }
+      return value;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> saveBool(String key, bool value) async {
+    try {
+      await _getStorage.write(key, value);
+    } catch (e) {
+      throw LocalStorageSaveError.fromKey(key);
+    }
+  }
+
+  @override
   Future<int?> getInt(String key) async {
     try {
       final value = _getStorage.read(key);

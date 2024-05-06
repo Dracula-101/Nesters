@@ -46,7 +46,7 @@ class AppRouterService {
           AppRoute(
             splashScreen,
             (_) => const SplashPage(),
-          ), // This will be hidden
+          ),
           AppRoute(
             onboardingScreen,
             (_) => const OnboardingPage(),

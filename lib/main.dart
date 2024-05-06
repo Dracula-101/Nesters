@@ -8,6 +8,7 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/auth/firebase_auth_repository_impl.dart';
 import 'package:nesters/data/repository/local_storage/local_storage_repository.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
 
 import 'data/repository/local_storage/get_storage_repository.dart';
 import 'utils/logger/logger.dart';
@@ -31,7 +32,12 @@ void setupLocator() {
   //============== Local Storage Repository ==============
   locator.registerSingleton<LocalStorageRepository>(GetStorageRepository());
   //============== Logger Service ==============
-  locator.registerSingleton<LoggerService>(LoggerService());
+  locator.registerSingleton<AppLoggerService>(AppLoggerService());
+  //============== User Repository ==============
+  locator.registerSingleton<UserRepository>(UserRepository(
+    authRepository: locator<AuthRepository>(),
+    storageRepository: locator<LocalStorageRepository>(),
+  ));
   //============== Navigation Service ==============
   locator.registerSingleton<AppRouterService>(AppRouterService());
 }

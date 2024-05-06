@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/auth/error/auth_error.dart';
 import 'package:nesters/domain/models/user.dart';
+import 'package:nesters/utils/logger/logger.dart';
 
 part 'auth_state.dart';
 part 'auth_event.dart';
@@ -18,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
+  final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
 
   Future<void> _onGoogleSignIn(
     AuthGoogleSiginInEvent event,
@@ -26,6 +28,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(const AuthState.loading());
     await _authRepository.signInWithGoogle().catchError(
       (error) {
+        _loggerService.error(error);
         if (error is GoogleSignInFailedException) {
           emit(AuthState.error(error.localizedMessage));
         } else {
@@ -41,6 +44,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) {
     _authRepository.signOut().catchError(
       (error) {
+        _loggerService.error(error);
         emit(const AuthState.error("Couldn't sign out"));
       },
     );
