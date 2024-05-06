@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nesters/screens/login_screen/login_screen.dart';
 import 'package:nesters/theme/theme.dart';
 
 class RootApp extends StatelessWidget {
@@ -12,16 +13,12 @@ class RootApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       navigatorKey: RootApp.navigatorKey,
       scaffoldMessengerKey: RootApp.scaffoldKey,
       title: 'Nesters',
       theme: AppTheme.lightTheme,
-      builder: (context, child) {
-        return Text(
-          'Hello World!',
-          style: AppTheme.headlineSmall,
-        );
-      },
+      home: const LoginScreen(),
     );
   }
 }
