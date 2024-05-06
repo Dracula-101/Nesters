@@ -6,6 +6,7 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/local_storage/local_storage_repository.dart';
 import 'package:nesters/domain/models/user.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'app_state.dart';
@@ -32,8 +33,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   Future<void> _loadApp(AppEvent event, Emitter<AppState> emit) async {
     emit(const AppState.loadInProgress());
     try {
-      await _localStorageRepository.init();
+      int storageInitTime =
+          await _localStorageRepository.init().timeInMilliseconds;
       await Future.delayed(const Duration(milliseconds: 1500));
+      _loggerService.info('Storage Intialized in : $storageInitTime ms');
       add(const AppEvent.loaded(true));
     } catch (e) {
       _loggerService.error('Error loading app: $e');

@@ -87,21 +87,21 @@ TextTheme _appTextTheme = TextTheme(
   ),
   titleMedium: TextStyle(
     fontSize: 26,
-    fontWeight: FontWeight.w700,
+    fontWeight: FontWeight.w600,
     color: onSurfaceLight,
   ),
   titleSmall: TextStyle(
     fontSize: 22,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
   bodyLarge: TextStyle(
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
   bodyMedium: TextStyle(
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
@@ -111,18 +111,18 @@ TextTheme _appTextTheme = TextTheme(
     color: onSurfaceLight,
   ),
   labelLarge: TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w600,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
   labelMedium: TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w600,
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
   labelSmall: TextStyle(
-    fontSize: 12,
-    fontWeight: FontWeight.w600,
+    fontSize: 10,
+    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
 );

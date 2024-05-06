@@ -14,16 +14,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthGoogleSiginInEvent>(_onGoogleSignIn);
     on<AuthSignOutEvent>(_onSignOut);
     on<AuthUserChangedEvent>(_onUserChanged);
+    initializeAuthListener();
   }
 
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
 
-  void _onGoogleSignIn(
+  Future<void> _onGoogleSignIn(
     AuthGoogleSiginInEvent event,
     Emitter<AuthState> emit,
-  ) {
+  ) async {
     emit(const AuthState.loading());
-    _authRepository.signInWithGoogle().catchError(
+    await _authRepository.signInWithGoogle().catchError(
       (error) {
         if (error is GoogleSignInFailedException) {
           emit(AuthState.error(error.localizedMessage));
@@ -38,7 +39,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthSignOutEvent event,
     Emitter<AuthState> emit,
   ) {
-    emit(const AuthState.loading());
     _authRepository.signOut().catchError(
       (error) {
         emit(const AuthState.error("Couldn't sign out"));
@@ -50,15 +50,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthUserChangedEvent event,
     Emitter<AuthState> emit,
   ) {
-    emit(const AuthState.loading());
-    _authRepository.user.listen(
-      (user) {
-        if (user != null) {
-          emit(AuthState.authenticated(user));
-        } else {
-          emit(const AuthState.unauthenticated());
-        }
-      },
-    );
+    final user = event.user;
+    if (user != null) {
+      emit(AuthState.authenticated(user));
+    } else {
+      emit(const AuthState.unauthenticated());
+    }
+  }
+
+  void initializeAuthListener() {
+    _authRepository.user.listen((user) {
+      add(AuthUserChangedEvent(user));
+    });
   }
 }

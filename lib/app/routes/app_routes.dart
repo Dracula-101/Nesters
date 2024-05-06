@@ -25,9 +25,9 @@ class AppRouterService {
           return RootAppScaffold(child: navigator);
         },
         routes: [
-          AppRoute(splashScreen, (_) => SplashView()), // This will be hidden
-          AppRoute(loginScreen, (_) => AuthView()),
-          AppRoute(homeScreen, (_) => HomeView()),
+          AppRoute(splashScreen, (_) => SplashPage()), // This will be hidden
+          AppRoute(loginScreen, (_) => AuthPage()),
+          AppRoute(homeScreen, (_) => HomePage()),
         ],
       ),
     ],
@@ -41,10 +41,7 @@ class AppRoute extends GoRoute {
           path: path,
           routes: routes,
           pageBuilder: (context, state) {
-            final pageContent = Scaffold(
-              body: builder(state),
-              resizeToAvoidBottomInset: false,
-            );
+            final pageContent = builder(state);
             if (useFade) {
               return CustomTransitionPage(
                 key: state.pageKey,
@@ -54,8 +51,23 @@ class AppRoute extends GoRoute {
                   return FadeTransition(opacity: animation, child: child);
                 },
               );
+            } else {
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: pageContent,
+                transitionDuration: const Duration(milliseconds: 200),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1, 0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  );
+                },
+              );
             }
-            return CupertinoPage(child: pageContent);
           },
         );
   final bool useFade;

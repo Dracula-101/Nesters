@@ -1,5 +1,16 @@
 import 'package:flutter/material.dart';
 
+class SplashPage extends StatelessWidget {
+  const SplashPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SplashView(),
+    );
+  }
+}
+
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
 
