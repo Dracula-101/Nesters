@@ -7,7 +7,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: HomeView(),
     );
   }
@@ -37,7 +37,7 @@ class _HomeViewState extends State<HomeView> {
         BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
             return state.maybeWhen(
-              orElse: () => Text("Not Logged in"),
+              orElse: () => const Text("Not Logged in"),
               authenticated: (user) => Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [

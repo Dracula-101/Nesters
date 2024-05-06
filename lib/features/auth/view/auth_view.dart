@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nesters/features/auth/auth.dart';
+import 'package:nesters/theme/theme.dart';
 
 class AuthPage extends StatelessWidget {
   const AuthPage({super.key});
@@ -34,20 +35,6 @@ class _AuthViewState extends State<AuthView> {
                   16.0,
                 ),
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.lightBlue.withOpacity(
-                    0.1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.purpleAccent.withOpacity(
-                        0.1,
-                      ),
-                      blurRadius: 10.0,
-                      spreadRadius: 50.0,
-                    ),
-                  ],
-                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -71,21 +58,29 @@ class _AuthViewState extends State<AuthView> {
                           Text(
                             'Find Your Perfect\nRoommate Here',
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.titleMedium,
+                            style: AppTheme.headlineSmall,
                           ),
                           const SizedBox(
                             height: 16.0,
                           ),
                           Text(
                             'Explore all the most exciting job roles\nbased on your interest And study major',
+                            style: AppTheme.bodyLarge.copyWith(
+                              color: AppTheme.onSurface.withOpacity(
+                                0.5,
+                              ),
+                            ),
                             textAlign: TextAlign.center,
-                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ],
                       ),
                     ),
-                    Expanded(
-                      flex: 1,
+                    Container(
+                      height: 60,
+                      margin: const EdgeInsets.all(
+                        20,
+                      ),
+                      width: double.infinity,
                       child: ElevatedButton(
                         onPressed: () {
                           context
@@ -106,7 +101,9 @@ class _AuthViewState extends State<AuthView> {
                             ),
                             Text(
                               'Sign in with Google',
-                              style: Theme.of(context).textTheme.labelLarge,
+                              style: AppTheme.titleSmall.copyWith(
+                                color: AppTheme.primary,
+                              ),
                             ),
                           ],
                         ),

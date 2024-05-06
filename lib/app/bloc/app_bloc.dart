@@ -64,7 +64,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   void _intializeNavigationHandler(bool isLoggedIn) {
     AppRouterService.navigatorKey.currentContext!.go(
-      isLoggedIn ? AppRouterService.homeScreen : AppRouterService.loginScreen,
+      isLoggedIn
+          ? AppRouterService.homeScreen
+          : AppRouterService.onboardingScreen,
     );
   }
 }

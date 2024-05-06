@@ -22,6 +22,7 @@ class RootApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
         routerConfig: appRouterService.appRouter,
         title: 'Nesters',
         theme: AppTheme.lightTheme,

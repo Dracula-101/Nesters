@@ -3,10 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:nesters/app/view/app_scaffold.dart';
 import 'package:nesters/features/auth/view/auth_view.dart';
 import 'package:nesters/features/home/view/home_view.dart';
+import 'package:nesters/features/onboarding/view/onboarding_view.dart';
 import 'package:nesters/features/splash/view/splash_view.dart';
 
 class AppRouterService {
   static const String splashScreen = '/';
+  static const String onboardingScreen = '/onboarding';
   static const String homeScreen = '/home';
   static const String loginScreen = '/login';
 
@@ -45,6 +47,10 @@ class AppRouterService {
             splashScreen,
             (_) => const SplashPage(),
           ), // This will be hidden
+          AppRoute(
+            onboardingScreen,
+            (_) => const OnboardingPage(),
+          ),
           AppRoute(
             loginScreen,
             (_) => const AuthPage(),
