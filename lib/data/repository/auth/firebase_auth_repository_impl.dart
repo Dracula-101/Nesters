@@ -11,6 +11,20 @@ class FirebaseAuthRepository extends AuthRepository {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   @override
+  Future<User?> get currentUser async {
+    final firebaseUser = _firebaseAuth.currentUser;
+    if (firebaseUser == null) {
+      return null;
+    }
+    return User(
+      id: firebaseUser.uid,
+      email: firebaseUser.email ?? "",
+      name: firebaseUser.displayName ?? "",
+      photoUrl: firebaseUser.photoURL ?? '',
+    );
+  }
+
+  @override
   Future<void> signInWithGoogle() {
     return _googleSignIn.signIn().then((googleSignInAccount) {
       if (googleSignInAccount == null) {
