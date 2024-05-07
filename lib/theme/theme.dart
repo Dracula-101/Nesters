@@ -52,77 +52,62 @@ String _poppinsFontFamily = 'Poppins';
 TextTheme _appTextTheme = TextTheme(
   headlineLarge: TextStyle(
     fontSize: 45,
-    fontWeight: FontWeight.w900,
     color: onSurfaceLight,
   ),
   headlineMedium: TextStyle(
     fontSize: 38,
-    fontWeight: FontWeight.w700,
     color: onSurfaceLight,
   ),
   headlineSmall: TextStyle(
     fontSize: 32,
-    fontWeight: FontWeight.w600,
     color: onSurfaceLight,
   ),
   displayLarge: TextStyle(
     fontSize: 35,
-    fontWeight: FontWeight.w800,
     color: onSurfaceLight,
   ),
   displayMedium: TextStyle(
     fontSize: 31,
-    fontWeight: FontWeight.w700,
     color: onSurfaceLight,
   ),
   displaySmall: TextStyle(
     fontSize: 26,
-    fontWeight: FontWeight.w600,
     color: onSurfaceLight,
   ),
   titleLarge: TextStyle(
-    fontSize: 30,
-    fontWeight: FontWeight.w800,
+    fontSize: 24,
     color: onSurfaceLight,
   ),
   titleMedium: TextStyle(
-    fontSize: 26,
-    fontWeight: FontWeight.w600,
+    fontSize: 22,
     color: onSurfaceLight,
   ),
   titleSmall: TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.w400,
+    fontSize: 20,
     color: onSurfaceLight,
   ),
   bodyLarge: TextStyle(
     fontSize: 16,
-    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
   bodyMedium: TextStyle(
     fontSize: 14,
-    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
   bodySmall: TextStyle(
     fontSize: 12,
-    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
   labelLarge: TextStyle(
     fontSize: 16,
-    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
   labelMedium: TextStyle(
     fontSize: 13,
-    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
   labelSmall: TextStyle(
     fontSize: 10,
-    fontWeight: FontWeight.w400,
     color: onSurfaceLight,
   ),
 );

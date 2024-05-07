@@ -1,5 +1,5 @@
 import 'package:nesters/data/repository/auth/auth_repository.dart';
-import 'package:nesters/data/repository/local_storage/local_storage_repository.dart';
+import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 
 class UserRepository {
   UserRepository({

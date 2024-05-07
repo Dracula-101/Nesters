@@ -7,10 +7,11 @@ import 'package:nesters/app/bloc/app_bloc_observer.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/auth/firebase_auth_repository_impl.dart';
-import 'package:nesters/data/repository/local_storage/local_storage_repository.dart';
+import 'package:nesters/data/repository/database/local/get_storage_repository.dart';
+import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
+import 'package:nesters/data/repository/database/remote/firestore_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 
-import 'data/repository/local_storage/get_storage_repository.dart';
 import 'utils/logger/logger.dart';
 
 Future<void> main() async {
@@ -40,4 +41,6 @@ void setupLocator() {
   ));
   //============== Navigation Service ==============
   locator.registerSingleton<AppRouterService>(AppRouterService());
+  //============== Firestore Repository ==============
+  locator.registerSingleton<FirestoreRepository>(FirestoreRepository());
 }

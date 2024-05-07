@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:nesters/data/repository/local_storage/local_storage_repository.dart';
+import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'error/local_storage_error.dart';
