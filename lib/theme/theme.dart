@@ -1,116 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nesters/app/app.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 part 'color.dart';
-
-ColorScheme _lightColorScheme = ColorScheme.light(
-  // Primary color Scheme
-  primary: primaryLight,
-  onPrimary: onPrimaryLight,
-  // Primary Container color Scheme
-  primaryContainer: primaryContainerLight,
-  onPrimaryContainer: onPrimaryContainerLight,
-  inversePrimary: inversePrimaryLight,
-
-  // Secondary color Scheme
-  secondary: secondaryLight,
-  onSecondary: onSecondaryLight,
-  // Secondary Container color Scheme
-  secondaryContainer: secondaryContainerLight,
-  onSecondaryContainer: onSecondaryContainerLight,
-
-  // Teritary color Scheme
-  tertiary: tertiaryLight,
-  onTertiary: onTertiaryLight,
-  tertiaryContainer: tertiaryContainerLight,
-  onTertiaryContainer: onTertiaryContainerLight,
-
-  // Background color Scheme
-  surface: surfaceLight,
-  onSurface: onSurfaceLight,
-  onSurfaceVariant: onSurfaceVariantLight,
-  inverseSurface: inverseSurfaceLight,
-  onInverseSurface: inverseSurfaceLight,
-  background: backgroundLight,
-  onBackground: onBackgroundLight,
-
-  // Error color Scheme
-  error: errorLight,
-  onError: onErrorLight,
-  errorContainer: errorContainerLight,
-  onErrorContainer: onErrorContainerLight,
-  brightness: Brightness.light,
-
-  // Outline color Scheme
-  outline: outlineLight,
-  outlineVariant: outlineVariantLight,
-  scrim: scrimLight,
-);
-
-String _poppinsFontFamily = 'Poppins';
-
-TextTheme _appTextTheme = TextTheme(
-  headlineLarge: TextStyle(
-    fontSize: 45,
-    color: onSurfaceLight,
-  ),
-  headlineMedium: TextStyle(
-    fontSize: 38,
-    color: onSurfaceLight,
-  ),
-  headlineSmall: TextStyle(
-    fontSize: 32,
-    color: onSurfaceLight,
-  ),
-  displayLarge: TextStyle(
-    fontSize: 35,
-    color: onSurfaceLight,
-  ),
-  displayMedium: TextStyle(
-    fontSize: 31,
-    color: onSurfaceLight,
-  ),
-  displaySmall: TextStyle(
-    fontSize: 26,
-    color: onSurfaceLight,
-  ),
-  titleLarge: TextStyle(
-    fontSize: 24,
-    color: onSurfaceLight,
-  ),
-  titleMedium: TextStyle(
-    fontSize: 22,
-    color: onSurfaceLight,
-  ),
-  titleSmall: TextStyle(
-    fontSize: 20,
-    color: onSurfaceLight,
-  ),
-  bodyLarge: TextStyle(
-    fontSize: 16,
-    color: onSurfaceLight,
-  ),
-  bodyMedium: TextStyle(
-    fontSize: 14,
-    color: onSurfaceLight,
-  ),
-  bodySmall: TextStyle(
-    fontSize: 12,
-    color: onSurfaceLight,
-  ),
-  labelLarge: TextStyle(
-    fontSize: 16,
-    color: onSurfaceLight,
-  ),
-  labelMedium: TextStyle(
-    fontSize: 13,
-    color: onSurfaceLight,
-  ),
-  labelSmall: TextStyle(
-    fontSize: 10,
-    color: onSurfaceLight,
-  ),
-);
+part 'styles.dart';
 
 ThemeData _lightThemeData = ThemeData(
   primaryColor: primaryLight,
@@ -166,4 +57,41 @@ class AppTheme {
       Theme.of(_context).textTheme.headlineMedium!;
   static TextStyle get headlineSmall =>
       Theme.of(_context).textTheme.headlineSmall!;
+
+  // Light Variant Fonts
+  static final Color _lightVariantColor = AppColor.grey;
+  static TextStyle get displayLargeLightVariant =>
+      displayLarge.copyWith(color: _lightVariantColor);
+  static TextStyle get displayMediumLightVariant =>
+      displayMedium.copyWith(color: _lightVariantColor);
+  static TextStyle get displaySmallLightVariant =>
+      displaySmall.copyWith(color: _lightVariantColor);
+  static TextStyle get bodyLargeLightVariant =>
+      bodyLarge.copyWith(color: _lightVariantColor);
+  static TextStyle get bodyMediumLightVariant =>
+      bodyMedium.copyWith(color: _lightVariantColor);
+  static TextStyle get bodySmallLightVariant =>
+      bodySmall.copyWith(color: _lightVariantColor);
+  static TextStyle get labelLargeLightVariant =>
+      labelLarge.copyWith(color: _lightVariantColor);
+  static TextStyle get labelMediumLightVariant =>
+      labelMedium.copyWith(color: _lightVariantColor);
+  static TextStyle get labelSmallLightVariant =>
+      labelSmall.copyWith(color: _lightVariantColor);
+  static TextStyle get titleLargeLightVariant =>
+      titleLarge.copyWith(color: _lightVariantColor);
+  static TextStyle get titleMediumLightVariant =>
+      titleMedium.copyWith(color: _lightVariantColor);
+  static TextStyle get titleSmallLightVariant =>
+      titleSmall.copyWith(color: _lightVariantColor);
+  static TextStyle get headlineLargeLightVariant =>
+      headlineLarge.copyWith(color: _lightVariantColor);
+  static TextStyle get headlineMediumLightVariant =>
+      headlineMedium.copyWith(color: _lightVariantColor);
+  static TextStyle get headlineSmallLightVariant =>
+      headlineSmall.copyWith(color: _lightVariantColor);
+
+  static ColorShades get primaryShades => PrimaryShades();
+  static ColorShades get secondaryShades => SecondaryShades();
+  static ColorShades get greyShades => GreyShades();
 }

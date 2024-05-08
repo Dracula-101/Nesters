@@ -58,3 +58,6 @@ devtools_options.yaml
 
 # Env
 .env
+
+# VSCode
+.vscode/*

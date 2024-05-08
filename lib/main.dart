@@ -11,11 +11,13 @@ import 'package:nesters/data/repository/auth/supabase_auth_repository_impl.dart'
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/database/local/get_storage_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
+import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:nesters/data/repository/database/remote/firestore_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nesters/utils/logger/logger.dart';
 
-import 'utils/logger/logger.dart';
+import 'data/repository/database/remote/supadatabase_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +35,7 @@ Future<void> setupSupabase(AppSecretsRepository appSecrets) {
   return Supabase.initialize(
     url: appSecrets.getSecret(AppSecretsKeys.SUPABASE_URL),
     anonKey: appSecrets.getSecret(AppSecretsKeys.SUPABASE_ANON_KEY),
+    debug: false,
   );
 }
 
@@ -64,4 +67,7 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
     authRepository: locator<AuthRepository>(),
     storageRepository: locator<LocalStorageRepository>(),
   ));
+  //============== Databaseepository ==============
+
+  locator.registerSingleton<DatabaseRepository>(SupaDatabaseRepository());
 }
