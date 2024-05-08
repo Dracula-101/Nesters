@@ -31,7 +31,6 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    _searchBarController.addListener(_rebuildUniversityList);
   }
 
   @override
@@ -45,7 +44,6 @@ class _HomeViewState extends State<HomeView> {
     return CustomScrollView(
       slivers: [
         _buildSearchBar(),
-        _buildUniversityList(),
       ],
     );
   }
@@ -66,45 +64,5 @@ class _HomeViewState extends State<HomeView> {
         ),
       ),
     );
-  }
-
-  Widget _buildUniversityList() {
-    return StreamBuilder(
-      key: _universityListKey,
-      stream: _firestoreRepository.queryCollection(
-          'universities', 'title', _searchBarController.text),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final university = snapshot.data?[index];
-                return ListTile(
-                  title: Text(university?['title']),
-                  subtitle: Text(university?['location']),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.favorite),
-                    onPressed: () {},
-                  ),
-                );
-              },
-              childCount: snapshot.data?.length,
-            ),
-          );
-        }
-        return const SliverToBoxAdapter(
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
-    );
-  }
-
-  void _rebuildUniversityList() {
-    final universityList = _universityListKey.currentContext;
-    if (universityList != null) {
-      _universityListKey.currentState?.setState(() {});
-    }
   }
 }
