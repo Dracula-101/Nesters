@@ -5,7 +5,7 @@ abstract class AuthRepository {
   Stream<User?> get user;
 
   // Current User
-  Future<User?> get currentUser;
+  User? get currentUser;
 
   // Sign in with providers (Google, Apple)
   Future<void> signInWithGoogle();

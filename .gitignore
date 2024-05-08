@@ -55,3 +55,6 @@ app.*.map.json
 **.freezed.dart
 
 devtools_options.yaml
+
+# Env
+.env

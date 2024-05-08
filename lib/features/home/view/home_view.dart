@@ -9,7 +9,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return const SafeArea(
       child: Scaffold(
         body: HomeView(),
       ),
@@ -26,8 +26,6 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final TextEditingController _searchBarController = TextEditingController();
-  final FirestoreRepository _firestoreRepository =
-      GetIt.I<FirestoreRepository>();
   final GlobalKey _universityListKey = GlobalKey();
 
   @override
@@ -55,12 +53,12 @@ class _HomeViewState extends State<HomeView> {
   Widget _buildSearchBar() {
     return SliverToBoxAdapter(
       child: Container(
-        margin: EdgeInsets.all(16),
+        margin: const EdgeInsets.all(16),
         child: TextField(
           controller: _searchBarController,
           decoration: InputDecoration(
             hintText: 'Search for a university',
-            prefixIcon: Icon(Icons.search),
+            prefixIcon: const Icon(Icons.search),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -85,7 +83,7 @@ class _HomeViewState extends State<HomeView> {
                   title: Text(university?['title']),
                   subtitle: Text(university?['location']),
                   trailing: IconButton(
-                    icon: Icon(Icons.favorite),
+                    icon: const Icon(Icons.favorite),
                     onPressed: () {},
                   ),
                 );
@@ -94,7 +92,7 @@ class _HomeViewState extends State<HomeView> {
             ),
           );
         }
-        return SliverToBoxAdapter(
+        return const SliverToBoxAdapter(
           child: Center(
             child: CircularProgressIndicator(),
           ),

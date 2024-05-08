@@ -47,3 +47,13 @@ class GoogleSignInFailedException implements Exception {
     }
   }
 }
+
+class AuthSignInError implements Exception {
+  final String message;
+  AuthSignInError(this.message);
+
+  @override
+  String toString() {
+    return message;
+  }
+}
