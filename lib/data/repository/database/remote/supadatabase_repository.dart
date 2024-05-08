@@ -104,7 +104,12 @@ class SupaDatabaseRepository extends DatabaseRepository {
       return _supabaseClient
           .from(table)
           .select()
-          .textSearch(field, value)
+          .textSearch(
+            field,
+            value,
+            config: 'english',
+            type: TextSearchType.websearch,
+          )
           .asStream();
     } catch (e) {
       // Throw an exception with a descriptive error message
