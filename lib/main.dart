@@ -11,8 +11,7 @@ import 'package:nesters/data/repository/database/local/get_storage_repository.da
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/remote/firestore_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-
-import 'utils/logger/logger.dart';
+import 'package:nesters/utils/logger/logger.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,13 +33,14 @@ void setupLocator() {
   locator.registerSingleton<LocalStorageRepository>(GetStorageRepository());
   //============== Logger Service ==============
   locator.registerSingleton<AppLoggerService>(AppLoggerService());
+  //============== Firestore Repository ==============
+  locator.registerSingleton<FirestoreRepository>(FirestoreRepository());
   //============== User Repository ==============
   locator.registerSingleton<UserRepository>(UserRepository(
     authRepository: locator<AuthRepository>(),
     storageRepository: locator<LocalStorageRepository>(),
+    firestoreRepository: locator<FirestoreRepository>(),
   ));
   //============== Navigation Service ==============
   locator.registerSingleton<AppRouterService>(AppRouterService());
-  //============== Firestore Repository ==============
-  locator.registerSingleton<FirestoreRepository>(FirestoreRepository());
 }

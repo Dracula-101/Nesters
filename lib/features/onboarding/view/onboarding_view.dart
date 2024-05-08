@@ -78,11 +78,11 @@ class _OnboardingViewState extends State<OnboardingView> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(
-                  height: 20,
+                  height: 10,
                 ),
                 Text(
                   contents[index].description,
-                  style: AppTheme.bodyLarge.copyWith(
+                  style: AppTheme.bodyMedium.copyWith(
                     color: AppTheme.onSurface.withOpacity(
                       0.5,
                     ),

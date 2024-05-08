@@ -5,12 +5,13 @@ import 'error/firestore_error.dart';
 class FirestoreRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<Map<String, dynamic>?> getData(String collectionPath,
-      {int limit = 20}) async {
+  Future<Map<String, dynamic>?> getData(String collectionPath) async {
     try {
-      final snapshot =
-          await _firestore.collection(collectionPath).limit(limit).get();
-      return snapshot.docs.first.data();
+      final snapshot = await _firestore.collection(collectionPath).get(const GetOptions(source: Source.server));
+      Map<String, dynamic>? data = snapshot.docs
+          .asMap()
+          .map((key, value) => MapEntry(key.toString(), value.data()));
+      return data;
     } catch (e) {
       if (e is FirebaseException) {
         throw FirestoreError.fromCode(e.code);
@@ -69,36 +70,4 @@ class FirestoreRepository {
     }
   }
 
-  Stream<List<Map<String, dynamic>?>> queryCollection(
-      String collectionPath, String field, String value) {
-    CollectionReference collectionRef = _firestore.collection(collectionPath);
-    try {
-      return collectionRef
-          .where(
-            field,
-            isEqualTo: value,
-            isGreaterThan: value,
-            isGreaterThanOrEqualTo: value,
-            isLessThan: value,
-            isLessThanOrEqualTo: value,
-          )
-          .snapshots()
-          .map(
-        (snapshot) {
-          List<Map<String, dynamic>?> streamValues = snapshot.docs
-              .map((doc) => doc.data() as Map<String, dynamic>?)
-              .toList();
-          print(streamValues);
-          return streamValues;
-        },
-      );
-    } catch (e) {
-      if (e is FirebaseException) {
-        throw FirestoreError.fromCode(e.code);
-      } else if (e is Exception) {
-        throw FirestoreError.fromCode(FirestoreErrorCode.UNKNOWN.toString());
-      }
-    }
-    return const Stream.empty();
-  }
 }

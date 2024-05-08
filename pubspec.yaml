@@ -28,6 +28,7 @@ dependencies:
   flutter_bloc: ^8.1.5
   flutter_svg: ^2.0.10+1
   flutter_cache_manager: ^3.3.1
+  font_awesome_flutter: ^10.7.0
 
 dev_dependencies:
   flutter_test:
