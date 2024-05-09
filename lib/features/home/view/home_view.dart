@@ -163,8 +163,7 @@ class _HomeViewState extends State<HomeView> {
           onSubmitted: (value) {
             _supabaseClient
                 .from('universities')
-                .select()
-                .limit(50)
+                .select('title')
                 .then((response) {
               _logger.info('Response: ${response}');
             });
