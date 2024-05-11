@@ -14,6 +14,5 @@ class AuthSignOutEvent implements AuthEvent {}
 // Auth User Changed Event
 class AuthUserChangedEvent implements AuthEvent {
   final User? user;
-
   AuthUserChangedEvent(this.user);
 }

@@ -1,11 +1,14 @@
 abstract class DatabaseRepository {
   Future<Map<String, dynamic>?> getData(String table);
+  Future<bool> checkExistsData(String table, FieldValue field);
   Future<void> setData(String table, SetData setData);
   Future<List<Map<String, dynamic>>> queryData(
       String table, QueryData queryData);
   Future<void> updateData(String table, UpdateData newData);
   Future<void> deleteData(String table, DeleteData deleteData);
   Stream<List<Map<String, dynamic>>> searchData(
+      String table, String field, String value);
+  Future<List<Map<String, dynamic>>> searchDataFromFuture(
       String table, String field, String value);
 }
 

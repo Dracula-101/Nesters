@@ -24,7 +24,7 @@ class University extends Equatable {
     city = json['city'];
     title = json['title'];
     logo = json['logo'];
-    score = json['score'];
+    score = json['score'].toString();
     rankDisplay = json['rank_display'];
     region = json['region'];
   }

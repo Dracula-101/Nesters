@@ -55,7 +55,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   void _loadedApp(AppEvent event, Emitter<AppState> emit, bool isSuccessful) {
-    _authRepository.user.listen(_authHandler);
+    _authRepository.user
+        .asyncMap(_checkUserProfileCreated)
+        .listen(_authHandler);
     if (isSuccessful) {
       emit(const AppState.loadSuccess());
     } else {
@@ -69,18 +71,33 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else {
       _loggerService.info('User is not logged in');
     }
-    _intializeNavigationHandler(user != null, isCompletedOnboarding);
+    _intializeNavigationHandler(
+        user != null, isCompletedOnboarding, user?.isProfileCreated ?? false);
   }
 
-  void _intializeNavigationHandler(bool isLoggedIn, bool isOnboardingComplete) {
-    String? initialRoute;
-    if (isOnboardingComplete) {
-      initialRoute = isLoggedIn
-          ? AppRouterService.homeScreen
-          : AppRouterService.loginScreen;
-    } else {
-      initialRoute = AppRouterService.onboardingScreen;
+  Future<User?> _checkUserProfileCreated(User? user) async {
+    bool isProfileCreated =
+        await _userRepository.checkUserCreated(user?.id ?? '') ?? false;
+    _loggerService.info('User Profile Created: $isProfileCreated');
+    if (user != null) {
+      user = user.copyWith(isProfileCreated: isProfileCreated);
     }
-    AppRouterService.navigatorKey.currentContext!.go(initialRoute);
+    return user;
+  }
+
+  void _intializeNavigationHandler(
+      bool isLoggedIn, bool isOnboardingComplete, bool isUserProfileCreated) {
+    String? route;
+    if (!isOnboardingComplete) {
+      route = AppRouterService.onboardingScreen;
+    } else if (!isLoggedIn) {
+      route = AppRouterService.loginScreen;
+    } else if (!isUserProfileCreated) {
+      route = AppRouterService.userProfileBasicFormScreen;
+    } else {
+      route = AppRouterService.homeScreen;
+    }
+    _loggerService.info('Initial Route: $route');
+    AppRouterService.navigatorKey.currentContext!.go(route);
   }
 }

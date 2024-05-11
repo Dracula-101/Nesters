@@ -6,13 +6,11 @@ import 'package:nesters/app/app.dart';
 import 'package:nesters/app/bloc/app_bloc_observer.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
-import 'package:nesters/data/repository/auth/firebase_auth_repository_impl.dart';
 import 'package:nesters/data/repository/auth/supabase_auth_repository_impl.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/database/local/get_storage_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/data/repository/database/remote/firestore_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -48,26 +46,23 @@ Future<void> initalizeApp() async {
 
 void setupLocator(AppSecretsRepository appSecretsRepository) {
   GetIt locator = GetIt.instance;
-  //============== Local Storage Repository ==============
-  locator.registerSingleton<LocalStorageRepository>(GetStorageRepository());
-  //============== Logger Service ==============
-  locator.registerSingleton<AppLoggerService>(AppLoggerService());
-  //============== Navigation Service ==============
-  locator.registerSingleton<AppRouterService>(AppRouterService());
-  //============== Firestore Repository ==============
-  //locator.registerSingleton<FirestoreRepository>(FirestoreRepository());
-  //============== App Secrets ==============
-  locator.registerSingleton<AppSecretsRepository>(appSecretsRepository);
-  //============== Auth Repository ==============
-  locator.registerSingleton<AuthRepository>(SupabaseAuthRepository(
-    appSecretsRepository: locator<AppSecretsRepository>(),
-  ));
-  //============== User Repository ==============
-  locator.registerSingleton<UserRepository>(UserRepository(
-    authRepository: locator<AuthRepository>(),
-    storageRepository: locator<LocalStorageRepository>(),
-  ));
-  //============== Databaseepository ==============
-
-  locator.registerSingleton<DatabaseRepository>(SupaDatabaseRepository());
+  // Initalize All repositories
+  LocalStorageRepository localStorageRepository = GetStorageRepository();
+  AppLoggerService appLoggerService = AppLoggerService();
+  AppRouterService appRouterService = AppRouterService();
+  AuthRepository authRepository =
+      SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
+  DatabaseRepository databaseRepository = SupaDatabaseRepository();
+  UserRepository userRepository = UserRepository(
+    authRepository: authRepository,
+    databaseRepository: databaseRepository,
+    storageRepository: localStorageRepository,
+  );
+  // Register all repositories
+  locator.registerSingleton<LocalStorageRepository>(localStorageRepository);
+  locator.registerSingleton<AppLoggerService>(appLoggerService);
+  locator.registerSingleton<AppRouterService>(appRouterService);
+  locator.registerSingleton<AuthRepository>(authRepository);
+  locator.registerSingleton<DatabaseRepository>(databaseRepository);
+  locator.registerSingleton<UserRepository>(userRepository);
 }

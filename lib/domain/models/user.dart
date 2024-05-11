@@ -6,12 +6,16 @@ class User extends Equatable {
     required this.name,
     required this.email,
     required this.photoUrl,
+    this.isProfileCreated = false,
+    this.isProfileCompleted = false,
   });
 
   final String id;
   final String name;
   final String email;
   final String photoUrl;
+  final bool isProfileCreated;
+  final bool isProfileCompleted;
 
   @override
   List<Object?> get props => [id, name, email, photoUrl];
@@ -41,5 +45,23 @@ class User extends Equatable {
       'email': email,
       'photoUrl': photoUrl,
     };
+  }
+
+  User copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? photoUrl,
+    bool? isProfileCreated,
+    bool? isProfileCompleted,
+  }) {
+    return User(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      photoUrl: photoUrl ?? this.photoUrl,
+      isProfileCreated: isProfileCreated ?? this.isProfileCreated,
+      isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
+    );
   }
 }

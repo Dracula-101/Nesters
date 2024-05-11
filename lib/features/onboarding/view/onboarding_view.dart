@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/onboarding_data.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
@@ -135,6 +137,7 @@ class _OnboardingViewState extends State<OnboardingView> {
         onPressed: () {
           if (currentIndex == contents.length - 1) {
             unawaited(GetIt.I<UserRepository>().setOnBoardingComplete());
+            context.read<AppBloc>().isCompletedOnboarding = true;
             GoRouter.of(context).go(AppRouterService.loginScreen);
           } else {
             _pageController.nextPage(

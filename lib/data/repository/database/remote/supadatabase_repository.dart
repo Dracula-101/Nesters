@@ -19,6 +19,22 @@ class SupaDatabaseRepository extends DatabaseRepository {
   }
 
   @override
+  Future<bool> checkExistsData(String table, FieldValue field) async {
+    try {
+      final response =
+          await _supabaseClient.from(table).select().eq(field.key, field.value);
+      if (response.isNotEmpty) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      // Throw an exception with a descriptive error message
+      throw Exception('Failed to get data: $e');
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>>> queryData(
       String table, QueryData queryData) {
     try {
@@ -104,8 +120,27 @@ class SupaDatabaseRepository extends DatabaseRepository {
       return _supabaseClient
           .from(table)
           .select()
-          .textSearch(field, value)
+          .like(
+            field,
+            '%$value%',
+          )
+          .order(field)
           .asStream();
+    } catch (e) {
+      // Throw an exception with a descriptive error message
+      throw Exception('Failed to get data: $e');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> searchDataFromFuture(
+      String table, String field, String value) async {
+    try {
+      // Execute the query to retrieve the first 30 rows from the table
+      return await _supabaseClient.from(table).select().like(
+            field,
+            '%$value%',
+          );
     } catch (e) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');
