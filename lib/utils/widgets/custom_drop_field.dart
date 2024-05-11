@@ -166,3 +166,197 @@ class _CustomDropdownFieldState<T> extends State<CustomDropdownField> {
     );
   }
 }
+
+class CustomSearchableDropDownField<T> extends StatefulWidget {
+  final TextEditingController controller;
+  final Future<List<T>> Function(String)? asyncItems;
+  final bool Function(T, String)? filterFn;
+  final String? labelText;
+  final String? hintText;
+  final String? searchLabel;
+  final Widget? prefixIcon;
+  final Widget Function(BuildContext, T, bool)? itemBuilder;
+  final String? Function(T?)? validator;
+  final String Function(T)? itemAsString;
+
+  const CustomSearchableDropDownField(
+      {super.key,
+      required this.controller,
+      this.asyncItems,
+      this.filterFn,
+      this.labelText,
+      this.hintText,
+      this.searchLabel,
+      this.prefixIcon,
+      this.itemBuilder,
+      this.validator,
+      this.itemAsString});
+
+  @override
+  State<CustomSearchableDropDownField> createState() =>
+      CustomSearchableDropDownFieldState();
+}
+
+class CustomSearchableDropDownFieldState<T>
+    extends State<CustomSearchableDropDownField> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.greyShades.shade200,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: DropdownSearch<T>(
+        filterFn: (item, filter) {
+          if (widget.filterFn != null) {
+            return widget.filterFn!(item, filter);
+          }
+          return true;
+        },
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          baseStyle: Theme.of(context).textTheme.bodyLarge,
+          dropdownSearchDecoration: InputDecoration(
+            labelText: widget.labelText,
+            prefixIcon: widget.prefixIcon,
+            border: InputBorder.none,
+          ),
+        ),
+        asyncItems: (filter) {
+          if (widget.asyncItems != null) {
+            return widget.asyncItems!(filter) as Future<List<T>>;
+          }
+          return Future.value([]);
+        },
+        popupProps: PopupProps.dialog(
+          containerBuilder: (context, child) {
+            return Padding(
+              padding: const EdgeInsets.only(left: 6.0, right: 6.0, top: 12.0),
+              child: child,
+            );
+          },
+          searchFieldProps: TextFieldProps(
+            decoration: InputDecoration(
+              labelText: widget.searchLabel,
+              prefixIcon: Icon(
+                Icons.search,
+                color: AppTheme.primary,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10.0),
+              ),
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          itemBuilder: (context, item, isSelected) {
+            if (widget.itemBuilder != null) {
+              return widget.itemBuilder!(context, item, isSelected);
+            }
+            return ListTile(
+              title: Text(item.toString(), style: AppTheme.bodyLarge),
+            );
+          },
+          showSearchBox: true,
+        ),
+        validator: (value) {
+          if (widget.validator != null) {
+            return widget.validator!(value);
+          }
+          return null;
+        },
+        itemAsString: widget.itemAsString,
+      ),
+    );
+  }
+}
+
+class CustomBottomSheetDropdownField<T> extends StatefulWidget {
+  final List<T> items;
+  final TextEditingController controller;
+  final Function(T?) validator;
+  final String? hintText;
+  final String? bottomSheetTitle;
+  final Widget? prefixIcon;
+  final String? labelText;
+
+  const CustomBottomSheetDropdownField({
+    Key? key,
+    required this.items,
+    required this.controller,
+    required this.validator,
+    this.hintText,
+    this.prefixIcon,
+    this.labelText,
+    this.bottomSheetTitle,
+  }) : super(key: key);
+
+  @override
+  State<CustomBottomSheetDropdownField> createState() =>
+      _CustomBottomSheetDropdownFieldState();
+}
+
+class _CustomBottomSheetDropdownFieldState<T>
+    extends State<CustomBottomSheetDropdownField> {
+  T? _selectedItem;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.greyShades.shade200,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      padding: const EdgeInsets.only(left: 4),
+      child: DropdownSearch<T>(
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          baseStyle: Theme.of(context).textTheme.labelLarge,
+          dropdownSearchDecoration: InputDecoration(
+            labelText: widget.labelText,
+            prefixIcon: widget.prefixIcon,
+            border: InputBorder.none,
+          ),
+        ),
+        items: widget.items as List<T>,
+        popupProps: PopupProps.modalBottomSheet(
+          containerBuilder: (context, child) {
+            return Padding(
+              padding: const EdgeInsets.only(left: 6.0, right: 6.0, top: 12.0),
+              child: child,
+            );
+          },
+          itemBuilder: (context, T? item, isSelected) {
+            return Row(
+              children: [
+                Checkbox(
+                  value: _selectedItem == item,
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _selectedItem = item;
+                      });
+                    }
+                  },
+                ),
+                const SizedBox(width: 8),
+                Text(item.toString(), style: AppTheme.bodyLarge),
+              ],
+            );
+          },
+          constraints: BoxConstraints(
+            maxHeight: widget.items.length * 55,
+          ),
+          showSearchBox: false,
+        ),
+        validator: (value) {
+          return widget.validator(value);
+        },
+        selectedItem: _selectedItem,
+        onChanged: (value) {
+          setState(() {
+            _selectedItem = value;
+          });
+        },
+      ),
+    );
+  }
+}

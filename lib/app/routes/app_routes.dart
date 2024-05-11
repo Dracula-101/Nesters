@@ -5,6 +5,7 @@ import 'package:nesters/features/auth/view/auth_view.dart';
 import 'package:nesters/features/home/view/home_view.dart';
 import 'package:nesters/features/onboarding/view/onboarding_view.dart';
 import 'package:nesters/features/splash/view/splash_view.dart';
+import 'package:nesters/features/user/profile/forms/view/advance_form_view.dart';
 import 'package:nesters/features/user/profile/forms/view/basic_form_view.dart';
 
 class AppRouterService {
@@ -13,6 +14,7 @@ class AppRouterService {
   static const String homeScreen = '/home';
   static const String loginScreen = '/login';
   static const String userProfileBasicFormScreen = '/basic_form';
+  static const String userProfileAdvanceFormScreen = '/advance_form';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -65,6 +67,10 @@ class AppRouterService {
             homeScreen,
             (_) => const HomePage(),
           ),
+          AppRoute(
+            userProfileAdvanceFormScreen,
+            (_) => const UserProfileAdvanceForm(),
+          )
         ],
       ),
     ],

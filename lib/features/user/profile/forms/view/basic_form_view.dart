@@ -18,6 +18,8 @@ import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
+// import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserProfileBasicForm extends StatelessWidget {
   const UserProfileBasicForm({super.key});
@@ -57,6 +59,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final _imagePicker = ImagePicker();
   //image variable
   File? _image;
+  String photoUrl = '';
 
   // Full Name, Email, profile image, college name, course name, gender, birthdate
   final TextEditingController _fullNameController = TextEditingController();
@@ -66,11 +69,10 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final TextEditingController _birthdateController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   bool isLoading = false;
-  AppLoggerService _logger = GetIt.I<AppLoggerService>();
+
   @override
   void initState() {
     super.initState();
-    _logger.info('User: ${widget.user.name}');
     _fullNameController.text = widget.user.name;
   }
 
@@ -101,13 +103,46 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   }
 
   void _handleImageButtonPress(context) async {
-    final image = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final image =
+        await _imagePicker.pickImage(source: ImageSource.gallery).then((value) {
+      if (value != null) {
+        setState(() {
+          _image = File(value.path);
+        });
+      }
+      return value;
+    });
     if (image != null) {
-      setState(
-        () {
-          _image = File(image.path);
+      final imageBytes = await image.readAsBytes();
+      final mimeType = image.mimeType;
+      final userId =
+          supabase_flutter.Supabase.instance.client.auth.currentUser?.id;
+      final imagePath = '$userId/profile_image.${image.path.split('.').last}';
+      await supabase_flutter.Supabase.instance.client.storage
+          .from('profile_images')
+          .uploadBinary(
+            imagePath,
+            imageBytes,
+            fileOptions: supabase_flutter.FileOptions(
+              upsert: true,
+              cacheControl: '3600',
+              contentType: mimeType,
+            ),
+          )
+          .then(
+        (url) {
+          photoUrl = url;
+          GetIt.I<AppLoggerService>().info('Image uploaded: $url');
+        },
+      ).catchError(
+        (error) {
+          GetIt.I<AppLoggerService>().error('Error uploading image: $error');
         },
       );
+      final imageUrl = supabase_flutter.Supabase.instance.client.storage
+          .from('profile_images')
+          .getPublicUrl(imagePath);
+      photoUrl = imageUrl;
     }
   }
 
@@ -127,7 +162,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       userId: widget.user.id,
       fullName: _fullNameController.text,
       email: widget.user.email,
-      photoUrl: widget.user.photoUrl,
+      photoUrl: photoUrl,
       birthDate: selectedDate,
       selectedCollegeName: _collegeNameController.text,
       selectedCourseName: _courseNameController.text,
@@ -476,7 +511,6 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
           if (_formKey.currentState!.validate()) {
             setBasicUserProfile().catchError(
               (error) {
-                _logger.error('Error setting basic user profile: $error');
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Error setting basic user profile'),

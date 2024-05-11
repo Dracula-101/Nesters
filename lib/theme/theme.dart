@@ -57,6 +57,8 @@ class AppTheme {
       Theme.of(_context).textTheme.headlineMedium!;
   static TextStyle get headlineSmall =>
       Theme.of(_context).textTheme.headlineSmall!;
+  static TextStyle get headlineVerySmall =>
+      Theme.of(_context).textTheme.headlineSmall!.copyWith(fontSize: 28);
 
   // Light Variant Fonts
   static final Color _lightVariantColor = AppColor.grey;
@@ -90,6 +92,8 @@ class AppTheme {
       headlineMedium.copyWith(color: _lightVariantColor);
   static TextStyle get headlineSmallLightVariant =>
       headlineSmall.copyWith(color: _lightVariantColor);
+  static TextStyle get headlineVerySmallLightVariant =>
+      headlineVerySmall.copyWith(color: _lightVariantColor);
 
   static ColorShades get primaryShades => PrimaryShades();
   static ColorShades get secondaryShades => SecondaryShades();

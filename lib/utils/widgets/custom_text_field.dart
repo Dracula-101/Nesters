@@ -36,6 +36,7 @@ class CustomTextField extends StatefulWidget {
   final bool? enableSuggestions;
   final int? maxLines;
   final bool? enabled;
+  final bool? alignLabelWithHint;
   const CustomTextField(
       {super.key,
       required this.controller,
@@ -72,7 +73,8 @@ class CustomTextField extends StatefulWidget {
       this.autocorrect,
       this.enableSuggestions,
       this.maxLines,
-      this.enabled});
+      this.enabled,
+      this.alignLabelWithHint});
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -129,12 +131,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
               decoration: InputDecoration(
                 hintText: widget.hintText,
                 labelText: widget.labelText,
-                labelStyle: AppTheme.labelLarge.copyWith(
-                  color: widget.textColor ?? AppTheme.greyShades.shade700,
-                ),
+                labelStyle: AppTheme.bodyLarge,
                 hintStyle: AppTheme.labelLarge.copyWith(
                   color: widget.hintTextColor ?? AppTheme.greyShades.shade700,
                 ),
+                alignLabelWithHint: widget.alignLabelWithHint ?? false,
                 errorText: widget.errorText,
                 errorStyle: AppTheme.labelSmall.copyWith(
                     color: Theme.of(context).colorScheme.error, height: 1),

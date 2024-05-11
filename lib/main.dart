@@ -54,9 +54,9 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
   DatabaseRepository databaseRepository = SupaDatabaseRepository();
   UserRepository userRepository = UserRepository(
-    authRepository: authRepository,
     databaseRepository: databaseRepository,
     storageRepository: localStorageRepository,
+    logger: appLoggerService,
   );
   // Register all repositories
   locator.registerSingleton<LocalStorageRepository>(localStorageRepository);
