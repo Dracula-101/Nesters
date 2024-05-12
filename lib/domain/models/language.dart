@@ -7,7 +7,7 @@ class Language {
   factory Language.fromJson(Map<String, dynamic> json) {
     return Language(
       name: json['name'],
-      id: json['id'],
+      id: json['id'].toString(),
     );
   }
 

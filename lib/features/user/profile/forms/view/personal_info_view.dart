@@ -1,11 +1,15 @@
 // ignore_for_file: unnecessary_cast
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/city.dart';
 import 'package:nesters/domain/models/indian_state.dart';
+import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/person_type.dart';
+import 'package:nesters/features/user/profile/forms/cubit/form_cubit.dart';
+import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
@@ -53,37 +57,39 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     super.dispose();
   }
 
-  Future<List<City>> getCities(String searchQuery) async {
-    return userRepository.getCites(searchQuery).then((value) {
-      GetIt.I<AppLoggerService>().debug(value);
-      return value;
-    });
+  Stream<List<City>> getCities(String searchQuery) {
+    return userRepository.getCites(searchQuery);
   }
 
   Future<List<IndianState>> getStates(String? searchQuery) async {
-    return await userRepository.getIndianStates(searchQuery).then((value) {
-      GetIt.I<AppLoggerService>().debug('value: $value');
-      return value;
-    });
+    return await userRepository.getIndianStates(searchQuery);
+  }
+
+  Future<List<Language>> getLanguages(String? searchQuery) async {
+    return await userRepository.getLanguage(searchQuery);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      child: Column(
-        children: [
-          _buildPersonTypeField(),
-          _buildSpacing(),
-          _buildPrimaryLangField(),
-          _buildSpacing(),
-          _buildOtherLangField(),
-          _buildSpacing(),
-          _buildCityField(),
-          _buildSpacing(),
-          _buildStateField(),
-          _buildSpacing(),
-          _buildBioField(),
-        ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+      child: Form(
+        key: widget.formKey,
+        child: Column(
+          children: [
+            _buildPersonTypeField(),
+            _buildSpacing(),
+            _buildPrimaryLangField(),
+            _buildSpacing(),
+            _buildOtherLangField(),
+            _buildSpacing(),
+            _buildCityField(),
+            _buildSpacing(),
+            _buildStateField(),
+            _buildSpacing(),
+            _buildBioField(),
+          ],
+        ),
       ),
     );
   }
@@ -107,23 +113,55 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
         }
         return null;
       },
+      onEditingComplete: () {
+        context.read<FormCubit>().checkFirstStage(
+              personType: personTypeController.text,
+              primaryLang: primaryLangController.text,
+              secondaryLang: otherLangController.text,
+              city: cityController.text,
+              indianState: stateController.text,
+              bio: bioController.text,
+            );
+      },
     );
   }
 
   Widget _buildPrimaryLangField() {
-    return CustomBottomSheetDropdownField(
-      controller: primaryLangController,
-      hintText: 'Primary Language',
+    return CustomSearchableDropDownField(
+      controller: stateController,
+      hintText: 'Primate Langauge',
       labelText: 'Primary Language',
       prefixIcon: const Icon(
         Icons.language,
       ),
-      items: PersonType.values,
+      itemAsString: (language) => language.name as String,
+      asyncItems: getLanguages,
+      filterFn: (state, searchQuery) {
+        return (state as Language)
+            .name
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase());
+      },
+      itemBuilder: (context, state, isSelected) {
+        return ListTile(
+          title: Text(state.name),
+        );
+      },
       validator: (value) {
         if (value == null) {
-          return 'Please select a primary language';
+          return 'Please select a language';
         }
         return null;
+      },
+      onEditingComplete: () {
+        context.read<FormCubit>().checkFirstStage(
+              personType: personTypeController.text,
+              primaryLang: primaryLangController.text,
+              secondaryLang: otherLangController.text,
+              city: cityController.text,
+              indianState: stateController.text,
+              bio: bioController.text,
+            );
       },
     );
   }
@@ -136,6 +174,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       prefixIcon: const Icon(
         Icons.language,
       ),
+      isMultiSelect: true,
       items: PersonType.values,
       validator: (value) {
         if (value == null) {
@@ -143,58 +182,103 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
         }
         return null;
       },
+      onEditingComplete: () {
+        context.read<FormCubit>().checkFirstStage(
+              personType: personTypeController.text,
+              primaryLang: primaryLangController.text,
+              secondaryLang: otherLangController.text,
+              city: cityController.text,
+              indianState: stateController.text,
+              bio: bioController.text,
+            );
+      },
     );
   }
 
   Widget _buildCityField() {
-    return CustomSearchableDropDownField(
+    return CustomDynamicSearchableDropDropField(
       controller: cityController,
       hintText: 'City',
       labelText: 'City',
       prefixIcon: const Icon(
         Icons.location_city,
       ),
-      asyncItems: getCities,
-      filterFn: (city, searchQuery) {
-        return (city as City)
-            .name
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase());
-      } as bool Function(dynamic, String),
-      itemBuilder: (context, city, isSelected) {
-        return ListTile(
-          title: Text(city.name),
-        );
-      } as ListTile Function(BuildContext, dynamic, bool),
+      searchText: 'Search your city',
+      asyncSearchItems: (searchQuery) {
+        return getCities(searchQuery);
+      },
+      itemAsString: (city) => city.name as String,
       validator: (value) {
         if (value == null) {
           return 'Please select a city';
         }
         return null;
       },
+      onEditingComplete: () {
+        context.read<FormCubit>().checkFirstStage(
+              personType: personTypeController.text,
+              primaryLang: primaryLangController.text,
+              secondaryLang: otherLangController.text,
+              city: cityController.text,
+              indianState: stateController.text,
+              bio: bioController.text,
+            );
+      },
+      emptyBuilder: (context) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.location_city,
+                size: 100,
+                color: AppTheme.greyShades.shade400,
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Search for your city',
+                style: AppTheme.bodyMedium.copyWith(
+                  color: AppTheme.greyShades.shade400,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildStateField() {
-    return CustomSearchableDropDownField<IndianState>(
+    return CustomSearchableDropDownField(
       controller: stateController,
       hintText: 'State',
       labelText: 'State',
       prefixIcon: const Icon(
-        Icons.location_city,
+        Icons.map_outlined,
       ),
+      itemAsString: (state) => state.name as String,
       asyncItems: getStates,
       filterFn: (state, searchQuery) {
         return (state as IndianState)
             .name
             .toLowerCase()
             .contains(searchQuery.toLowerCase());
-      } as bool Function(dynamic, String),
+      },
+      onEditingComplete: () {
+        context.read<FormCubit>().checkFirstStage(
+              personType: personTypeController.text,
+              primaryLang: primaryLangController.text,
+              secondaryLang: otherLangController.text,
+              city: cityController.text,
+              indianState: stateController.text,
+              bio: bioController.text,
+            );
+      },
       itemBuilder: (context, state, isSelected) {
         return ListTile(
           title: Text(state.name),
         );
-      } as ListTile Function(BuildContext, dynamic, bool),
+      },
       validator: (value) {
         if (value == null) {
           return 'Please select a state';
@@ -226,6 +310,16 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
             } else {
               maxLines.value = 1;
             }
+          },
+          onFieldSaved: () {
+            context.read<FormCubit>().checkFirstStage(
+                  personType: personTypeController.text,
+                  primaryLang: primaryLangController.text,
+                  secondaryLang: otherLangController.text,
+                  city: cityController.text,
+                  indianState: stateController.text,
+                  bio: bioController.text,
+                );
           },
           alignLabelWithHint: true,
           maxLines: 5,

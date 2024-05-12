@@ -94,14 +94,15 @@ class UserRepository {
     }
   }
 
-  Future<List<City>> getCites(String searchQuery) async {
+  Stream<List<City>> getCites(String searchQuery) {
     try {
-      return await _databaseRepository
+      return _databaseRepository
           .searchDataFromFuture('indian_cities', 'name', searchQuery)
-          .then((event) => event.map((e) => City.fromJson(e)).toList());
+          .asStream()
+          .map((event) => event.map((e) => City.fromJson(e)).toList());
     } catch (e) {
       _logger.error('Error in getting cities: $e');
-      return List.empty();
+      return Stream.value([]);
     }
   }
 

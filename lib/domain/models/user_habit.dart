@@ -44,7 +44,7 @@ enum UserFoodHabit {
   VEGAN,
   VEGETARIAN,
   PESCATARIAN,
-  EGGTARIAN,
+  EGGETARIAN,
   NON_VEGETERIAN;
 
   //toString function
@@ -57,8 +57,8 @@ enum UserFoodHabit {
         return 'Vegetarian';
       case UserFoodHabit.PESCATARIAN:
         return 'Pescatarian';
-      case UserFoodHabit.EGGTARIAN:
-        return 'Eggtarian';
+      case UserFoodHabit.EGGETARIAN:
+        return 'Eggetarian';
       case UserFoodHabit.NON_VEGETERIAN:
         return 'Omnivore';
       default:
@@ -75,8 +75,8 @@ enum UserFoodHabit {
         return UserFoodHabit.VEGETARIAN;
       case 'Pescatarian':
         return UserFoodHabit.PESCATARIAN;
-      case 'Eggtarian':
-        return UserFoodHabit.EGGTARIAN;
+      case 'Eggetarian':
+        return UserFoodHabit.EGGETARIAN;
       case 'Omnivore':
         return UserFoodHabit.NON_VEGETERIAN;
       default:

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nesters/domain/models/person_type.dart';
 import 'package:nesters/domain/models/room_type.dart';
 import 'package:nesters/domain/models/user_habit.dart';
-import 'package:nesters/domain/models/room_type.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class LifeStyleInfoPage extends StatefulWidget {
@@ -34,64 +32,60 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
   final TextEditingController smokingHabitController = TextEditingController();
   final TextEditingController cleanlinessHabitController =
       TextEditingController();
-  final TextEditingController roomTypeController = TextEditingController();
+  final TextEditingController hobbiesController = TextEditingController();
+  final ValueNotifier<int> maxLines = ValueNotifier<int>(1);
+
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: widget.formKey,
-      child: Column(
-        children: [
-          _buildFoodPreferenceField(),
-          _buildSpacing(),
-          _buildCookingProficiencyField(),
-          _buildSpacing(),
-          _buildDrinkingHabitField(),
-          _buildSpacing(),
-          _buildSmokingHabitField(),
-          _buildSpacing(),
-          _buildCleanlinessHabitField(),
-          _buildSpacing(),
-          _buildRoomTypeField(),
-          _buildSpacing(),
-          _buildFlatemateGenderField(),
-        ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+      child: Form(
+        key: widget.formKey,
+        child: Column(
+          children: [
+            _buildFoodPreferenceField(),
+            _buildSpacing(),
+            _buildCookingProficiencyField(),
+            _buildSpacing(),
+            _buildDrinkingHabitField(),
+            _buildSpacing(),
+            _buildSmokingHabitField(),
+            _buildSpacing(),
+            _buildCleanlinessHabitField(),
+            _buildSpacing(),
+            _buildHobbiesField(),
+          ],
+        ),
       ),
     );
   }
 
-  CustomBottomSheetDropdownField<FlatmateGenderType>
-      _buildFlatemateGenderField() {
-    return CustomBottomSheetDropdownField(
-      controller: foodHabitController,
-      hintText: 'Flatemate\'s Gender Pref..',
-      labelText: 'Flatemate\'s Gender Pref..',
-      prefixIcon: const Icon(
-        Icons.clean_hands,
-      ),
-      items: FlatmateGenderType.values,
-      validator: (value) {
-        if (value == null) {
-          return 'Please select a flatemate\'s gender preference.';
-        }
-        return null;
-      },
-    );
-  }
-
-  CustomBottomSheetDropdownField<UserRoomType> _buildRoomTypeField() {
-    return CustomBottomSheetDropdownField(
-      controller: foodHabitController,
-      hintText: 'Room Preference',
-      labelText: 'Room Preference',
-      prefixIcon: const Icon(
-        Icons.clean_hands,
-      ),
-      items: UserRoomType.values,
-      validator: (value) {
-        if (value == null) {
-          return 'Please select a room type';
-        }
-        return null;
+  Widget _buildHobbiesField() {
+    return ValueListenableBuilder(
+      valueListenable: maxLines,
+      builder: (context, value, child) {
+        return CustomTextField(
+          controller: hobbiesController,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+          hintText: 'Hobbies',
+          labelText: 'Hobbies! 🎨',
+          validator: (value) {
+            if (value.isEmpty) {
+              return 'Please enter your hobbies';
+            }
+            return null;
+          },
+          onChanged: (value) {
+            if (value.isNotEmpty) {
+              int expectedLines = (value.length / 25).ceil();
+              maxLines.value = expectedLines;
+            } else {
+              maxLines.value = 1;
+            }
+          },
+          alignLabelWithHint: true,
+          maxLines: 5,
+        );
       },
     );
   }

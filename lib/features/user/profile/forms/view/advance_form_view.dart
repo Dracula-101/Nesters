@@ -21,6 +21,7 @@ class _UserProfileAdvanceFormState extends State<UserProfileAdvanceForm> {
     return BlocProvider(
       create: (context) => FormCubit(),
       child: const Scaffold(
+        resizeToAvoidBottomInset: true,
         bottomNavigationBar: SubmitButton(),
         body: SafeArea(child: AdvancedFormViewPage()),
       ),
@@ -66,15 +67,12 @@ class _AdvancedFormViewPageState extends State<AdvancedFormViewPage>
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 20.0),
-        child: Column(
-          children: [
-            _buildHeaderText(),
-            _buildSpacing(20),
-            _buildPageViewContent(),
-          ],
-        ),
+      child: Column(
+        children: [
+          _buildHeaderText(),
+          _buildSpacing(20),
+          _buildPageViewContent(),
+        ],
       ),
     );
   }
@@ -84,80 +82,90 @@ class _AdvancedFormViewPageState extends State<AdvancedFormViewPage>
   }
 
   Widget _buildHeaderText() {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.1,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            flex: 4,
-            child: ValueListenableBuilder(
-              valueListenable: _currentPage,
-              builder: (context, value, child) {
-                return Text(
-                  value == 0
-                      ? 'Personal Information'
-                      : value == 1
-                          ? 'Lifestyle and Hobbies'
-                          : 'Background and Interests',
-                  style: AppTheme.headlineVerySmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.primary,
-                  ),
-                );
-              },
-            ),
+    return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 20.0),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.1,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                flex: 4,
+                child: ValueListenableBuilder(
+                  valueListenable: _currentPage,
+                  builder: (context, value, child) {
+                    return Text(
+                      value == 0
+                          ? 'Personal Information'
+                          : value == 1
+                              ? 'Lifestyle and Hobbies'
+                              : 'Background and Interests',
+                      style: AppTheme.headlineVerySmall.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primary,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              Expanded(
+                flex: 2,
+                child: BlocBuilder<FormCubit, CurrentFormState>(
+                  builder: (context, state) {
+                    return Stack(
+                      alignment: Alignment.centerRight,
+                      children: [
+                        SizedBox(
+                          width: AppTheme.bodyLarge.fontSize! * 4,
+                          height: AppTheme.bodyLarge.fontSize! * 4,
+                          child: CircularProgressIndicator(
+                            value: 1,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                AppTheme.primaryShades.shade200),
+                            strokeWidth: 8,
+                            strokeCap: StrokeCap.round,
+                          ),
+                        ),
+                        BlocBuilder<FormCubit, CurrentFormState>(
+                          builder: (context, state) {
+                            return SizedBox(
+                              width: AppTheme.bodyLarge.fontSize! * 4,
+                              height: AppTheme.bodyLarge.fontSize! * 4,
+                              child: CircularProgressIndicator(
+                                value: state.questionsComplete / 17,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppTheme.primary),
+                                strokeWidth: 8,
+                                strokeCap: StrokeCap.round,
+                              ),
+                            );
+                          },
+                        ),
+                        BlocBuilder<FormCubit, CurrentFormState>(
+                          builder: (context, state) {
+                            return SizedBox(
+                              width: AppTheme.bodyLarge.fontSize! * 4,
+                              child: Text(
+                                '${state.questionsComplete}%',
+                                style: AppTheme.bodyLarge,
+                                textAlign: TextAlign.center,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              )
+            ],
           ),
-          Expanded(
-            flex: 2,
-            child: BlocBuilder<FormCubit, CurrentFormState>(
-              builder: (context, state) {
-                return Stack(
-                  alignment: Alignment.centerRight,
-                  children: [
-                    SizedBox(
-                      width: AppTheme.bodyLarge.fontSize! * 4,
-                      height: AppTheme.bodyLarge.fontSize! * 4,
-                      child: CircularProgressIndicator(
-                        value: 1,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            AppTheme.primaryShades.shade200),
-                        strokeWidth: 8,
-                        strokeCap: StrokeCap.round,
-                      ),
-                    ),
-                    SizedBox(
-                      width: AppTheme.bodyLarge.fontSize! * 4,
-                      height: AppTheme.bodyLarge.fontSize! * 4,
-                      child: CircularProgressIndicator(
-                        value: 0.5,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(AppTheme.primary),
-                        strokeWidth: 8,
-                        strokeCap: StrokeCap.round,
-                      ),
-                    ),
-                    SizedBox(
-                      width: AppTheme.bodyLarge.fontSize! * 4,
-                      child: Text(
-                        '100%',
-                        style: AppTheme.bodyLarge,
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          )
-        ],
-      ),
-    );
+        ));
   }
 
   Widget _buildPageViewContent() {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 1.5,
+      height: MediaQuery.of(context).size.height * 1.3,
       child: PageView(
         controller: _pageController,
         children: [
@@ -170,7 +178,9 @@ class _AdvancedFormViewPageState extends State<AdvancedFormViewPage>
             onContinue: () {},
             onSaved: (p0, p1, p2, p3, p4, p5) {},
           ),
-          BackgroundInfoPage(),
+          BackgroundInfoPage(
+            formKey: _backgroundInfoKey,
+          ),
         ],
       ),
     );

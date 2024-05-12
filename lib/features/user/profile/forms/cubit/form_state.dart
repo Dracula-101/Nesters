@@ -1,14 +1,14 @@
 part of 'form_cubit.dart';
 
 @freezed
-class CurrentFormState with _$FormState {
-  factory CurrentFormState({
+class CurrentFormState with _$CurrentFormState {
+  const factory CurrentFormState({
     required User user,
     required String id,
     required PersonType personType,
     required String bio,
-    required Map<String, String> primaryLang,
-    required Map<String, String> otherLang,
+    required String primaryLang,
+    required String otherLang,
     required String city,
     required String state,
     required String undergradCollegeName,
@@ -18,19 +18,18 @@ class CurrentFormState with _$FormState {
     required UserHabit drinkingHabit,
     required UserHabit smokingHabit,
     required String cleanlinessHabit,
-    required Map<String, String> hobbies,
+    required String hobbies,
     required String roomType,
-    required Map<String, String>? socialMedia,
-    required double percentComplete,
-  }) = _FormState;
+    required int questionsComplete,
+  }) = _CurrentFormState;
 
   factory CurrentFormState.initial() => CurrentFormState(
         user: User.empty(),
         id: '',
         personType: PersonType.AMBIVERT,
         bio: '',
-        primaryLang: {},
-        otherLang: {},
+        primaryLang: '',
+        otherLang: '',
         city: '',
         state: '',
         undergradCollegeName: '',
@@ -40,9 +39,8 @@ class CurrentFormState with _$FormState {
         drinkingHabit: UserHabit.NEVER,
         smokingHabit: UserHabit.NEVER,
         cleanlinessHabit: '',
-        hobbies: {},
+        hobbies: '',
         roomType: '',
-        socialMedia: {},
-        percentComplete: 0.0,
+        questionsComplete: 0,
       );
 }

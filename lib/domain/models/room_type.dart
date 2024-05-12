@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
 enum UserRoomType {
-  NOT_DECIDED,
+  ANYTHING,
   PRIVATE,
   SHARED;
 
@@ -12,7 +12,7 @@ enum UserRoomType {
       case 'SHARED':
         return UserRoomType.SHARED;
       default:
-        return UserRoomType.NOT_DECIDED;
+        return UserRoomType.ANYTHING;
     }
   }
 
@@ -24,7 +24,7 @@ enum UserRoomType {
       case UserRoomType.SHARED:
         return 'SHARED';
       default:
-        return 'YET TO DECIDE';
+        return 'ANYTHING';
     }
   }
 }

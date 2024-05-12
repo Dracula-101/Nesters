@@ -19,7 +19,7 @@ class UserAdvanceProfile extends Equatable {
   final UserHabit drinkingHabit;
   final UserHabit smokingHabit;
   final String cleanlinessHabit;
-  final Map<String, String> hobbies;
+  final String hobbies;
   final String roomType;
   final String flatematesGenderPrefs;
   final Map<String, String>? socialMedia;

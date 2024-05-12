@@ -49,7 +49,7 @@ class _HomeViewState extends State<HomeView> {
   final TextEditingController _searchController = TextEditingController();
   Stream<List<University>?>? _universitiesStream;
   final AppLoggerService _logger = GetIt.I<AppLoggerService>();
-  final Debouncer _debouncer = Debouncer(milliseconds: 500);
+  final Debouncer _debouncer = Debouncer(milliseconds: 400);
 
   @override
   void initState() {

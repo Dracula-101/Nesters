@@ -10,6 +10,7 @@ class CustomTextField extends StatefulWidget {
   final Function(String)? validator;
   final Function(String)? onFieldSubmitted;
   final Function(String)? onChanged;
+  final VoidCallback? onFieldSaved;
   final Iterable<String>? autofillHints;
   final FocusNode? focusNode;
   final bool? autofocus;
@@ -37,6 +38,7 @@ class CustomTextField extends StatefulWidget {
   final int? maxLines;
   final bool? enabled;
   final bool? alignLabelWithHint;
+  final bool? isCapitalized;
   const CustomTextField(
       {super.key,
       required this.controller,
@@ -74,7 +76,9 @@ class CustomTextField extends StatefulWidget {
       this.enableSuggestions,
       this.maxLines,
       this.enabled,
-      this.alignLabelWithHint});
+      this.alignLabelWithHint,
+      this.isCapitalized,
+      this.onFieldSaved});
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -104,6 +108,12 @@ class _CustomTextFieldState extends State<CustomTextField> {
               enabled: widget.enabled ?? true,
               controller: widget.controller,
               onChanged: (value) {
+                setState(() {
+                  widget.controller.text = value;
+                });
+                if (widget.onFieldSaved != null) {
+                  widget.onFieldSaved!();
+                }
                 if (widget.onChanged != null) {
                   widget.onChanged!(value);
                 }
@@ -127,6 +137,9 @@ class _CustomTextFieldState extends State<CustomTextField> {
               textInputAction: widget.textInputAction,
               cursorColor: widget.cursorColor,
               autocorrect: widget.autocorrect ?? false,
+              textCapitalization: widget.isCapitalized ?? false
+                  ? TextCapitalization.words
+                  : TextCapitalization.none,
               enableSuggestions: widget.enableSuggestions ?? false,
               decoration: InputDecoration(
                 hintText: widget.hintText,

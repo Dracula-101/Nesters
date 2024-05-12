@@ -12,6 +12,7 @@ class CustomDropdownField<String> extends StatefulWidget {
   final TextInputAction? textInputAction;
   final Function(String)? onFieldSubmitted;
   final Function(String)? onChanged;
+  final VoidCallback? onEditingComplete;
   final Iterable<String>? autofillHints;
   final FocusNode? focusNode;
   final bool? autofocus;
@@ -76,7 +77,8 @@ class CustomDropdownField<String> extends StatefulWidget {
       this.autocorrect,
       this.enableSuggestions,
       this.maxLines,
-      this.enabled});
+      this.enabled,
+      this.onEditingComplete});
 
   @override
   State<CustomDropdownField> createState() => _CustomDropdownFieldState();
@@ -114,6 +116,11 @@ class _CustomDropdownFieldState<T> extends State<CustomDropdownField> {
             onChanged: (value) {
               if (widget.onChanged != null) {
                 widget.onChanged!(value);
+              }
+            },
+            onSaved: (value) {
+              if (widget.onEditingComplete != null) {
+                widget.onEditingComplete!();
               }
             },
             validator: (value) {
@@ -167,17 +174,18 @@ class _CustomDropdownFieldState<T> extends State<CustomDropdownField> {
   }
 }
 
-class CustomSearchableDropDownField<T> extends StatefulWidget {
+class CustomSearchableDropDownField extends StatefulWidget {
   final TextEditingController controller;
-  final Future<List<T>> Function(String)? asyncItems;
-  final bool Function(T, String)? filterFn;
+  final Future<List<dynamic>> Function(String)? asyncItems;
+  final bool Function(dynamic, String)? filterFn;
+  final VoidCallback? onEditingComplete;
   final String? labelText;
   final String? hintText;
   final String? searchLabel;
   final Widget? prefixIcon;
-  final Widget Function(BuildContext, T, bool)? itemBuilder;
-  final String? Function(T?)? validator;
-  final String Function(T)? itemAsString;
+  final Widget Function(BuildContext, dynamic, bool)? itemBuilder;
+  final String? Function(dynamic)? validator;
+  final String Function(dynamic)? itemAsString;
 
   const CustomSearchableDropDownField(
       {super.key,
@@ -190,7 +198,8 @@ class CustomSearchableDropDownField<T> extends StatefulWidget {
       this.prefixIcon,
       this.itemBuilder,
       this.validator,
-      this.itemAsString});
+      this.itemAsString,
+      this.onEditingComplete});
 
   @override
   State<CustomSearchableDropDownField> createState() =>
@@ -206,7 +215,7 @@ class CustomSearchableDropDownFieldState<T>
         color: AppTheme.greyShades.shade200,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: DropdownSearch<T>(
+      child: DropdownSearch(
         filterFn: (item, filter) {
           if (widget.filterFn != null) {
             return widget.filterFn!(item, filter);
@@ -262,13 +271,28 @@ class CustomSearchableDropDownFieldState<T>
           },
           showSearchBox: true,
         ),
+        onChanged: (value) {
+          setState(() {
+            widget.controller.text = widget.itemAsString != null
+                ? widget.itemAsString!(value)
+                : value.toString();
+          });
+          if (widget.onEditingComplete != null && value != null) {
+            widget.onEditingComplete!();
+          }
+        },
         validator: (value) {
           if (widget.validator != null) {
             return widget.validator!(value);
           }
           return null;
         },
-        itemAsString: widget.itemAsString,
+        itemAsString: (item) {
+          if (widget.itemAsString != null) {
+            return widget.itemAsString!(item);
+          }
+          return item.toString();
+        },
       ),
     );
   }
@@ -277,11 +301,13 @@ class CustomSearchableDropDownFieldState<T>
 class CustomBottomSheetDropdownField<T> extends StatefulWidget {
   final List<T> items;
   final TextEditingController controller;
+  final VoidCallback? onEditingComplete;
   final Function(T?) validator;
   final String? hintText;
   final String? bottomSheetTitle;
   final Widget? prefixIcon;
   final String? labelText;
+  final bool? isMultiSelect;
 
   const CustomBottomSheetDropdownField({
     Key? key,
@@ -292,6 +318,8 @@ class CustomBottomSheetDropdownField<T> extends StatefulWidget {
     this.prefixIcon,
     this.labelText,
     this.bottomSheetTitle,
+    this.isMultiSelect,
+    this.onEditingComplete,
   }) : super(key: key);
 
   @override
@@ -356,11 +384,311 @@ class _CustomBottomSheetDropdownFieldState<T>
         },
         selectedItem: _selectedItem,
         onChanged: (value) {
+          widget.controller.text = value.toString();
           setState(() {
             _selectedItem = value;
           });
+          if (widget.onEditingComplete != null && _selectedItem == null) {
+            GetIt.I<AppLoggerService>().debug('Editing complete called');
+            widget.onEditingComplete!();
+          }
         },
       ),
+    );
+  }
+}
+
+class CustomDynamicSearchableDropDropField extends StatefulWidget {
+  final Stream<List<dynamic>> Function(String) asyncSearchItems;
+  final String Function(dynamic)? itemAsString;
+  final TextEditingController controller;
+  final String? hintText;
+  final String? searchText;
+  final String? labelText;
+  final bool? obscureText;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final Function(String?)? validator;
+  final Function(String)? onFieldSubmitted;
+  final Function(String)? onChanged;
+  final VoidCallback? onEditingComplete;
+  final Iterable<String>? autofillHints;
+  final FocusNode? focusNode;
+  final bool? autofocus;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
+  final EdgeInsetsGeometry? contentPadding;
+  final EdgeInsetsGeometry? margin;
+  final Color? fillColor;
+  final Color? borderColor;
+  final InputBorder? focusBorder;
+  final InputBorder? enabledBorder;
+  final InputBorder? disabledBorder;
+  final InputBorder? errorBorder;
+  final Color? cursorColor;
+  final Color? prefixIconColor;
+  final Color? suffixIconColor;
+  final Color? hintTextColor;
+  final Color? textColor;
+  final Color? backgroundColor;
+  final String? errorText;
+  final bool? isDense;
+  final bool? autocorrect;
+  final bool? enableSuggestions;
+  final int? maxLines;
+  final bool? alignLabelWithHint;
+  final Widget Function(BuildContext)? emptyBuilder;
+
+  const CustomDynamicSearchableDropDropField(
+      {super.key,
+      required this.asyncSearchItems,
+      required this.controller,
+      this.itemAsString,
+      this.hintText,
+      this.labelText,
+      this.obscureText,
+      this.keyboardType,
+      this.textInputAction,
+      this.validator,
+      this.onFieldSubmitted,
+      this.onChanged,
+      this.autofillHints,
+      this.focusNode,
+      this.autofocus,
+      this.prefixIcon,
+      this.suffixIcon,
+      this.contentPadding,
+      this.margin,
+      this.fillColor,
+      this.borderColor,
+      this.focusBorder,
+      this.enabledBorder,
+      this.disabledBorder,
+      this.errorBorder,
+      this.cursorColor,
+      this.prefixIconColor,
+      this.suffixIconColor,
+      this.hintTextColor,
+      this.textColor,
+      this.backgroundColor,
+      this.errorText,
+      this.isDense,
+      this.autocorrect,
+      this.enableSuggestions,
+      this.maxLines,
+      this.alignLabelWithHint,
+      this.searchText,
+      this.emptyBuilder,
+      this.onEditingComplete});
+  @override
+  State<CustomDynamicSearchableDropDropField> createState() =>
+      _CustomDynamicSearchableDropDropFieldState();
+}
+
+class _CustomDynamicSearchableDropDropFieldState
+    extends State<CustomDynamicSearchableDropDropField> {
+  dynamic _selectedItem;
+  final Debouncer _debouncer = Debouncer(milliseconds: 500);
+  Stream<List<dynamic>>? _items;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: widget.backgroundColor ?? AppTheme.greyShades.shade200,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: GestureDetector(
+        onTap: () {
+          _showDialog();
+        },
+        child: Padding(
+          padding: widget.contentPadding ??
+              const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 6.0,
+              ),
+          child: TextFormField(
+            enabled: false,
+            controller: widget.controller,
+            onChanged: (value) {
+              setState(() {
+                widget.controller.text = value;
+              });
+              if (widget.onChanged != null) {
+                widget.onChanged!(value);
+              }
+            },
+            validator: (value) {
+              if (widget.validator != null) {
+                return widget.validator!(value!);
+              }
+              return null;
+            },
+            onFieldSubmitted: (value) {
+              if (widget.onFieldSubmitted != null) {
+                widget.onFieldSubmitted!(value);
+              }
+            },
+            focusNode: widget.focusNode,
+            autofillHints: widget.autofillHints,
+            autofocus: widget.autofocus ?? false,
+            obscureText: widget.obscureText ?? false,
+            keyboardType: widget.keyboardType,
+            textInputAction: widget.textInputAction,
+            cursorColor: widget.cursorColor,
+            autocorrect: widget.autocorrect ?? false,
+            enableSuggestions: widget.enableSuggestions ?? false,
+            onEditingComplete: () {
+              if (widget.onEditingComplete != null) {
+                widget.onEditingComplete!();
+              }
+            },
+            decoration: InputDecoration(
+              hintText: widget.hintText,
+              labelText: widget.labelText,
+              labelStyle: AppTheme.bodyLarge,
+              hintStyle: AppTheme.labelLarge.copyWith(
+                color: widget.hintTextColor ?? AppTheme.greyShades.shade700,
+              ),
+              alignLabelWithHint: widget.alignLabelWithHint ?? false,
+              errorText: widget.errorText,
+              errorStyle: AppTheme.labelSmall.copyWith(
+                  color: Theme.of(context).colorScheme.error, height: 1),
+              prefixIcon: widget.prefixIcon,
+              suffixIcon: widget.suffixIcon,
+              prefixIconConstraints: const BoxConstraints(
+                minWidth: 40,
+              ),
+              suffixIconConstraints: const BoxConstraints(
+                minWidth: 40,
+              ),
+              contentPadding: widget.contentPadding ??
+                  const EdgeInsets.symmetric(
+                    horizontal: 8.0,
+                    vertical: 4.0,
+                  ),
+              border: InputBorder.none,
+              enabledBorder: widget.enabledBorder ?? InputBorder.none,
+              focusedBorder: widget.focusBorder ?? InputBorder.none,
+              disabledBorder: widget.disabledBorder ?? InputBorder.none,
+              errorBorder: widget.errorBorder ?? InputBorder.none,
+              isDense: widget.isDense ?? false,
+            ),
+            style: TextStyle(
+              color:
+                  widget.textColor ?? Theme.of(context).colorScheme.onSurface,
+            ),
+            maxLines: widget.maxLines ?? 1,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return PopScope(
+              onPopInvoked: (value) {
+                setState(() {
+                  _items = null;
+                });
+              },
+              child: AlertDialog(
+                content: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: widget.backgroundColor ??
+                              AppTheme.greyShades.shade200,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: TextField(
+                          textCapitalization: TextCapitalization.words,
+                          decoration: InputDecoration(
+                            hintText: widget.searchText ?? 'Search...',
+                            prefixIcon: const Icon(Icons.search),
+                            border: InputBorder.none,
+                          ),
+                          onChanged: (value) {
+                            _debouncer.run(() {
+                              setState(() {
+                                _items = widget.asyncSearchItems(value);
+                              });
+                            });
+                          },
+                          onSubmitted: (value) {
+                            setState(() {
+                              GetIt.I<AppLoggerService>()
+                                  .debug('Search value: $value');
+                              _items = widget.asyncSearchItems(value);
+                            });
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.5,
+                        width: MediaQuery.of(context).size.width * 0.8,
+                        child: StreamBuilder(
+                          stream: _items,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else if (snapshot.hasError) {
+                              return const Center(
+                                child: Text('An error occurred'),
+                              );
+                            } else if (snapshot.hasData) {
+                              return SizedBox(
+                                child: ListView.builder(
+                                  shrinkWrap: true, //MUST TO ADDED
+                                  itemCount: snapshot.data?.length,
+                                  itemBuilder: (context, index) {
+                                    return ListTile(
+                                      contentPadding: const EdgeInsets.all(0),
+                                      title: Text(
+                                        widget.itemAsString!(
+                                            snapshot.data?[index]),
+                                      ),
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedItem = snapshot.data?[index];
+                                          widget.controller.text =
+                                              widget.itemAsString!(
+                                                  snapshot.data?[index]);
+                                          _items = null;
+                                        });
+                                        Navigator.of(context).pop();
+                                      },
+                                    );
+                                  },
+                                ),
+                              );
+                            } else {
+                              return widget.emptyBuilder != null
+                                  ? widget.emptyBuilder!(context)
+                                  : const SizedBox();
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
