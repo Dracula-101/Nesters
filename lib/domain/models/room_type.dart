@@ -24,7 +24,36 @@ enum UserRoomType {
       case UserRoomType.SHARED:
         return 'SHARED';
       default:
-        return 'NOT_DECIDED';
+        return 'YET TO DECIDE';
+    }
+  }
+}
+
+enum FlatmateGenderType {
+  MALE,
+  FEMALE,
+  MIX;
+
+  static FlatmateGenderType fromString(String value) {
+    switch (value) {
+      case 'MALE':
+        return FlatmateGenderType.MALE;
+      case 'FEMALE':
+        return FlatmateGenderType.FEMALE;
+      default:
+        return FlatmateGenderType.MIX;
+    }
+  }
+
+  @override
+  String toString() {
+    switch (this) {
+      case FlatmateGenderType.MALE:
+        return 'MALE';
+      case FlatmateGenderType.FEMALE:
+        return 'FFEMALE';
+      default:
+        return 'MIX';
     }
   }
 }

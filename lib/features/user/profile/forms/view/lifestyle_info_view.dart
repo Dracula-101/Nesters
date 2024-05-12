@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nesters/domain/models/person_type.dart';
 import 'package:nesters/domain/models/room_type.dart';
 import 'package:nesters/domain/models/user_habit.dart';
+import 'package:nesters/domain/models/room_type.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class LifeStyleInfoPage extends StatefulWidget {
@@ -40,23 +41,154 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
       key: widget.formKey,
       child: Column(
         children: [
-          CustomBottomSheetDropdownField(
-            controller: foodHabitController,
-            hintText: 'Food Habits',
-            labelText: 'Cooking Skill',
-            prefixIcon: const Icon(
-              Icons.location_city,
-            ),
-            items: PersonType.values,
-            validator: (value) {
-              if (value == null) {
-                return 'Please select a city';
-              }
-              return null;
-            },
-          ),
+          _buildFoodPreferenceField(),
+          _buildSpacing(),
+          _buildCookingProficiencyField(),
+          _buildSpacing(),
+          _buildDrinkingHabitField(),
+          _buildSpacing(),
+          _buildSmokingHabitField(),
+          _buildSpacing(),
+          _buildCleanlinessHabitField(),
+          _buildSpacing(),
+          _buildRoomTypeField(),
+          _buildSpacing(),
+          _buildFlatemateGenderField(),
         ],
       ),
+    );
+  }
+
+  CustomBottomSheetDropdownField<FlatmateGenderType>
+      _buildFlatemateGenderField() {
+    return CustomBottomSheetDropdownField(
+      controller: foodHabitController,
+      hintText: 'Flatemate\'s Gender Pref..',
+      labelText: 'Flatemate\'s Gender Pref..',
+      prefixIcon: const Icon(
+        Icons.clean_hands,
+      ),
+      items: FlatmateGenderType.values,
+      validator: (value) {
+        if (value == null) {
+          return 'Please select a flatemate\'s gender preference.';
+        }
+        return null;
+      },
+    );
+  }
+
+  CustomBottomSheetDropdownField<UserRoomType> _buildRoomTypeField() {
+    return CustomBottomSheetDropdownField(
+      controller: foodHabitController,
+      hintText: 'Room Preference',
+      labelText: 'Room Preference',
+      prefixIcon: const Icon(
+        Icons.clean_hands,
+      ),
+      items: UserRoomType.values,
+      validator: (value) {
+        if (value == null) {
+          return 'Please select a room type';
+        }
+        return null;
+      },
+    );
+  }
+
+  CustomBottomSheetDropdownField<UserCleanlinessHabit>
+      _buildCleanlinessHabitField() {
+    return CustomBottomSheetDropdownField(
+      controller: foodHabitController,
+      hintText: 'Cleanliness Habit',
+      labelText: 'Cleanliness Habit',
+      prefixIcon: const Icon(
+        Icons.clean_hands,
+      ),
+      items: UserCleanlinessHabit.values,
+      validator: (value) {
+        if (value == null) {
+          return 'Please select a cleanliness habit';
+        }
+        return null;
+      },
+    );
+  }
+
+  CustomBottomSheetDropdownField<UserHabit> _buildSmokingHabitField() {
+    return CustomBottomSheetDropdownField(
+      controller: foodHabitController,
+      hintText: 'Smoking Habit',
+      labelText: 'Smoking Habit',
+      prefixIcon: const Icon(
+        Icons.smoking_rooms,
+      ),
+      items: UserHabit.values,
+      validator: (value) {
+        if (value == null) {
+          return 'Please select a smoking habit';
+        }
+        return null;
+      },
+    );
+  }
+
+  CustomBottomSheetDropdownField<UserHabit> _buildDrinkingHabitField() {
+    return CustomBottomSheetDropdownField(
+      controller: foodHabitController,
+      hintText: 'Drinking Habit',
+      labelText: 'Drinking Habit',
+      prefixIcon: const Icon(
+        Icons.no_drinks,
+      ),
+      items: UserHabit.values,
+      validator: (value) {
+        if (value == null) {
+          return 'Please select a drinking habit';
+        }
+        return null;
+      },
+    );
+  }
+
+  CustomBottomSheetDropdownField<UserCookingSkill>
+      _buildCookingProficiencyField() {
+    return CustomBottomSheetDropdownField(
+      controller: foodHabitController,
+      hintText: 'Cooking Proficiency',
+      labelText: 'Cooking Proficiency',
+      prefixIcon: const Icon(
+        Icons.restaurant,
+      ),
+      items: UserCookingSkill.values,
+      validator: (value) {
+        if (value == null) {
+          return 'Please select a cooking proficiency';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildSpacing() {
+    return const SizedBox(height: 20);
+  }
+
+  CustomBottomSheetDropdownField<UserFoodHabit> _buildFoodPreferenceField() {
+    return CustomBottomSheetDropdownField(
+      controller: foodHabitController,
+      hintText: 'Food Preference',
+      labelText: 'Food Preference',
+      prefixIcon: const Icon(
+        Icons.restaurant_menu,
+      ),
+      items: UserFoodHabit.values,
+      validator: (value) {
+        if (value == null) {
+          return 'Please select a food preference';
+        }
+        return null;
+      },
     );
   }
 }

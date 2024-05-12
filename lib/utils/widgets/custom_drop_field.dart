@@ -230,7 +230,11 @@ class CustomSearchableDropDownFieldState<T>
         popupProps: PopupProps.dialog(
           containerBuilder: (context, child) {
             return Padding(
-              padding: const EdgeInsets.only(left: 6.0, right: 6.0, top: 12.0),
+              padding: const EdgeInsets.only(
+                left: 6.0,
+                right: 6.0,
+                top: 12.0,
+              ),
               child: child,
             );
           },

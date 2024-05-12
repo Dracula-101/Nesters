@@ -96,9 +96,6 @@ class UserRepository {
 
   Future<List<City>> getCites(String searchQuery) async {
     try {
-      if (searchQuery.isEmpty) {
-        return List.empty();
-      }
       return await _databaseRepository
           .searchDataFromFuture('indian_cities', 'name', searchQuery)
           .then((event) => event.map((e) => City.fromJson(e)).toList());

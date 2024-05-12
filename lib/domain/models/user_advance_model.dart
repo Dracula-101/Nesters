@@ -21,6 +21,7 @@ class UserAdvanceProfile extends Equatable {
   final String cleanlinessHabit;
   final Map<String, String> hobbies;
   final String roomType;
+  final String flatematesGenderPrefs;
   final Map<String, String>? socialMedia;
 
   const UserAdvanceProfile({
@@ -40,6 +41,7 @@ class UserAdvanceProfile extends Equatable {
     required this.cleanlinessHabit,
     required this.hobbies,
     required this.roomType,
+    required this.flatematesGenderPrefs,
     required this.socialMedia,
   });
 
@@ -61,6 +63,7 @@ class UserAdvanceProfile extends Equatable {
         cleanlinessHabit,
         hobbies,
         roomType,
+        flatematesGenderPrefs,
         socialMedia,
       ];
 
@@ -83,6 +86,7 @@ class UserAdvanceProfile extends Equatable {
       'cleanliness_habit': cleanlinessHabit,
       'hobbies': hobbies,
       'room_type': roomType,
+      'flatmates_gender_prefs': flatematesGenderPrefs,
       'social_media': socialMedia,
     };
   }
@@ -106,6 +110,7 @@ class UserAdvanceProfile extends Equatable {
       FieldValue(key: 'cleanliness_habit', value: cleanlinessHabit),
       FieldValue(key: 'hobbies', value: hobbies),
       FieldValue(key: 'room_type', value: roomType),
+      FieldValue(key: 'flatmates_gender_prefs', value: flatematesGenderPrefs),
       FieldValue(key: 'social_media', value: socialMedia),
     ];
   }

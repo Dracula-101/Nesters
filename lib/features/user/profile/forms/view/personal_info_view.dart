@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_cast
+
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
@@ -59,9 +61,8 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   }
 
   Future<List<IndianState>> getStates(String? searchQuery) async {
-    GetIt.I<AppLoggerService>().debug('searchQuery: $searchQuery');
     return await userRepository.getIndianStates(searchQuery).then((value) {
-      GetIt.I<AppLoggerService>().debug(value);
+      GetIt.I<AppLoggerService>().debug('value: $value');
       return value;
     });
   }
@@ -154,14 +155,17 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
         Icons.location_city,
       ),
       asyncItems: getCities,
-      filterFn: (City city, String searchQuery) {
-        return city.name.toLowerCase().contains(searchQuery.toLowerCase());
-      },
+      filterFn: (city, searchQuery) {
+        return (city as City)
+            .name
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase());
+      } as bool Function(dynamic, String),
       itemBuilder: (context, city, isSelected) {
         return ListTile(
           title: Text(city.name),
         );
-      },
+      } as ListTile Function(BuildContext, dynamic, bool),
       validator: (value) {
         if (value == null) {
           return 'Please select a city';
@@ -181,13 +185,16 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       ),
       asyncItems: getStates,
       filterFn: (state, searchQuery) {
-        return state.name.toLowerCase().contains(searchQuery.toLowerCase());
-      },
+        return (state as IndianState)
+            .name
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase());
+      } as bool Function(dynamic, String),
       itemBuilder: (context, state, isSelected) {
         return ListTile(
           title: Text(state.name),
         );
-      },
+      } as ListTile Function(BuildContext, dynamic, bool),
       validator: (value) {
         if (value == null) {
           return 'Please select a state';
