@@ -8,9 +8,11 @@ import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
-import 'package:nesters/features/home/view/user_quick_profile_item.dart';
+import 'package:nesters/features/home/view/components/user_quick_profile_item.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
+
+import 'components/user_quick_profile_widget.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -87,7 +89,7 @@ class _HomeViewState extends State<HomeView> {
     return CustomScrollView(
       slivers: [
         _buildAppBar(),
-        _buildRefreshIndicator(),
+        // _buildRefreshIndicator(),
         _buildUserList(),
       ],
     );
@@ -159,21 +161,13 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _buildRefreshIndicator() {
-    return CupertinoSliverRefreshControl(
-      onRefresh: () => Future.sync(
-        () => _pagingController.refresh(),
-      ),
-    );
-  }
-
   Widget _buildUserList() {
     return PagedSliverList<int, UserQuickProfile>(
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<UserQuickProfile>(
         animateTransitions: true,
         transitionDuration: const Duration(milliseconds: 500),
-        itemBuilder: (context, item, index) => UserQuickProfileItem(
+        itemBuilder: (context, item, index) => UserQuickProfileWidget(
           userQuickProfile: item,
         ),
         firstPageErrorIndicatorBuilder: (_) => Container(
