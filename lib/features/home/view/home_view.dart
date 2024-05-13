@@ -8,7 +8,6 @@ import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
-import 'package:nesters/features/home/view/components/user_quick_profile_item.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -52,7 +51,6 @@ class _HomeViewState extends State<HomeView> {
   static const _pageSize = 20;
   final PagingController<int, UserQuickProfile> _pagingController =
       PagingController(firstPageKey: 0);
-  final AppLoggerService _logger = GetIt.I<AppLoggerService>();
 
   @override
   void initState() {
@@ -86,12 +84,15 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        _buildAppBar(),
-        // _buildRefreshIndicator(),
-        _buildUserList(),
-      ],
+    return RefreshIndicator(
+      edgeOffset: const SliverAppBar().toolbarHeight * 1.3,
+      onRefresh: () => Future.sync(() => _pagingController.refresh()),
+      child: CustomScrollView(
+        slivers: [
+          _buildAppBar(),
+          _buildUserList(),
+        ],
+      ),
     );
   }
 
@@ -112,7 +113,15 @@ class _HomeViewState extends State<HomeView> {
                   radius: 20,
                   child: ClipOval(
                     child: state.user.photoUrl != ""
-                        ? Image.network(state.user.photoUrl)
+                        ? Image.network(
+                            state.user.photoUrl,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.person,
+                                size: 20,
+                              );
+                            },
+                          )
                         : const Icon(
                             Icons.person,
                             size: 20,

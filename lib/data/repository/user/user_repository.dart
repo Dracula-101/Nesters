@@ -118,7 +118,7 @@ class UserRepository {
           .then((event) => event.map((e) => IndianState.fromJson(e)).toList());
     } catch (e) {
       _logger.error('Error in getting states: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -130,7 +130,7 @@ class UserRepository {
           .then((event) => event.map((e) => Language.fromJson(e)).toList());
     } catch (e) {
       _logger.error('Error in getting languages: $e');
-      return [];
+      rethrow;
     }
   }
 
@@ -143,7 +143,7 @@ class UserRepository {
               event.map((e) => UserQuickProfile.fromJson(e!)).toList());
     } catch (e) {
       _logger.error('Error in getting user quick profiles: $e');
-      return [];
+      rethrow;
     }
   }
 }

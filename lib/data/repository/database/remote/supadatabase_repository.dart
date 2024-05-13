@@ -22,7 +22,6 @@ class SupaDatabaseRepository extends DatabaseRepository {
   Future<List<Map<String, dynamic>?>> getDataWithPagination(
       String table, int offset, int limit) async {
     try {
-      print('Getting user quick profiles with limit $limit and offset $offset');
       final response = await _supabaseClient
           .from(table)
           .select('''id, full_name, profile_image, selected_college_name, selected_course_name, city, state, work_experience''').range(

@@ -24,6 +24,7 @@ class AppTheme {
   static ThemeData get lightTheme => _lightThemeData;
 
   static Color get primary => Theme.of(_context).primaryColor;
+  static Color get lightPrimary => AppColor.primaryBlueLight2;
   static Color get secondary => Theme.of(_context).colorScheme.secondary;
   static Color get error => Theme.of(_context).colorScheme.error;
   static Color get background => Theme.of(_context).colorScheme.background;
@@ -98,4 +99,15 @@ class AppTheme {
   static ColorShades get primaryShades => PrimaryShades();
   static ColorShades get secondaryShades => SecondaryShades();
   static ColorShades get greyShades => GreyShades();
+
+  static LinearGradient get shimmerGradient => LinearGradient(
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+        colors: [
+          greyShades.shade100,
+          greyShades.shade300,
+          greyShades.shade100,
+        ],
+        stops: const [0.1, 0.5, 0.9],
+      );
 }
