@@ -97,7 +97,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else {
       route = AppRouterService.homeScreen;
     }
-    route = AppRouterService.userProfileAdvanceFormScreen;
+    route = AppRouterService.homeScreen;
     _loggerService.info('Initial Route: $route');
     AppRouterService.navigatorKey.currentContext!.go(route);
   }

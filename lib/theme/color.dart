@@ -49,6 +49,7 @@ class AppColor {
   //Grey
   static Color grey = const Color(0xFF767682);
   static Color lightGrey = const Color(0xFFF4F2FF);
+  static Color greyAccent = Colors.grey[300]!;
   static Color greyVariant = const Color(0xFF90909C);
 }
 

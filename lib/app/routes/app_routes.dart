@@ -65,7 +65,7 @@ class AppRouterService {
           ),
           AppRoute(
             homeScreen,
-            (_) => const HomePage(),
+            (_) => HomePage(),
           ),
           AppRoute(
             userProfileAdvanceFormScreen,

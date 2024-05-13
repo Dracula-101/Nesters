@@ -1,5 +1,7 @@
 abstract class DatabaseRepository {
   Future<Map<String, dynamic>?> getData(String table);
+  Future<List<Map<String, dynamic>?>> getDataWithPagination(
+      String table, int offset, int limit);
   Future<bool> checkExistsData(String table, FieldValue field);
   Future<void> setData(String table, SetData setData);
   Future<List<Map<String, dynamic>>> queryData(

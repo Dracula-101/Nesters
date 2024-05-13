@@ -1,16 +1,16 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:nesters/data/repository/auth/auth_repository.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/domain/models/university.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/domain/models/user_quick_profile.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
+import 'package:nesters/features/home/view/user_quick_profile_item.dart';
 import 'package:nesters/theme/theme.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:nesters/utils/debouncer.dart';
 import 'package:nesters/utils/logger/logger.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -46,31 +46,40 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  final TextEditingController _searchController = TextEditingController();
-  Stream<List<University>?>? _universitiesStream;
+  final UserRepository userRepository = GetIt.I<UserRepository>();
+  static const _pageSize = 20;
+  final PagingController<int, UserQuickProfile> _pagingController =
+      PagingController(firstPageKey: 0);
   final AppLoggerService _logger = GetIt.I<AppLoggerService>();
-  final Debouncer _debouncer = Debouncer(milliseconds: 400);
 
   @override
   void initState() {
+    _pagingController.addPageRequestListener((pageKey) {
+      _fetchPage(pageKey);
+    });
     super.initState();
+  }
+
+  Future<void> _fetchPage(int pageKey) async {
+    try {
+      final newItems =
+          await userRepository.getUserQuickProfiles(pageKey, _pageSize);
+      final isLastPage = newItems.length < _pageSize;
+      if (isLastPage) {
+        _pagingController.appendLastPage(newItems);
+      } else {
+        final nextPageKey = pageKey + newItems.length;
+        _pagingController.appendPage(newItems, nextPageKey);
+      }
+    } catch (error) {
+      _pagingController.error = error;
+    }
   }
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _pagingController.dispose();
     super.dispose();
-  }
-
-  void _rebuildUniversitiesStream(String query) {
-    if (query.isNotEmpty) {
-      _universitiesStream = GetIt.I<DatabaseRepository>()
-          .searchData('universities', 'title', query)
-          .map((event) => event.map((e) => University.fromJson(e)).toList());
-      setState(() {});
-    } else {
-      _universitiesStream = const Stream.empty();
-    }
   }
 
   @override
@@ -78,12 +87,11 @@ class _HomeViewState extends State<HomeView> {
     return CustomScrollView(
       slivers: [
         _buildAppBar(),
-        _buildUniversityList(),
+        _buildRefreshIndicator(),
+        _buildUserList(),
       ],
     );
   }
-
-  // APp bar 500px height
 
   Widget _buildAppBar() {
     return BlocBuilder<UserBloc, UserState>(
@@ -145,77 +153,61 @@ class _HomeViewState extends State<HomeView> {
                 onPressed: () {},
               )
             ],
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(70),
-              child: _buildSearchBar(),
-            ),
           ),
         );
       },
     );
   }
 
-  Widget _buildSearchBar() {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: 16,
+  Widget _buildRefreshIndicator() {
+    return CupertinoSliverRefreshControl(
+      onRefresh: () => Future.sync(
+        () => _pagingController.refresh(),
       ),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: 'Search for a university',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
+    );
+  }
+
+  Widget _buildUserList() {
+    return PagedSliverList<int, UserQuickProfile>(
+      pagingController: _pagingController,
+      builderDelegate: PagedChildBuilderDelegate<UserQuickProfile>(
+        animateTransitions: true,
+        transitionDuration: const Duration(milliseconds: 500),
+        itemBuilder: (context, item, index) => UserQuickProfileItem(
+          userQuickProfile: item,
+        ),
+        firstPageErrorIndicatorBuilder: (_) => Container(
+          height: 100,
+          child: const Center(
+            child: Text('First Page Error'),
           ),
         ),
-        textCapitalization: TextCapitalization.words,
-        onChanged: (value) =>
-            _debouncer.run(() => _rebuildUniversitiesStream(value)),
-        onSubmitted: (value) => _rebuildUniversitiesStream(value),
-      ),
-    );
-  }
-
-  Widget _buildUniversityList() {
-    return StreamBuilder<List<University>?>(
-      stream: _universitiesStream,
-      builder: (context, snapshot) {
-        _logger.info('Snapshot: ${snapshot.data}');
-        if (snapshot.hasData) {
-          final universities = snapshot.data;
-          return SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final university = universities?[index];
-                return ListTile(
-                  title: Text(university?.title ?? ''),
-                  subtitle: Text(university?.region ?? ''),
-                  leading: Image.network(
-                    university?.logo ?? '',
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios),
-                    onPressed: () {},
-                  ),
-                );
-              },
-              childCount: universities?.length,
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return SliverFillRemaining(
-            child: Center(
-              child: Text('Error: ${snapshot.error}'),
-            ),
-          );
-        }
-        return const SliverFillRemaining(
-          child: Center(
+        newPageErrorIndicatorBuilder: (_) => Container(
+          height: 100,
+          child: const Center(
+            child: Text('New Page Error'),
+          ),
+        ),
+        firstPageProgressIndicatorBuilder: (_) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        newPageProgressIndicatorBuilder: (_) => Container(
+          height: 100,
+          child: const Center(
             child: CircularProgressIndicator(),
           ),
-        );
-      },
+        ),
+        noItemsFoundIndicatorBuilder: (_) => Container(
+          child: const Center(
+            child: Text('No items found'),
+          ),
+        ),
+        noMoreItemsIndicatorBuilder: (_) => Container(
+          child: const Center(
+            child: Text('No more items'),
+          ),
+        ),
+      ),
     );
   }
 }

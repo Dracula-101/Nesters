@@ -1,14 +1,12 @@
-import 'package:get_it/get_it.dart';
-import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/data/repository/database/remote/firestore_repository.dart';
 import 'package:nesters/domain/models/city.dart';
 import 'package:nesters/domain/models/degree.dart';
 import 'package:nesters/domain/models/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/university.dart';
 import 'package:nesters/domain/models/user_basic_profile.dart';
+import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 class UserRepository {
@@ -27,6 +25,10 @@ class UserRepository {
 
   String universityCollection = "universities";
   String masterDegreeCollection = "masters";
+  String indianCitiesCollection = "indian_cities";
+  String indianStatesCollection = "indian_states";
+  String userDetailCollection = "user_details";
+  String indianLanguagesCollection = "indian_languages";
 
   Future<void> setOnBoardingComplete() async {
     await _storageRepository.saveBool(
@@ -50,7 +52,7 @@ class UserRepository {
   Future<bool?> checkUserCreated(String userId) async {
     try {
       return await _databaseRepository.checkExistsData(
-        'user_details',
+        userDetailCollection,
         FieldValue(
           key: 'id',
           value: userId,
@@ -64,7 +66,8 @@ class UserRepository {
   Future<List<University>?> getUniversities(String? searchString) async {
     try {
       return await _databaseRepository
-          .searchDataFromFuture('universities', 'title', searchString ?? '')
+          .searchDataFromFuture(
+              universityCollection, 'title', searchString ?? '')
           .then((event) => event.map((e) => University.fromJson(e)).toList());
     } catch (e) {
       return null;
@@ -74,7 +77,8 @@ class UserRepository {
   Future<List<Degree>?> getMastersDegree(String? searchString) async {
     try {
       return await _databaseRepository
-          .searchDataFromFuture('masters', 'title', searchString ?? '')
+          .searchDataFromFuture(
+              masterDegreeCollection, 'title', searchString ?? '')
           .then((event) => event.map((e) => Degree.fromJson(e)).toList());
     } catch (e) {
       return null;
@@ -84,7 +88,7 @@ class UserRepository {
   Future<void> setBasicUserProfileData(UserBasicProfile userProfile) async {
     try {
       return await _databaseRepository.setData(
-        'user_details',
+        userDetailCollection,
         SetData(
           fields: userProfile.toFieldValues(),
         ),
@@ -97,7 +101,7 @@ class UserRepository {
   Stream<List<City>> getCites(String searchQuery) {
     try {
       return _databaseRepository
-          .searchDataFromFuture('indian_cities', 'name', searchQuery)
+          .searchDataFromFuture(indianCitiesCollection, 'name', searchQuery)
           .asStream()
           .map((event) => event.map((e) => City.fromJson(e)).toList());
     } catch (e) {
@@ -109,7 +113,8 @@ class UserRepository {
   Future<List<IndianState>> getIndianStates(String? searchQuery) async {
     try {
       return await _databaseRepository
-          .searchDataFromFuture('indian_states', 'name', searchQuery ?? '')
+          .searchDataFromFuture(
+              indianStatesCollection, 'name', searchQuery ?? '')
           .then((event) => event.map((e) => IndianState.fromJson(e)).toList());
     } catch (e) {
       _logger.error('Error in getting states: $e');
@@ -120,10 +125,24 @@ class UserRepository {
   Future<List<Language>> getLanguage(String? searchQuery) async {
     try {
       return await _databaseRepository
-          .searchDataFromFuture('indian_languages', 'name', searchQuery ?? '')
+          .searchDataFromFuture(
+              indianLanguagesCollection, 'name', searchQuery ?? '')
           .then((event) => event.map((e) => Language.fromJson(e)).toList());
     } catch (e) {
       _logger.error('Error in getting languages: $e');
+      return [];
+    }
+  }
+
+  Future<List<UserQuickProfile>> getUserQuickProfiles(
+      int offset, int limit) async {
+    try {
+      return await _databaseRepository
+          .getDataWithPagination(userDetailCollection, offset, limit)
+          .then((event) =>
+              event.map((e) => UserQuickProfile.fromJson(e!)).toList());
+    } catch (e) {
+      _logger.error('Error in getting user quick profiles: $e');
       return [];
     }
   }
