@@ -7,8 +7,10 @@ import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
+import 'package:nesters/features/user/profile/view/shimmer_profile.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
+import 'package:shimmer/shimmer.dart';
 
 class UserProfilePage extends StatelessWidget {
   final String id;
@@ -66,119 +68,138 @@ class _ProfileViewState extends State<ProfileView> {
     _loggerService.info('User Profile: $profileData');
     setState(
       () {
-        _loading = false;
         userProfile = profileData;
+      },
+    );
+    //after 2 sec set loading to false
+    Future.delayed(
+      const Duration(seconds: 2),
+      () {
+        setState(() {
+          _loading = false;
+        });
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    return _loading ? ShimmerProfile() : _buildProfile();
+  }
+
+  CustomScrollView _buildProfile() {
     return CustomScrollView(
       slivers: <Widget>[
-        SliverAppBar(
-          expandedHeight: 175,
-          flexibleSpace: _buildProfileBanner(),
-        ),
-        SliverList(
-          delegate: SliverChildListDelegate(
-            [
-              _buildSizedBox(91),
-              Center(
-                child: Text(
-                  userProfile?.fullName ?? '',
-                  style: AppTheme.headlineSmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Center(
-                child: Text(
-                  userProfile?.city + ', ' + userProfile.state ?? '',
-                  style: AppTheme.bodyLargeLightVariant.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                ),
-                child: Divider(
-                  thickness: 2,
-                  color: AppColor.primaryBlueLightVariant,
-                ),
-              ),
-              _buildCard(
-                userProfile?.selectedCourseName,
-                '@${userProfile?.selectedCollegeName}',
-                Icons.school,
-              ),
-              _buildCard(
-                'About Me',
-                userProfile?.bio ?? '',
-                FontAwesomeIcons.user,
-              ),
-              _buildCard(
-                'Mother Tongue',
-                userProfile?.primaryLang + userProfile?.otherLang != ''
-                    ? '${userProfile?.primaryLang} but I also speak ${userProfile?.otherLang}'
-                    : ' ',
-                FontAwesomeIcons.language,
-              ),
-              _buildCard(
-                'I am',
-                getSubtitleText(
-                    userProfile?.foodHabit, userProfile?.cookingSkill),
-                FontAwesomeIcons.bowlFood,
-              ),
-              _buildCard(
-                'Smoke & Sip',
-                getSmokingDrinkingSubtitle(
-                  userProfile?.drinkingHabit,
-                  userProfile?.smokingHabit,
-                ),
-                FontAwesomeIcons.wineGlass,
-              ),
-              _buildCard(
-                'In terms of personality',
-                getSubtitleTextPersonTypeAndCleanlinessHabit(
-                  userProfile?.personType,
-                ),
-                FontAwesomeIcons.cloudBolt,
-              ),
-              _buildCard(
-                'When it comes to cleanliness',
-                getSubtitleTextCleanlinessHabit(
-                  userProfile?.cleanlinessHabit,
-                ),
-                FontAwesomeIcons.broom,
-              ),
-              _buildCard(
-                'College & Career Snapshot',
-                getSubtitleTextCollegeAndWorkExp(
-                  userProfile?.undergradCollegeName,
-                  userProfile?.workExperience,
-                ),
-                FontAwesomeIcons.graduationCap,
-              ),
-              _buildCard(
-                'Living Arrangements',
-                getRoomSubtitle(
-                  userProfile?.flatmatesGenderPrefs,
-                  userProfile?.roomType,
-                ),
-                FontAwesomeIcons.house,
-              ),
-              _buildCard(
-                'Hobbies',
-                userProfile?.hobbies ?? '',
-                FontAwesomeIcons.heartPulse,
-              ),
-            ],
-          ),
-        )
+        _buildSliverAppBar(),
+        _buildSliverList(),
       ],
+    );
+  }
+
+  SliverList _buildSliverList() {
+    return SliverList(
+      delegate: SliverChildListDelegate(
+        [
+          _buildSizedBox(91),
+          Center(
+            child: Text(
+              userProfile?.fullName ?? '',
+              style: AppTheme.headlineSmall.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          Center(
+            child: Text(
+              userProfile?.city + ', ' + userProfile.state ?? '',
+              style: AppTheme.bodyLargeLightVariant.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+            ),
+            child: Divider(
+              thickness: 2,
+              color: AppColor.primaryBlueLightVariant,
+            ),
+          ),
+          _buildCard(
+            userProfile?.selectedCourseName,
+            '@${userProfile?.selectedCollegeName}',
+            Icons.school,
+          ),
+          _buildCard(
+            'About Me',
+            userProfile?.bio ?? '',
+            FontAwesomeIcons.user,
+          ),
+          _buildCard(
+            'Mother Tongue',
+            userProfile?.primaryLang + userProfile?.otherLang != ''
+                ? '${userProfile?.primaryLang} but I also speak ${userProfile?.otherLang}'
+                : ' ',
+            FontAwesomeIcons.language,
+          ),
+          _buildCard(
+            'I am',
+            getSubtitleText(userProfile?.foodHabit, userProfile?.cookingSkill),
+            FontAwesomeIcons.bowlFood,
+          ),
+          _buildCard(
+            'Smoke & Sip',
+            getSmokingDrinkingSubtitle(
+              userProfile?.drinkingHabit,
+              userProfile?.smokingHabit,
+            ),
+            FontAwesomeIcons.wineGlass,
+          ),
+          _buildCard(
+            'In terms of personality',
+            getSubtitleTextPersonTypeAndCleanlinessHabit(
+              userProfile?.personType,
+            ),
+            FontAwesomeIcons.cloudBolt,
+          ),
+          _buildCard(
+            'When it comes to cleanliness',
+            getSubtitleTextCleanlinessHabit(
+              userProfile?.cleanlinessHabit,
+            ),
+            FontAwesomeIcons.broom,
+          ),
+          _buildCard(
+            'College & Career Snapshot',
+            getSubtitleTextCollegeAndWorkExp(
+              userProfile?.undergradCollegeName,
+              userProfile?.workExperience,
+            ),
+            FontAwesomeIcons.graduationCap,
+          ),
+          _buildCard(
+            'Living Arrangements',
+            getRoomSubtitle(
+              userProfile?.flatmatesGenderPrefs,
+              userProfile?.roomType,
+            ),
+            FontAwesomeIcons.house,
+          ),
+          _buildCard(
+            'Hobbies',
+            userProfile?.hobbies ?? '',
+            FontAwesomeIcons.heartPulse,
+          ),
+        ],
+      ),
+    );
+  }
+
+  SliverAppBar _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 175,
+      flexibleSpace: _buildProfileBanner(),
     );
   }
 
@@ -199,7 +220,7 @@ class _ProfileViewState extends State<ProfileView> {
         borderRadius: BorderRadius.circular(
             8), // Add some border radius for rounded corners
       ),
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
         leading: Icon(
           icon,
