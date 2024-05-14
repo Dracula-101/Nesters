@@ -138,7 +138,9 @@ class UserRepository {
       int offset, int limit) async {
     try {
       return await _databaseRepository
-          .getDataWithPagination(userDetailCollection, offset, limit)
+          .getDataWithPagination(userDetailCollection, offset, limit,
+              columns:
+                  'id, full_name, profile_image, selected_college_name, selected_course_name, city, state, work_experience')
           .then((event) =>
               event.map((e) => UserQuickProfile.fromJson(e!)).toList());
     } catch (e) {

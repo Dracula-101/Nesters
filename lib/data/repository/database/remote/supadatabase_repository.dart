@@ -20,12 +20,12 @@ class SupaDatabaseRepository extends DatabaseRepository {
 
   @override
   Future<List<Map<String, dynamic>?>> getDataWithPagination(
-      String table, int offset, int limit) async {
+      String table, int offset, int limit,
+      {String columns = ''}) async {
     try {
-      final response = await _supabaseClient
-          .from(table)
-          .select('''id, full_name, profile_image, selected_college_name, selected_course_name, city, state, work_experience''').range(
-              offset, offset + limit);
+      final response = await _supabaseClient.from(table).select('''
+            $columns
+''').range(offset, offset + limit);
 
       return response;
     } catch (e) {
