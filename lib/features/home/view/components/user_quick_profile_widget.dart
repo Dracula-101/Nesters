@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:shimmer/shimmer.dart';
@@ -91,7 +93,11 @@ class UserQuickProfileWidget extends StatelessWidget {
                         ),
                       ),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          GoRouter.of(context).go(
+                            '${AppRouterService.userProfile}/${userQuickProfile.id}',
+                          );
+                        },
                         child: Icon(
                           FontAwesomeIcons.telegram,
                           color: AppTheme.primary,
@@ -112,19 +118,6 @@ class UserQuickProfileWidget extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        // Container(
-                        //   padding: const EdgeInsets.all(4),
-                        //   decoration: BoxDecoration(
-                        //     color: AppTheme.primaryShades.shade600,
-                        //     shape: BoxShape.circle,
-                        //   ),
-                        //   child: Icon(
-                        //     Icons.school_rounded,
-                        //     size: 14,
-                        //     color: AppTheme.surface,
-                        //   ),
-                        // ),
-                        // const SizedBox(width: 8),
                         Flexible(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

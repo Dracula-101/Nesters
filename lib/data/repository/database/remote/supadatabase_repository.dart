@@ -19,6 +19,21 @@ class SupaDatabaseRepository extends DatabaseRepository {
   }
 
   @override
+  Future<Map<String, dynamic>?> getDataWithId(String table, String id) async {
+    try {
+      // Execute the query to retrieve the first 30 rows from the table
+      final response =
+          await _supabaseClient.from(table).select().eq('id', id).single();
+
+      // Return the response
+      return response;
+    } catch (e) {
+      // Throw an exception with a descriptive error message
+      throw Exception('Failed to get data: $e');
+    }
+  }
+
+  @override
   Future<List<Map<String, dynamic>?>> getDataWithPagination(
       String table, int offset, int limit,
       {String columns = ''}) async {

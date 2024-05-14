@@ -80,7 +80,7 @@ enum UserFoodHabit {
       case 'Omnivore':
         return UserFoodHabit.NON_VEGETERIAN;
       default:
-        return UserFoodHabit.NON_VEGETERIAN;
+        return UserFoodHabit.VEGETARIAN;
     }
   }
 }

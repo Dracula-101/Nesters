@@ -6,6 +6,7 @@ import 'package:nesters/domain/models/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/university.dart';
 import 'package:nesters/domain/models/user_basic_profile.dart';
+import 'package:nesters/domain/models/user_profile.dart';
 import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -145,6 +146,17 @@ class UserRepository {
               event.map((e) => UserQuickProfile.fromJson(e!)).toList());
     } catch (e) {
       _logger.error('Error in getting user quick profiles: $e');
+      rethrow;
+    }
+  }
+
+  Future<UserProfile> getUserProfile(String id) async {
+    try {
+      return await _databaseRepository
+          .getDataWithId(userDetailCollection, id)
+          .then((event) => UserProfile.fromJson(event!));
+    } catch (e) {
+      _logger.error('Error in getting user profile: $e');
       rethrow;
     }
   }

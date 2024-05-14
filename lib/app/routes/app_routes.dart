@@ -7,6 +7,7 @@ import 'package:nesters/features/onboarding/view/onboarding_view.dart';
 import 'package:nesters/features/splash/view/splash_view.dart';
 import 'package:nesters/features/user/profile/forms/view/advance_form_view.dart';
 import 'package:nesters/features/user/profile/forms/view/basic_form_view.dart';
+import 'package:nesters/features/user/profile/view/profile.dart';
 
 class AppRouterService {
   static const String splashScreen = '/';
@@ -15,6 +16,7 @@ class AppRouterService {
   static const String loginScreen = '/login';
   static const String userProfileBasicFormScreen = '/basic_form';
   static const String userProfileAdvanceFormScreen = '/advance_form';
+  static const String userProfile = '/user_profile';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -64,13 +66,19 @@ class AppRouterService {
             (_) => const UserProfileBasicForm(),
           ),
           AppRoute(
-            homeScreen,
-            (_) => HomePage(),
-          ),
-          AppRoute(
             userProfileAdvanceFormScreen,
             (_) => const UserProfileAdvanceForm(),
-          )
+          ),
+          AppRoute(
+            homeScreen,
+            (_) => const HomePage(),
+          ),
+          AppRoute(
+            '$userProfile/:id',
+            (_) {
+              return UserProfilePage(id: _.pathParameters['id'] ?? '');
+            },
+          ),
         ],
       ),
     ],
