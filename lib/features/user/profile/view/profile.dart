@@ -84,7 +84,7 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
-    return _loading ? ShimmerProfile() : _buildProfile();
+    return _loading ? const ShimmerProfile() : _buildProfile();
   }
 
   CustomScrollView _buildProfile() {

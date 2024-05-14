@@ -21,7 +21,8 @@ class UserQuickProfileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: contentPadding ?? const EdgeInsets.all(12),
-      margin: marginPadding ?? const EdgeInsets.all(10),
+      margin: marginPadding ??
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(8),

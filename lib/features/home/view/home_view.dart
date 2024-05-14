@@ -10,6 +10,7 @@ import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
+import 'package:nesters/features/home/view/shimmer_home_view.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -193,9 +194,7 @@ class _HomeViewState extends State<HomeView> {
             child: Text('New Page Error'),
           ),
         ),
-        firstPageProgressIndicatorBuilder: (_) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
         newPageProgressIndicatorBuilder: (_) => Container(
           height: 100,
           child: const Center(
