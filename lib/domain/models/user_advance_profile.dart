@@ -5,7 +5,7 @@ import 'person_type.dart';
 import 'user_habit.dart';
 
 class UserAdvanceProfile extends Equatable {
-  final String id;
+  final String? id;
   final PersonType personType;
   final String bio;
   final String primaryLang;

@@ -14,7 +14,6 @@ import 'package:nesters/domain/models/university.dart';
 import 'package:nesters/domain/models/user.dart';
 import 'package:nesters/domain/models/user_basic_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
@@ -59,7 +58,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final _imagePicker = ImagePicker();
   //image variable
   File? _image;
-  String photoUrl = '';
+  String? photoUrl;
 
   // Full Name, Email, profile image, college name, course name, gender, birthdate
   final TextEditingController _fullNameController = TextEditingController();
@@ -162,7 +161,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       userId: widget.user.id,
       fullName: _fullNameController.text,
       email: widget.user.email,
-      photoUrl: photoUrl,
+      photoUrl: photoUrl ?? widget.user.photoUrl,
       birthDate: selectedDate,
       selectedCollegeName: _collegeNameController.text,
       selectedCourseName: _courseNameController.text,
@@ -170,10 +169,11 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     );
 
     return GetIt.I<UserRepository>()
-        .setBasicUserProfileData(userBasicProfile)
-        .whenComplete(() => setState(() {
-              isLoading = false;
-            }));
+        .setBasicUserProfileData(userBasicProfile).whenComplete(() {
+      setState(() {
+        isLoading = false;
+      });
+    });
   }
 
   @override

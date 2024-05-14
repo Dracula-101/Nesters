@@ -7,7 +7,7 @@ class Degree {
 
   factory Degree.fromJson(Map<String, dynamic> json) {
     return Degree(
-      name: json['title'],
+      name: json['title'] ?? '',
     );
   }
 
@@ -15,5 +15,10 @@ class Degree {
     return {
       'title': name,
     };
+  }
+
+  @override
+  String toString() {
+    return name;
   }
 }

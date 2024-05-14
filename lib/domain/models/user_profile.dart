@@ -1,32 +1,39 @@
 import 'package:equatable/equatable.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
+import 'package:nesters/domain/models/city.dart';
+import 'package:nesters/domain/models/indian_state.dart';
+import 'package:nesters/domain/models/language.dart';
+import 'package:nesters/domain/models/person_type.dart';
+import 'package:nesters/domain/models/room_type.dart';
+import 'package:nesters/domain/models/user_habit.dart';
+import 'package:nesters/domain/models/user_quick_profile.dart';
 
 class UserProfile extends Equatable {
-  final String id;
-  final String fullName;
-  final String profileImage;
-  final String city;
-  final String state;
-  final String selectedCollegeName;
-  final String selectedCourseName;
-  final String gender;
-  final String undergradCollegeName;
+  final String? id;
+  final String? fullName;
+  final String? profileImage;
+  final City? city;
+  final IndianState? state;
+  final String? selectedCollegeName;
+  final String? selectedCourseName;
+  final String? gender;
+  final String? undergradCollegeName;
   final DateTime? birthDate;
-  final String personType;
-  final String primaryLang;
-  final String otherLang;
+  final PersonType? personType;
+  final Language? primaryLang;
+  final Language? otherLang;
   final int workExperience;
-  final String smokingHabit;
-  final String drinkingHabit;
-  final String foodHabit;
-  final String cookingSkill;
-  final String cleanlinessHabit;
+  final UserHabit smokingHabit;
+  final UserHabit drinkingHabit;
+  final UserFoodHabit foodHabit;
+  final UserCookingSkill cookingSkill;
+  final UserCleanlinessHabit cleanlinessHabit;
   final String bio;
   final String hobbies;
   final String flatmatesGenderPrefs;
-  final String roomType;
+  final UserRoomType roomType;
 
-  UserProfile({
+  const UserProfile({
     required this.id,
     required this.fullName,
     required this.profileImage,
@@ -112,54 +119,91 @@ class UserProfile extends Equatable {
       'id': id,
       'full_name': fullName,
       'profile_image': profileImage,
-      'city': city,
-      'state': state,
+      'city': city.toString(),
+      'state': state.toString(),
       'selected_course_name': selectedCourseName,
       'selected_college_name': selectedCollegeName,
       'gender': gender,
       'undergrad_college_name': undergradCollegeName,
-      'birth_date': birthDate,
-      'person_type': personType,
-      'primary_lang': primaryLang,
-      'other_lang': otherLang,
+      'birth_date': birthDate?.toIso8601String(),
+      'person_type': personType?.toString(),
+      'primary_lang': primaryLang.toString(),
+      'other_lang': otherLang.toString(),
       'work_experience': workExperience,
-      'smoking_habit': smokingHabit,
-      'drinking_habit': drinkingHabit,
-      'food_habit': foodHabit,
-      'cooking_skill': cookingSkill,
-      'cleanliness_habit': cleanlinessHabit,
+      'smoking_habit': smokingHabit.toString(),
+      'drinking_habit': drinkingHabit.toString(),
+      'food_habit': foodHabit.toString(),
+      'cooking_skill': cookingSkill.toString(),
+      'cleanliness_habit': cleanlinessHabit.toString(),
       'bio': bio,
       'hobbies': hobbies,
       'flatmates_gender_prefs': flatmatesGenderPrefs,
-      'room_type': roomType,
+      'room_type': roomType.toString(),
     };
   }
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
-      id: json['id'] as String,
-      fullName: json['full_name'] as String,
-      profileImage: json['profile_image'] as String,
-      city: json['city'] as String,
-      state: json['state'] as String,
-      selectedCourseName: json['selected_course_name'] as String,
-      selectedCollegeName: json['selected_college_name'] as String,
-      gender: json['gender'] as String,
-      undergradCollegeName: json['undergrad_college_name'] as String,
-      birthDate: json['birth_date'] as DateTime?,
-      personType: json['person_type'] as String,
-      primaryLang: json['primary_lang'] as String,
-      otherLang: json['other_lang'] as String,
-      workExperience: json['work_experience'] as int,
-      smokingHabit: json['smoking_habit'] as String,
-      drinkingHabit: json['drinking_habit'] as String,
-      foodHabit: json['food_habit'] as String,
-      cookingSkill: json['cooking_skill'] as String,
-      cleanlinessHabit: json['cleanliness_habit'] as String,
-      bio: json['bio'] as String,
-      hobbies: json['hobbies'] as String,
-      flatmatesGenderPrefs: json['flatmates_gender_prefs'] as String,
-      roomType: json['room_type'] as String,
+    try {
+      return UserProfile(
+        id: json['id'] ?? '',
+        fullName: json['full_name'] ?? '',
+        profileImage: json['profile_image'] ?? '',
+        city: City(name: json['city'] ?? ''),
+        state: IndianState(name: json['state'] ?? ''),
+        selectedCourseName: json['selected_course_name'] ?? '',
+        selectedCollegeName: json['selected_college_name'] ?? '',
+        gender: json['gender'] ?? '',
+        undergradCollegeName: json['undergrad_college_name'] ?? '',
+        birthDate: json['birth_date'] != null
+            ? DateTime.tryParse(json['birth_date'])
+            : null,
+        personType: json['person_type'] != null
+            ? PersonType.fromString(json['person_type'])
+            : null,
+        primaryLang: json['primary_lang'] != null
+            ? Language(name: json['primary_lang'])
+            : null,
+        otherLang: json['other_lang'] != null
+            ? Language(name: json['other_lang'])
+            : null,
+        workExperience: json['work_experience'] ?? 0,
+        smokingHabit: json['smoking_habit'] != null
+            ? UserHabit.fromString(json['smoking_habit'])
+            : UserHabit.UNKNOWN,
+        drinkingHabit: json['drinking_habit'] != null
+            ? UserHabit.fromString(json['drinking_habit'])
+            : UserHabit.UNKNOWN,
+        foodHabit: json['food_habit'] != null
+            ? UserFoodHabit.fromString(json['food_habit'])
+            : UserFoodHabit.UNKNOWN,
+        cookingSkill: json['cooking_skill'] != null
+            ? UserCookingSkill.fromString(json['cooking_skill'])
+            : UserCookingSkill.UNKNOWN,
+        cleanlinessHabit: json['cleanliness_habit'] != null
+            ? UserCleanlinessHabit.fromString(json['cleanliness_habit'])
+            : UserCleanlinessHabit.UNKNOWN,
+        bio: json['bio'] ?? '',
+        hobbies: json['hobbies'] ?? '',
+        flatmatesGenderPrefs: json['flatmates_gender_prefs'] ?? '',
+        roomType: json['room_type'] != null
+            ? UserRoomType.fromString(json['room_type'])
+            : UserRoomType.UNKNOWN,
+      );
+    } on Exception catch (e) {
+      throw Exception('Error parsing user profile: $e');
+    }
+  }
+
+  UserQuickProfile toUserQuickProfile() {
+    return UserQuickProfile(
+      id: id,
+      fullName: fullName,
+      city: city,
+      state: state,
+      selectedCollegeName: selectedCollegeName,
+      selectedCourseName: selectedCourseName,
+      profileImage: profileImage,
+      workExperience: workExperience,
     );
   }
 }

@@ -6,8 +6,21 @@ class CountryState {
 
   factory CountryState.fromJson(Map<String, dynamic> json) {
     return CountryState(
-      id: json['id'],
-      name: json['name'],
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+    };
+  }
+
+  @override
+  String toString() {
+    return name;
+  }
+
 }

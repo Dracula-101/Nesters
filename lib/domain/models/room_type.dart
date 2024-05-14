@@ -3,16 +3,19 @@
 enum UserRoomType {
   ANYTHING,
   PRIVATE,
-  SHARED;
+  SHARED,
+  UNKNOWN;
 
   static UserRoomType fromString(String value) {
     switch (value) {
-      case 'PRIVATE':
+      case 'Private':
         return UserRoomType.PRIVATE;
-      case 'SHARED':
+      case 'Shared':
         return UserRoomType.SHARED;
-      default:
+      case 'Anything':
         return UserRoomType.ANYTHING;
+      default:
+        return UserRoomType.UNKNOWN;
     }
   }
 
@@ -23,8 +26,10 @@ enum UserRoomType {
         return 'PRIVATE';
       case UserRoomType.SHARED:
         return 'SHARED';
-      default:
+      case UserRoomType.ANYTHING:
         return 'ANYTHING';
+      default:
+        return 'UNKNOWN';
     }
   }
 }
@@ -32,7 +37,8 @@ enum UserRoomType {
 enum FlatmateGenderType {
   MALE,
   FEMALE,
-  MIX;
+  MIX,
+  UNKNOWN;
 
   static FlatmateGenderType fromString(String value) {
     switch (value) {
@@ -40,8 +46,10 @@ enum FlatmateGenderType {
         return FlatmateGenderType.MALE;
       case 'FEMALE':
         return FlatmateGenderType.FEMALE;
-      default:
+      case 'MIX':
         return FlatmateGenderType.MIX;
+      default:
+        return FlatmateGenderType.UNKNOWN;
     }
   }
 
@@ -52,8 +60,10 @@ enum FlatmateGenderType {
         return 'MALE';
       case FlatmateGenderType.FEMALE:
         return 'FFEMALE';
-      default:
+      case FlatmateGenderType.MIX:
         return 'MIX';
+      default:
+        return 'UNKNOWN';
     }
   }
 }

@@ -2,14 +2,14 @@ import 'package:equatable/equatable.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
 
 class UserBasicProfile extends Equatable {
-  final String userId;
-  final String fullName;
-  final String email;
-  final String photoUrl;
-  final DateTime birthDate;
-  final String selectedCollegeName;
-  final String selectedCourseName;
-  final String gender;
+  final String? userId;
+  final String? fullName;
+  final String? email;
+  final String? photoUrl;
+  final DateTime? birthDate;
+  final String? selectedCollegeName;
+  final String? selectedCourseName;
+  final String? gender;
 
   const UserBasicProfile({
     required this.userId,
@@ -25,14 +25,13 @@ class UserBasicProfile extends Equatable {
   //tojson
   Map<String, dynamic> toJson() {
     return {
-      'user_id': userId,
+      'id': userId,
       'full_name': fullName,
       'email': email,
-      'photo_url': photoUrl,
+      'profile_image': photoUrl,
       'birth_date': birthDate,
       'selected_college_name': selectedCollegeName,
       'selected_course_name': selectedCourseName,
-      'gender': gender
     };
   }
 
@@ -49,7 +48,7 @@ class UserBasicProfile extends Equatable {
 
   List<FieldValue> toFieldValues() {
     return [
-      FieldValue(key: 'user_id', value: userId),
+      FieldValue(key: 'id', value: userId),
       FieldValue(
           key: 'created_at',
           value: DateTime.now().toIso8601String().replaceAll("T", " ")),
@@ -58,10 +57,33 @@ class UserBasicProfile extends Equatable {
       FieldValue(key: 'profile_image', value: photoUrl),
       FieldValue(
           key: 'birth_date',
-          value: birthDate.toIso8601String().replaceAll("T", " ")),
+          value: birthDate?.toIso8601String().replaceAll("T", " ")),
       FieldValue(key: 'selected_college_name', value: selectedCollegeName),
       FieldValue(key: 'selected_course_name', value: selectedCourseName),
       FieldValue(key: 'gender', value: gender),
     ];
+  }
+
+  static UserBasicProfile fromFieldValues(List<FieldValue> fieldValues) {
+    return UserBasicProfile(
+      userId: fieldValues.firstWhere((element) => element.key == 'id').value,
+      fullName:
+          fieldValues.firstWhere((element) => element.key == 'full_name').value,
+      email: fieldValues.firstWhere((element) => element.key == 'email').value,
+      photoUrl: fieldValues
+          .firstWhere((element) => element.key == 'profile_image')
+          .value,
+      birthDate: DateTime.parse(fieldValues
+          .firstWhere((element) => element.key == 'birth_date')
+          .value),
+      selectedCollegeName: fieldValues
+          .firstWhere((element) => element.key == 'selected_college_name')
+          .value,
+      selectedCourseName: fieldValues
+          .firstWhere((element) => element.key == 'selected_course_name')
+          .value,
+      gender:
+          fieldValues.firstWhere((element) => element.key == 'gender').value,
+    );
   }
 }

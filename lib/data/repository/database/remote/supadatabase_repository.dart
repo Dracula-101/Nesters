@@ -36,13 +36,16 @@ class SupaDatabaseRepository extends DatabaseRepository {
   @override
   Future<List<Map<String, dynamic>?>> getDataWithPagination(
       String table, int offset, int limit,
-      {String columns = ''}) async {
+      {String columns = '', String? removeRowId}) async {
     try {
-      final response = await _supabaseClient.from(table).select('''
-            $columns
-''').range(offset, offset + limit);
-
-      return response;
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+          _supabaseClient.from(table).select(columns);
+      if (removeRowId != null) {
+        response = response.not('id', 'eq', removeRowId);
+      }
+      PostgrestTransformBuilder<List<Map<String, dynamic>>> finalResponse =
+          response.range(offset, offset + limit);
+      return await finalResponse;
     } catch (e) {
       throw Exception('Failed to get data: $e');
     }

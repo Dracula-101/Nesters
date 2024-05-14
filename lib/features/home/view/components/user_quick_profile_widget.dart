@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class UserQuickProfileWidget extends StatelessWidget {
   final UserQuickProfile userQuickProfile;
@@ -21,7 +23,8 @@ class UserQuickProfileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: contentPadding ?? const EdgeInsets.all(12),
-      margin: marginPadding ?? const EdgeInsets.all(10),
+      margin: marginPadding ??
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(8),
@@ -43,18 +46,16 @@ class UserQuickProfileWidget extends StatelessWidget {
               flex: 3,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  userQuickProfile.profileImage,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Center(
-                      child: Icon(
-                        Icons.person,
-                        color: AppTheme.greyShades.shade300,
-                        size: 60,
-                      ),
-                    );
-                  },
+                child: CachedNetworkImage(
+                  imageUrl: userQuickProfile.profileImage ?? '',
+                  errorWidget: (context, url, error) => Center(
+                    child: Icon(
+                      Icons.person,
+                      color: AppTheme.greyShades.shade300,
+                      size: 60,
+                    ),
+                  ),
+                  fadeInDuration: 150.ms,
                 ),
               ),
             ),
@@ -76,7 +77,7 @@ class UserQuickProfileWidget extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             Text(
-                              userQuickProfile.fullName,
+                              userQuickProfile.fullName ?? "",
                               maxLines: 1,
                               style: AppTheme.bodyLarge,
                               overflow: TextOverflow.ellipsis,
@@ -95,7 +96,7 @@ class UserQuickProfileWidget extends StatelessWidget {
                       InkWell(
                         onTap: () {
                           GoRouter.of(context).go(
-                            '${AppRouterService.userProfile}/${userQuickProfile.id}',
+                            '${AppRouterService.homeScreen}/${AppRouterService.userProfile}/${userQuickProfile.id}',
                           );
                         },
                         child: Icon(
@@ -123,14 +124,14 @@ class UserQuickProfileWidget extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                userQuickProfile.selectedCourseName,
+                                userQuickProfile.selectedCourseName ?? '',
                                 style: AppTheme.labelSmall,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                userQuickProfile.selectedCollegeName,
+                                userQuickProfile.selectedCollegeName ?? '',
                                 style: AppTheme.labelSmall,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

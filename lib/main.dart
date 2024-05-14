@@ -2,6 +2,8 @@ import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/user/chat/fireabase_chat_repository.dart';
+import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:nesters/app/app.dart';
@@ -20,8 +22,8 @@ import 'data/repository/database/remote/supadatabase_repository.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initalizeApp();
   await setupFirebase();
+  await initalizeApp();
   Bloc.observer = AppBlocObserver();
   runApp(const RootApp());
 }
@@ -54,6 +56,7 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
   AuthRepository authRepository =
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
   DatabaseRepository databaseRepository = SupaDatabaseRepository();
+  RemoteChatRepository remoteChatRepository = FirebaseChatRepository();
   UserRepository userRepository = UserRepository(
     databaseRepository: databaseRepository,
     storageRepository: localStorageRepository,
@@ -66,4 +69,5 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
   locator.registerSingleton<AuthRepository>(authRepository);
   locator.registerSingleton<DatabaseRepository>(databaseRepository);
   locator.registerSingleton<UserRepository>(userRepository);
+  locator.registerSingleton<RemoteChatRepository>(remoteChatRepository);
 }

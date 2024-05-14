@@ -9,9 +9,10 @@ import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
+import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
+import 'package:nesters/features/home/view/shimmer_home_view.dart';
 import 'package:nesters/theme/theme.dart';
-import 'package:nesters/utils/logger/logger.dart';
 
 import 'components/user_quick_profile_widget.dart';
 
@@ -32,7 +33,11 @@ class HomePage extends StatelessWidget {
         child: SafeArea(
           child: BlocBuilder<UserBloc, UserState>(
             builder: (context, state) {
-              return const HomeView();
+              return BlocBuilder<HomeBloc, HomeState>(
+                builder: (context, state) {
+                  return const HomeView();
+                },
+              );
             },
           ),
         ),
@@ -50,22 +55,30 @@ class HomeView extends StatefulWidget {
 
 class _HomeViewState extends State<HomeView> {
   final UserRepository userRepository = GetIt.I<UserRepository>();
-  static const _pageSize = 20;
   final PagingController<int, UserQuickProfile> _pagingController =
       PagingController(firstPageKey: 0);
+  final int _pageSize = 20;
 
   @override
   void initState() {
+    _addPageListener();
+    super.initState();
+  }
+
+  void _addPageListener() {
     _pagingController.addPageRequestListener((pageKey) {
       _fetchPage(pageKey);
     });
-    super.initState();
   }
 
   Future<void> _fetchPage(int pageKey) async {
     try {
+      String userId = context.read<AuthBloc>().state.maybeWhen(
+            authenticated: (user) => user.id,
+            orElse: () => throw Exception('User not authenticated'),
+          );
       final newItems =
-          await userRepository.getUserQuickProfiles(pageKey, _pageSize);
+          await userRepository.getUserQuickProfiles(pageKey, _pageSize, userId);
       final isLastPage = newItems.length < _pageSize;
       if (isLastPage) {
         _pagingController.appendLastPage(newItems);
@@ -76,12 +89,6 @@ class _HomeViewState extends State<HomeView> {
     } catch (error) {
       _pagingController.error = error;
     }
-  }
-
-  @override
-  void dispose() {
-    _pagingController.dispose();
-    super.dispose();
   }
 
   @override
@@ -114,7 +121,7 @@ class _HomeViewState extends State<HomeView> {
                 CircleAvatar(
                   radius: 20,
                   child: ClipOval(
-                    child: state.user.photoUrl != ""
+                    child: state.user.photoUrl != ''
                         ? Image.network(
                             state.user.photoUrl,
                             errorBuilder: (context, error, stackTrace) {
@@ -193,9 +200,7 @@ class _HomeViewState extends State<HomeView> {
             child: Text('New Page Error'),
           ),
         ),
-        firstPageProgressIndicatorBuilder: (_) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
         newPageProgressIndicatorBuilder: (_) => Container(
           height: 100,
           child: const Center(

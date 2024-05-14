@@ -23,7 +23,7 @@ class UserQuickProfileItem extends StatelessWidget {
             child: CircleAvatar(
               backgroundColor: Colors.transparent,
               backgroundImage: NetworkImage(
-                userQuickProfile.profileImage,
+                userQuickProfile.profileImage!,
               ),
               radius: 40,
             ),
@@ -37,7 +37,7 @@ class UserQuickProfileItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  userQuickProfile.fullName,
+                  userQuickProfile.fullName ?? '',
                   style: AppTheme.titleLarge.copyWith(fontSize: 18),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -45,7 +45,7 @@ class UserQuickProfileItem extends StatelessWidget {
                 //     ? 'Fresher'
                 //     : '${userQuickProfile.workExperience} Years Work Experience'),
                 Text(
-                  userQuickProfile.selectedCourseName,
+                  userQuickProfile.selectedCourseName ?? '',
 
                   maxLines: 2, // Set maximum lines as per your requirement
                 ),
