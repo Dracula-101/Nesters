@@ -5,7 +5,6 @@ import 'package:nesters/domain/models/chat_message.dart';
 import 'package:nesters/domain/models/user.dart';
 import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';

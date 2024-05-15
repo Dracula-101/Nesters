@@ -6,7 +6,6 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:shimmer/shimmer.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class UserQuickProfileWidget extends StatelessWidget {
