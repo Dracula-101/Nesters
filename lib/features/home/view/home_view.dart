@@ -115,7 +115,7 @@ class _HomeViewState extends State<HomeView> {
                 CircleAvatar(
                   radius: 20,
                   child: ClipOval(
-                    child: state.user.photoUrl != ""
+                    child: state.user.photoUrl != ''
                         ? Image.network(
                             state.user.photoUrl,
                             errorBuilder: (context, error, stackTrace) {
