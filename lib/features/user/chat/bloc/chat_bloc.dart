@@ -34,8 +34,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       sendMessage: (message) async {
         await _sendMessage(message, emit);
       },
-      disposeChatSubscription: () {
-        disposeChatSubscription();
+      cancelChatSubscription: () {
+        _cancelChatSubscription();
       },
     );
   }
@@ -68,8 +68,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     });
   }
 
-  void disposeChatSubscription() {
-    _chatSubscription?.cancel();
+  void _cancelChatSubscription() {
+    if (_chatSubscription != null) {
+      _chatSubscription!.cancel();
+      _chatSubscription = null;
+      GetIt.I<AppLoggerService>().info('Chat subscription cancelled');
+    }
   }
 
   Future<void> _sendMessage(Message message, Emitter<ChatState> emit) async {

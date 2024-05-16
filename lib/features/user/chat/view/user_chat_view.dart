@@ -46,6 +46,7 @@ class _ChatViewState extends State<ChatView> {
   final RemoteChatRepository _remoteChatRepository =
       GetIt.I<RemoteChatRepository>();
   ChatUser? _currentChatUser, _otherChatUser;
+  ChatBloc? _chatBloc;
 
   @override
   void initState() {
@@ -67,17 +68,21 @@ class _ChatViewState extends State<ChatView> {
       profileImage: widget.receiverProf.profileImage,
     );
 
-    context
-        .read<ChatBloc>()
-        .add(ChatEvent.checkChat(currentUser.id, widget.receiverProf.id!));
+    context.read<ChatBloc>().add(
+          ChatEvent.checkChat(
+            currentUser.id,
+            widget.receiverProf.id!,
+          ),
+        );
+    _chatBloc = context.read<ChatBloc>();
   }
 
-  //cancel listening to stremcontroller
-  // @override
-  // void dispose() {
-  //   context.read<ChatBloc>().add(const ChatEvent.disposeChatSubscription());
-  //   super.dispose();
-  // }
+  //cancel the event added to chatMessage listener,
+  @override
+  void dispose() {
+    _chatBloc!.add(const ChatEvent.cancelChatSubscription());
+    super.dispose();
+  }
 
   Widget _mediaMessageButton(BuildContext context) {
     return IconButton(
@@ -208,7 +213,7 @@ class _ChatViewState extends State<ChatView> {
                               showTime: true,
                             ),
                             inputOptions: InputOptions(
-                              alwaysShowSend: true,
+                              alwaysShowSend: false,
                               // showTraillingBeforeSend: true,
                               leading: [
                                 _mediaMessageButton(context),
