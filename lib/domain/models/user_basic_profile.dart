@@ -49,7 +49,7 @@ class UserBasicProfile extends Equatable {
 
   List<FieldValue> toFieldValues() {
     return [
-      FieldValue(key: 'user_id', value: userId),
+      FieldValue(key: 'id', value: userId),
       FieldValue(
           key: 'created_at',
           value: DateTime.now().toIso8601String().replaceAll("T", " ")),
