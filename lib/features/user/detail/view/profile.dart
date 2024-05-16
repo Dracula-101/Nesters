@@ -6,10 +6,13 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
+import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/person_type.dart';
+import 'package:nesters/domain/models/user.dart';
 import 'package:nesters/domain/models/user_habit.dart';
 import 'package:nesters/domain/models/user_profile.dart';
+import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/user/detail/bloc/profile_bloc.dart';
 import 'package:nesters/features/user/detail/view/shimmer_profile.dart';
 import 'package:nesters/theme/theme.dart';
@@ -32,7 +35,20 @@ class UserProfilePage extends StatelessWidget {
                 FontAwesomeIcons.telegram,
               ),
               onPressed: () {
-                String chatId = 'bruh';
+                final User currentUser = context
+                    .read<AuthBloc>()
+                    .state
+                    .maybeWhen(
+                      authenticated: (user) => user,
+                      orElse: () => throw Exception('User not authenticated'),
+                    );
+
+                String currentUserId = currentUser.id;
+                String otherUserId = state.userProfile?.id ?? '';
+                String chatId = GetIt.I<RemoteChatRepository>().generateChatId(
+                  currentUserId,
+                  otherUserId,
+                );
                 GoRouter.of(context).go(
                   '${AppRouterService.homeScreen}/${AppRouterService.userChatFromProfile}/$chatId',
                   extra: state.userProfile?.toUserQuickProfile(),

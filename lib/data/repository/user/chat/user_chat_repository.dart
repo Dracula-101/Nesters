@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:nesters/domain/models/chat_message.dart';
+import 'package:nesters/domain/models/chat/message.dart';
 
 abstract class RemoteChatRepository {
   String generateChatId(String senderId, String receiverId);

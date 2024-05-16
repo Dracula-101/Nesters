@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:nesters/domain/models/chat_message.dart';
+import 'package:nesters/domain/models/chat/message.dart';
 import 'package:path/path.dart' as p;
 
 import 'user_chat_repository.dart';
@@ -75,6 +75,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
       {required String senderId, required String receiverId}) {
     try {
       return _store.collection('chats').doc(chatId).set({
+        'id': chatId,
         'participants': [senderId, receiverId],
         'created_at': DateTime.now().toIso8601String(),
         'messages': []

@@ -1,13 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:bloc/bloc.dart';
-import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
-import 'package:nesters/domain/models/chat_message.dart';
+import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'chat_event.dart';

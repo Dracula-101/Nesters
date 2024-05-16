@@ -1,12 +1,13 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
-import 'package:nesters/domain/models/chat_message.dart';
-import 'package:nesters/domain/models/chat_message_type.dart';
+import 'package:nesters/domain/models/chat/message.dart';
+import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user.dart';
 import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
@@ -44,6 +45,7 @@ class _ChatViewState extends State<ChatView> {
   final MediaService _mediaService = GetIt.I<MediaService>();
   final RemoteChatRepository _remoteChatRepository =
       GetIt.I<RemoteChatRepository>();
+  ChatUser? _currentChatUser, _otherChatUser;
 
   @override
   void initState() {
@@ -52,6 +54,19 @@ class _ChatViewState extends State<ChatView> {
           authenticated: (user) => user,
           orElse: () => throw Exception('User not authenticated'),
         );
+    _currentChatUser = ChatUser(
+      id: currentUser.id,
+      firstName: currentUser.name.split(' ').first,
+      lastName: currentUser.name.split(' ').last,
+      profileImage: currentUser.photoUrl,
+    );
+    _otherChatUser = ChatUser(
+      id: widget.receiverProf.id!,
+      firstName: widget.receiverProf.fullName!.split(' ').first,
+      lastName: widget.receiverProf.fullName!.split(' ').last,
+      profileImage: widget.receiverProf.profileImage,
+    );
+
     context
         .read<ChatBloc>()
         .add(ChatEvent.checkChat(currentUser.id, widget.receiverProf.id!));
@@ -81,17 +96,16 @@ class _ChatViewState extends State<ChatView> {
             chatID: chatId,
           );
           if (downloadUrl != null) {
+            Message message = Message(
+              senderId: currentUser.id,
+              content: downloadUrl,
+              sentAt: Timestamp.fromDate(
+                DateTime.now(),
+              ),
+              messageType: ChatMessageType.IMAGE,
+            );
             context.read<ChatBloc>().add(
-                  ChatEvent.sendMessage(
-                    Message(
-                      senderId: currentUser.id,
-                      receiverId: widget.receiverProf.id!,
-                      message: downloadUrl,
-                      timestamp: DateTime.now(),
-                      chatId: chatId,
-                      type: ChatMessageType.IMAGE,
-                    ),
-                  ),
+                  ChatEvent.sendMessage(message),
                 );
           }
         }
@@ -146,21 +160,48 @@ class _ChatViewState extends State<ChatView> {
         builder: (context, state) {
           return SafeArea(
             child: state.isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
                 : !state.doesChatExist
-                    ? const Center(child: Text('No chat found'))
+                    ? const Center(
+                        child: Text(
+                          'Start Messaging',
+                        ),
+                      )
                     : StreamBuilder<List<ChatMessage>>(
                         stream: context.read<ChatBloc>().chatMessages.map(
-                            (event) =>
-                                event.map((e) => e.toChatMessage()).toList()),
+                              (event) => event.map(
+                                (e) {
+                                  if (e.messageType == ChatMessageType.TEXT) {
+                                    return ChatMessage(
+                                      user: e.senderId == currentUser.id
+                                          ? _currentChatUser as ChatUser
+                                          : _otherChatUser as ChatUser,
+                                      createdAt: e.sentAt!.toDate(),
+                                      text: e.content ?? '',
+                                    );
+                                  } else {
+                                    return ChatMessage(
+                                      user: e.senderId == currentUser.id
+                                          ? _currentChatUser as ChatUser
+                                          : _otherChatUser as ChatUser,
+                                      createdAt: e.sentAt!.toDate(),
+                                      medias: [
+                                        ChatMedia(
+                                          url: e.content!,
+                                          fileName: '',
+                                          type: MediaType.image,
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                },
+                              ).toList(),
+                            ),
                         builder: (context, snapshot) {
                           return DashChat(
-                            currentUser: ChatUser(
-                              id: currentUser.id,
-                              firstName: currentUser.name.split(' ').first,
-                              lastName: currentUser.name.split(' ').last,
-                              profileImage: currentUser.photoUrl,
-                            ),
+                            currentUser: _currentChatUser!,
                             messages: snapshot.data ?? [],
                             messageOptions: const MessageOptions(
                               showOtherUsersAvatar: true,
@@ -168,7 +209,7 @@ class _ChatViewState extends State<ChatView> {
                             ),
                             inputOptions: InputOptions(
                               alwaysShowSend: true,
-                              showTraillingBeforeSend: true,
+                              // showTraillingBeforeSend: true,
                               leading: [
                                 _mediaMessageButton(context),
                                 _cameraButton(),
@@ -182,11 +223,11 @@ class _ChatViewState extends State<ChatView> {
                                     ChatEvent.sendMessage(
                                       Message(
                                         senderId: currentUser.id,
-                                        receiverId: widget.receiverProf.id!,
-                                        message: message.text,
-                                        timestamp: DateTime.now(),
-                                        chatId: state.chatId,
-                                        type: ChatMessageType.TEXT,
+                                        content: message.text,
+                                        sentAt: Timestamp.fromDate(
+                                          message.createdAt,
+                                        ),
+                                        messageType: ChatMessageType.TEXT,
                                       ),
                                     ),
                                   );

@@ -53,7 +53,7 @@ class ProfileView extends StatefulWidget {
 class _ProfileViewState extends State<ProfileView> {
   final UserRepository userRepository = GetIt.I<UserRepository>();
   final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
-  var userProfile;
+  late UserProfile userProfile;
   bool _loading = true;
 
   @override
@@ -111,7 +111,7 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           Center(
             child: Text(
-              userProfile?.city + ', ' + userProfile.state ?? '',
+              '${userProfile.city as String}, ${userProfile.state as String}',
               style: AppTheme.bodyLargeLightVariant.copyWith(
                 fontWeight: FontWeight.w500,
               ),
@@ -127,62 +127,65 @@ class _ProfileViewState extends State<ProfileView> {
             ),
           ),
           _buildCard(
-            userProfile?.selectedCourseName,
-            '@${userProfile?.selectedCollegeName}',
+            userProfile.selectedCourseName as String,
+            '@${userProfile.selectedCollegeName}',
             Icons.school,
           ),
           _buildCard(
             'About Me',
-            userProfile?.bio ?? '',
+            userProfile.bio,
             FontAwesomeIcons.user,
           ),
           _buildCard(
             'Mother Tongue',
-            userProfile?.primaryLang + userProfile?.otherLang != ''
-                ? '${userProfile?.primaryLang} but I also speak ${userProfile?.otherLang}'
+            (userProfile.primaryLang as String) +
+                        (userProfile.otherLang as String) !=
+                    ''
+                ? '${userProfile.primaryLang} but I also speak ${userProfile.otherLang}'
                 : ' ',
             FontAwesomeIcons.language,
           ),
           _buildCard(
             'I am',
-            getSubtitleText(userProfile?.foodHabit, userProfile?.cookingSkill),
+            getSubtitleText(userProfile.foodHabit as String,
+                userProfile.cookingSkill as String),
             FontAwesomeIcons.bowlFood,
           ),
           _buildCard(
             'Smoke & Sip',
             getSmokingDrinkingSubtitle(
-              userProfile?.drinkingHabit,
-              userProfile?.smokingHabit,
+              userProfile.drinkingHabit as String,
+              userProfile.smokingHabit as String,
             ),
             FontAwesomeIcons.wineGlass,
           ),
           _buildCard(
             'In terms of personality',
             getSubtitleTextPersonTypeAndCleanlinessHabit(
-              userProfile?.personType,
+              userProfile.personType as String,
             ),
             FontAwesomeIcons.cloudBolt,
           ),
           _buildCard(
             'When it comes to cleanliness',
             getSubtitleTextCleanlinessHabit(
-              userProfile?.cleanlinessHabit,
+              userProfile.cleanlinessHabit as String,
             ),
             FontAwesomeIcons.broom,
           ),
           _buildCard(
             'College & Career Snapshot',
             getSubtitleTextCollegeAndWorkExp(
-              userProfile?.undergradCollegeName,
-              userProfile?.workExperience,
+              userProfile.undergradCollegeName as String,
+              userProfile.workExperience,
             ),
             FontAwesomeIcons.graduationCap,
           ),
           _buildCard(
             'Living Arrangements',
             getRoomSubtitle(
-              userProfile?.flatmatesGenderPrefs,
-              userProfile?.roomType,
+              userProfile.flatmatesGenderPrefs,
+              userProfile.roomType as String,
             ),
             FontAwesomeIcons.house,
           ),
@@ -241,7 +244,6 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   String getSubtitleText(String foodHabit, String cookingSkill) {
-    print('Food Habit: $foodHabit, Cooking Skill: $cookingSkill');
     if (foodHabit == 'Vegan' && cookingSkill == 'Newbie') {
       return 'Vegan and just starting to cook.';
     } else if (foodHabit == 'Vegetarian' && cookingSkill == 'Newbie') {
