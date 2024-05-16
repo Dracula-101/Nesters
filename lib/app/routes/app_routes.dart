@@ -1,13 +1,17 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/view/app_scaffold.dart';
+import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:nesters/features/auth/view/auth_view.dart';
 import 'package:nesters/features/home/view/home_view.dart';
 import 'package:nesters/features/onboarding/view/onboarding_view.dart';
 import 'package:nesters/features/splash/view/splash_view.dart';
+import 'package:nesters/features/user/chat/view/user_chat_view.dart';
+import 'package:nesters/features/user/detail/view/profile.dart';
 import 'package:nesters/features/user/profile/forms/view/advance_form_view.dart';
 import 'package:nesters/features/user/profile/forms/view/basic_form_view.dart';
-import 'package:nesters/features/user/profile/view/profile.dart';
 
 class AppRouterService {
   static const String splashScreen = '/';
@@ -16,7 +20,8 @@ class AppRouterService {
   static const String loginScreen = '/login';
   static const String userProfileBasicFormScreen = '/basic_form';
   static const String userProfileAdvanceFormScreen = '/advance_form';
-  static const String userProfile = '/user_profile';
+  static const String userProfile = 'user_profile';
+  static const String userChatFromProfile = 'chat';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -72,12 +77,21 @@ class AppRouterService {
           AppRoute(
             homeScreen,
             (_) => const HomePage(),
-          ),
-          AppRoute(
-            '$userProfile/:id',
-            (_) {
-              return UserProfilePage(id: _.pathParameters['id'] ?? '');
-            },
+            routes: [
+              AppRoute(
+                '$userProfile/:id',
+                (_) {
+                  return UserProfilePage(id: _.pathParameters['id'] ?? '');
+                },
+              ),
+              AppRoute(
+                '$userChatFromProfile/:chatId',
+                (params) => UserChatPage(
+                  chatId: params.pathParameters['chatId'] ?? '',
+                  userQuickProfile: params.extra as UserQuickProfile,
+                ),
+              ),
+            ],
           ),
         ],
       ),

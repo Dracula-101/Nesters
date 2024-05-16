@@ -1,20 +1,21 @@
 class Language {
   final String name;
-  final String id;
-
-  Language({required this.name, required this.id});
+  Language({required this.name});
 
   factory Language.fromJson(Map<String, dynamic> json) {
     return Language(
-      name: json['name'],
-      id: json['id'].toString(),
+      name: json['name'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'name': name,
-      'id': id,
     };
+  }
+
+  @override
+  String toString() {
+    return name;
   }
 }

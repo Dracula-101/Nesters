@@ -4,7 +4,8 @@ enum UserHabit {
   REGULAR,
   OCCASIONAL,
   RARELY,
-  NEVER;
+  NEVER,
+  UNKNOWN;
 
   //toString function
   @override
@@ -38,6 +39,36 @@ enum UserHabit {
         return UserHabit.NEVER;
     }
   }
+
+  String toDrinkingHabitText() {
+    switch (this) {
+      case UserHabit.REGULAR:
+        return 'sipping drinks regularly';
+      case UserHabit.OCCASIONAL:
+        return 'indulging in drinks occasionally';
+      case UserHabit.RARELY:
+        return 'rarely touching a drop';
+      case UserHabit.NEVER:
+        return 'not a drinker';
+      default:
+        return 'having an unknown drinking habit';
+    }
+  }
+
+  String toSmokingHabitText() {
+    switch (this) {
+      case UserHabit.REGULAR:
+        return 'puffing away regularly';
+      case UserHabit.OCCASIONAL:
+        return 'enjoying a smoke occasionally';
+      case UserHabit.RARELY:
+        return 'smoking only rarely';
+      case UserHabit.NEVER:
+        return 'not a smoker';
+      default:
+        return 'having an unknown smoking habit';
+    }
+  }
 }
 
 enum UserFoodHabit {
@@ -45,7 +76,8 @@ enum UserFoodHabit {
   VEGETARIAN,
   PESCATARIAN,
   EGGETARIAN,
-  NON_VEGETERIAN;
+  NON_VEGETERIAN,
+  UNKNOWN;
 
   //toString function
   @override
@@ -80,7 +112,24 @@ enum UserFoodHabit {
       case 'Omnivore':
         return UserFoodHabit.NON_VEGETERIAN;
       default:
-        return UserFoodHabit.VEGETARIAN;
+        return UserFoodHabit.UNKNOWN;
+    }
+  }
+
+  String toUserFriendlyString() {
+    switch (this) {
+      case UserFoodHabit.VEGAN:
+        return 'vegan';
+      case UserFoodHabit.VEGETARIAN:
+        return 'vegetarian';
+      case UserFoodHabit.PESCATARIAN:
+        return 'pescatarian';
+      case UserFoodHabit.EGGETARIAN:
+        return 'eggetarian';
+      case UserFoodHabit.NON_VEGETERIAN:
+        return 'non-vegetarian';
+      default:
+        return 'having an unknown smoking habit';
     }
   }
 }
@@ -88,7 +137,8 @@ enum UserFoodHabit {
 enum UserCookingSkill {
   NEWBIE,
   INTERMEDIATE,
-  CHEF;
+  CHEF,
+  UNKNOWN;
 
   @override
   String toString() {
@@ -114,7 +164,20 @@ enum UserCookingSkill {
       case 'Chef':
         return UserCookingSkill.CHEF;
       default:
-        return UserCookingSkill.NEWBIE;
+        return UserCookingSkill.UNKNOWN;
+    }
+  }
+
+  String toUserFriendlyString() {
+    switch (this) {
+      case UserCookingSkill.NEWBIE:
+        return 'just starting to cook';
+      case UserCookingSkill.INTERMEDIATE:
+        return 'have some experience in cooking';
+      case UserCookingSkill.CHEF:
+        return 'an experienced cook';
+      default:
+        return 'having an unknown drinking habit';
     }
   }
 }
@@ -123,7 +186,8 @@ enum UserCleanlinessHabit {
   MESSY,
   DECENTLY_CLEAN,
   VERY_CLEAN,
-  OBSESSIVELY_CLEAN;
+  OBSESSIVELY_CLEAN,
+  UNKNOWN;
 
   @override
   String toString() {
@@ -152,7 +216,22 @@ enum UserCleanlinessHabit {
       case 'Obsessively Clean':
         return UserCleanlinessHabit.OBSESSIVELY_CLEAN;
       default:
-        return UserCleanlinessHabit.MESSY;
+        return UserCleanlinessHabit.UNKNOWN;
+    }
+  }
+
+  String toUserFriendlyString() {
+    switch (this) {
+      case UserCleanlinessHabit.MESSY:
+        return 'living in organized chaos';
+      case UserCleanlinessHabit.DECENTLY_CLEAN:
+        return 'maintaining a decent level of cleanliness';
+      case UserCleanlinessHabit.VERY_CLEAN:
+        return 'keeping things very clean';
+      case UserCleanlinessHabit.OBSESSIVELY_CLEAN:
+        return 'being obsessively clean';
+      default:
+        return 'having an unknown cleanliness habit';
     }
   }
 }

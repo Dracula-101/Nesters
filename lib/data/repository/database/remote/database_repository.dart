@@ -3,7 +3,7 @@ abstract class DatabaseRepository {
   Future<Map<String, dynamic>?> getDataWithId(String table, String id);
   Future<List<Map<String, dynamic>?>> getDataWithPagination(
       String table, int offset, int limit,
-      {String columns = ''});
+      {String columns = '', String? removeRowId});
   Future<bool> checkExistsData(String table, FieldValue field);
   Future<void> setData(String table, SetData setData);
   Future<List<Map<String, dynamic>>> queryData(

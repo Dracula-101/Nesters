@@ -136,25 +136,28 @@ class UserRepository {
   }
 
   Future<List<UserQuickProfile>> getUserQuickProfiles(
-      int offset, int limit) async {
+      int offset, int limit, String userId) async {
     try {
       return await _databaseRepository
           .getDataWithPagination(userDetailCollection, offset, limit,
               columns:
-                  'id, full_name, profile_image, selected_college_name, selected_course_name, city, state, work_experience')
+                  'id, full_name, profile_image, selected_college_name, selected_course_name, city, state, work_experience',
+              removeRowId: userId)
           .then((event) =>
               event.map((e) => UserQuickProfile.fromJson(e!)).toList());
-    } catch (e) {
-      _logger.error('Error in getting user quick profiles: $e');
+    } catch (e, stackTrace) {
+      _logger.error('Error in getting user quick profiles: $e',
+          stackTrace: stackTrace);
       rethrow;
     }
   }
 
   Future<UserProfile> getUserProfile(String id) async {
     try {
-      return await _databaseRepository
+      UserProfile profile = await _databaseRepository
           .getDataWithId(userDetailCollection, id)
           .then((event) => UserProfile.fromJson(event!));
+      return profile;
     } catch (e) {
       _logger.error('Error in getting user profile: $e');
       rethrow;

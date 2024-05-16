@@ -44,4 +44,9 @@ class University extends Equatable {
   @override
   List<Object?> get props =>
       [country, city, title, logo, score, rankDisplay, region];
+
+  @override
+  String toString() {
+    return title ?? '';
+  }
 }

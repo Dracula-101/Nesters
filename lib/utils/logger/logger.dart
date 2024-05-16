@@ -16,8 +16,8 @@ class AppLoggerService {
     _logger.i(message);
   }
 
-  void error(Object? message) {
-    _logger.e(message);
+  void error(Object? message, {Object? error, StackTrace? stackTrace}) {
+    _logger.e(message , error: error, stackTrace: stackTrace);
   }
 
   void warning(Object? message) {

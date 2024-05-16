@@ -10,7 +10,6 @@ import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/person_type.dart';
 import 'package:nesters/features/user/profile/forms/cubit/form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
-import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class PersonalInformationPage extends StatefulWidget {
