@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nesters/domain/models/room_type.dart';
-import 'package:nesters/domain/models/user_habit.dart';
+import 'package:nesters/domain/models/room/room_type.dart';
+import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class LifeStyleInfoPage extends StatefulWidget {

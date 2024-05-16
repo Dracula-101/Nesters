@@ -9,10 +9,10 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/domain/models/degree.dart';
-import 'package:nesters/domain/models/university.dart';
-import 'package:nesters/domain/models/user.dart';
-import 'package:nesters/domain/models/user_basic_profile.dart';
+import 'package:nesters/domain/models/college/degree.dart';
+import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
+import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -169,7 +169,8 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     );
 
     return GetIt.I<UserRepository>()
-        .setBasicUserProfileData(userBasicProfile).whenComplete(() {
+        .setBasicUserProfileData(userBasicProfile)
+        .whenComplete(() {
       setState(() {
         isLoading = false;
       });

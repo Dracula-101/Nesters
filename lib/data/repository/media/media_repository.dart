@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
+import 'package:nesters/data/repository/media/media_compressor.dart';
 
-class MediaService {
+class MediaRepository {
   final ImagePicker _imagePicker = ImagePicker();
-  MediaService();
+  final MediaCompressor _mediaCompressor = MediaCompressor();
 
   Future<File?> getImageFromGallery() async {
     final XFile? image =
@@ -12,7 +13,8 @@ class MediaService {
     if (image == null) {
       return null;
     }
-    return File(image.path);
+    File file = File(image.path);
+    return await _mediaCompressor.compressFile(file);
   }
 
   //get image from camera
@@ -22,6 +24,7 @@ class MediaService {
     if (image == null) {
       return null;
     }
-    return File(image.path);
+    File file = File(image.path);
+    return await _mediaCompressor.compressFile(file);
   }
 }

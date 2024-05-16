@@ -2,9 +2,9 @@ import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/fireabase_chat_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
-import 'package:nesters/utils/merdia_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:nesters/app/app.dart';
@@ -53,8 +53,8 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
   // Initalize All repositories
   LocalStorageRepository localStorageRepository = GetStorageRepository();
   AppLoggerService appLoggerService = AppLoggerService();
+  MediaRepository mediaRepository = MediaRepository();
   AppRouterService appRouterService = AppRouterService();
-  MediaService mediaService = MediaService();
   AuthRepository authRepository =
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
   DatabaseRepository databaseRepository = SupaDatabaseRepository();
@@ -68,7 +68,7 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
   locator.registerSingleton<LocalStorageRepository>(localStorageRepository);
   locator.registerSingleton<AppLoggerService>(appLoggerService);
   locator.registerSingleton<AppRouterService>(appRouterService);
-  locator.registerSingleton<MediaService>(mediaService);
+  locator.registerSingleton<MediaRepository>(mediaRepository);
   locator.registerSingleton<AuthRepository>(authRepository);
   locator.registerSingleton<DatabaseRepository>(databaseRepository);
   locator.registerSingleton<UserRepository>(userRepository);

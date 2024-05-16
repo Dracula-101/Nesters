@@ -14,6 +14,7 @@ ThemeData _lightThemeData = ThemeData(
   textTheme: _appTextTheme,
   colorScheme: _lightColorScheme,
   fontFamily: _poppinsFontFamily,
+  snackBarTheme: _appSnackBarTheme,
 );
 
 class AppTheme {
@@ -99,6 +100,7 @@ class AppTheme {
   static ColorShades get primaryShades => PrimaryShades();
   static ColorShades get secondaryShades => SecondaryShades();
   static ColorShades get greyShades => GreyShades();
+  static ColorShades get blackShades => BlackShades();
 
   static LinearGradient get shimmerGradient => LinearGradient(
         begin: Alignment.centerLeft,

@@ -1,5 +1,5 @@
 import 'package:nesters/constants/app_assets.dart';
-import 'package:nesters/domain/models/onboarding.dart';
+import 'package:nesters/domain/models/onboarding/onboarding.dart';
 
 List<OnboardingContent> contents = [
   OnboardingContent(

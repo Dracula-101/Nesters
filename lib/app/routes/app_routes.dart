@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/view/app_scaffold.dart';
-import 'package:nesters/domain/models/user_quick_profile.dart';
+import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/view/auth_view.dart';
 import 'package:nesters/features/home/view/home_view.dart';
 import 'package:nesters/features/onboarding/view/onboarding_view.dart';

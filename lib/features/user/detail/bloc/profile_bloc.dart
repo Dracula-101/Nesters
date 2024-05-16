@@ -2,7 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/domain/models/user_profile.dart';
+import 'package:nesters/domain/models/user/profile/user_profile.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';

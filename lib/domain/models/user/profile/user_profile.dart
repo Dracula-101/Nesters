@@ -1,12 +1,12 @@
 import 'package:equatable/equatable.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/domain/models/city.dart';
-import 'package:nesters/domain/models/indian_state.dart';
+import 'package:nesters/domain/models/location/indian_city.dart';
+import 'package:nesters/domain/models/location/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
-import 'package:nesters/domain/models/person_type.dart';
-import 'package:nesters/domain/models/room_type.dart';
-import 'package:nesters/domain/models/user_habit.dart';
-import 'package:nesters/domain/models/user_quick_profile.dart';
+import 'package:nesters/domain/models/user/person_type.dart';
+import 'package:nesters/domain/models/room/room_type.dart';
+import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
+import 'package:nesters/domain/models/user/pref/user_habit.dart';
 
 class UserProfile extends Equatable {
   final String? id;

@@ -3,13 +3,15 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:nesters/domain/models/chat/message.dart';
-import 'package:path/path.dart' as p;
-
+import 'package:path/path.dart' as path_provider;
+import 'package:http/http.dart' as http;
 import 'user_chat_repository.dart';
+import 'package:image_downloader/image_downloader.dart';
 
 class FirebaseChatRepository extends RemoteChatRepository {
   final FirebaseFirestore _store = FirebaseFirestore.instance;
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
+  final HttpClient httpClient = HttpClient();
 
   @override
   String generateChatId(String senderId, String receiverId) {
@@ -86,18 +88,25 @@ class FirebaseChatRepository extends RemoteChatRepository {
   }
 
   @override
-  Future<String?> uploadImageToChat(
-      {required File file, required String chatID}) async {
-    Reference fileRef = _firebaseStorage
-        .ref('chats/$chatID')
-        .child('${DateTime.now().toIso8601String()}${p.extension(file.path)}');
+  Stream<DocumentUploadTask> uploadDocument(
+      {required File file, required String chatID}) {
+    Reference fileRef = _firebaseStorage.ref('chats/$chatID').child(
+        '${DateTime.now().toIso8601String()}${path_provider.extension(file.path)}');
     UploadTask uploadTask = fileRef.putFile(file);
-    return uploadTask.then(
-      (value) {
-        if (value.state == TaskState.success) {
-          return fileRef.getDownloadURL();
-        }
-      },
-    );
+    return uploadTask.snapshotEvents.asyncMap((event) async {
+      return event.state == TaskState.success
+          ? DocumentUploadTask.success(await fileRef.getDownloadURL())
+          : DocumentUploadTask.inProgress(
+              event.bytesTransferred.toDouble() / event.totalBytes.toDouble());
+    });
+  }
+
+  @override
+  Future<File?> downloadDocument(String url) async {
+    try {
+      throw UnimplementedError();
+    } on Exception {
+      rethrow;
+    }
   }
 }

@@ -1,11 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/domain/models/user_quick_profile.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';

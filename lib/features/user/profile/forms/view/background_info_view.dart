@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/domain/models/room_type.dart';
+import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class BackgroundInfoPage extends StatefulWidget {

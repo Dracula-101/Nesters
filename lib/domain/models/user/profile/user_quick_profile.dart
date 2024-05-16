@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/domain/models/city.dart';
-import 'package:nesters/domain/models/indian_state.dart';
+import 'package:nesters/domain/models/location/indian_city.dart';
+import 'package:nesters/domain/models/location/indian_state.dart';
 
 class UserQuickProfile extends Equatable {
   final String? id;
@@ -66,15 +66,15 @@ class UserQuickProfile extends Equatable {
   factory UserQuickProfile.fromJson(Map<String, dynamic> json) {
     try {
       return UserQuickProfile(
-      id: json['id'] ?? '',
-      fullName: json['full_name'] ?? '',
-      profileImage: json['profile_image'] ?? '',
-      selectedCourseName: json['selected_course_name'] ?? '',
-      selectedCollegeName: json['selected_college_name'] ?? '',
-      city: json['city'] != null ? City(name: json['city']) : null,
-      state: json['state'] != null ? IndianState(name:json['state']) : null,
-      workExperience: json['work_experience'] ?? 0,
-    );
+        id: json['id'] ?? '',
+        fullName: json['full_name'] ?? '',
+        profileImage: json['profile_image'] ?? '',
+        selectedCourseName: json['selected_course_name'] ?? '',
+        selectedCollegeName: json['selected_college_name'] ?? '',
+        city: json['city'] != null ? City(name: json['city']) : null,
+        state: json['state'] != null ? IndianState(name: json['state']) : null,
+        workExperience: json['work_experience'] ?? 0,
+      );
     } catch (e) {
       throw Exception('Failed to parse UserQuickProfile: $e');
     }

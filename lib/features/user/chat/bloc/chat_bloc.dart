@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
 import 'package:nesters/domain/models/chat/message.dart';
+import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'chat_event.dart';
@@ -18,6 +22,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   final RemoteChatRepository _chatRepository = GetIt.I<RemoteChatRepository>();
+  final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
   final StreamController<List<Message>> _chatMessages =
       StreamController.broadcast();
   StreamSubscription? _chatSubscription;
@@ -35,8 +40,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       sendMessage: (message) async {
         await _sendMessage(message, emit);
       },
-      cancelChatSubscription: () {
+      closeChat: () {
         _cancelChatSubscription();
+      },
+      sendDocument: (source, senderId) async {
+        await _sendDocument(source, senderId, emit);
+      },
+      downloadDocument: (url, onComplete) async {
+        await _downloadDocument(url, onComplete, emit);
       },
     );
   }
@@ -64,13 +75,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       // If no active subscription or different chatId, create a new subscription
       _chatSubscription?.cancel(); // Cancel any existing subscription
 
-      _chatSubscription =
-          _chatRepository.getChatMessages(chatId).asBroadcastStream().listen(
-        (event) {
-          _chatMessages.add(event);
-          GetIt.I<AppLoggerService>().info('Chat Messages: $event');
-        },
-      );
+      _chatSubscription = _chatRepository
+          .getChatMessages(chatId)
+          .asBroadcastStream()
+          .listen((event) => _chatMessages.add(event));
     }
   }
 
@@ -78,7 +86,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     if (_chatSubscription != null) {
       _chatSubscription!.cancel();
       _chatSubscription = null;
-      GetIt.I<AppLoggerService>().info('Chat subscription cancelled');
     }
   }
 
@@ -87,7 +94,51 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     try {
       await _chatRepository.sendMessage(state.chatId!, message);
     } on Exception catch (e) {
-      emit(state.copyWith(isLoading: false, error: e));
+      emit(state.copyWith(error: e));
+    }
+  }
+
+  Future<void> _sendDocument(
+      DocumentSource source, String senderId, Emitter<ChatState> emit) async {
+    try {
+      File? file = await (source == DocumentSource.CAMERA
+          ? _mediaRepository.getImageFromCamera()
+          : _mediaRepository.getImageFromGallery());
+      if (file == null) return;
+      Stream<DocumentUploadTask> uploadTask = _chatRepository.uploadDocument(
+        file: file,
+        chatID: state.chatId!,
+      );
+      await for (DocumentUploadTask task in uploadTask) {
+        if (task.isComplete) {
+          Message message = Message(
+            senderId: senderId,
+            messageType: ChatMessageType.IMAGE,
+            content: task.url,
+            sentAt: Timestamp.now(),
+          );
+          await _chatRepository.sendMessage(state.chatId!, message);
+          emit(state.copyWith(uploadTask: null));
+        } else if (task.progress > 0) {
+          emit(state.copyWith(uploadTask: {source: task}));
+        }
+      }
+    } on Exception catch (e) {
+      emit(state.copyWith(error: e));
+    }
+  }
+
+  Future<void> _downloadDocument(
+      String url, VoidCallback onComplete, Emitter<ChatState> emit) async {
+    try {
+      File? file = await _chatRepository.downloadDocument(url);
+      if (file != null) {
+        onComplete();
+      } else {
+        emit(state.copyWith(error: Exception('Failed to download document')));
+      }
+    } on Exception catch (e) {
+      emit(state.copyWith(error: e));
     }
   }
 }

@@ -2,9 +2,9 @@ import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/domain/models/degree.dart';
-import 'package:nesters/domain/models/university.dart';
-import 'package:nesters/domain/models/user.dart';
+import 'package:nesters/domain/models/college/degree.dart';
+import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/user/user.dart';
 
 part 'user_state.dart';
 part 'user_event.dart';

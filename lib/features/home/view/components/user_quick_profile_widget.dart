@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
-import 'package:nesters/domain/models/user_quick_profile.dart';
+import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:cached_network_image/cached_network_image.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:nesters/domain/models/user_quick_profile.dart';
+import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/theme/theme.dart';
 
 class UserQuickProfileItem extends StatelessWidget {

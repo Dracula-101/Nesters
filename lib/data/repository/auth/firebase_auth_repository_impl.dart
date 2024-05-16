@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nesters/data/repository/auth/error/auth_error.dart';
-import 'package:nesters/domain/models/user.dart';
+import 'package:nesters/domain/models/user/user.dart';
 
 import 'auth_repository.dart';
 

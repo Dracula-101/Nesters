@@ -101,6 +101,12 @@ TextTheme _appTextTheme = TextTheme(
   ),
 );
 
+SnackBarThemeData _appSnackBarTheme = SnackBarThemeData(
+  backgroundColor: surfaceVariantLight,
+  contentTextStyle: _appTextTheme.bodyMedium,
+  actionTextColor: onSurfaceVariantLight,
+);
+
 class PrimaryShades extends ColorShades {
   PrimaryShades() : super(AppColor.appBlue.value);
 
@@ -192,6 +198,37 @@ class GreyShades extends ColorShades {
 
   @override
   Color get shade900 => const Color(0xFF212121);
+}
+
+class BlackShades extends ColorShades {
+  BlackShades() : super(AppColor.black.value);
+
+  @override
+  Color get shade100 => Colors.black12;
+
+  @override
+  Color get shade200 => Colors.black26;
+
+  @override
+  Color get shade300 => Colors.black38;
+
+  @override
+  Color get shade400 => Colors.black45;
+
+  @override
+  Color get shade500 => Colors.black54;
+
+  @override
+  Color get shade600 => Colors.black87;
+
+  @override
+  Color get shade700 => Colors.black87;
+
+  @override
+  Color get shade800 => Colors.black87;
+
+  @override
+  Color get shade900 => Colors.black;
 }
 
 abstract class ColorShades extends Color {

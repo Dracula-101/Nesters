@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
-import 'package:nesters/domain/models/user.dart';
+import 'package:nesters/domain/models/user/user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import 'auth_repository.dart';

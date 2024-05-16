@@ -1,13 +1,13 @@
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/domain/models/city.dart';
-import 'package:nesters/domain/models/degree.dart';
-import 'package:nesters/domain/models/indian_state.dart';
+import 'package:nesters/domain/models/college/degree.dart';
+import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/location/indian_city.dart';
+import 'package:nesters/domain/models/location/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
-import 'package:nesters/domain/models/university.dart';
-import 'package:nesters/domain/models/user_basic_profile.dart';
-import 'package:nesters/domain/models/user_profile.dart';
-import 'package:nesters/domain/models/user_quick_profile.dart';
+import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
+import 'package:nesters/domain/models/user/profile/user_profile.dart';
+import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 class UserRepository {

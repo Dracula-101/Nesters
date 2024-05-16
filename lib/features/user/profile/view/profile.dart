@@ -4,7 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/domain/models/user_profile.dart';
+import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/user/profile/view/shimmer_profile.dart';

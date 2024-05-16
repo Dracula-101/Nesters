@@ -10,6 +10,51 @@ abstract class RemoteChatRepository {
   Future<bool> doesChatExist(String chatId);
   Future<void> createChat(String chatId,
       {required String senderId, required String receiverId});
-  Future<String?> uploadImageToChat(
+  Stream<DocumentUploadTask> uploadDocument(
       {required File file, required String chatID});
+  Future<File?> downloadDocument(String url);
+}
+
+class DocumentUploadTask {
+  final double progress;
+  final String? url;
+  final bool isComplete;
+
+  DocumentUploadTask({
+    required this.progress,
+    required this.url,
+    required this.isComplete,
+  });
+
+  DocumentUploadTask copyWith({
+    double? progress,
+    String? url,
+    bool? isComplete,
+  }) {
+    return DocumentUploadTask(
+      progress: progress ?? this.progress,
+      url: url ?? this.url,
+      isComplete: isComplete ?? this.isComplete,
+    );
+  }
+
+  static DocumentUploadTask success(String url) {
+    return DocumentUploadTask(
+      progress: 100,
+      url: url,
+      isComplete: true,
+    );
+  }
+
+  static DocumentUploadTask inProgress(double progress) {
+    return DocumentUploadTask(
+      progress: progress,
+      url: null,
+      isComplete: false,
+    );
+  }
+
+  @override
+  String toString() =>
+      'DocumentUploadTask(progress: $progress, url: $url, isComplete: $isComplete)';
 }

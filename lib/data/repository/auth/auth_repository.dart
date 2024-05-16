@@ -1,4 +1,4 @@
-import 'package:nesters/domain/models/user.dart';
+import 'package:nesters/domain/models/user/user.dart';
 
 abstract class AuthRepository {
   //Auth Listener

@@ -1,8 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
-
-import 'person_type.dart';
-import 'user_habit.dart';
+import 'package:nesters/domain/models/user/person_type.dart';
+import 'package:nesters/domain/models/user/pref/user_habit.dart';
 
 class UserAdvanceProfile extends Equatable {
   final String? id;
