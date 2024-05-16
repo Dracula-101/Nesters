@@ -47,6 +47,7 @@ class _ChatViewState extends State<ChatView> {
       GetIt.I<RemoteChatRepository>();
   ChatUser? _currentChatUser, _otherChatUser;
   ChatBloc? _chatBloc;
+  // TextEditingController _messageController;
 
   @override
   void initState() {
@@ -75,12 +76,14 @@ class _ChatViewState extends State<ChatView> {
           ),
         );
     _chatBloc = context.read<ChatBloc>();
+    // _messageController = TextEditingController();
   }
 
   //cancel the event added to chatMessage listener,
   @override
   void dispose() {
     _chatBloc!.add(const ChatEvent.cancelChatSubscription());
+    // _messageController.dispose();
     super.dispose();
   }
 
@@ -123,7 +126,32 @@ class _ChatViewState extends State<ChatView> {
       icon: const Icon(
         Icons.camera_alt,
       ),
-      onPressed: () {},
+      onPressed: () async {
+        File? file = await _mediaService.getImageFromCamera();
+        if (file != null) {
+          String chatId = _remoteChatRepository.generateChatId(
+            currentUser.id,
+            widget.receiverProf.id!,
+          );
+          String? downloadUrl = await _remoteChatRepository.uploadImageToChat(
+            file: file,
+            chatID: chatId,
+          );
+          if (downloadUrl != null) {
+            Message message = Message(
+              senderId: currentUser.id,
+              content: downloadUrl,
+              sentAt: Timestamp.fromDate(
+                DateTime.now(),
+              ),
+              messageType: ChatMessageType.IMAGE,
+            );
+            context.read<ChatBloc>().add(
+                  ChatEvent.sendMessage(message),
+                );
+          }
+        }
+      },
     );
   }
 
@@ -214,7 +242,8 @@ class _ChatViewState extends State<ChatView> {
                             ),
                             inputOptions: InputOptions(
                               alwaysShowSend: false,
-                              // showTraillingBeforeSend: true,
+                              showTraillingBeforeSend: false,
+                              // textController: _messageController,
                               leading: [
                                 _mediaMessageButton(context),
                                 _cameraButton(),

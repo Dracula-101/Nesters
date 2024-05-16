@@ -18,7 +18,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   final RemoteChatRepository _chatRepository = GetIt.I<RemoteChatRepository>();
-  final StreamController<List<Message>> _chatMessages = StreamController();
+  final StreamController<List<Message>> _chatMessages =
+      StreamController.broadcast();
   StreamSubscription? _chatSubscription;
   Stream<List<Message>> get chatMessages =>
       _chatMessages.stream.asBroadcastStream();
@@ -59,13 +60,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   void _listenChats(String chatId, Emitter<ChatState> emit) {
-    _chatSubscription = _chatRepository
-        .getChatMessages(chatId)
-        .asBroadcastStream()
-        .listen((event) {
-      _chatMessages.add(event);
-      GetIt.I<AppLoggerService>().info('Chat Messages: $event');
-    });
+    if (_chatSubscription == null) {
+      // If no active subscription or different chatId, create a new subscription
+      _chatSubscription?.cancel(); // Cancel any existing subscription
+
+      _chatSubscription =
+          _chatRepository.getChatMessages(chatId).asBroadcastStream().listen(
+        (event) {
+          _chatMessages.add(event);
+          GetIt.I<AppLoggerService>().info('Chat Messages: $event');
+        },
+      );
+    }
   }
 
   void _cancelChatSubscription() {
