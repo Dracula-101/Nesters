@@ -1,12 +1,15 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:path/path.dart' as path_provider;
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 import 'user_chat_repository.dart';
-import 'package:image_downloader/image_downloader.dart';
+// import 'package:image_downloader/image_downloader.dart';
 
 class FirebaseChatRepository extends RemoteChatRepository {
   final FirebaseFirestore _store = FirebaseFirestore.instance;
@@ -102,9 +105,31 @@ class FirebaseChatRepository extends RemoteChatRepository {
   }
 
   @override
-  Future<File?> downloadDocument(String url) async {
+  Future<String?> downloadDocument(String url) async {
+    late String message;
+    var random = Random();
     try {
-      throw UnimplementedError();
+      // Download image
+      final http.Response response = await http.get(Uri.parse(url));
+
+      // Get temporary directory
+      final dir = await getTemporaryDirectory();
+
+      // Create an image name
+      var filename = '${dir.path}/SaveImage${random.nextInt(100)}.png';
+
+      // Save to filesystem
+      final file = File(filename);
+      await file.writeAsBytes(response.bodyBytes);
+
+      // Ask the user to save it
+      final params = SaveFileDialogParams(sourceFilePath: file.path);
+      final finalPath = await FlutterFileDialog.saveFile(params: params);
+
+      if (finalPath != null) {
+        message = 'Image saved successfully.';
+      }
+      return message;
     } on Exception {
       rethrow;
     }

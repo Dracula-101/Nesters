@@ -1,8 +1,11 @@
+import 'dart:io';
+import 'dart:math';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
@@ -11,7 +14,9 @@ import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart'; //for DateFormat
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 class UserChatPage extends StatelessWidget {
   final String chatId;
@@ -305,7 +310,9 @@ class _ChatViewState extends State<ChatView> {
                       16,
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(
+                        8,
+                      ),
                       child: CachedNetworkImage(
                         imageUrl: media.url,
                         fit: BoxFit.contain,
@@ -322,7 +329,8 @@ class _ChatViewState extends State<ChatView> {
                   child: IconButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
-                          AppTheme.greyShades.shade100),
+                        AppTheme.greyShades.shade100,
+                      ),
                     ),
                     icon: Icon(
                       Icons.close,
@@ -350,11 +358,18 @@ class _ChatViewState extends State<ChatView> {
                             ChatEvent.downloadDocument(
                               media.url,
                               () {
-                                ScaffoldMessenger.of(dialogContext)
-                                    .showSnackBar(
-                                  const SnackBar(
+                                Navigator.of(dialogContext).pop();
+                                ScaffoldMessenger.of(
+                                  dialogContext,
+                                ).showSnackBar(
+                                  SnackBar(
                                     content: Text(
-                                        'File downloaded successfully in /downloads'),
+                                      'File downloaded successfully',
+                                      style: AppTheme.bodyMedium.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    backgroundColor: AppTheme.primary,
                                   ),
                                 );
                               },

@@ -35,6 +35,7 @@ class UserProfilePage extends StatelessWidget {
                 FontAwesomeIcons.telegram,
               ),
               onPressed: () {
+                if (state.isLoading) return;
                 final User currentUser = context
                     .read<AuthBloc>()
                     .state

@@ -12,7 +12,7 @@ abstract class RemoteChatRepository {
       {required String senderId, required String receiverId});
   Stream<DocumentUploadTask> uploadDocument(
       {required File file, required String chatID});
-  Future<File?> downloadDocument(String url);
+  Future<String?> downloadDocument(String url);
 }
 
 class DocumentUploadTask {

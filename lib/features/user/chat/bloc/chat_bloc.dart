@@ -131,8 +131,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   Future<void> _downloadDocument(
       String url, VoidCallback onComplete, Emitter<ChatState> emit) async {
     try {
-      File? file = await _chatRepository.downloadDocument(url);
-      if (file != null) {
+      String? message = await _chatRepository.downloadDocument(url);
+      if (message != null) {
         onComplete();
       } else {
         emit(state.copyWith(error: Exception('Failed to download document')));
