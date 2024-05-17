@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -8,6 +9,8 @@ import 'package:nesters/data/repository/user/notification/remote/remote_notifica
 class FirebaseNotificationRepository extends RemoteNotificationRepository {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final FirebaseFirestore _store = FirebaseFirestore.instance;
+  StreamSubscription<RemoteMessage>? _onMessageReceived,
+      _onNotificationOpenedApp;
 
   FirebaseNotificationRepository({
     required LocalNotificationRepository notificationRepository,
@@ -27,12 +30,6 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
     } on Exception {
       rethrow;
     }
-  }
-
-  @override
-  void listenToNotification() {
-    FirebaseMessaging.onBackgroundMessage(
-        (message) => _firebaseMessagingBackgroundHandler(message));
   }
 
   @override
@@ -57,6 +54,7 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
       required String token}) {
     try {
       return _store.collection('users').doc(userId).set({
+        'userId': userId,
         'name': name,
         'photoUrl': photoUrl,
         'token': token,
@@ -72,7 +70,46 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
       title: message.notification?.title ?? 'Title',
       body: message.notification?.body ?? 'Body',
       id: message.messageId.hashCode,
-      payload: jsonEncode(message.data),
+      payload: jsonEncode(
+        message.data,
+      ),
     );
+  }
+
+  @override
+  void listenToNotification() {
+    FirebaseMessaging.onBackgroundMessage(
+      (message) => _firebaseMessagingBackgroundHandler(message),
+    );
+    _onMessageReceived = FirebaseMessaging.onMessage.listen(null);
+    _onNotificationOpenedApp =
+        FirebaseMessaging.onMessageOpenedApp.listen(null);
+    _onMessageReceived?.onData((data) {
+      notificationRepository.showNotification(
+        title: data.notification?.title ?? 'Title',
+        body: data.notification?.body ?? 'Body',
+        id: data.messageId.hashCode,
+        payload: jsonEncode(
+          data.data,
+        ),
+      );
+    });
+    _onNotificationOpenedApp?.onData((data) {
+      notificationRepository.showNotification(
+        title: data.notification?.title ?? 'Title',
+        body: data.notification?.body ?? 'Body',
+        id: data.messageId.hashCode,
+        payload: jsonEncode(
+          data.data,
+        ),
+      );
+    });
+  }
+
+  @override
+  void removeNotificationListener() {
+    FirebaseMessaging.onBackgroundMessage((message) => Future.value());
+    _onMessageReceived?.cancel();
+    _onNotificationOpenedApp?.cancel();
   }
 }

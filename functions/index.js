@@ -1,19 +1,47 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+admin.initializeApp();
 
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
+exports.sendNotification = functions.firestore
+  .document("chats/{chatId}")
+  .onUpdate(async (change, context) => {
+    const data = change.after.data();
+    const previousData = change.before.data();
+    const chatId = context.params.chatId;
+    const lastMessage = data.messages[data.messages.length - 1];
+    const lastMessageContent = lastMessage.content;
+    const senderId = lastMessage.senderId;
+    const participants = data.participants;
+    const receiverId = participants.filter((id) => id !== senderId)[0];
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+    const querySnapshot = await admin
+      .firestore()
+      .collection("users")
+      .where("id", "in", [receiverId, senderId])
+      .get();
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+    if (querySnapshot.empty) {
+      return;
+    }
+
+    const receiverUser = querySnapshot.docs.filter((doc) => {
+      return doc.data().id === receiverId;
+    });
+    const receiverFcmToken = receiverUser.token;
+
+    const senderUser = querySnapshot.docs.filter((doc) => {
+      return doc.data().id === senderId;
+    });
+    const senderName = senderUser.data().name;
+    const senderPhotoURL = senderUser.data().photoUrl;
+
+    const message = {
+      token: receiverFcmToken,
+      notification: {
+        title: senderName,
+        body: lastMessageContent,
+      },
+      data: { photoUrl: senderPhotoURL },
+    };
+    await admin.messaging().send(message);
+  });

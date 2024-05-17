@@ -16,4 +16,5 @@ abstract class RemoteNotificationRepository {
     required String token,
   });
   void listenToNotification();
+  void removeNotificationListener();
 }

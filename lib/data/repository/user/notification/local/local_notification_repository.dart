@@ -19,7 +19,9 @@ class LocalNotificationRepository {
         InitializationSettings(
             android: initializationSettingsAndroid,
             iOS: initializationSettingsIOS);
-    await FlutterLocalNotificationsPlugin().initialize(initializationSettings);
+    await FlutterLocalNotificationsPlugin().initialize(
+      initializationSettings,
+    );
     _initializeNotificationChannel();
   }
 
@@ -53,8 +55,9 @@ class LocalNotificationRepository {
       priority: Priority.high,
       showWhen: false,
     );
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
     await flutterLocalNotificationsPlugin.show(
       id,
       title,
