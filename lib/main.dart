@@ -5,6 +5,8 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/fireabase_chat_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/status/firebase_user_status_repository.dart';
+import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:nesters/app/app.dart';
@@ -64,6 +66,7 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
     storageRepository: localStorageRepository,
     logger: appLoggerService,
   );
+  UserStatusRepository userStatusRepository = FirebaseUserStatusRepository();
   // Register all repositories
   locator.registerSingleton<LocalStorageRepository>(localStorageRepository);
   locator.registerSingleton<AppLoggerService>(appLoggerService);
@@ -73,4 +76,5 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
   locator.registerSingleton<DatabaseRepository>(databaseRepository);
   locator.registerSingleton<UserRepository>(userRepository);
   locator.registerSingleton<RemoteChatRepository>(remoteChatRepository);
+  locator.registerSingleton<UserStatusRepository>(userStatusRepository);
 }

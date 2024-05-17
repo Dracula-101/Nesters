@@ -8,9 +8,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
-import 'package:nesters/utils/logger/logger.dart';
+import 'package:nesters/domain/models/user/status/user_status.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
@@ -22,12 +23,16 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   final RemoteChatRepository _chatRepository = GetIt.I<RemoteChatRepository>();
+  final UserStatusRepository _userStatusRepository =
+      GetIt.I<UserStatusRepository>();
   final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
   final StreamController<List<Message>> _chatMessages =
       StreamController.broadcast();
   StreamSubscription? _chatSubscription;
   Stream<List<Message>> get chatMessages =>
       _chatMessages.stream.asBroadcastStream();
+  Stream<UserStatus>? _userStatus;
+  Stream<UserStatus>? get userStatus => _userStatus;
 
   Future<void> _onChatEvent(ChatEvent event, Emitter<ChatState> emit) async {
     await event.when(
@@ -54,7 +59,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   Future<void> _checkChat(
       String senderId, String receiverId, Emitter<ChatState> emit) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(
+        isLoading: true, senderId: senderId, receiverId: receiverId));
     try {
       String chatId = _chatRepository.generateChatId(senderId, receiverId);
       bool chatExists = await _chatRepository.doesChatExist(chatId);
@@ -80,6 +86,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           .asBroadcastStream()
           .listen((event) => _chatMessages.add(event));
     }
+    _userStatus ??= _userStatusRepository
+        .getUserStatus(state.receiverId!)
+        .asBroadcastStream();
   }
 
   void _cancelChatSubscription() {

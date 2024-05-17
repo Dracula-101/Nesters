@@ -5,6 +5,8 @@ class ChatState with _$ChatState {
   const factory ChatState({
     required bool isLoading,
     String? chatId,
+    String? senderId,
+    String? receiverId,
     Map<DocumentSource, DocumentUploadTask>? uploadTask,
     @Default(false) bool doesChatExist,
     Exception? error,

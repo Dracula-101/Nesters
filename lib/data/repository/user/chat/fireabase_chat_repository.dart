@@ -106,17 +106,18 @@ class FirebaseChatRepository extends RemoteChatRepository {
 
   @override
   Future<String?> downloadDocument(String url) async {
-    late String message;
-    var random = Random();
+    String? message;
+    Random random = Random();
     try {
       // Download image
       final http.Response response = await http.get(Uri.parse(url));
 
       // Get temporary directory
       final dir = await getTemporaryDirectory();
-
+      final fileType = url.split('.').last.split('?').first;
       // Create an image name
-      var filename = '${dir.path}/SaveImage${random.nextInt(100)}.png';
+      String filename =
+          '${dir.path}/SaveImage${random.nextInt(1000)}.$fileType';
 
       // Save to filesystem
       final file = File(filename);

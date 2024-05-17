@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
@@ -21,7 +22,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
   final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
-  final UserRepository _userRepository = GetIt.I<UserRepository>();
 
   Future<void> _onGoogleSignIn(
     AuthGoogleSiginInEvent event,

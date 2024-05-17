@@ -1,22 +1,17 @@
-import 'dart:io';
-import 'dart:math';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
+import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
 import 'package:intl/intl.dart'; //for DateFormat
-import 'package:http/http.dart' as http;
-import 'package:path_provider/path_provider.dart';
 
 class UserChatPage extends StatelessWidget {
   final String chatId;
@@ -108,33 +103,50 @@ class _ChatViewState extends State<ChatView> {
 
   AppBar _buildAppBarUI(BuildContext context) {
     return AppBar(
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_rounded,
+        ),
+        onPressed: () {
+          Navigator.of(context).pop();
+        },
+      ),
+      leadingWidth: 45,
+      titleSpacing: 0,
       title: Row(
         children: [
           CircleAvatar(
             radius: 20,
             backgroundImage: CachedNetworkImageProvider(
-                widget.receiverProf.profileImage ?? ''),
+              widget.receiverProf.profileImage ?? '',
+            ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(
+            width: 10,
+          ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(widget.receiverProf.fullName ?? '',
                   style: AppTheme.labelLarge),
-              Text(
-                '${(widget.receiverProf.city ?? '').toString().trim()}, ${widget.receiverProf.state ?? ''}',
-                style: AppTheme.labelSmallLightVariant,
-              ),
+              StreamBuilder(
+                stream: context.read<ChatBloc>().userStatus,
+                builder: (context, snapshot) {
+                  return Text(
+                    snapshot.data?.status == Status.ONLINE
+                        ? 'Online'
+                        : snapshot.data?.lastSeen != null
+                            ? 'Last seen ${DateFormat('hh:mm a').format(snapshot.data!.lastSeen!)}'
+                            : 'Offline',
+                    style: AppTheme.bodySmall.copyWith(
+                      color: AppTheme.greyShades.shade400,
+                    ),
+                  );
+                },
+              )
             ],
           )
         ],
-      ),
-      leadingWidth: 30,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_rounded),
-        onPressed: () {
-          Navigator.of(context).pop();
-        },
       ),
     );
   }

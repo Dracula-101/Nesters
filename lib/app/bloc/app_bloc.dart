@@ -1,12 +1,18 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
+import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -32,6 +38,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       GetIt.I<LocalStorageRepository>();
   final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
   final UserRepository _userRepository = GetIt.I<UserRepository>();
+  final UserStatusRepository _userStatusRepository =
+      GetIt.I<UserStatusRepository>();
+  AppLifecycleListener? _appLifecycleListener;
+  String? userId;
   bool isCompletedOnboarding = false;
 
   Future<void> _loadApp(AppEvent event, Emitter<AppState> emit) async {
@@ -71,17 +81,18 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else {
       _loggerService.info('User is not logged in');
     }
+    userId ??= user?.id;
     _intializeNavigationHandler(
         user != null, isCompletedOnboarding, user?.isProfileCreated ?? false);
+    _initalizeAppLifecycleListener(user != null);
   }
 
   Future<User?> _checkUserProfileCreated(User? user) async {
+    if (user == null) return null;
     bool isProfileCreated =
-        await _userRepository.checkUserCreated(user?.id ?? '') ?? false;
+        await _userRepository.checkUserCreated(user.id) ?? false;
     _loggerService.info('User Profile Created: $isProfileCreated');
-    if (user != null) {
-      user = user.copyWith(isProfileCreated: isProfileCreated);
-    }
+    user = user.copyWith(isProfileCreated: isProfileCreated);
     return user;
   }
 
@@ -100,5 +111,31 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     // route = AppRouterService.homeScreen;
     _loggerService.info('Initial Route: $route');
     AppRouterService.navigatorKey.currentContext!.go(route);
+  }
+
+  void _initalizeAppLifecycleListener(bool isLoggedIn) {
+    if (!isLoggedIn) {
+      unawaited(
+          _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!));
+      _appLifecycleListener?.dispose();
+      _appLifecycleListener = null;
+    } else {
+      _appLifecycleListener ??= AppLifecycleListener(
+        onExitRequested: () async {
+          if (userId == null) return AppExitResponse.exit;
+          await _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
+          return AppExitResponse.exit;
+        },
+        onStateChange: (lifecycleState) {
+          if (lifecycleState == AppLifecycleState.resumed) {
+            if (userId == null) return;
+            _userStatusRepository.updateUserStatus(Status.ONLINE, userId!);
+          } else if (lifecycleState == AppLifecycleState.paused) {
+            if (userId == null) return;
+            _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
+          }
+        },
+      );
+    }
   }
 }

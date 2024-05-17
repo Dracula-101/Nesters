@@ -10,6 +10,7 @@ import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:shimmer/shimmer.dart';
 
 import 'components/user_quick_profile_widget.dart';
 
@@ -117,16 +118,15 @@ class _HomeViewState extends State<HomeView> {
               children: [
                 CircleAvatar(
                   radius: 20,
+                  backgroundColor: AppColor.white,
+                  backgroundImage: const AssetImage(
+                    'assets/images/user/user_placeholder.png',
+                  ),
                   child: ClipOval(
                     child: state.user.photoUrl != ''
                         ? Image.network(
                             state.user.photoUrl,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(
-                                Icons.person,
-                                size: 20,
-                              );
-                            },
+                            fit: BoxFit.cover,
                           )
                         : const Icon(
                             Icons.person,
@@ -134,7 +134,9 @@ class _HomeViewState extends State<HomeView> {
                           ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(
+                  width: 8,
+                ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

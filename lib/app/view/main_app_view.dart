@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
+import 'package:nesters/app/lifecycle_listener.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 
-class RootApp extends StatelessWidget {
+class RootApp extends StatelessWidget with WidgetsBindingObserver {
   const RootApp({super.key});
 
   @override
