@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
-
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/src/painting/image_decoder.dart' as image_decoder;
 
 class LocalNotificationRepository {
   final AndroidInitializationSettings initializationSettingsAndroid =
@@ -40,27 +44,55 @@ class LocalNotificationRepository {
     }
   }
 
+  Future<String> _base64encodedImage(String url) async {
+    final http.Response response = await http.get(Uri.parse(url));
+    final String base64Data = base64Encode(response.bodyBytes);
+    return base64Data;
+  }
+
   Future<void> showNotification({
     required String title,
     required String body,
     required int id,
     required String payload,
   }) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    String photoUrl = json.decode(payload)['photoUrl'];
+    log('Photo Url: $photoUrl');
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       _channelId,
       _channelName,
       channelDescription: _channelDescription,
       importance: Importance.max,
       priority: Priority.high,
-      showWhen: false,
+      icon: '@mipmap/ic_launcher',
+      styleInformation: MessagingStyleInformation(
+        Person(
+          name: title,
+          icon: ByteArrayAndroidIcon.fromBase64String(
+            await _base64encodedImage(photoUrl),
+          ),
+        ),
+        conversationTitle: title,
+        groupConversation: false,
+        htmlFormatContent: true,
+        htmlFormatTitle: true,
+        messages: [
+          Message(
+            body,
+            DateTime.now(),
+            null,
+          ),
+        ],
+      ),
+      category: AndroidNotificationCategory.message,
     );
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+    NotificationDetails platformChannelSpecifics = NotificationDetails(
       android: androidPlatformChannelSpecifics,
     );
     await flutterLocalNotificationsPlugin.show(
       id,
-      title,
+      null,
       body,
       platformChannelSpecifics,
       payload: payload,

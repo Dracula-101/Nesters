@@ -26,6 +26,12 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
         badge: true,
         criticalAlert: true,
       );
+      await FirebaseMessaging.instance
+          .setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
       return settings.authorizationStatus == AuthorizationStatus.authorized;
     } on Exception {
       rethrow;
@@ -77,10 +83,7 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
   }
 
   @override
-  void listenToNotification() {
-    FirebaseMessaging.onBackgroundMessage(
-      (message) => _firebaseMessagingBackgroundHandler(message),
-    );
+  void listenToNotification() async {
     _onMessageReceived = FirebaseMessaging.onMessage.listen(null);
     _onNotificationOpenedApp =
         FirebaseMessaging.onMessageOpenedApp.listen(null);

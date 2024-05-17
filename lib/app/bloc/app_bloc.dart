@@ -101,7 +101,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         user != null, isCompletedOnboarding, user?.isProfileCreated ?? false);
     _initalizeAppLifecycleListener(user != null);
     _checkNotificationPermission(user);
-    _addNotificationListener(user);
+    // _addNotificationListener(user);
   }
 
   Future<User?> _checkUserProfileCreated(User? user) async {

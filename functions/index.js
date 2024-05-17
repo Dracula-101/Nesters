@@ -2,6 +2,29 @@ const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 admin.initializeApp(functions.config().firebase);
 
+exports.testNotification = functions.https.onRequest(async (req, res) => {
+  try {
+    const message = {
+      token:
+        "ds3gMe2hROmX7TpkTGjH_v:APA91bHqQX5ILjPRTXK7Dh3VTyKj1_8_6deFxxi54w7_3RncmS9sPI0Lzp1I9IJYLexZZS4geq35VpcuFSBQjv12Up2to8GHsjhtBNMpLXxOLnMOQzhAZ1RaW8uRWgVm5wtm8TkvlvMz",
+      notification: {
+        title: "Pratik Pujari",
+        body: "Hello from Firebase!",
+      },
+      data: {
+        photoUrl:
+          "https://lh3.googleusercontent.com/a/ACg8ocIFK85rGX95I0Zz8G7BFOPw1D3XnMUYr-pejmpTlgqNSsZjOzLs=s96-c",
+      },
+    };
+    const notificationResponse = await admin.messaging().send(message);
+    console.log("notificationResponse", notificationResponse);
+    res.send("Notification sent successfully");
+  } catch (e) {
+    console.log(e);
+    res.status(500).send("Error sending notification");
+  }
+});
+
 exports.sendNotification = functions.firestore
   .document("chats/{chatId}")
   .onUpdate(async (change, context) => {

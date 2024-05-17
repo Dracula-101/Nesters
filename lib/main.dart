@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
@@ -30,6 +33,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupFirebase();
   await initalizeApp();
+  setupMessaging();
   Bloc.observer = AppBlocObserver();
   runApp(const RootApp());
 }
@@ -46,11 +50,28 @@ Future<void> setupSupabase(AppSecretsRepository appSecrets) {
   );
 }
 
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  GetIt locator = GetIt.instance;
+  LocalNotificationRepository notificationRepository =
+      locator<LocalNotificationRepository>();
+  notificationRepository.showNotification(
+    title: message.notification?.title ?? '',
+    body: message.notification?.body ?? '',
+    id: message.messageId.hashCode,
+    payload: json.encode(message.data),
+  );
+}
+
 Future<void> initalizeApp() async {
   AppSecretsRepository appSecrets = AppSecretsRepository();
   await appSecrets.init();
   setupSupabase(appSecrets);
   setupLocator(appSecrets);
+}
+
+void setupMessaging() {
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 }
 
 void setupLocator(AppSecretsRepository appSecretsRepository) {
@@ -85,11 +106,14 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
   locator.registerSingleton<UserRepository>(userRepository);
   locator.registerSingleton<RemoteChatRepository>(remoteChatRepository);
   locator.registerSingleton<UserStatusRepository>(userStatusRepository);
-  locator.registerSingletonAsync<LocalNotificationRepository>(
-    () async => notificationRepository..init(),
-    signalsReady: true,
-  );
   locator.registerSingleton<RemoteNotificationRepository>(
-    remoteNotificationRepository,
+    remoteNotificationRepository..listenToNotification(),
+  );
+  locator.registerSingletonAsync<LocalNotificationRepository>(
+    () async {
+      await notificationRepository.init();
+      return notificationRepository;
+    },
+    signalsReady: true,
   );
 }
