@@ -120,6 +120,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       _appLifecycleListener?.dispose();
       _appLifecycleListener = null;
     } else {
+      unawaited(_userStatusRepository.updateUserStatus(Status.ONLINE, userId!));
       _appLifecycleListener ??= AppLifecycleListener(
         onExitRequested: () async {
           if (userId == null) return AppExitResponse.exit;

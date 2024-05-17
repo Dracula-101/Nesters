@@ -9,11 +9,19 @@ import 'package:nesters/domain/models/user/status/user_status.dart';
 class FirebaseUserStatusRepository extends UserStatusRepository {
   final FirebaseDatabase _database = FirebaseDatabase.instance;
   final String _userStatusPath = 'user_status';
+
   @override
   Stream<UserStatus> getUserStatus(String userId) {
     try {
-      return _database.ref('$_userStatusPath/$userId').onValue.map((event) =>
-          UserStatus.fromJson(
+      //log user id
+      print(userId);
+      _database.ref('$_userStatusPath/$userId').onValue.listen((event) {
+        // Handle event data here
+        print("event.snapshot.value");
+        print(event.snapshot.value);
+      });
+      return _database.ref('$_userStatusPath/$userId').onChildChanged.map(
+          (event) => UserStatus.fromJson(
               event.snapshot.value as Map<String, dynamic>, userId));
     } catch (e) {
       log('Error getting user status: $e');
