@@ -115,8 +115,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   void _initalizeAppLifecycleListener(bool isLoggedIn) {
     if (!isLoggedIn) {
-      unawaited(
-          _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!));
+      if (userId != null) {
+        unawaited(
+            _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!));
+      }
       _appLifecycleListener?.dispose();
       _appLifecycleListener = null;
     } else {

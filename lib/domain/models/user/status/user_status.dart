@@ -7,7 +7,7 @@ class UserStatus {
 
   UserStatus({this.status, this.lastSeen, this.userId});
 
-  factory UserStatus.fromJson(Map<String, dynamic> json, String userId) {
+  factory UserStatus.fromJson(Map<dynamic, dynamic> json, String userId) {
     return UserStatus(
       status: Status.fromString(json['status']),
       lastSeen:

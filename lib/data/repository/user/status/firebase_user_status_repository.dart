@@ -13,16 +13,9 @@ class FirebaseUserStatusRepository extends UserStatusRepository {
   @override
   Stream<UserStatus> getUserStatus(String userId) {
     try {
-      //log user id
-      print(userId);
-      _database.ref('$_userStatusPath/$userId').onValue.listen((event) {
-        // Handle event data here
-        print("event.snapshot.value");
-        print(event.snapshot.value);
+      return _database.ref('$_userStatusPath/$userId').onValue.map((event) {
+        return UserStatus.fromJson(event.snapshot.value as Map, userId);
       });
-      return _database.ref('$_userStatusPath/$userId').onChildChanged.map(
-          (event) => UserStatus.fromJson(
-              event.snapshot.value as Map<String, dynamic>, userId));
     } catch (e) {
       log('Error getting user status: $e');
       return const Stream.empty();
