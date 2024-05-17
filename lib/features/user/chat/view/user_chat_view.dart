@@ -6,6 +6,7 @@ import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/status/status.dart';
+import 'package:nesters/domain/models/user/status/user_status.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
@@ -129,12 +130,12 @@ class _ChatViewState extends State<ChatView> {
             children: [
               Text(widget.receiverProf.fullName ?? '',
                   style: AppTheme.labelLarge),
-              StreamBuilder(
+              StreamBuilder<UserStatus>(
                 stream: context.read<ChatBloc>().userStatus,
                 builder: (context, snapshot) {
                   return Text(
                     snapshot.data?.status == Status.ONLINE
-                        ? 'Online'
+                        ? (snapshot.data?.status.toString() ?? '')
                         : snapshot.data?.lastSeen != null
                             ? 'Last seen ${DateFormat('hh:mm a').format(snapshot.data!.lastSeen!)}'
                             : 'Offline',

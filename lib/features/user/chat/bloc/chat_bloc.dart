@@ -12,6 +12,7 @@ import 'package:nesters/data/repository/user/status/user_status_repository.dart'
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
+import 'package:nesters/utils/logger/logger.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
@@ -28,11 +29,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
   final StreamController<List<Message>> _chatMessages =
       StreamController.broadcast();
-  StreamSubscription? _chatSubscription;
+  StreamSubscription? _chatSubscription, _userStatusSubscription;
   Stream<List<Message>> get chatMessages =>
       _chatMessages.stream.asBroadcastStream();
-  Stream<UserStatus>? _userStatus;
-  Stream<UserStatus>? get userStatus => _userStatus;
+  final StreamController<UserStatus> _userStatusController =
+      StreamController.broadcast();
+  Stream<UserStatus>? get userStatus =>
+      _userStatusController.stream.asBroadcastStream();
 
   Future<void> _onChatEvent(ChatEvent event, Emitter<ChatState> emit) async {
     await event.when(
@@ -86,15 +89,23 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           .asBroadcastStream()
           .listen((event) => _chatMessages.add(event));
     }
-    _userStatus ??= _userStatusRepository
-        .getUserStatus(state.receiverId!)
-        .asBroadcastStream();
+    if (_userStatusSubscription == null) {
+      _userStatusSubscription?.cancel();
+      _userStatusSubscription = _userStatusRepository
+          .getUserStatus(state.receiverId!)
+          .asBroadcastStream()
+          .listen((event) => _userStatusController.add(event));
+    }
   }
 
   void _cancelChatSubscription() {
     if (_chatSubscription != null) {
       _chatSubscription!.cancel();
       _chatSubscription = null;
+    }
+    if (_userStatusSubscription != null) {
+      _userStatusSubscription!.cancel();
+      _userStatusSubscription = null;
     }
   }
 
