@@ -3,40 +3,40 @@ abstract class LocalStorageRepository {
   Future<void> init();
 
   // ================= Object =================
-  Future<Object?> getObject(String key);
+  Object? getObject(String key);
   Future<void> saveObject(String key, Object value);
 
   // ================= String =================
-  Future<String?> getString(String key);
+  String? getString(String key);
   Future<void> saveString(String key, String value);
 
   // ================= Bool =================
-  Future<bool?> getBool(String key);
+  bool? getBool(String key);
   Future<void> saveBool(String key, bool value);
 
   // ================= Int =================
-  Future<int?> getInt(String key);
+  int? getInt(String key);
   Future<void> saveInt(String key, int value);
 
   // ================= Double =================
-  Future<double?> getDouble(String key);
+  double? getDouble(String key);
   Future<void> saveDouble(String key, double value);
 
   // ================= List<Object> =================
-  Future<List<Object?>?> getListObject(String key);
+  List<Object?>? getListObject(String key);
   Future<void> saveListObject(String key, List<Object> value);
 
   // ================= Map<Object, Object> =================
-  Future<Map<Object?, Object?>?> getMapObject(String key);
+  Map<Object?, Object?>? getMapObject(String key);
   Future<void> saveMapObject(String key, Map<Object, Object> value);
 
   // ================= Custom Classes =================
-  Future<T?> getClass<T>(String key, T Function(Map<String, dynamic>) fromJson);
+  T? getClass<T>(String key, T Function(Map<String, dynamic>) fromJson);
   Future<void> saveClass<T>(
       String key, T value, Map<String, dynamic> Function(T) toJson);
 
   // ================= List of Custom Classes =================
-  Future<List<T?>?> getListClass<T>(
+  List<T?>? getListClass<T>(
       String key, T Function(Map<String, dynamic>) fromJson);
   Future<void> saveListClass<T>(
       String key, List<T> value, Map<String, dynamic> Function(T) toJson);
@@ -47,4 +47,6 @@ abstract class LocalStorageRepository {
 
 class LocalStorageKeys {
   static const userOnboardingComplete = 'userOnboardingComplete';
+  static const userToken = 'userToken';
+  static const userDataSaved = 'userDataSaved';
 }

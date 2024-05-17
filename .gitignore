@@ -59,5 +59,10 @@ devtools_options.yaml
 # Env
 .env
 
+# Firebase
+.firebaserc
+
 # VSCode
 .vscode/*
+functions/package-lock.json
+firebase.json

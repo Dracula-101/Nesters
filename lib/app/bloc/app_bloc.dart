@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
+import 'package:nesters/data/repository/user/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/status/status.dart';
@@ -34,6 +35,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
+  final RemoteNotificationRepository _rNotificationRepository =
+      GetIt.I<RemoteNotificationRepository>();
   final LocalStorageRepository _localStorageRepository =
       GetIt.I<LocalStorageRepository>();
   final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
@@ -53,6 +56,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           .checkUserOnboardingStatus()
           .then((value) => isCompletedOnboarding = value)
           .timeInMilliseconds;
+      unawaited(loadAndSaveToken());
       await Future.delayed(
           Duration(milliseconds: 1500 - checkOnboardingTime - storageInitTime));
       _loggerService.info('Storage Intialized in : $storageInitTime ms');
@@ -61,6 +65,17 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } catch (e) {
       _loggerService.error('Error loading app: $e');
       emit(const AppState.loadFailure());
+    }
+  }
+
+  Future<void> loadAndSaveToken() async {
+    try {
+      String token = await _rNotificationRepository.getToken();
+      _loggerService.info('Token: $token');
+      await _localStorageRepository.saveString(
+          token, LocalStorageKeys.userToken);
+    } catch (e) {
+      _loggerService.error('Error loading token: $e');
     }
   }
 
@@ -85,6 +100,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     _intializeNavigationHandler(
         user != null, isCompletedOnboarding, user?.isProfileCreated ?? false);
     _initalizeAppLifecycleListener(user != null);
+    _checkNotificationPermission(user);
   }
 
   Future<User?> _checkUserProfileCreated(User? user) async {
@@ -139,6 +155,35 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           }
         },
       );
+    }
+  }
+
+  FutureOr<void> _checkNotificationPermission(User? user) async {
+    if (user != null) {
+      _rNotificationRepository.init();
+      String? token =
+          _localStorageRepository.getString(LocalStorageKeys.userToken);
+      if (token == null) {
+        token = await _rNotificationRepository.getToken();
+        unawaited(_localStorageRepository.saveString(
+            token, LocalStorageKeys.userToken));
+      }
+      bool isSavedData =
+          _localStorageRepository.getBool(LocalStorageKeys.userDataSaved) ??
+              false;
+      if (!isSavedData) {
+        _rNotificationRepository
+            .saveData(
+          userId: user.id,
+          name: user.name,
+          photoUrl: user.photoUrl,
+          token: token,
+        )
+            .then((value) {
+          _localStorageRepository.saveBool(
+              LocalStorageKeys.userDataSaved, true);
+        });
+      }
     }
   }
 }

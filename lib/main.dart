@@ -5,6 +5,9 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/fireabase_chat_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/notification/local/local_notification_repository.dart';
+import 'package:nesters/data/repository/user/notification/remote/firebase_notification_repository.dart';
+import 'package:nesters/data/repository/user/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/status/firebase_user_status_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -67,6 +70,11 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
     logger: appLoggerService,
   );
   UserStatusRepository userStatusRepository = FirebaseUserStatusRepository();
+  LocalNotificationRepository notificationRepository =
+      LocalNotificationRepository();
+  RemoteNotificationRepository remoteNotificationRepository =
+      FirebaseNotificationRepository(
+          notificationRepository: notificationRepository);
   // Register all repositories
   locator.registerSingleton<LocalStorageRepository>(localStorageRepository);
   locator.registerSingleton<AppLoggerService>(appLoggerService);
@@ -77,4 +85,11 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
   locator.registerSingleton<UserRepository>(userRepository);
   locator.registerSingleton<RemoteChatRepository>(remoteChatRepository);
   locator.registerSingleton<UserStatusRepository>(userStatusRepository);
+  locator.registerSingletonAsync<LocalNotificationRepository>(
+    () async => notificationRepository..init(),
+    signalsReady: true,
+  );
+  locator.registerSingleton<RemoteNotificationRepository>(
+    remoteNotificationRepository,
+  );
 }

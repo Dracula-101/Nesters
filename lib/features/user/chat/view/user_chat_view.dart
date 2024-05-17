@@ -23,7 +23,7 @@ class UserChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ChatBloc(),
+      create: (context) => ChatBloc(chatId: chatId),
       child: ChatView(receiverProf: userQuickProfile),
     );
   }

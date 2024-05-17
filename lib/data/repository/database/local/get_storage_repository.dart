@@ -40,7 +40,7 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  Future<String?> getString(String key) async {
+  String? getString(String key) {
     try {
       final value = _getStorage.read(key);
       if (value is! String?) {
@@ -63,7 +63,7 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  Future<bool?> getBool(String key) async {
+  bool? getBool(String key) {
     try {
       final value = _getStorage.read(key);
       if (value is! bool?) {
@@ -86,7 +86,7 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  Future<int?> getInt(String key) async {
+  int? getInt(String key) {
     try {
       final value = _getStorage.read(key);
       if (value is! int?) {
@@ -109,7 +109,7 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  Future<double?> getDouble(String key) async {
+  double? getDouble(String key)  {
     try {
       final value = _getStorage.read(key);
       if (value is! double) {
@@ -132,7 +132,7 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  Future<List<Object?>?> getListObject(String key) async {
+  List<Object?>? getListObject(String key) {
     try {
       final value = _getStorage.read(key);
       if (value is! List<Object>) {
@@ -146,7 +146,7 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  Future<Map<Object?, Object?>?> getMapObject(String key) async {
+  Map<Object?, Object?>? getMapObject(String key) {
     try {
       final value = _getStorage.read(key);
       if (value is! Map<Object?, Object?>?) {
@@ -169,8 +169,8 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  Future<T?> getClass<T>(
-      String key, T Function(Map<String, dynamic>) fromJson) async {
+  T? getClass<T>(
+      String key, T Function(Map<String, dynamic>) fromJson) {
     try {
       final value = _getStorage.read(key);
       if (value is! Map<String, dynamic>) {
@@ -194,8 +194,8 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  Future<List<T?>?> getListClass<T>(
-      String key, T Function(Map<String, dynamic>) fromJson) async {
+  List<T?>? getListClass<T>(
+      String key, T Function(Map<String, dynamic>) fromJson) {
     try {
       final value = _getStorage.read(key);
       if (value is! List<Map<String, dynamic>>) {

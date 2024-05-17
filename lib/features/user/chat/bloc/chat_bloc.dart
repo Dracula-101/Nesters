@@ -12,14 +12,17 @@ import 'package:nesters/data/repository/user/status/user_status_repository.dart'
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
-import 'package:nesters/utils/logger/logger.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
 part 'chat_bloc.freezed.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  ChatBloc() : super(ChatState.initial()) {
+  String chatId;
+
+  ChatBloc({
+    required this.chatId,
+  }) : super(ChatState.initial()) {
     on<ChatEvent>(_onChatEvent);
   }
 
@@ -65,7 +68,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(state.copyWith(
         isLoading: true, senderId: senderId, receiverId: receiverId));
     try {
-      String chatId = _chatRepository.generateChatId(senderId, receiverId);
       bool chatExists = await _chatRepository.doesChatExist(chatId);
       if (!chatExists) {
         await _chatRepository.createChat(chatId,

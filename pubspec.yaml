@@ -46,6 +46,7 @@ dependencies:
   supabase_flutter: ^2.5.2
   firebase_database: ^10.4.9
   firebase_messaging: ^14.7.19
+  flutter_local_notifications: ^17.1.2
 
 dev_dependencies:
   flutter_test:
