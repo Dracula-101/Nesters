@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/view/app_scaffold.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
+import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/view/auth_view.dart';
 import 'package:nesters/features/home/view/home_view.dart';
 import 'package:nesters/features/onboarding/view/onboarding_view.dart';
 import 'package:nesters/features/splash/view/splash_view.dart';
+import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/features/user/chat/view/user_chat_view.dart';
 import 'package:nesters/features/user/detail/view/profile.dart';
 import 'package:nesters/features/user/profile/forms/view/advance_form_view.dart';
@@ -17,11 +19,12 @@ class AppRouterService {
   static const String splashScreen = '/';
   static const String onboardingScreen = '/onboarding';
   static const String homeScreen = '/home';
+  static const String notificationScreen = '/notification';
   static const String loginScreen = '/login';
   static const String userProfileBasicFormScreen = '/basic_form';
   static const String userProfileAdvanceFormScreen = '/advance_form';
   static const String userProfile = 'user_profile';
-  static const String userChatFromProfile = 'chat';
+  static const String userChatHome = 'chat';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -74,25 +77,42 @@ class AppRouterService {
             userProfileAdvanceFormScreen,
             (_) => const UserProfileAdvanceForm(),
           ),
-          AppRoute(
-            homeScreen,
-            (_) => const HomePage(),
+          ShellRoute(
+            builder: (context, router, navigator) {
+              return HomeScaffold(
+                innerContent: navigator,
+              );
+            },
             routes: [
               AppRoute(
-                '$userProfile/:id',
-                (_) {
-                  return UserProfilePage(id: _.pathParameters['id'] ?? '');
-                },
+                homeScreen,
+                (_) => const HomePage(),
+                routes: [
+                  AppRoute(
+                    '$userProfile/:id',
+                    (_) {
+                      return UserProfilePage(id: _.pathParameters['id'] ?? '');
+                    },
+                  ),
+                  AppRoute(
+                    userChatHome,
+                    (_) => const ChatHomePage(),
+                  ),
+                  AppRoute(
+                    '$userChatHome/:chatId',
+                    (params) => UserChatPage(
+                      chatId: params.pathParameters['chatId'] ?? '',
+                      userProfile: params.extra as User,
+                    ),
+                  ),
+                ],
               ),
               AppRoute(
-                '$userChatFromProfile/:chatId',
-                (params) => UserChatPage(
-                  chatId: params.pathParameters['chatId'] ?? '',
-                  userQuickProfile: params.extra as UserQuickProfile,
-                ),
+                notificationScreen,
+                (_) => const NotificationPage(),
               ),
             ],
-          ),
+          )
         ],
       ),
     ],

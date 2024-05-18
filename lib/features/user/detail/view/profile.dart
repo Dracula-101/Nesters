@@ -51,8 +51,8 @@ class UserProfilePage extends StatelessWidget {
                   otherUserId,
                 );
                 GoRouter.of(context).go(
-                  '${AppRouterService.homeScreen}/${AppRouterService.userChatFromProfile}/$chatId',
-                  extra: state.userProfile?.toUserQuickProfile(),
+                  '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+                  extra: state.userProfile?.toUser(),
                 );
               },
             );

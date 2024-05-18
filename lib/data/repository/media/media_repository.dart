@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:flutter/src/painting/image_decoder.dart' as image_decoder;
 import 'package:image_picker/image_picker.dart';
 import 'package:nesters/data/repository/media/media_compressor.dart';
 
@@ -26,5 +29,11 @@ class MediaRepository {
     }
     File file = File(image.path);
     return await _mediaCompressor.compressFile(file);
+  }
+
+  Future<String> base64encodedImage(String url) async {
+    final http.Response response = await http.get(Uri.parse(url));
+    final String base64Data = base64Encode(response.bodyBytes);
+    return base64Data;
   }
 }

@@ -4,18 +4,25 @@ admin.initializeApp(functions.config().firebase);
 
 exports.testNotification = functions.https.onRequest(async (req, res) => {
   try {
-    const message = {
-      token:
-        "ds3gMe2hROmX7TpkTGjH_v:APA91bHqQX5ILjPRTXK7Dh3VTyKj1_8_6deFxxi54w7_3RncmS9sPI0Lzp1I9IJYLexZZS4geq35VpcuFSBQjv12Up2to8GHsjhtBNMpLXxOLnMOQzhAZ1RaW8uRWgVm5wtm8TkvlvMz",
-      notification: {
-        title: "Pratik Pujari",
-        body: "Hello from Firebase!",
-      },
-      data: {
-        photoUrl:
-          "https://lh3.googleusercontent.com/a/ACg8ocIFK85rGX95I0Zz8G7BFOPw1D3XnMUYr-pejmpTlgqNSsZjOzLs=s96-c",
-      },
-    };
+    let message;
+    if (req.method === "GET") {
+      return res.status(405).send("Method Not Allowed");
+    } else if (req.method === "POST") {
+      message = {
+        token: req.body.token,
+        notification: {
+          title: req.body.title,
+          body: req.body.body,
+        },
+        data: {
+          photoUrl: req.body.photoUrl,
+          notificationType: req.body.notificationType,
+          chatId: req.body.chatId,
+          senderName: req.body.senderName,
+          senderId: req.body.senderId,
+        },
+      };
+    }
     const notificationResponse = await admin.messaging().send(message);
     console.log("notificationResponse", notificationResponse);
     res.send("Notification sent successfully");
@@ -55,26 +62,20 @@ exports.sendNotification = functions.firestore
         (doc) => doc.data().userId === senderId
       );
       const senderName = senderUser.data().name;
-      const senderPhotoURL = senderUser.data().photoUrl;
-      console.log(
-        "Sending notification to",
-        receiverId,
-        "with token",
-        receiverFcmToken,
-        "from",
-        senderId,
-        "with name",
-        senderName,
-        "and photo",
-        senderPhotoURL
-      );
+      const senderPhotoUrl = senderUser.data().photoUrl;
       const message = {
         token: receiverFcmToken,
         notification: {
           title: senderName,
           body: lastMessageContent,
         },
-        data: { photoUrl: senderPhotoURL },
+        data: {
+          photoUrl: senderPhotoUrl,
+          notificationType: "chat",
+          chatId: chatId,
+          senderName: senderName,
+          senderId: senderId,
+        },
       };
       const notificationResponse = await admin.messaging().send(message);
       console.log("notificationResponse", notificationResponse);

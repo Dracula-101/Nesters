@@ -7,6 +7,7 @@ import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/user.dart';
 
 class UserProfile extends Equatable {
   final String? id;
@@ -204,6 +205,17 @@ class UserProfile extends Equatable {
       selectedCourseName: selectedCourseName,
       profileImage: profileImage,
       workExperience: workExperience,
+    );
+  }
+
+  User toUser() {
+    return User(
+      id: id ?? '',
+      name: fullName ?? '',
+      email: '',
+      photoUrl: profileImage ?? '',
+      isProfileCompleted: true,
+      isProfileCreated: true,
     );
   }
 }

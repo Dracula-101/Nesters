@@ -8,9 +8,9 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/fireabase_chat_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
-import 'package:nesters/data/repository/user/notification/local/local_notification_repository.dart';
-import 'package:nesters/data/repository/user/notification/remote/firebase_notification_repository.dart';
-import 'package:nesters/data/repository/user/notification/remote/remote_notification_repository.dart';
+import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
+import 'package:nesters/data/repository/notification/remote/firebase_notification_repository.dart';
+import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/status/firebase_user_status_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -67,14 +67,14 @@ Future<void> initalizeApp() async {
   AppSecretsRepository appSecrets = AppSecretsRepository();
   await appSecrets.init();
   setupSupabase(appSecrets);
-  setupLocator(appSecrets);
+  await setupLocator(appSecrets);
 }
 
 void setupMessaging() {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 }
 
-void setupLocator(AppSecretsRepository appSecretsRepository) {
+Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   GetIt locator = GetIt.instance;
   // Initalize All repositories
   LocalStorageRepository localStorageRepository = GetStorageRepository();
@@ -92,10 +92,13 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
   );
   UserStatusRepository userStatusRepository = FirebaseUserStatusRepository();
   LocalNotificationRepository notificationRepository =
-      LocalNotificationRepository();
+      LocalNotificationRepository(appRouterService: appRouterService);
+  await notificationRepository.init();
   RemoteNotificationRepository remoteNotificationRepository =
       FirebaseNotificationRepository(
-          notificationRepository: notificationRepository);
+    notificationRepository: notificationRepository,
+    appRouterService: appRouterService,
+  );
   // Register all repositories
   locator.registerSingleton<LocalStorageRepository>(localStorageRepository);
   locator.registerSingleton<AppLoggerService>(appLoggerService);
@@ -106,14 +109,9 @@ void setupLocator(AppSecretsRepository appSecretsRepository) {
   locator.registerSingleton<UserRepository>(userRepository);
   locator.registerSingleton<RemoteChatRepository>(remoteChatRepository);
   locator.registerSingleton<UserStatusRepository>(userStatusRepository);
+  locator
+      .registerSingleton<LocalNotificationRepository>(notificationRepository);
   locator.registerSingleton<RemoteNotificationRepository>(
     remoteNotificationRepository..listenToNotification(),
-  );
-  locator.registerSingletonAsync<LocalNotificationRepository>(
-    () async {
-      await notificationRepository.init();
-      return notificationRepository;
-    },
-    signalsReady: true,
   );
 }

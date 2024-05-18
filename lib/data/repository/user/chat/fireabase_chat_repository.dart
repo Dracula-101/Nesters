@@ -76,15 +76,20 @@ class FirebaseChatRepository extends RemoteChatRepository {
   }
 
   @override
-  Future<void> createChat(String chatId,
-      {required String senderId, required String receiverId}) {
+  Future<void> createChat(
+    String chatId, {
+    required String senderId,
+    required String receiverId,
+  }) {
     try {
-      return _store.collection('chats').doc(chatId).set({
-        'id': chatId,
-        'participants': [senderId, receiverId],
-        'created_at': DateTime.now().toIso8601String(),
-        'messages': []
-      });
+      return _store.collection('chats').doc(chatId).set(
+        {
+          'id': chatId,
+          'participants': [senderId, receiverId],
+          'created_at': DateTime.now().toIso8601String(),
+          'messages': []
+        },
+      );
     } on Exception {
       rethrow;
     }
@@ -93,15 +98,27 @@ class FirebaseChatRepository extends RemoteChatRepository {
   @override
   Stream<DocumentUploadTask> uploadDocument(
       {required File file, required String chatID}) {
-    Reference fileRef = _firebaseStorage.ref('chats/$chatID').child(
-        '${DateTime.now().toIso8601String()}${path_provider.extension(file.path)}');
-    UploadTask uploadTask = fileRef.putFile(file);
-    return uploadTask.snapshotEvents.asyncMap((event) async {
-      return event.state == TaskState.success
-          ? DocumentUploadTask.success(await fileRef.getDownloadURL())
-          : DocumentUploadTask.inProgress(
-              event.bytesTransferred.toDouble() / event.totalBytes.toDouble());
-    });
+    Reference fileRef = _firebaseStorage
+        .ref(
+          'chats/$chatID',
+        )
+        .child(
+          '${DateTime.now().toIso8601String()}${path_provider.extension(file.path)}',
+        );
+    UploadTask uploadTask = fileRef.putFile(
+      file,
+    );
+    return uploadTask.snapshotEvents.asyncMap(
+      (event) async {
+        return event.state == TaskState.success
+            ? DocumentUploadTask.success(
+                await fileRef.getDownloadURL(),
+              )
+            : DocumentUploadTask.inProgress(
+                event.bytesTransferred.toDouble() / event.totalBytes.toDouble(),
+              );
+      },
+    );
   }
 
   @override

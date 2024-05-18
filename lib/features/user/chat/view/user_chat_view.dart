@@ -2,6 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
@@ -16,21 +18,21 @@ import 'package:intl/intl.dart'; //for DateFormat
 
 class UserChatPage extends StatelessWidget {
   final String chatId;
-  final UserQuickProfile userQuickProfile;
+  final User userProfile;
   const UserChatPage(
-      {super.key, required this.chatId, required this.userQuickProfile});
+      {super.key, required this.chatId, required this.userProfile});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ChatBloc(chatId: chatId),
-      child: ChatView(receiverProf: userQuickProfile),
+      child: ChatView(receiverProf: userProfile),
     );
   }
 }
 
 class ChatView extends StatefulWidget {
-  final UserQuickProfile receiverProf;
+  final User receiverProf;
 
   const ChatView({super.key, required this.receiverProf});
 
@@ -47,10 +49,7 @@ class _ChatViewState extends State<ChatView> {
   @override
   void initState() {
     super.initState();
-    currentUser = context.read<AuthBloc>().state.maybeWhen(
-          authenticated: (user) => user,
-          orElse: () => throw Exception('User not authenticated'),
-        );
+    currentUser = GetIt.I<AuthRepository>().currentUser!;
     _currentChatUser = ChatUser(
       id: currentUser.id,
       firstName: currentUser.name.split(' ').first,
@@ -58,16 +57,16 @@ class _ChatViewState extends State<ChatView> {
       profileImage: currentUser.photoUrl,
     );
     _otherChatUser = ChatUser(
-      id: widget.receiverProf.id!,
-      firstName: widget.receiverProf.fullName!.split(' ').first,
-      lastName: widget.receiverProf.fullName!.split(' ').last,
-      profileImage: widget.receiverProf.profileImage,
+      id: widget.receiverProf.id,
+      firstName: widget.receiverProf.name.split(' ').first,
+      lastName: widget.receiverProf.name.split(' ').last,
+      profileImage: widget.receiverProf.photoUrl,
     );
 
     context.read<ChatBloc>().add(
           ChatEvent.checkChat(
             currentUser.id,
-            widget.receiverProf.id!,
+            widget.receiverProf.id,
           ),
         );
   }
@@ -119,7 +118,7 @@ class _ChatViewState extends State<ChatView> {
           CircleAvatar(
             radius: 20,
             backgroundImage: CachedNetworkImageProvider(
-              widget.receiverProf.profileImage ?? '',
+              widget.receiverProf.photoUrl,
             ),
           ),
           const SizedBox(
@@ -128,8 +127,7 @@ class _ChatViewState extends State<ChatView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.receiverProf.fullName ?? '',
-                  style: AppTheme.labelLarge),
+              Text(widget.receiverProf.name, style: AppTheme.labelLarge),
               StreamBuilder<UserStatus>(
                 stream: context.read<ChatBloc>().userStatus,
                 builder: (context, snapshot) {

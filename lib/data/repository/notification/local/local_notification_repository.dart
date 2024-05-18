@@ -1,10 +1,16 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/src/painting/image_decoder.dart' as image_decoder;
+import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/domain/models/user/user.dart';
+
+@pragma('vm:entry-point')
+void onDidReceiveBackgroundNotification(NotificationResponse details) {
+  log('onDidReceiveBackgroundNotification: ${details.payload}');
+}
 
 class LocalNotificationRepository {
   final AndroidInitializationSettings initializationSettingsAndroid =
@@ -14,37 +20,63 @@ class LocalNotificationRepository {
       const DarwinInitializationSettings();
   static const String _channelId = 'nester_notification_channel';
   static const String _channelName = 'Nester Notification Channel';
-  static const String _channelDescription = 'Nester Notification Channel';
+  static const String _channelDescription = 'Nester Chat Notifications';
   FlutterLocalNotificationsPlugin get flutterLocalNotificationsPlugin =>
       FlutterLocalNotificationsPlugin();
+
+  Future<void> onDidReceiveNotificationResponse(
+      NotificationResponse details) async {
+    log('Recieved Notification -> navigating to chat screen: ${details.payload}');
+    if (details.payload != null) {
+      final Map<String, dynamic> message = json.decode(details.payload!);
+      String notificationType = message['notificationType'];
+      if (notificationType == 'chat') {
+        String chatId = message['chatId'];
+        User userProfile = User(
+          id: message['senderId'],
+          name: message['senderName'],
+          photoUrl: message['photoUrl'],
+          email: '',
+        );
+      }
+    }
+  }
+
+  AppRouterService appRouterService;
+  LocalNotificationRepository({required this.appRouterService});
 
   Future<void> init() async {
     final InitializationSettings initializationSettings =
         InitializationSettings(
-            android: initializationSettingsAndroid,
-            iOS: initializationSettingsIOS);
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
     await FlutterLocalNotificationsPlugin().initialize(
       initializationSettings,
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse,
+      onDidReceiveBackgroundNotificationResponse:
+          onDidReceiveBackgroundNotification,
     );
-    _initializeNotificationChannel();
+    await _initializeNotificationChannel();
   }
 
-  void _initializeNotificationChannel() {
+  Future<void> _initializeNotificationChannel() async {
     if (Platform.isAndroid) {
       AndroidNotificationChannel channel = const AndroidNotificationChannel(
         _channelId,
         _channelName,
         description: _channelDescription,
-        importance: Importance.high,
+        importance: Importance.max,
+        playSound: true,
       );
-      flutterLocalNotificationsPlugin
+      await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()!
           .createNotificationChannel(channel);
     }
   }
 
-  Future<String> _base64encodedImage(String url) async {
+  Future<String> base64encodedImage(String url) async {
     final http.Response response = await http.get(Uri.parse(url));
     final String base64Data = base64Encode(response.bodyBytes);
     return base64Data;
@@ -70,7 +102,9 @@ class LocalNotificationRepository {
         Person(
           name: title,
           icon: ByteArrayAndroidIcon.fromBase64String(
-            await _base64encodedImage(photoUrl),
+            await base64encodedImage(
+              photoUrl,
+            ),
           ),
         ),
         conversationTitle: title,

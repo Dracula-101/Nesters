@@ -1,10 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:nesters/data/repository/user/notification/local/local_notification_repository.dart';
-import 'package:nesters/data/repository/user/notification/remote/remote_notification_repository.dart';
+import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
+import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
+import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
+import 'package:nesters/domain/models/user/user.dart';
 
 class FirebaseNotificationRepository extends RemoteNotificationRepository {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -12,9 +17,8 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
   StreamSubscription<RemoteMessage>? _onMessageReceived,
       _onNotificationOpenedApp;
 
-  FirebaseNotificationRepository({
-    required LocalNotificationRepository notificationRepository,
-  }) : super(notificationRepository: notificationRepository);
+  FirebaseNotificationRepository(
+      {required super.notificationRepository, required super.appRouterService});
 
   @override
   Future<bool> init() async {
@@ -87,31 +91,42 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
     _onMessageReceived = FirebaseMessaging.onMessage.listen(null);
     _onNotificationOpenedApp =
         FirebaseMessaging.onMessageOpenedApp.listen(null);
-    _onMessageReceived?.onData((data) {
-      notificationRepository.showNotification(
-        title: data.notification?.title ?? 'Title',
-        body: data.notification?.body ?? 'Body',
-        id: data.messageId.hashCode,
-        payload: jsonEncode(
-          data.data,
-        ),
-      );
-    });
-    _onNotificationOpenedApp?.onData((data) {
-      notificationRepository.showNotification(
-        title: data.notification?.title ?? 'Title',
-        body: data.notification?.body ?? 'Body',
-        id: data.messageId.hashCode,
-        payload: jsonEncode(
-          data.data,
-        ),
-      );
-    });
+    _onMessageReceived?.onData(
+      (message) {
+        notificationRepository.showNotification(
+          title: message.notification?.title ?? 'Title',
+          body: message.notification?.body ?? 'Body',
+          id: message.messageId.hashCode,
+          payload: jsonEncode(
+            message.data,
+          ),
+        );
+      },
+    );
+
+    _onNotificationOpenedApp?.onData(
+      (message) {
+        String notificationType = message.data['notificationType'];
+        if (notificationType == 'chat') {
+          log('Chat notification opened: ${message.data}');
+          String chatId = message.data['chatId'];
+          User userProfile = User(
+            id: message.data['senderId'],
+            name: message.data['senderName'],
+            photoUrl: message.data['photoUrl'],
+            email: '',
+          );
+          // appRouterService.appRouter.go(
+          //   '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+          //   extra: userProfile,
+          // );
+        }
+      },
+    );
   }
 
   @override
   void removeNotificationListener() {
-    FirebaseMessaging.onBackgroundMessage((message) => Future.value());
     _onMessageReceived?.cancel();
     _onNotificationOpenedApp?.cancel();
   }
