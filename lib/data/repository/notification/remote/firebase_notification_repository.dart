@@ -4,11 +4,10 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
-import 'package:nesters/app/routes/app_routes.dart';
-import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
-import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 
 class FirebaseNotificationRepository extends RemoteNotificationRepository {
@@ -30,8 +29,7 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
         badge: true,
         criticalAlert: true,
       );
-      await FirebaseMessaging.instance
-          .setForegroundNotificationPresentationOptions(
+      await _firebaseMessaging.setForegroundNotificationPresentationOptions(
         alert: true,
         badge: true,
         sound: true,
@@ -59,13 +57,13 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
   @override
   Future<void> saveData(
       {required String userId,
-      required String name,
+      required String fullName,
       required String photoUrl,
       required String token}) {
     try {
       return _store.collection('users').doc(userId).set({
         'userId': userId,
-        'name': name,
+        'fullName': fullName,
         'photoUrl': photoUrl,
         'token': token,
       });
@@ -93,10 +91,10 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
         FirebaseMessaging.onMessageOpenedApp.listen(null);
     _onMessageReceived?.onData(
       (message) {
-        notificationRepository.showNotification(
+        notificationRepository.showChatNotification(
           title: message.notification?.title ?? 'Title',
           body: message.notification?.body ?? 'Body',
-          id: message.messageId.hashCode,
+          id: 0,
           payload: jsonEncode(
             message.data,
           ),
@@ -106,20 +104,25 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
 
     _onNotificationOpenedApp?.onData(
       (message) {
+        log("Notification Received in onNotificationOpenedApp: $message");
         String notificationType = message.data['notificationType'];
         if (notificationType == 'chat') {
           log('Chat notification opened: ${message.data}');
           String chatId = message.data['chatId'];
           User userProfile = User(
             id: message.data['senderId'],
-            name: message.data['senderName'],
+            fullName: message.data['senderName'],
             photoUrl: message.data['photoUrl'],
             email: '',
           );
-          // appRouterService.appRouter.go(
-          //   '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
-          //   extra: userProfile,
-          // );
+          String currentPath = appRouterService
+              .appRouter.routeInformationProvider.value.uri.path;
+          if (currentPath.contains(AppRouterService.homeScreen)) {
+            appRouterService.appRouter.go(
+              '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+              extra: userProfile,
+            );
+          }
         }
       },
     );

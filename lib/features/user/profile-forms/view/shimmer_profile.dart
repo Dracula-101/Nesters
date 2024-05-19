@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nesters/constants/app_assets.dart';
-import 'package:nesters/features/user/profile/view/components/shimmering_card.dart';
+import 'package:nesters/features/user/detail/view/components/shimmering_card.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:shimmer/shimmer.dart';
 

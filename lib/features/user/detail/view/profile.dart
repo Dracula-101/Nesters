@@ -59,10 +59,8 @@ class UserProfilePage extends StatelessWidget {
           },
         ),
         resizeToAvoidBottomInset: true,
-        body: SafeArea(
-          child: ProfileView(
-            userId: id,
-          ),
+        body: ProfileView(
+          userId: id,
         ),
       ),
     );
@@ -332,8 +330,8 @@ class _ProfileViewState extends State<ProfileView> {
         Align(
           alignment: Alignment.topCenter,
           child: Padding(
-            padding: const EdgeInsets.only(
-              top: 16.0,
+            padding: EdgeInsets.only(
+              top: 12 + MediaQuery.of(context).padding.top,
             ),
             child: Text(
               'User Profile',

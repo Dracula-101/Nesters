@@ -10,6 +10,8 @@ import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
+import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
+import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
@@ -34,32 +36,46 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     add(const AppEvent.load());
   }
 
-  final AuthRepository _authRepository = GetIt.I<AuthRepository>();
-  final RemoteNotificationRepository _rNotificationRepository =
-      GetIt.I<RemoteNotificationRepository>();
-  final LocalStorageRepository _localStorageRepository =
-      GetIt.I<LocalStorageRepository>();
-  final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
-  final UserRepository _userRepository = GetIt.I<UserRepository>();
+  final AppLoggerService _loggerService =
+      GetIt.instance.get<AppLoggerService>();
+  final AuthRepository _authRepository = GetIt.instance.get<AuthRepository>();
   final UserStatusRepository _userStatusRepository =
-      GetIt.I<UserStatusRepository>();
+      GetIt.instance.get<UserStatusRepository>();
+  final UserRepository _userRepository = GetIt.instance.get<UserRepository>();
+  final RemoteNotificationRepository _rNotificationRepository =
+      GetIt.instance.get<RemoteNotificationRepository>();
+
+  final LocalStorageRepository _localStorageRepository =
+      GetIt.instance.get<LocalStorageRepository>();
+  final ObxStorageRepository _obxStorageRepository =
+      GetIt.instance.get<ObxStorageRepository>();
+  final LocalNotificationRepository _localNotificationRepository =
+      GetIt.instance.get<LocalNotificationRepository>();
   AppLifecycleListener? _appLifecycleListener;
   String? userId;
   bool isCompletedOnboarding = false;
+  NavigationArgs? initalizationArgs;
 
   Future<void> _loadApp(AppEvent event, Emitter<AppState> emit) async {
     emit(const AppState.loadInProgress());
     try {
-      int storageInitTime =
-          await _localStorageRepository.init().timeInMilliseconds;
-      int checkOnboardingTime = await _userRepository
-          .checkUserOnboardingStatus()
-          .then((value) => isCompletedOnboarding = value)
-          .timeInMilliseconds;
+      final repositoryIntialize = await Future.wait([
+        _localStorageRepository.init().timeInMilliseconds,
+        _obxStorageRepository.init().timeInMilliseconds,
+        _localNotificationRepository.init().timeInMilliseconds,
+      ]);
+      int totalIntializationTime = 0;
+      for (int time in repositoryIntialize) {
+        totalIntializationTime += time.isNegative ? 0 : time;
+      }
+      isCompletedOnboarding = _userRepository.checkUserOnboardingStatus();
       unawaited(loadAndSaveToken());
-      await Future.delayed(
-          Duration(milliseconds: 1500 - checkOnboardingTime - storageInitTime));
-      _loggerService.info('Storage Intialized in : $storageInitTime ms');
+      int totalUnusedTime = (1500 - totalIntializationTime).isNegative
+          ? 0
+          : (1500 - totalIntializationTime);
+      await Future.delayed(totalUnusedTime.ms);
+      _loggerService
+          .info('Repository Intialized in : $totalIntializationTime ms');
       add(AppEvent.loaded(
           isSuccessful: true, isOnboaringComplete: isCompletedOnboarding));
     } catch (e) {
@@ -101,7 +117,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         user != null, isCompletedOnboarding, user?.isProfileCreated ?? false);
     _initalizeAppLifecycleListener(user != null);
     _checkNotificationPermission(user);
-    // _addNotificationListener(user);
+    _addNotificationListener(user);
+    _handleLocalStorage(user);
   }
 
   Future<User?> _checkUserProfileCreated(User? user) async {
@@ -123,7 +140,11 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else if (!isUserProfileCreated) {
       route = AppRouterService.userProfileBasicFormScreen;
     } else {
-      route = AppRouterService.homeScreen;
+      if (initalizationArgs != null) {
+        route = initalizationArgs?.route;
+        initalizationArgs = null;
+      }
+      route ??= AppRouterService.homeScreen;
     }
     // route = AppRouterService.homeScreen;
     _loggerService.info('Initial Route: $route');
@@ -176,7 +197,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         _rNotificationRepository
             .saveData(
           userId: user.id,
-          name: user.name,
+          fullName: user.fullName,
           photoUrl: user.photoUrl,
           token: token,
         )
@@ -195,4 +216,31 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       _rNotificationRepository.removeNotificationListener();
     }
   }
+
+  void _handleLocalStorage(User? user) {
+    if (user == null) {
+      unawaited(_localStorageRepository.clear());
+    }
+  }
+}
+
+abstract class NavigationArgs {
+  final String? route;
+  final Map<String, dynamic>? args;
+  NavigationArgs({this.route, this.args});
+}
+
+class ChatNavigationArgs implements NavigationArgs {
+  @override
+  final String route;
+  @override
+  final Map<String, dynamic> args;
+
+  final String? chatId;
+  final User? user;
+
+  ChatNavigationArgs({required this.chatId, required this.user})
+      : route =
+            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+        args = {'chatId': chatId, 'user': user};
 }

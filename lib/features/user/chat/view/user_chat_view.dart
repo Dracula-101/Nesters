@@ -42,7 +42,7 @@ class ChatView extends StatefulWidget {
 
 class _ChatViewState extends State<ChatView> {
   late final User currentUser;
-
+  ValueNotifier<bool> _isInputMessageEmpty = ValueNotifier<bool>(true);
   ChatUser? _currentChatUser, _otherChatUser;
   bool isInputMessageEmpty = true;
 
@@ -52,14 +52,14 @@ class _ChatViewState extends State<ChatView> {
     currentUser = GetIt.I<AuthRepository>().currentUser!;
     _currentChatUser = ChatUser(
       id: currentUser.id,
-      firstName: currentUser.name.split(' ').first,
-      lastName: currentUser.name.split(' ').last,
+      firstName: currentUser.fullName.split(' ').first,
+      lastName: currentUser.fullName.split(' ').last,
       profileImage: currentUser.photoUrl,
     );
     _otherChatUser = ChatUser(
       id: widget.receiverProf.id,
-      firstName: widget.receiverProf.name.split(' ').first,
-      lastName: widget.receiverProf.name.split(' ').last,
+      firstName: widget.receiverProf.fullName.split(' ').first,
+      lastName: widget.receiverProf.fullName.split(' ').last,
       profileImage: widget.receiverProf.photoUrl,
     );
 
@@ -69,6 +69,16 @@ class _ChatViewState extends State<ChatView> {
             widget.receiverProf.id,
           ),
         );
+  }
+
+  @override
+  void dispose() {
+    _isInputMessageEmpty.dispose();
+    super.dispose();
+  }
+
+  void _handleTextChange(String value) {
+    _isInputMessageEmpty.value = value.isEmpty;
   }
 
   @override
@@ -127,7 +137,7 @@ class _ChatViewState extends State<ChatView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.receiverProf.name, style: AppTheme.labelLarge),
+              Text(widget.receiverProf.fullName, style: AppTheme.labelLarge),
               StreamBuilder<UserStatus>(
                 stream: context.read<ChatBloc>().userStatus,
                 builder: (context, snapshot) {
@@ -144,73 +154,6 @@ class _ChatViewState extends State<ChatView> {
                 },
               )
             ],
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _mediaMessageButton() {
-    return Padding(
-      padding: const EdgeInsets.all(2.0),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          BlocBuilder<ChatBloc, ChatState>(
-            builder: (context, state) {
-              return state.uploadTask?.containsKey(DocumentSource.GALLERY) ??
-                      false
-                  ? CircularProgressIndicator(
-                      value:
-                          state.uploadTask![DocumentSource.GALLERY]!.progress,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppTheme.primary),
-                    )
-                  : const SizedBox();
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.image,
-              color: AppTheme.primary,
-            ),
-            onPressed: () async {
-              context.read<ChatBloc>().add(ChatEvent.sendDocument(
-                  DocumentSource.GALLERY, currentUser.id));
-            },
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _cameraButton() {
-    return Padding(
-      padding: const EdgeInsets.all(2.0),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          BlocBuilder<ChatBloc, ChatState>(
-            builder: (context, state) {
-              return state.uploadTask?.containsKey(DocumentSource.CAMERA) ??
-                      false
-                  ? CircularProgressIndicator(
-                      value: state.uploadTask![DocumentSource.CAMERA]!.progress,
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(AppTheme.primary),
-                    )
-                  : const SizedBox();
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.camera_alt_rounded,
-              color: AppTheme.primary,
-            ),
-            onPressed: () async {
-              context.read<ChatBloc>().add(ChatEvent.sendDocument(
-                  DocumentSource.CAMERA, currentUser.id));
-            },
           )
         ],
       ),
@@ -241,19 +184,121 @@ class _ChatViewState extends State<ChatView> {
           inputOptions: InputOptions(
             alwaysShowSend: false,
             showTraillingBeforeSend: false,
-            onTextChange: (value) {
-              setState(() {
-                isInputMessageEmpty = value.isEmpty;
-              });
-            },
-            leading: isInputMessageEmpty ? [_mediaMessageButton()] : [],
-            trailing: isInputMessageEmpty ? [_cameraButton()] : [],
+            onTextChange: _handleTextChange,
+            leading: [
+              ValueListenableBuilder<bool>(
+                valueListenable: _isInputMessageEmpty,
+                builder: (context, isEmpty, child) {
+                  return isEmpty
+                      ? _buildLeading(
+                          context,
+                        )
+                      : Container();
+                },
+              ),
+            ],
           ),
           onSend: (message) {
             _sendMessage(message, context);
           },
         );
       },
+    );
+  }
+
+  Widget _buildLeading(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        BlocBuilder<ChatBloc, ChatState>(
+          builder: (context, state) {
+            return state.uploadTask != null
+                ? const CircularProgressIndicator()
+                : const SizedBox();
+          },
+        ),
+        GestureDetector(
+          onTap: () {
+            showModalBottomSheet(
+              context: context,
+              builder: (BuildContext context) {
+                return _buildOptions();
+              },
+            );
+          },
+          child: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Icon(
+              Icons.add,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOptions() {
+    return Container(
+      width: MediaQuery.of(context).size.width,
+      padding: const EdgeInsets.all(
+        16.0,
+      ),
+      child: Wrap(
+        alignment: WrapAlignment.start,
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: <Widget>[
+              _buildOptionItem(Icons.photo, 'Gallery', () {
+                Navigator.pop(
+                  context,
+                );
+                context.read<ChatBloc>().add(
+                      ChatEvent.sendDocument(
+                        DocumentSource.GALLERY,
+                        currentUser.id,
+                      ),
+                    );
+              }),
+              _buildOptionItem(
+                Icons.camera_alt,
+                'Camera',
+                () {
+                  Navigator.pop(
+                    context,
+                  );
+                  context.read<ChatBloc>().add(
+                        ChatEvent.sendDocument(
+                          DocumentSource.CAMERA,
+                          currentUser.id,
+                        ),
+                      );
+                },
+              ),
+            ],
+          ),
+          // Add more Row widgets for additional options as needed
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionItem(IconData icon, String label, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: AppTheme.primary,
+            ),
+            Text(
+              label,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

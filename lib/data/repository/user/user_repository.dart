@@ -36,8 +36,8 @@ class UserRepository {
         LocalStorageKeys.userOnboardingComplete, true);
   }
 
-  Future<bool> checkUserOnboardingStatus() async {
-    return await _storageRepository
+  bool checkUserOnboardingStatus() {
+    return _storageRepository
             .getBool(LocalStorageKeys.userOnboardingComplete) ??
         false;
   }

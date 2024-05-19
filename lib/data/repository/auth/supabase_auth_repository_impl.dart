@@ -32,7 +32,7 @@ class SupabaseAuthRepository extends AuthRepository {
       return User(
         id: user.id,
         email: user.email ?? "",
-        name: user.userMetadata?['name'] ?? '',
+        fullName: user.userMetadata?['fullName'] ?? '',
         photoUrl: user.userMetadata?['avatar_url'] ?? '',
       );
     }
@@ -79,7 +79,7 @@ class SupabaseAuthRepository extends AuthRepository {
         return User(
           id: event.session!.user.id,
           email: event.session!.user.email ?? "",
-          name: event.session!.user.userMetadata?['name'] ?? '',
+          fullName: event.session!.user.userMetadata?['name'] ?? '',
           photoUrl: event.session!.user.userMetadata?['avatar_url'] ?? '',
         );
       }

@@ -34,10 +34,14 @@ class LocalNotificationRepository {
         String chatId = message['chatId'];
         User userProfile = User(
           id: message['senderId'],
-          name: message['senderName'],
+          fullName: message['senderName'],
           photoUrl: message['photoUrl'],
           email: '',
         );
+        GetIt.I<AppRouterService>().appRouter.push(
+              '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+              extra: userProfile,
+            );
       }
     }
   }
@@ -67,6 +71,8 @@ class LocalNotificationRepository {
         _channelName,
         description: _channelDescription,
         importance: Importance.max,
+        enableVibration: true,
+        showBadge: true,
         playSound: true,
       );
       await flutterLocalNotificationsPlugin
@@ -90,20 +96,42 @@ class LocalNotificationRepository {
   }) async {
     String photoUrl = json.decode(payload)['photoUrl'];
     log('Photo Url: $photoUrl');
-    AndroidNotificationDetails androidPlatformChannelSpecifics =
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       _channelId,
       _channelName,
       channelDescription: _channelDescription,
       importance: Importance.max,
-      priority: Priority.high,
+      priority: Priority.max,
+      icon: '@mipmap/ic_launcher',
+    );
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      null,
+      body,
+      platformChannelSpecifics,
+      payload: payload,
+    );
+  }
+
+  Future<AndroidNotificationDetails> _chatNotificationChannelDetails(
+      String title, String payload, String body) async {
+    return AndroidNotificationDetails(
+      _channelId,
+      _channelName,
+      channelDescription: _channelDescription,
+      importance: Importance.max,
+      priority: Priority.max,
       icon: '@mipmap/ic_launcher',
       styleInformation: MessagingStyleInformation(
         Person(
           name: title,
           icon: ByteArrayAndroidIcon.fromBase64String(
             await base64encodedImage(
-              photoUrl,
+              json.decode(payload)['photoUrl'],
             ),
           ),
         ),
@@ -121,16 +149,31 @@ class LocalNotificationRepository {
       ),
       category: AndroidNotificationCategory.message,
     );
-    NotificationDetails platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-    );
-    await flutterLocalNotificationsPlugin.show(
-      id,
-      null,
-      body,
-      platformChannelSpecifics,
-      payload: payload,
-    );
+  }
+
+  Future<void> showChatNotification(
+      {required String title,
+      required String body,
+      required int id,
+      required String payload}) async {
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        await _chatNotificationChannelDetails(title, payload, body);
+    String currentPath =
+        appRouterService.appRouter.routeInformationProvider.value.uri.path;
+    String chatId = json.decode(payload)['chatId'];
+    log("Received Notification -> Current Path: $currentPath, Chat Id: $chatId");
+    if (!currentPath.contains(chatId)) {
+      NotificationDetails platformChannelSpecifics = NotificationDetails(
+        android: androidPlatformChannelSpecifics,
+      );
+      await flutterLocalNotificationsPlugin.show(
+        id,
+        null,
+        body,
+        platformChannelSpecifics,
+        payload: payload,
+      );
+    }
   }
 
   Future<void> cancelNotification(int id) async {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
@@ -34,9 +33,13 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   void _addPageListener() {
-    _pagingController.addPageRequestListener((pageKey) {
-      _fetchPage(pageKey);
-    });
+    _pagingController.addPageRequestListener(
+      (pageKey) {
+        _fetchPage(
+          pageKey,
+        );
+      },
+    );
   }
 
   Future<void> _fetchPage(int pageKey) async {
@@ -117,7 +120,7 @@ class _UserListPageState extends State<UserListPage> {
                       style: AppTheme.bodyLarge,
                     ),
                     Text(
-                      state.user.name,
+                      state.user.fullName,
                       style: AppTheme.bodySmallLightVariant,
                     ),
                   ],
@@ -142,7 +145,6 @@ class _UserListPageState extends State<UserListPage> {
                   size: 20,
                 ),
                 onPressed: () {
-                  //navigate using go
                   GoRouter.of(context).go(
                     '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}',
                   );

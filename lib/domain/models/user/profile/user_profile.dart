@@ -211,7 +211,7 @@ class UserProfile extends Equatable {
   User toUser() {
     return User(
       id: id ?? '',
-      name: fullName ?? '',
+      fullName: fullName ?? '',
       email: '',
       photoUrl: profileImage ?? '',
       isProfileCompleted: true,

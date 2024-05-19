@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
-import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
+import 'package:nesters/features/home/view/pages/notification_page.dart';
 import 'package:nesters/features/home/view/pages/user_list_view_page.dart';
+import 'package:nesters/features/user/chat/view/chat_home_view.dart';
+import 'package:nesters/theme/theme.dart';
 
 class HomeScaffold extends StatefulWidget {
-  final Widget innerContent;
-  const HomeScaffold({super.key, required this.innerContent});
+  final int initialIndex;
+  const HomeScaffold({super.key, required this.initialIndex});
 
   @override
   State<HomeScaffold> createState() => _HomeScaffoldState();
 }
 
 class _HomeScaffoldState extends State<HomeScaffold> {
-  final ValueNotifier<int> _selectedIndex = ValueNotifier<int>(0);
+  late final ValueNotifier<int> _selectedIndex =
+      ValueNotifier<int>(widget.initialIndex);
 
   @override
   Widget build(BuildContext context) {
@@ -38,27 +40,31 @@ class _HomeScaffoldState extends State<HomeScaffold> {
                   return;
                 } else {
                   _selectedIndex.value = index;
-                  if (index == 0) {
-                    GoRouter.of(context).go(AppRouterService.homeScreen);
-                  } else {
-                    GoRouter.of(context)
-                        .go(AppRouterService.notificationScreen);
-                  }
                 }
               },
               currentIndex: selectedIndex,
               type: BottomNavigationBarType.fixed,
+              enableFeedback: true,
+              iconSize: 24.0,
+              selectedFontSize: AppTheme.labelMedium.fontSize!,
+              unselectedFontSize: AppTheme.labelMedium.fontSize!,
               items: const [
                 BottomNavigationBarItem(
-                  icon: Icon(
-                    FontAwesomeIcons.house,
+                  icon: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.0),
+                    child: Icon(
+                      FontAwesomeIcons.house,
+                    ),
                   ),
                   label: 'Home',
                   tooltip: 'Home',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(
-                    FontAwesomeIcons.solidBell,
+                  icon: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 4.0),
+                    child: Icon(
+                      FontAwesomeIcons.solidBell,
+                    ),
                   ),
                   tooltip: 'Notifications',
                   label: 'Notifications',
@@ -68,54 +74,28 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           },
         ),
         body: SafeArea(
-          child: widget.innerContent,
+          child: BlocBuilder<UserBloc, UserState>(
+            builder: (context, state) {
+              return BlocBuilder<HomeBloc, HomeState>(
+                builder: (context, state) {
+                  return ValueListenableBuilder(
+                    valueListenable: _selectedIndex,
+                    builder: (context, value, child) {
+                      return IndexedStack(
+                        index: value,
+                        children: const [
+                          UserListPage(),
+                          ChatHomePage(),
+                        ],
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
         ),
       ),
     );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const HomeView();
-  }
-}
-
-class HomeView extends StatefulWidget {
-  const HomeView({super.key});
-
-  @override
-  State<HomeView> createState() => _HomeViewState();
-}
-
-class _HomeViewState extends State<HomeView> {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        return BlocBuilder<HomeBloc, HomeState>(
-          builder: (context, state) {
-            return const UserListPage();
-          },
-        );
-      },
-    );
-  }
-}
-
-class NotificationPage extends StatefulWidget {
-  const NotificationPage({super.key});
-
-  @override
-  State<NotificationPage> createState() => _NotificationPageState();
-}
-
-class _NotificationPageState extends State<NotificationPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Notifications Page'));
   }
 }

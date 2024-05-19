@@ -84,7 +84,7 @@ class UserQuickProfile extends Equatable {
   User toUser() {
     return User(
       id: id!,
-      name: fullName!,
+      fullName: fullName!,
       photoUrl: profileImage!,
       email: '',
     );

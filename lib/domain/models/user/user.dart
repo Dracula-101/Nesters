@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 class User extends Equatable {
   const User({
     required this.id,
-    required this.name,
+    required this.fullName,
     required this.email,
     required this.photoUrl,
     this.isProfileCreated = false,
@@ -11,19 +11,19 @@ class User extends Equatable {
   });
 
   final String id;
-  final String name;
+  final String fullName;
   final String email;
   final String photoUrl;
   final bool isProfileCreated;
   final bool isProfileCompleted;
 
   @override
-  List<Object?> get props => [id, name, email, photoUrl];
+  List<Object?> get props => [id, fullName, email, photoUrl];
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'],
-      name: json['name'],
+      fullName: json['fullName'],
       email: json['email'],
       photoUrl: json['photoUrl'],
     );
@@ -32,7 +32,7 @@ class User extends Equatable {
   static User empty() {
     return const User(
       id: '',
-      name: '',
+      fullName: '',
       email: '',
       photoUrl: '',
     );
@@ -41,7 +41,7 @@ class User extends Equatable {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
+      'fullName': fullName,
       'email': email,
       'photoUrl': photoUrl,
     };
@@ -49,7 +49,7 @@ class User extends Equatable {
 
   User copyWith({
     String? id,
-    String? name,
+    String? fullName,
     String? email,
     String? photoUrl,
     bool? isProfileCreated,
@@ -57,7 +57,7 @@ class User extends Equatable {
   }) {
     return User(
       id: id ?? this.id,
-      name: name ?? this.name,
+      fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       photoUrl: photoUrl ?? this.photoUrl,
       isProfileCreated: isProfileCreated ?? this.isProfileCreated,

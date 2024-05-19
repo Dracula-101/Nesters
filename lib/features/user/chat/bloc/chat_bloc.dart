@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:bloc/bloc.dart';
@@ -6,9 +7,12 @@ import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/quick_user/recipient_quick_user_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
+import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
@@ -26,10 +30,17 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     on<ChatEvent>(_onChatEvent);
   }
 
+  // Repositories
   final RemoteChatRepository _chatRepository = GetIt.I<RemoteChatRepository>();
   final UserStatusRepository _userStatusRepository =
       GetIt.I<UserStatusRepository>();
   final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
+  final RecipientQuickUserRepository _recipientQuickUserRepository =
+      GetIt.I<RecipientQuickUserRepository>();
+  final ObxStorageRepository _obxStorageRepository =
+      GetIt.I<ObxStorageRepository>();
+
+  // Streams
   final StreamController<List<Message>> _chatMessages =
       StreamController.broadcast();
   StreamSubscription? _chatSubscription, _userStatusSubscription;
@@ -65,19 +76,32 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   Future<void> _checkChat(
       String senderId, String receiverId, Emitter<ChatState> emit) async {
-    emit(state.copyWith(
-        isLoading: true, senderId: senderId, receiverId: receiverId));
+    emit(
+      state.copyWith(
+          isLoading: true, senderId: senderId, receiverId: receiverId),
+    );
     try {
       bool chatExists = await _chatRepository.doesChatExist(chatId);
+      _obxStorageRepository.getChatUsersStream();
       if (!chatExists) {
-        await _chatRepository.createChat(chatId,
-            senderId: senderId, receiverId: receiverId);
+        await _chatRepository.createChat(
+          chatId,
+          senderId: senderId,
+          receiverId: receiverId,
+        );
+        unawaited(saveReceipentDetails());
       }
-      emit(state.copyWith(
-          doesChatExist: true, chatId: chatId, isLoading: false));
+      emit(
+        state.copyWith(doesChatExist: true, chatId: chatId, isLoading: false),
+      );
       _listenChats(chatId, emit);
     } on Exception catch (e) {
-      emit(state.copyWith(isLoading: false, error: e));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: e,
+        ),
+      );
     }
   }
 
@@ -89,7 +113,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       _chatSubscription = _chatRepository
           .getChatMessages(chatId)
           .asBroadcastStream()
-          .listen((event) => _chatMessages.add(event));
+          .map((event) {
+        log('ChatBloc: ChatMessages: $event');
+        return event;
+      }).listen((event) => _chatMessages.add(event));
     }
     if (_userStatusSubscription == null) {
       _userStatusSubscription?.cancel();
@@ -161,6 +188,22 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       }
     } on Exception catch (e) {
       emit(state.copyWith(error: e));
+    }
+  }
+
+  Future<void> saveReceipentDetails() async {
+    try {
+      QuickChatUser? receiptUser = await _recipientQuickUserRepository
+          .getChatQuickUser(state.receiverId!);
+      receiptUser = receiptUser?.copyWith(
+        chatId: state.chatId,
+      );
+      if (receiptUser != null) {
+        // Save to Local database
+        await _obxStorageRepository.saveReceipentUser(receiptUser);
+      }
+    } on Exception catch (e) {
+      rethrow;
     }
   }
 }

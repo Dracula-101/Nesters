@@ -72,7 +72,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   @override
   void initState() {
     super.initState();
-    _fullNameController.text = widget.user.name;
+    _fullNameController.text = widget.user.fullName;
   }
 
   @override

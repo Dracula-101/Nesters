@@ -8,7 +8,7 @@ import 'package:nesters/domain/models/location/indian_city.dart';
 import 'package:nesters/domain/models/location/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
-import 'package:nesters/features/user/profile/forms/cubit/form_cubit.dart';
+import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 

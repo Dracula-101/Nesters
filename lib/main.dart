@@ -1,16 +1,21 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
+import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository_impl.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/fireabase_chat_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/notification/remote/firebase_notification_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
+import 'package:nesters/data/repository/user/quick_user/firebase_recipient_quick_user_repository.dart';
+import 'package:nesters/data/repository/user/quick_user/recipient_quick_user_repository.dart';
 import 'package:nesters/data/repository/user/status/firebase_user_status_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -55,10 +60,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   GetIt locator = GetIt.instance;
   LocalNotificationRepository notificationRepository =
       locator<LocalNotificationRepository>();
-  notificationRepository.showNotification(
+  notificationRepository.showChatNotification(
     title: message.notification?.title ?? '',
     body: message.notification?.body ?? '',
-    id: message.messageId.hashCode,
+    id: 0,
     payload: json.encode(message.data),
   );
 }
@@ -85,6 +90,8 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
   DatabaseRepository databaseRepository = SupaDatabaseRepository();
   RemoteChatRepository remoteChatRepository = FirebaseChatRepository();
+  RecipientQuickUserRepository firebaseRecipientQuickUserRepository =
+      FirebaseRecipientQuickUserRepository();
   UserRepository userRepository = UserRepository(
     databaseRepository: databaseRepository,
     storageRepository: localStorageRepository,
@@ -93,12 +100,12 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   UserStatusRepository userStatusRepository = FirebaseUserStatusRepository();
   LocalNotificationRepository notificationRepository =
       LocalNotificationRepository(appRouterService: appRouterService);
-  await notificationRepository.init();
   RemoteNotificationRepository remoteNotificationRepository =
       FirebaseNotificationRepository(
     notificationRepository: notificationRepository,
     appRouterService: appRouterService,
   );
+  ObxStorageRepository objectbox = ObjectBoxStorageRepository();
   // Register all repositories
   locator.registerSingleton<LocalStorageRepository>(localStorageRepository);
   locator.registerSingleton<AppLoggerService>(appLoggerService);
@@ -108,10 +115,15 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   locator.registerSingleton<DatabaseRepository>(databaseRepository);
   locator.registerSingleton<UserRepository>(userRepository);
   locator.registerSingleton<RemoteChatRepository>(remoteChatRepository);
+  locator.registerSingleton<RecipientQuickUserRepository>(
+      firebaseRecipientQuickUserRepository);
   locator.registerSingleton<UserStatusRepository>(userStatusRepository);
   locator
       .registerSingleton<LocalNotificationRepository>(notificationRepository);
   locator.registerSingleton<RemoteNotificationRepository>(
     remoteNotificationRepository..listenToNotification(),
+  );
+  locator.registerSingleton<ObxStorageRepository>(
+    objectbox,
   );
 }

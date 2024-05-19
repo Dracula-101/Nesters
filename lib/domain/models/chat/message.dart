@@ -6,12 +6,14 @@ class Message {
   String? content;
   ChatMessageType? messageType;
   Timestamp? sentAt;
+  // DateTime? epochTime;
 
   Message({
     this.senderId,
     this.content,
     this.messageType,
     this.sentAt,
+    // this.epochTime,
   });
 
   //fromMap
@@ -23,6 +25,7 @@ class Message {
         map['messageType'],
       ),
       sentAt: map['sentAt'],
+      // epochTime: DateTime.fromMillisecondsSinceEpoch(map['epochTime'] ?? ''),
     );
   }
 
@@ -33,6 +36,12 @@ class Message {
       'content': content,
       'messageType': messageType.toString(),
       'sentAt': sentAt,
+      // 'epochTime': epochTime?.millisecondsSinceEpoch,
     };
+  }
+
+  @override
+  String toString() {
+    return 'senderId: $senderId, content: $content';
   }
 }

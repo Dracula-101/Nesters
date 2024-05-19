@@ -61,7 +61,7 @@ exports.sendNotification = functions.firestore
       const senderUser = querySnapshot.docs.find(
         (doc) => doc.data().userId === senderId
       );
-      const senderName = senderUser.data().name;
+      const senderName = senderUser.data().fullName;
       const senderPhotoUrl = senderUser.data().photoUrl;
       const message = {
         token: receiverFcmToken,
@@ -80,6 +80,6 @@ exports.sendNotification = functions.firestore
       const notificationResponse = await admin.messaging().send(message);
       console.log("notificationResponse", notificationResponse);
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   });

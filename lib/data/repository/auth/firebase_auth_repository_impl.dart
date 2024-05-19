@@ -19,7 +19,7 @@ class FirebaseAuthRepository extends AuthRepository {
     return User(
       id: firebaseUser.uid,
       email: firebaseUser.email ?? "",
-      name: firebaseUser.displayName ?? "",
+      fullName: firebaseUser.displayName ?? "",
       photoUrl: firebaseUser.photoURL ?? '',
     );
   }
@@ -64,7 +64,7 @@ class FirebaseAuthRepository extends AuthRepository {
       return User(
         id: firebaseUser.uid,
         email: firebaseUser.email ?? "",
-        name: firebaseUser.displayName ?? "",
+        fullName: firebaseUser.displayName ?? "",
         photoUrl: firebaseUser.photoURL ?? '',
       );
     });

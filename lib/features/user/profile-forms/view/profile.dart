@@ -7,7 +7,7 @@ import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
-import 'package:nesters/features/user/profile/view/shimmer_profile.dart';
+import 'package:nesters/features/user/detail/view/shimmer_profile.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:shimmer/shimmer.dart';

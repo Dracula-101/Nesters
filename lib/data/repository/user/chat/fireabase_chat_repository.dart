@@ -30,8 +30,9 @@ class FirebaseChatRepository extends RemoteChatRepository {
           .doc(chatId)
           .collection('messages')
           .get()
-          .then((value) =>
-              value.docs.map((e) => Message.fromMap(e.data())).toList());
+          .then((value) => value.docs
+              .map((e) => Message.fromMap(e['messages'].data()))
+              .toList());
     } on Exception {
       rethrow;
     }
@@ -82,6 +83,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
     required String receiverId,
   }) {
     try {
+      //get user details and store in local object box
       return _store.collection('chats').doc(chatId).set(
         {
           'id': chatId,

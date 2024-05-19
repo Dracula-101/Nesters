@@ -14,7 +14,7 @@ abstract class RemoteNotificationRepository {
   Future<String> getToken();
   Future<void> saveData({
     required String userId,
-    required String name,
+    required String fullName,
     required String photoUrl,
     required String token,
   });

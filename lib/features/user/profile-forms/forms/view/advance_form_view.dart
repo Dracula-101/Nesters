@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nesters/features/user/profile/forms/cubit/form_cubit.dart';
+import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 
 import 'background_info_view.dart';

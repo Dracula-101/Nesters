@@ -66,3 +66,6 @@ devtools_options.yaml
 .vscode/*
 functions/package-lock.json
 firebase.json
+
+# Object Box Files
+**.g.dart
