@@ -24,4 +24,12 @@ class UserStatus {
     }
     return json;
   }
+
+  static UserStatus empty(String userId) {
+    return UserStatus(
+      status: Status.OFFLINE,
+      lastSeen: null,
+      userId: userId,
+    );
+  }
 }

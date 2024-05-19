@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -24,7 +26,6 @@ class SupaDatabaseRepository extends DatabaseRepository {
       // Execute the query to retrieve the first 30 rows from the table
       final response =
           await _supabaseClient.from(table).select().eq('id', id).single();
-
       // Return the response
       return response;
     } catch (e) {

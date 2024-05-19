@@ -2,8 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nesters/data/repository/user/quick_user/recipient_quick_user_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 
-class FirebaseRecipientQuickUserRepository
-    implements RecipientQuickUserRepository {
+class FirebaseRecipientUserRepository implements RecipientUserRepository {
   final FirebaseFirestore _store = FirebaseFirestore.instance;
   final String _collectionName = 'users';
   final String _userIdKey = 'userId';

@@ -1,10 +1,11 @@
-import 'dart:developer';
+import 'dart:async';
 import 'dart:io';
 
-import 'package:nesters/data/repository/database/object_box/models/chat/chat.dart';
-import 'package:nesters/data/repository/database/object_box/models/chat/message/message.dart';
+import 'package:nesters/data/repository/database/object_box/models/chat/chat_entity.dart';
+import 'package:nesters/data/repository/database/object_box/models/chat/message/message_entity.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
+import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/objectbox.g.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -13,10 +14,6 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
   late Box<ChatEntity> chatEntityBox;
   late Box<MessageEntity> messageEntityBox;
   static String objectBoxDirectory = 'objectbox';
-
-  Future<void> close() async {
-    store.close();
-  }
 
   @override
   Future<void> init() async {
@@ -48,7 +45,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
   }
 
   @override
-  Future<void> saveReceipentUser(QuickChatUser user) {
+  Future<void> saveRecipientUser(QuickChatUser user) {
     try {
       ChatEntity quickChat = ChatEntity(
         fullName: user.fullName as String,
@@ -59,6 +56,61 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       );
       chatEntityBox.put(quickChat);
       return Future.value();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  void saveMessage({
+    required String chatId,
+    required String messageId,
+    required String content,
+    required String senderId,
+    required ChatMessageType type,
+    required int epochTime,
+    required DateTime timestamp,
+  }) {
+    try {
+      MessageEntity message = MessageEntity(
+        messageId: messageId,
+        content: content,
+        messageType: type,
+        senderId: senderId,
+        sentAt: timestamp,
+        epochTime: epochTime,
+      );
+      final chatEntity = chatEntityBox
+          .query(ChatEntity_.chatId.equals(chatId))
+          .build()
+          .findFirst();
+      message.chat.target = chatEntity;
+      messageEntityBox.put(message);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> clearDatabase() async {
+    try {
+      Directory docsDir = await getApplicationDocumentsDirectory();
+      Directory objectBoxDir = Directory('${docsDir.path}/$objectBoxDirectory');
+      await objectBoxDir.delete(recursive: true);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  void close() {
+    unawaited(clearDatabase());
+  }
+
+  @override
+  Future<void> reset() {
+    try {
+      store.close();
+      return init();
     } catch (e) {
       rethrow;
     }

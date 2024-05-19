@@ -90,8 +90,8 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
   DatabaseRepository databaseRepository = SupaDatabaseRepository();
   RemoteChatRepository remoteChatRepository = FirebaseChatRepository();
-  RecipientQuickUserRepository firebaseRecipientQuickUserRepository =
-      FirebaseRecipientQuickUserRepository();
+  RecipientUserRepository firebaseRecipientQuickUserRepository =
+      FirebaseRecipientUserRepository();
   UserRepository userRepository = UserRepository(
     databaseRepository: databaseRepository,
     storageRepository: localStorageRepository,
@@ -115,7 +115,7 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   locator.registerSingleton<DatabaseRepository>(databaseRepository);
   locator.registerSingleton<UserRepository>(userRepository);
   locator.registerSingleton<RemoteChatRepository>(remoteChatRepository);
-  locator.registerSingleton<RecipientQuickUserRepository>(
+  locator.registerSingleton<RecipientUserRepository>(
       firebaseRecipientQuickUserRepository);
   locator.registerSingleton<UserStatusRepository>(userStatusRepository);
   locator

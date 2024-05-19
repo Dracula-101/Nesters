@@ -92,7 +92,7 @@ enum UserFoodHabit {
       case UserFoodHabit.EGGETARIAN:
         return 'Eggetarian';
       case UserFoodHabit.NON_VEGETERIAN:
-        return 'Omnivore';
+        return 'Non Vegetarian';
       default:
         return 'Unknown';
     }
@@ -109,7 +109,7 @@ enum UserFoodHabit {
         return UserFoodHabit.PESCATARIAN;
       case 'Eggetarian':
         return UserFoodHabit.EGGETARIAN;
-      case 'Omnivore':
+      case 'Non Vegetarian':
         return UserFoodHabit.NON_VEGETERIAN;
       default:
         return UserFoodHabit.UNKNOWN;
@@ -129,7 +129,7 @@ enum UserFoodHabit {
       case UserFoodHabit.NON_VEGETERIAN:
         return 'non-vegetarian';
       default:
-        return 'having an unknown smoking habit';
+        return 'having an unknown food habit';
     }
   }
 }

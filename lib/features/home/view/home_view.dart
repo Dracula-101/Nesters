@@ -63,11 +63,11 @@ class _HomeScaffoldState extends State<HomeScaffold> {
                   icon: Padding(
                     padding: EdgeInsets.symmetric(vertical: 4.0),
                     child: Icon(
-                      FontAwesomeIcons.solidBell,
+                      FontAwesomeIcons.solidMessage,
                     ),
                   ),
-                  tooltip: 'Notifications',
-                  label: 'Notifications',
+                  tooltip: 'Messages',
+                  label: 'Messages',
                 ),
               ],
             );

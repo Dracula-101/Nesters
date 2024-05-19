@@ -1,4 +1,4 @@
-import 'package:nesters/data/repository/database/object_box/models/chat/message/message.dart';
+import 'package:nesters/data/repository/database/object_box/models/chat/message/message_entity.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:objectbox/objectbox.dart';

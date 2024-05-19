@@ -11,10 +11,12 @@ class FirebaseUserStatusRepository extends UserStatusRepository {
   final String _userStatusPath = 'user_status';
 
   @override
-  Stream<UserStatus> getUserStatus(String userId) {
+  Stream<UserStatus?> getUserStatus(String userId) {
     try {
       return _database.ref('$_userStatusPath/$userId').onValue.map((event) {
-        return UserStatus.fromJson(event.snapshot.value as Map, userId);
+        return event.snapshot.value != null
+            ? UserStatus.fromJson(event.snapshot.value as Map, userId)
+            : null;
       });
     } catch (e) {
       log('Error getting user status: $e');

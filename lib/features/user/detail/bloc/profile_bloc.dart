@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
@@ -24,16 +26,40 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
   Future<void> _loadUserProfile(String userId, Emitter<ProfileState> emit) {
     emit(state.copyWith(isLoading: true));
-    return _userRepository.getUserProfile(userId).then((userProfile) {
-      emit(state.copyWith(userProfile: userProfile));
-    }).catchError((error) {
-      if (error is Exception) {
-        emit(state.copyWith(error: error));
-      } else {
-        emit(state.copyWith(error: Exception('An error occurred')));
-      }
-    }).whenComplete(() {
-      emit(state.copyWith(isLoading: false));
-    });
+    return _userRepository.getUserProfile(userId).then(
+      (userProfile) {
+        emit(
+          state.copyWith(
+            userProfile: userProfile,
+          ),
+        );
+      },
+    ).catchError(
+      (error) {
+        if (error is Exception) {
+          emit(
+            state.copyWith(
+              error: error,
+            ),
+          );
+        } else {
+          emit(
+            state.copyWith(
+              error: Exception(
+                'An error occurred',
+              ),
+            ),
+          );
+        }
+      },
+    ).whenComplete(
+      () {
+        emit(
+          state.copyWith(
+            isLoading: false,
+          ),
+        );
+      },
+    );
   }
 }

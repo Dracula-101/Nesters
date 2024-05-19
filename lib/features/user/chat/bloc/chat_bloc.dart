@@ -16,6 +16,7 @@ import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
+import 'package:nesters/utils/logger/logger.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
@@ -35,10 +36,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final UserStatusRepository _userStatusRepository =
       GetIt.I<UserStatusRepository>();
   final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
-  final RecipientQuickUserRepository _recipientQuickUserRepository =
-      GetIt.I<RecipientQuickUserRepository>();
+  final RecipientUserRepository _recipientQuickUserRepository =
+      GetIt.I<RecipientUserRepository>();
   final ObxStorageRepository _obxStorageRepository =
       GetIt.I<ObxStorageRepository>();
+  final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
 
   // Streams
   final StreamController<List<Message>> _chatMessages =
@@ -113,17 +115,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       _chatSubscription = _chatRepository
           .getChatMessages(chatId)
           .asBroadcastStream()
-          .map((event) {
-        log('ChatBloc: ChatMessages: $event');
-        return event;
-      }).listen((event) => _chatMessages.add(event));
+          .listen((event) => _chatMessages.add(event));
     }
     if (_userStatusSubscription == null) {
       _userStatusSubscription?.cancel();
       _userStatusSubscription = _userStatusRepository
           .getUserStatus(state.receiverId!)
           .asBroadcastStream()
-          .listen((event) => _userStatusController.add(event));
+          .listen(
+            (event) => _userStatusController.add(
+              event ?? UserStatus.empty(state.senderId!),
+            ),
+          );
     }
   }
 
@@ -141,7 +144,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   Future<void> _sendMessage(Message message, Emitter<ChatState> emit) async {
     // emit(state.copyWith(isLoading: true));
     try {
-      await _chatRepository.sendMessage(state.chatId!, message);
+      String messageId =
+          await _chatRepository.sendMessage(state.chatId!, message);
+      _loggerService.log('Message sent: $messageId');
+      _obxStorageRepository.saveMessage(
+        chatId: chatId,
+        messageId: messageId,
+        content: message.content ?? '',
+        senderId: message.senderId ?? '',
+        type: message.messageType ?? ChatMessageType.TEXT,
+        epochTime: message.epochTime.millisecondsSinceEpoch,
+        timestamp: message.sentAt?.toDate() ?? DateTime.now(),
+      );
     } on Exception catch (e) {
       emit(state.copyWith(error: e));
     }
@@ -192,6 +206,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   Future<void> saveReceipentDetails() async {
+    //store details in local database
     try {
       QuickChatUser? receiptUser = await _recipientQuickUserRepository
           .getChatQuickUser(state.receiverId!);
@@ -199,10 +214,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         chatId: state.chatId,
       );
       if (receiptUser != null) {
-        // Save to Local database
-        await _obxStorageRepository.saveReceipentUser(receiptUser);
+        await _obxStorageRepository.saveRecipientUser(receiptUser);
       }
-    } on Exception catch (e) {
+    } on Exception {
       rethrow;
     }
   }

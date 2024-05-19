@@ -33,17 +33,17 @@ exports.testNotification = functions.https.onRequest(async (req, res) => {
 });
 
 exports.sendNotification = functions.firestore
-  .document("chats/{chatId}")
-  .onUpdate(async (change, context) => {
+  .document("chats/{chatId}/messages/{messageId}")
+  .onCreate(async (snapshot, context) => {
     try {
-      const data = change.after.data();
-      const previousData = change.before.data();
+      const data = snapshot.data();
       const chatId = context.params.chatId;
-      const lastMessage = data.messages[data.messages.length - 1];
-      const lastMessageContent = lastMessage.content;
-      const senderId = lastMessage.senderId;
-      const participants = data.participants;
-      const receiverId = participants.filter((id) => id !== senderId)[0];
+      const lastMessageContent = data.content;
+      const senderId = data.senderId;
+      const participants = chatId.split("_");
+      const receiverId =
+        participants[0] == senderId ? participants[1] : participants[0];
+
       const querySnapshot = await admin
         .firestore()
         .collection("users")

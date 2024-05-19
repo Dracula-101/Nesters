@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -148,7 +150,7 @@ class _ProfileViewState extends State<ProfileView> {
           _buildCard(
             'About Me',
             userProfile.bio,
-            FontAwesomeIcons.user,
+            FontAwesomeIcons.solidUser,
           ),
           _buildCard(
             'Mother Tongue',
@@ -262,7 +264,7 @@ class _ProfileViewState extends State<ProfileView> {
 
   String getSmokingDrinkingSubtitle(
       UserHabit? smokingHabit, UserHabit? drinkingHabit) {
-    return 'I ${(drinkingHabit ?? UserHabit.UNKNOWN).toDrinkingHabitText()} and ${(smokingHabit ?? UserHabit.UNKNOWN).toSmokingHabitText()}';
+    return 'I\'m ${(drinkingHabit ?? UserHabit.UNKNOWN).toDrinkingHabitText()} and ${(smokingHabit ?? UserHabit.UNKNOWN).toSmokingHabitText()}';
   }
 
   String getSubtitleTextPersonTypeAndCleanlinessHabit(PersonType? personType) {
@@ -293,6 +295,8 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   String getRoomSubtitle(String flatmatesGenderPrefs, String roomType) {
+    roomType = roomType[0].toUpperCase() + roomType.substring(1).toLowerCase();
+
     if (flatmatesGenderPrefs == 'Male' && roomType == 'Private') {
       return 'I\'m looking for a private room and prefer male flatmates!';
     } else if (flatmatesGenderPrefs == 'Male' && roomType == 'Shared') {

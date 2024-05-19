@@ -6,15 +6,14 @@ class Message {
   String? content;
   ChatMessageType? messageType;
   Timestamp? sentAt;
-  // DateTime? epochTime;
+  DateTime epochTime;
 
   Message({
     this.senderId,
     this.content,
     this.messageType,
     this.sentAt,
-    // this.epochTime,
-  });
+  }) : epochTime = DateTime.now();
 
   //fromMap
   factory Message.fromMap(Map<String, dynamic> map) {
@@ -25,7 +24,6 @@ class Message {
         map['messageType'],
       ),
       sentAt: map['sentAt'],
-      // epochTime: DateTime.fromMillisecondsSinceEpoch(map['epochTime'] ?? ''),
     );
   }
 
@@ -36,7 +34,7 @@ class Message {
       'content': content,
       'messageType': messageType.toString(),
       'sentAt': sentAt,
-      // 'epochTime': epochTime?.millisecondsSinceEpoch,
+      'epochTime': epochTime,
     };
   }
 

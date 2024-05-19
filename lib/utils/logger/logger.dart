@@ -1,4 +1,5 @@
 import 'package:logger/logger.dart';
+import 'dart:developer' as dev;
 
 class AppLoggerService {
   final Logger _logger = Logger(
@@ -17,7 +18,7 @@ class AppLoggerService {
   }
 
   void error(Object? message, {Object? error, StackTrace? stackTrace}) {
-    _logger.e(message , error: error, stackTrace: stackTrace);
+    _logger.e(message, error: error, stackTrace: stackTrace);
   }
 
   void warning(Object? message) {
@@ -26,5 +27,9 @@ class AppLoggerService {
 
   void debug(Object? message) {
     _logger.d(message);
+  }
+
+  void log(Object? message) {
+    dev.log(message.toString());
   }
 }

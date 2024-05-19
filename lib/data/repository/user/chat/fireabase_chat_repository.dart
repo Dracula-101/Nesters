@@ -29,23 +29,13 @@ class FirebaseChatRepository extends RemoteChatRepository {
           .collection('chats')
           .doc(chatId)
           .collection('messages')
+          .orderBy('epochTime', descending: true)
           .get()
-          .then((value) => value.docs
-              .map((e) => Message.fromMap(e['messages'].data()))
-              .toList());
-    } on Exception {
-      rethrow;
-    }
-  }
-
-  @override
-  Stream<List<Message>> getChatMessages(String chatId) {
-    try {
-      return _store.collection('chats').doc(chatId).snapshots().map(
-            (event) => event['messages']
-                .map<Message>((e) => Message.fromMap(e))
-                .toList()
-                .reversed
+          .then(
+            (value) => value.docs
+                .map<Message>(
+                  (e) => Message.fromMap(e.data()),
+                )
                 .toList(),
           );
     } on Exception {
@@ -54,12 +44,31 @@ class FirebaseChatRepository extends RemoteChatRepository {
   }
 
   @override
-  Future<void> sendMessage(String chatId, Message message) {
+  Stream<List<Message>> getChatMessages(String chatId) {
     try {
-      DocumentReference docRef = _store.collection('chats').doc(chatId);
-      return docRef.update({
-        'messages': FieldValue.arrayUnion([message.toMap()])
+      return _store
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .orderBy('epochTime', descending: true)
+          .snapshots()
+          .map((event) {
+        return event.docs.map((e) => Message.fromMap(e.data())).toList();
       });
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> sendMessage(String chatId, Message message) {
+    try {
+      return _store
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .add(message.toMap())
+          .then((value) => value.id);
     } on Exception {
       rethrow;
     }
@@ -68,9 +77,9 @@ class FirebaseChatRepository extends RemoteChatRepository {
   @override
   Future<bool> doesChatExist(String chatId) {
     try {
-      return _store.collection('chats').doc(chatId).get().then((value) {
-        return value.exists;
-      });
+      return _store.collection('chats').doc(chatId).get().then(
+            (value) => value.exists,
+          );
     } on Exception {
       rethrow;
     }
@@ -81,7 +90,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
     String chatId, {
     required String senderId,
     required String receiverId,
-  }) {
+  }) async {
     try {
       //get user details and store in local object box
       return _store.collection('chats').doc(chatId).set(
@@ -89,7 +98,6 @@ class FirebaseChatRepository extends RemoteChatRepository {
           'id': chatId,
           'participants': [senderId, receiverId],
           'created_at': DateTime.now().toIso8601String(),
-          'messages': []
         },
       );
     } on Exception {
