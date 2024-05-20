@@ -24,7 +24,7 @@ part 'chat_bloc.freezed.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final String chatId;
-  final Future<Stream<List<Message>>> onListenChats;
+  final Stream<List<Message>> Function() onListenChats;
   ChatBloc({
     required this.chatId,
     required this.onListenChats,
@@ -46,14 +46,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   // Streams
   final StreamController<List<Message>> _chatMessages =
       StreamController.broadcast();
-  Stream<List<Message>> get chatMessages => _chatMessages.stream;
+      MultiStreamController<List<Message>> _chatMessagesController = 
+  Stream<List<Message>> get chatMessages =>
+      _chatMessages.stream.asBroadcastStream();
 
   final StreamController<UserStatus> _userStatusController =
       StreamController.broadcast();
   Stream<UserStatus>? get userStatus =>
       _userStatusController.stream.asBroadcastStream();
 
-  StreamSubscription? _chatSubscription, _userStatusSubscription;
+  StreamSubscription? _chatSubscription,
+      _userStatusSubscription,
+      _localChatSubscription;
 
   List<Message> getInitialMessages() {
     return _obxStorageRepository.getChatMessages(chatId);
@@ -66,7 +70,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       },
       checkChat: (senderId, receiverId) async {
         await _checkChat(senderId, receiverId, emit);
-        // unawaited(_getReceiptUsers(senderId));
       },
       sendMessage: (message) async {
         await _sendMessage(message, emit);
@@ -90,9 +93,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           isLoading: true, senderId: senderId, receiverId: receiverId),
     );
     try {
-      log("ChatId ok: $chatId");
+      log("ChatId: $chatId");
       bool chatExists = await _chatRepository.doesChatExist(chatId);
-      _obxStorageRepository.getChatUsersStream();
       if (!chatExists) {
         await _chatRepository.createChat(
           chatId,
@@ -116,29 +118,54 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   Future<void> _listenChats(String chatId, Emitter<ChatState> emit) async {
-    if (_chatSubscription == null) {
-      // If no active subscription or different chatId, create a new subscription
-      await _chatSubscription?.cancel(); // Cancel any existing subscription
-      await onListenChats.then((value) {
-        _chatSubscription = value.listen(
-          (event) => _chatMessages.add(event),
-          onError: (e) {
-            emit(state.copyWith(error: e));
-          },
+    listenOnLocalMessages();
+    await _chatSubscription?.cancel(); // Cancel any existing subscription
+    _chatSubscription = onListenChats().listen(
+      null,
+      onError: (e) {
+        emit(
+          state.copyWith(
+            error: e,
+          ),
         );
-      });
-    }
-    if (_userStatusSubscription == null) {
-      await _userStatusSubscription?.cancel();
-      _userStatusSubscription = _userStatusRepository
-          .getUserStatus(state.receiverId!)
-          .asBroadcastStream()
-          .listen(
-            (event) => _userStatusController.add(
-              event ?? UserStatus.empty(state.senderId!),
-            ),
-          );
-    }
+      },
+    );
+    _chatSubscription?.onData((data) {
+      _saveToLocalDatabase(data);
+      addChatMessage(data);
+    });
+    await _userStatusSubscription?.cancel();
+    _userStatusSubscription = _userStatusRepository
+        .getUserStatus(state.receiverId!)
+        .asBroadcastStream()
+        .listen(
+          (event) => _userStatusController.add(
+            event ?? UserStatus.empty(state.senderId!),
+          ),
+        );
+  }
+
+  void _saveToLocalDatabase(List<Message> event) {
+    _obxStorageRepository.saveMessage(
+      chatId: chatId,
+      messageId: event.last.id,
+      content: event.last.content ?? '',
+      senderId: event.last.senderId ?? '',
+      type: event.last.messageType ?? ChatMessageType.TEXT,
+      epochTime: event.last.epochTime.millisecondsSinceEpoch,
+      timestamp: event.last.sentAt?.toDate() ?? DateTime.now(),
+    );
+  }
+
+  void listenOnLocalMessages() {
+    _localChatSubscription =
+        _obxStorageRepository.getChatMessagesStream(chatId).listen((event) {
+      addChatMessage(event);
+    });
+  }
+
+  void addChatMessage(List<Message> messages) {
+    _chatMessages.add(messages);
   }
 
   Future<void> _cancelChatSubscription() async {
@@ -151,7 +178,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       _userStatusSubscription!.cancel();
       _userStatusSubscription = null;
     }
-    _chatMessages.close();
+    await _chatMessages.close();
   }
 
   Future<void> _sendMessage(Message message, Emitter<ChatState> emit) async {
@@ -188,13 +215,16 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       await for (DocumentUploadTask task in uploadTask) {
         if (task.isComplete) {
           Message message = Message(
+            id: "",
             senderId: senderId,
             messageType: ChatMessageType.IMAGE,
             content: task.url,
             sentAt: Timestamp.now(),
             epochTime: DateTime.now(),
           );
-          await _chatRepository.sendMessage(state.chatId!, message);
+          String messageId =
+              await _chatRepository.sendMessage(state.chatId!, message);
+          message = message.copyWith(id: messageId);
           _sendMessage(message, emit);
           emit(state.copyWith(uploadTask: null));
         } else if (task.progress > 0) {
@@ -228,7 +258,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       receiptUser = receiptUser?.copyWith(
         chatId: state.chatId,
       );
-      log("receiptUser: $receiptUser");
+      log("Recipient User: $receiptUser");
       if (receiptUser != null) {
         log('Saving recipient user: $receiptUser');
         await _obxStorageRepository.saveRecipientUser(receiptUser);
@@ -237,21 +267,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       rethrow;
     }
   }
-
-  // Future<void> _getReceiptUsers(String senderId) async {
-  //   try {
-  //     List<QuickChatUser> receiptUsers =
-  //         await _recipientQuickUserRepository.getRecipientUsers(
-  //       senderId,
-  //       (senderId, receiverId) {
-  //         return _chatRepository.generateChatId(senderId, receiverId);
-  //       },
-  //     );
-  //     _loggerService.log('Receipt users: $receiptUsers');
-  //   } on Exception {
-  //     rethrow;
-  //   }
-  // }
 
   @override
   Future<void> close() async {

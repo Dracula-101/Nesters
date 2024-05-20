@@ -22,7 +22,10 @@ class FirebaseRecipientUserRepository implements RecipientUserRepository {
         Map<String, dynamic>? user =
             querySnapshot.docs.first.data() as Map<String, dynamic>?;
         if (user == null) return null;
-        return QuickChatUser.fromJson(user);
+        return QuickChatUser.fromJson({
+          ...user,
+          "chatId": querySnapshot.docs.first.id,
+        });
       } else {
         return null;
       }
@@ -33,18 +36,24 @@ class FirebaseRecipientUserRepository implements RecipientUserRepository {
 
   @override
   Future<List<QuickChatUser>> getRecipientUsers(
-      String currentUserId, Function(String, String) generateChatId) async {
+    String currentUserId,
+    Function(String senderId, String receiverId) generateChatId,
+  ) async {
     try {
       List<String> recipientUserIds = await _store
           .collection(_chatCollectionName)
           .where(_participantFieldName, arrayContains: currentUserId)
           .get()
           .then((value) {
-        return value.docs
-            .map((e) => e[_participantFieldName]
-                .where((element) => element != currentUserId)
-                .first as String)
-            .toList();
+        List<String> recipientUserIds = [];
+        for (QueryDocumentSnapshot chat in value.docs) {
+          List<String> participants = chat[_participantFieldName]
+              .where((element) => element != currentUserId)
+              .toList()
+              .cast<String>();
+          recipientUserIds.addAll(participants);
+        }
+        return recipientUserIds;
       });
       Future<List<QuickChatUser?>> recipientUsers = Future.wait([
         for (String recipientUserId in recipientUserIds)
@@ -56,7 +65,7 @@ class FirebaseRecipientUserRepository implements RecipientUserRepository {
                 (value) => value.exists
                     ? QuickChatUser.fromJson({
                         ...value.data() as Map<String, dynamic>,
-                        "chatId": generateChatId(recipientUserId, currentUserId)
+                        "chatId": generateChatId(currentUserId, recipientUserId)
                       })
                     : null,
               )
@@ -67,5 +76,48 @@ class FirebaseRecipientUserRepository implements RecipientUserRepository {
     } on Exception {
       rethrow;
     }
+  }
+
+  @override
+  Stream<List<QuickChatUser>> getRecipientUsersStream(
+    String userId,
+    Function(String senderId, String receiverId) generateChatId,
+  ) {
+    return _store
+        .collection(_chatCollectionName)
+        .where(_participantFieldName, arrayContains: userId)
+        .snapshots()
+        .map((event) {
+      List<String> recipientUserIds = [];
+      for (QueryDocumentSnapshot chat in event.docs) {
+        List<String> participants = chat[_participantFieldName]
+            .where((element) => element != userId)
+            .toList()
+            .cast<String>();
+        recipientUserIds.addAll(participants);
+      }
+      return recipientUserIds;
+    }).asyncExpand((recipientUserIds) {
+      return Stream.fromFuture(Future.wait([
+        for (String recipientUserId in recipientUserIds)
+          _store
+              .collection(_userCollectionName)
+              .doc(recipientUserId)
+              .get()
+              .then((value) {
+            log('Recipient User: $value, ChatId ${value.id}');
+            if (value.exists) {
+              return QuickChatUser.fromJson({
+                ...value.data() as Map<String, dynamic>,
+                "chatId": generateChatId(userId, value.id)
+              });
+            } else {
+              return null;
+            }
+          })
+      ])).map((value) {
+        return value.whereType<QuickChatUser>().toList();
+      });
+    });
   }
 }

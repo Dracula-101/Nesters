@@ -29,6 +29,7 @@ class MessageEntity {
 
   Message toMessage() {
     return Message(
+      id: messageId,
       senderId: senderId,
       content: content,
       messageType: ChatMessageType.values.firstWhere(

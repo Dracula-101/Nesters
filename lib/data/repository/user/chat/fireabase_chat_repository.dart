@@ -1,5 +1,6 @@
+import 'dart:developer';
 import 'dart:io';
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -34,7 +35,12 @@ class FirebaseChatRepository extends RemoteChatRepository {
           .then(
             (value) => value.docs
                 .map<Message>(
-                  (e) => Message.fromMap(e.data()),
+                  (e) => Message.fromMap(
+                    {
+                      ...e.data(),
+                      'id': e.id,
+                    },
+                  ),
                 )
                 .toList(),
           );
@@ -53,7 +59,12 @@ class FirebaseChatRepository extends RemoteChatRepository {
           .orderBy('epochTime', descending: true)
           .snapshots()
           .map((event) {
-        return event.docs.map((e) => Message.fromMap(e.data())).toList();
+        return event.docs
+            .map((e) => Message.fromMap({
+                  ...e.data(),
+                  'id': e.id,
+                }))
+            .toList();
       });
     } on Exception {
       rethrow;
@@ -134,7 +145,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
   @override
   Future<String?> downloadDocument(String url) async {
     String? message;
-    Random random = Random();
+    math.Random random = math.Random();
     try {
       // Download image
       final http.Response response = await http.get(Uri.parse(url));

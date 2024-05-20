@@ -84,8 +84,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
         token: user.token as String,
         userId: user.userId as String,
       );
-      log('is user saved');
-      log(chatEntityBox.put(quickChat).toString());
+      chatEntityBox.put(quickChat);
       return Future.value();
     } catch (e) {
       rethrow;
@@ -116,8 +115,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
           .build()
           .findFirst();
       message.chat.target = chatEntity;
-      log('is message savaed');
-      log(messageEntityBox.put(message).toString());
+      messageEntityBox.put(message);
     } catch (e) {
       rethrow;
     }
@@ -176,11 +174,6 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
         log("No messages found for chatId: $chatId");
         return [];
       }
-      log('messages');
-      log(chatEntity.messages.reversed
-          .map((e) => e.toMessage())
-          .toList()
-          .toString());
       return chatEntity.messages.reversed.map((e) => e.toMessage()).toList();
     } catch (e) {
       rethrow;

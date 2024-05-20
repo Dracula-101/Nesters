@@ -3,6 +3,7 @@ import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Message {
+  String id;
   String? senderId;
   String? content;
   ChatMessageType? messageType;
@@ -10,6 +11,7 @@ class Message {
   DateTime epochTime;
 
   Message({
+    required this.id,
     this.senderId,
     this.content,
     this.messageType,
@@ -20,6 +22,7 @@ class Message {
   //fromMap
   factory Message.fromMap(Map<String, dynamic> map) {
     return Message(
+      id: map['id'],
       senderId: map['senderId'],
       content: map['content'],
       messageType: ChatMessageType.values.byName(
@@ -44,6 +47,24 @@ class Message {
   @override
   String toString() {
     return 'senderId: $senderId, content: $content, messageType: $messageType, sentAt: $sentAt, epochTime: $epochTime';
+  }
+
+  Message copyWith({
+    String? id,
+    String? senderId,
+    String? content,
+    ChatMessageType? messageType,
+    Timestamp? sentAt,
+    DateTime? epochTime,
+  }) {
+    return Message(
+      id: id ?? this.id,
+      senderId: senderId ?? this.senderId,
+      content: content ?? this.content,
+      messageType: messageType ?? this.messageType,
+      sentAt: sentAt ?? this.sentAt,
+      epochTime: epochTime ?? this.epochTime,
+    );
   }
 
   ChatMessage toChatMessage() {

@@ -1,22 +1,21 @@
 import 'dart:developer';
 
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
-import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
 import 'package:nesters/domain/models/user/user.dart';
-import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
 import 'package:nesters/theme/theme.dart';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 
 class UserChatPage extends StatelessWidget {
@@ -30,10 +29,12 @@ class UserChatPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => ChatBloc(
         chatId: chatId,
-        onListenChats: context
-            .read<CentralChatBloc>()
-            .getChatHandler(chatId)
-            .then((value) => value.liveChatStream),
+        onListenChats: () {
+          return context
+              .read<CentralChatBloc>()
+              .getChatHandler(chatId)
+              .liveChatStream;
+        },
       ),
       child: ChatView(receiverProf: userProfile, chatId: chatId),
     );
@@ -355,10 +356,10 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void _sendMessage(ChatMessage message, BuildContext context) {
-    context.read<CentralChatBloc>().add(
-          CentralChatEvent.sendMessage(
-            widget.chatId,
+    context.read<ChatBloc>().add(
+          ChatEvent.sendMessage(
             Message(
+              id: "0",
               senderId: currentUser.id,
               content: message.text,
               sentAt: Timestamp.fromDate(
