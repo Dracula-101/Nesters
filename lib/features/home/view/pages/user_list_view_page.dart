@@ -146,9 +146,9 @@ class _UserListPageState extends State<UserListPage> {
                   size: 20,
                 ),
                 onPressed: () {
-                  GoRouter.of(context).go(
-                    '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}',
-                  );
+                  // GoRouter.of(context).go(
+                  //   '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}',
+                  // );
                 },
               ),
               IconButton(

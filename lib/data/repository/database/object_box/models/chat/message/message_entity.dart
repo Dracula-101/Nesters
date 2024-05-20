@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nesters/data/repository/database/object_box/models/chat/chat_entity.dart';
+import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:objectbox/objectbox.dart';
 
@@ -9,7 +11,7 @@ class MessageEntity {
   String messageId;
   String senderId;
   String content;
-  ChatMessageType messageType;
+  String messageType;
   @Property(type: PropertyType.date)
   DateTime sentAt;
   int epochTime;
@@ -21,22 +23,19 @@ class MessageEntity {
     required this.senderId,
     required this.content,
     required this.sentAt,
-    this.messageType = ChatMessageType.TEXT,
+    required this.messageType,
     required this.epochTime,
   });
 
-  int get dbMessageType {
-    _ensureStableEnumValues();
-    return messageType.index;
-  }
-
-  set dbMessageType(int value) {
-    _ensureStableEnumValues();
-    messageType = ChatMessageType.values[value];
-  }
-
-  _ensureStableEnumValues() {
-    assert(ChatMessageType.TEXT.index == 0);
-    assert(ChatMessageType.IMAGE.index == 1);
+  Message toMessage() {
+    return Message(
+      senderId: senderId,
+      content: content,
+      messageType: ChatMessageType.values.firstWhere(
+        (e) => e.toString() == messageType,
+      ),
+      sentAt: Timestamp.fromDate(sentAt),
+      epochTime: DateTime.fromMillisecondsSinceEpoch(epochTime),
+    );
   }
 }

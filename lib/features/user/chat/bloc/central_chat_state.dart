@@ -3,9 +3,9 @@ part of 'central_chat_bloc.dart';
 @freezed
 class CentralChatState with _$CentralChatState {
   const factory CentralChatState({
-    required List<ChatState> chatStates,
-    required bool isLoading,
+    required List<ChatInfo> chatStates,
     required Exception? error,
+    required bool isLoading,
   }) = _CentralChatState;
 
   factory CentralChatState.loading() => const CentralChatState(
@@ -26,7 +26,8 @@ class CentralChatState with _$CentralChatState {
         error: e,
       );
 
-  factory CentralChatState.loaded(List<ChatState> chatStates) => CentralChatState(
+  factory CentralChatState.loaded(List<ChatInfo> chatStates) =>
+      CentralChatState(
         chatStates: chatStates,
         isLoading: false,
         error: null,
@@ -34,11 +35,11 @@ class CentralChatState with _$CentralChatState {
 }
 
 @freezed
-class ChatState with _$ChatState {
-  const factory ChatState({
+class ChatInfo with _$ChatInfo {
+  const factory ChatInfo({
     required String chatId,
-    required String senderId,
-    required String receiverId,
     required QuickChatUser recipientUser,
-  }) = _ChatState;
+    required String receiverId,
+    required String senderId,
+  }) = _ChatInfo;
 }

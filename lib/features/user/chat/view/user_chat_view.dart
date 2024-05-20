@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -11,10 +13,11 @@ import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:dash_chat_2/dash_chat_2.dart';
-import 'package:intl/intl.dart'; //for DateFormat
+import 'package:intl/intl.dart';
 
 class UserChatPage extends StatelessWidget {
   final String chatId;
@@ -25,16 +28,23 @@ class UserChatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ChatBloc(chatId: chatId),
-      child: ChatView(receiverProf: userProfile),
+      create: (context) => ChatBloc(
+        chatId: chatId,
+        onListenChats: context
+            .read<CentralChatBloc>()
+            .getChatHandler(chatId)
+            .then((value) => value.liveChatStream),
+      ),
+      child: ChatView(receiverProf: userProfile, chatId: chatId),
     );
   }
 }
 
 class ChatView extends StatefulWidget {
   final User receiverProf;
+  final String chatId;
 
-  const ChatView({super.key, required this.receiverProf});
+  const ChatView({super.key, required this.receiverProf, required this.chatId});
 
   @override
   State<ChatView> createState() => _ChatViewState();
@@ -62,7 +72,7 @@ class _ChatViewState extends State<ChatView> {
       lastName: widget.receiverProf.fullName.split(' ').last,
       profileImage: widget.receiverProf.photoUrl,
     );
-
+    // log('chatId from UserChatPage: ${state.chatId}');
     context.read<ChatBloc>().add(
           ChatEvent.checkChat(
             currentUser.id,
@@ -77,14 +87,11 @@ class _ChatViewState extends State<ChatView> {
     super.dispose();
   }
 
-  void _handleTextChange(String value) {
-    _isInputMessageEmpty.value = value.isEmpty;
-  }
-
   @override
   Widget build(BuildContext context) {
     return PopScope(
       onPopInvoked: (value) {
+        log('PopScope invoked');
         context.read<ChatBloc>().add(const ChatEvent.closeChat());
       },
       child: Scaffold(
@@ -109,6 +116,10 @@ class _ChatViewState extends State<ChatView> {
         ),
       ),
     );
+  }
+
+  void _handleTextChange(String value) {
+    _isInputMessageEmpty.value = value.isEmpty;
   }
 
   AppBar _buildAppBarUI(BuildContext context) {
@@ -162,6 +173,11 @@ class _ChatViewState extends State<ChatView> {
 
   StreamBuilder<List<ChatMessage>> _buildChatStreamBuilder() {
     return StreamBuilder<List<ChatMessage>>(
+      initialData: context
+          .read<ChatBloc>()
+          .getInitialMessages()
+          .map((e) => e.toChatMessage())
+          .toList(),
       stream: _getChatMessageStream(),
       builder: (context, snapshot) {
         return DashChat(
@@ -249,17 +265,21 @@ class _ChatViewState extends State<ChatView> {
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              _buildOptionItem(Icons.photo, 'Gallery', () {
-                Navigator.pop(
-                  context,
-                );
-                context.read<ChatBloc>().add(
-                      ChatEvent.sendDocument(
-                        DocumentSource.GALLERY,
-                        currentUser.id,
-                      ),
-                    );
-              }),
+              _buildOptionItem(
+                Icons.photo,
+                'Gallery',
+                () {
+                  Navigator.pop(
+                    context,
+                  );
+                  context.read<ChatBloc>().add(
+                        ChatEvent.sendDocument(
+                          DocumentSource.GALLERY,
+                          currentUser.id,
+                        ),
+                      );
+                },
+              ),
               _buildOptionItem(
                 Icons.camera_alt,
                 'Camera',
@@ -335,13 +355,17 @@ class _ChatViewState extends State<ChatView> {
   }
 
   void _sendMessage(ChatMessage message, BuildContext context) {
-    context.read<ChatBloc>().add(
-          ChatEvent.sendMessage(
+    context.read<CentralChatBloc>().add(
+          CentralChatEvent.sendMessage(
+            widget.chatId,
             Message(
               senderId: currentUser.id,
               content: message.text,
               sentAt: Timestamp.fromDate(
                 message.createdAt,
+              ),
+              epochTime: DateTime.fromMillisecondsSinceEpoch(
+                message.createdAt.millisecondsSinceEpoch,
               ),
               messageType: ChatMessageType.TEXT,
             ),

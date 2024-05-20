@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:nesters/data/repository/database/object_box/models/chat/chat_entity.dart';
 import 'package:nesters/data/repository/database/object_box/models/chat/message/message_entity.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
+import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/objectbox.g.dart';
 import 'package:path_provider/path_provider.dart';
@@ -82,7 +84,8 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
         token: user.token as String,
         userId: user.userId as String,
       );
-      chatEntityBox.put(quickChat);
+      log('is user saved');
+      log(chatEntityBox.put(quickChat).toString());
       return Future.value();
     } catch (e) {
       rethrow;
@@ -103,7 +106,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       MessageEntity message = MessageEntity(
         messageId: messageId,
         content: content,
-        messageType: type,
+        messageType: type.toString(),
         senderId: senderId,
         sentAt: timestamp,
         epochTime: epochTime,
@@ -113,7 +116,8 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
           .build()
           .findFirst();
       message.chat.target = chatEntity;
-      messageEntityBox.put(message);
+      log('is message savaed');
+      log(messageEntityBox.put(message).toString());
     } catch (e) {
       rethrow;
     }
@@ -139,6 +143,58 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
     try {
       store.close();
       return init();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<List<Message>> getChatMessagesStream(String chatId) {
+    try {
+      return chatEntityBox.query(ChatEntity_.chatId.equals(chatId)).watch().map(
+        (query) {
+          final chatEntity = query.findFirst();
+          if (chatEntity == null) {
+            return [];
+          }
+          return chatEntity.messages.map((e) => e.toMessage()).toList();
+        },
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  List<Message> getChatMessages(String chatId) {
+    try {
+      final chatEntity = chatEntityBox
+          .query(ChatEntity_.chatId.equals(chatId))
+          .build()
+          .findFirst();
+      if (chatEntity == null) {
+        log("No messages found for chatId: $chatId");
+        return [];
+      }
+      log('messages');
+      log(chatEntity.messages.reversed
+          .map((e) => e.toMessage())
+          .toList()
+          .toString());
+      return chatEntity.messages.reversed.map((e) => e.toMessage()).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  QuickChatUser? getQuickChatUser(String chatId) {
+    try {
+      final chatEntity = chatEntityBox
+          .query(ChatEntity_.chatId.equals(chatId))
+          .build()
+          .findFirst();
+      return chatEntity?.toQuickChatUser();
     } catch (e) {
       rethrow;
     }

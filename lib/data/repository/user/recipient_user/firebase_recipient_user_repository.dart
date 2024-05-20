@@ -32,7 +32,8 @@ class FirebaseRecipientUserRepository implements RecipientUserRepository {
   }
 
   @override
-  Future<List<QuickChatUser>> getRecipientUsers(String currentUserId) async {
+  Future<List<QuickChatUser>> getRecipientUsers(
+      String currentUserId, Function(String, String) generateChatId) async {
     try {
       List<String> recipientUserIds = await _store
           .collection(_chatCollectionName)
@@ -55,7 +56,7 @@ class FirebaseRecipientUserRepository implements RecipientUserRepository {
                 (value) => value.exists
                     ? QuickChatUser.fromJson({
                         ...value.data() as Map<String, dynamic>,
-                        "chatId": value.id
+                        "chatId": generateChatId(recipientUserId, currentUserId)
                       })
                     : null,
               )

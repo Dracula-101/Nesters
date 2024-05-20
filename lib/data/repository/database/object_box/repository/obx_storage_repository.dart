@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
+import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 
 abstract class ObxStorageRepository {
@@ -9,6 +12,7 @@ abstract class ObxStorageRepository {
 
   Stream<List<QuickChatUser>> getChatUsersStream();
   List<QuickChatUser> getChatUserProfiles();
+  QuickChatUser? getQuickChatUser(String chatId);
   Future<void> updateChatUser(List<QuickChatUser> users);
   Future<void> saveRecipientUser(QuickChatUser user);
 
@@ -21,4 +25,7 @@ abstract class ObxStorageRepository {
     required int epochTime,
     required DateTime timestamp,
   });
+
+  Stream<List<Message>> getChatMessagesStream(String chatId);
+  List<Message> getChatMessages(String chatId);
 }

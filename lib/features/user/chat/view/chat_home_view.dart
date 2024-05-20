@@ -18,7 +18,9 @@ class ChatHomePage extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Messages'),
+          title: const Text(
+            'Messages',
+          ),
         ),
         body: const ChatHomeView(),
       ),
@@ -45,9 +47,9 @@ class _ChatHomeViewState extends State<ChatHomeView> {
             : state.error == null
                 ? RefreshIndicator(
                     onRefresh: () {
-                      context
-                          .read<CentralChatBloc>()
-                          .add(const CentralChatEvent.forcedLoadProfiles());
+                      context.read<CentralChatBloc>().add(
+                            const CentralChatEvent.forcedLoadProfiles(),
+                          );
                       return Future<void>.value();
                     },
                     child: CustomScrollView(
@@ -63,8 +65,10 @@ class _ChatHomeViewState extends State<ChatHomeView> {
                                     onTap: () {
                                       String route =
                                           '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatUser.chatId}';
-                                      GoRouter.of(context)
-                                          .go(route, extra: chatUser.toUser());
+                                      GoRouter.of(context).go(
+                                        route,
+                                        extra: chatUser.toUser(),
+                                      );
                                     },
                                     leading: CircleAvatar(
                                       backgroundImage: NetworkImage(
@@ -75,7 +79,7 @@ class _ChatHomeViewState extends State<ChatHomeView> {
                                       chatUser.fullName ?? '',
                                     ),
                                   ),
-                                  const Divider(),
+                                  // const Divider(),
                                 ],
                               );
                             },
