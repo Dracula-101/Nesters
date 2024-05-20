@@ -8,6 +8,8 @@ abstract class ObxStorageRepository {
   Future<void> reset();
 
   Stream<List<QuickChatUser>> getChatUsersStream();
+  List<QuickChatUser> getChatUserProfiles();
+  Future<void> updateChatUser(List<QuickChatUser> users);
   Future<void> saveRecipientUser(QuickChatUser user);
 
   void saveMessage({

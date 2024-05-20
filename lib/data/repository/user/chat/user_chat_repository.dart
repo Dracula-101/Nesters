@@ -4,14 +4,21 @@ import 'package:nesters/domain/models/chat/message.dart';
 
 abstract class RemoteChatRepository {
   String generateChatId(String senderId, String receiverId);
+  Future<bool> doesChatExist(String chatId);
+
+  Future<void> createChat(
+    String chatId, {
+    required String senderId,
+    required String receiverId,
+  });
   Future<List<Message>> fetchChatMessages(String chatId);
   Stream<List<Message>> getChatMessages(String chatId);
   Future<String> sendMessage(String chatId, Message message);
-  Future<bool> doesChatExist(String chatId);
-  Future<void> createChat(String chatId,
-      {required String senderId, required String receiverId});
-  Stream<DocumentUploadTask> uploadDocument(
-      {required File file, required String chatID});
+
+  Stream<DocumentUploadTask> uploadDocument({
+    required File file,
+    required String chatID,
+  });
   Future<String?> downloadDocument(String url);
 }
 

@@ -35,11 +35,11 @@ class AppRouterService {
       context,
       state,
     ) =>
-        const MaterialPage(
+        MaterialPage(
       child: Scaffold(
         body: Center(
           child: Text(
-            'Page not found',
+            'Page not found Route: ${state.fullPath}',
           ),
         ),
       ),
@@ -91,10 +91,6 @@ class AppRouterService {
                 (params) {
                   return UserProfilePage(id: params.pathParameters['id'] ?? '');
                 },
-              ),
-              AppRoute(
-                userChatHome,
-                (_) => const ChatHomePage(),
               ),
               AppRoute(
                 '$userChatHome/:chatId',

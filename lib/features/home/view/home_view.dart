@@ -6,6 +6,7 @@ import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/pages/notification_page.dart';
 import 'package:nesters/features/home/view/pages/user_list_view_page.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/theme/theme.dart';
 
@@ -20,6 +21,16 @@ class HomeScaffold extends StatefulWidget {
 class _HomeScaffoldState extends State<HomeScaffold> {
   late final ValueNotifier<int> _selectedIndex =
       ValueNotifier<int>(widget.initialIndex);
+
+  @override
+  void initState() {
+    super.initState();
+    String userId = context.read<AuthBloc>().state.maybeWhen(
+          authenticated: (user) => user.id,
+          orElse: () => throw Exception('User not authenticated'),
+        );
+    context.read<CentralChatBloc>().add(CentralChatEvent.loadProfiles(userId));
+  }
 
   @override
   Widget build(BuildContext context) {

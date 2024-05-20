@@ -59,4 +59,9 @@ class QuickChatUser {
       photoUrl: photoUrl ?? '',
     );
   }
+
+  @override
+  String toString() {
+    return 'Name: $fullName, Photo: ${photoUrl?.substring(0, 5)}, ID: $userId, Token: *****, ChatID: $chatId';
+  }
 }

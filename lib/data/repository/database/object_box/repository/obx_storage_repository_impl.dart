@@ -32,6 +32,15 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
   }
 
   @override
+  List<QuickChatUser> getChatUserProfiles() {
+    try {
+      return chatEntityBox.getAll().map((e) => e.toQuickChatUser()).toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
   Stream<List<QuickChatUser>> getChatUsersStream() {
     try {
       return chatEntityBox.query().watch(triggerImmediately: true).map(
@@ -40,6 +49,25 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
         },
       );
     } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updateChatUser(List<QuickChatUser> users) async {
+    try {
+      chatEntityBox.removeAll();
+      for (QuickChatUser user in users) {
+        ChatEntity quickChat = ChatEntity(
+          fullName: user.fullName as String,
+          photoUrl: user.photoUrl as String,
+          chatId: user.chatId as String,
+          token: user.token as String,
+          userId: user.userId as String,
+        );
+        await chatEntityBox.putAsync(quickChat);
+      }
+    } catch (e) {
       rethrow;
     }
   }

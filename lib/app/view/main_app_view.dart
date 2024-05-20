@@ -6,6 +6,7 @@ import 'package:nesters/app/lifecycle_listener.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 
 class RootApp extends StatelessWidget with WidgetsBindingObserver {
@@ -25,6 +26,9 @@ class RootApp extends StatelessWidget with WidgetsBindingObserver {
         BlocProvider(
           create: (context) => HomeBloc(),
         ),
+        BlocProvider(
+          create: (context) => CentralChatBloc(),
+        )
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

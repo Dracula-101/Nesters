@@ -49,4 +49,5 @@ class LocalStorageKeys {
   static const userOnboardingComplete = 'userOnboardingComplete';
   static const userToken = 'userToken';
   static const userDataSaved = 'userDataSaved';
+  static const lastSavedRecipientUsers = 'lastSavedRecipientUsers';
 }
