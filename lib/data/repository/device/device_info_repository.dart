@@ -6,4 +6,5 @@ abstract class DeviceInfoRepository {
 
   Future<void> init();
   Future<void> saveDeviceInfo(String userId);
+  Future<void> intializeAppCheck();
 }

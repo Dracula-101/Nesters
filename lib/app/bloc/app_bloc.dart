@@ -91,7 +91,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   Future<void> loadAndSaveToken() async {
     try {
       String token = await _rNotificationRepository.getToken();
-      _loggerService.info('Token: $token');
+      _loggerService.info(
+          'Token: ${token.substring(0, 10)}******************************');
       await _localStorageRepository.saveString(
           token, LocalStorageKeys.userToken);
     } catch (e) {

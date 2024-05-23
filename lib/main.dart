@@ -92,6 +92,7 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   NetworkCheckerRepository networkCheckerRepository =
       NetworkCheckerRepositoryImpl()..init();
   DeviceInfoRepository deviceInfoRepository = DeviceInfoRepositoryImpl();
+  await deviceInfoRepository.intializeAppCheck();
   AppRouterService appRouterService = AppRouterService();
   AuthRepository authRepository =
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
