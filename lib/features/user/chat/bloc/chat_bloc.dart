@@ -46,7 +46,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   // Streams
   final StreamController<List<Message>> _chatMessages =
       StreamController.broadcast();
-      MultiStreamController<List<Message>> _chatMessagesController = 
   Stream<List<Message>> get chatMessages =>
       _chatMessages.stream.asBroadcastStream();
 

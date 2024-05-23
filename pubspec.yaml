@@ -49,6 +49,10 @@ dependencies:
   supabase_flutter: ^2.5.2
   objectbox: ^4.0.0
   objectbox_flutter_libs: any
+  device_info_plus: ^9.1.2
+  package_info_plus: ^5.0.1
+  rxdart: ^0.27.7
+  connectivity_plus: ^6.0.3
 
 dev_dependencies:
   flutter_test:

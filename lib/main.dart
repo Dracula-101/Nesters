@@ -8,7 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository_impl.dart';
+import 'package:nesters/data/repository/device/device_info_repository.dart';
+import 'package:nesters/data/repository/device/device_info_repository_impl.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
+import 'package:nesters/data/repository/network/network_checker_repository.dart';
+import 'package:nesters/data/repository/network/network_checker_repository_impl.dart';
 import 'package:nesters/data/repository/user/chat/fireabase_chat_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
@@ -85,6 +89,9 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   LocalStorageRepository localStorageRepository = GetStorageRepository();
   AppLoggerService appLoggerService = AppLoggerService();
   MediaRepository mediaRepository = MediaRepository();
+  NetworkCheckerRepository networkCheckerRepository =
+      NetworkCheckerRepositoryImpl()..init();
+  DeviceInfoRepository deviceInfoRepository = DeviceInfoRepositoryImpl();
   AppRouterService appRouterService = AppRouterService();
   AuthRepository authRepository =
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
@@ -104,26 +111,22 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
       FirebaseNotificationRepository(
     notificationRepository: notificationRepository,
     appRouterService: appRouterService,
-  );
+  )..listenToNotification();
   ObxStorageRepository objectbox = ObjectBoxStorageRepository();
   // Register all repositories
-  locator.registerSingleton<LocalStorageRepository>(localStorageRepository);
-  locator.registerSingleton<AppLoggerService>(appLoggerService);
-  locator.registerSingleton<AppRouterService>(appRouterService);
-  locator.registerSingleton<MediaRepository>(mediaRepository);
-  locator.registerSingleton<AuthRepository>(authRepository);
-  locator.registerSingleton<DatabaseRepository>(databaseRepository);
-  locator.registerSingleton<UserRepository>(userRepository);
-  locator.registerSingleton<RemoteChatRepository>(remoteChatRepository);
-  locator.registerSingleton<RecipientUserRepository>(
-      firebaseRecipientQuickUserRepository);
-  locator.registerSingleton<UserStatusRepository>(userStatusRepository);
-  locator
-      .registerSingleton<LocalNotificationRepository>(notificationRepository);
-  locator.registerSingleton<RemoteNotificationRepository>(
-    remoteNotificationRepository..listenToNotification(),
-  );
-  locator.registerSingleton<ObxStorageRepository>(
-    objectbox,
-  );
+  locator.registerSingleton(localStorageRepository);
+  locator.registerSingleton(appLoggerService);
+  locator.registerSingleton(appRouterService);
+  locator.registerSingleton(deviceInfoRepository);
+  locator.registerSingleton(networkCheckerRepository);
+  locator.registerSingleton(mediaRepository);
+  locator.registerSingleton(authRepository);
+  locator.registerSingleton(databaseRepository);
+  locator.registerSingleton(userRepository);
+  locator.registerSingleton(remoteChatRepository);
+  locator.registerSingleton(firebaseRecipientQuickUserRepository);
+  locator.registerSingleton(userStatusRepository);
+  locator.registerSingleton(notificationRepository);
+  locator.registerSingleton(remoteNotificationRepository);
+  locator.registerSingleton(objectbox);
 }
