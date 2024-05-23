@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
@@ -16,6 +17,7 @@ import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
+import 'package:nesters/features/user/chat/bloc/controllers/chat_controller.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'chat_event.dart';
@@ -23,11 +25,9 @@ part 'chat_state.dart';
 part 'chat_bloc.freezed.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
-  final String chatId;
-  final Stream<List<Message>> Function() onListenChats;
+  final ChatController controller;
   ChatBloc({
-    required this.chatId,
-    required this.onListenChats,
+    required this.controller,
   }) : super(ChatState.initial()) {
     on<ChatEvent>(_onChatEvent);
   }
@@ -35,6 +35,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   // Repositories
   final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
   final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
+  final LocalStorageRepository _localStorageRepository =
+      GetIt.I<LocalStorageRepository>();
   final ObxStorageRepository _obxStorageRepository =
       GetIt.I<ObxStorageRepository>();
   final RecipientUserRepository _recipientQuickUserRepository =
@@ -44,28 +46,24 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       GetIt.I<UserStatusRepository>();
 
   // Streams
-  final StreamController<List<Message>> _chatMessages =
-      StreamController.broadcast();
   Stream<List<Message>> get chatMessages =>
-      _chatMessages.stream.asBroadcastStream();
+      controller.liveChatStream.asBroadcastStream();
 
   final StreamController<UserStatus> _userStatusController =
       StreamController.broadcast();
   Stream<UserStatus>? get userStatus =>
       _userStatusController.stream.asBroadcastStream();
 
-  StreamSubscription? _chatSubscription,
-      _userStatusSubscription,
-      _localChatSubscription;
+  StreamSubscription? _userStatusSubscription;
 
   List<Message> getInitialMessages() {
-    return _obxStorageRepository.getChatMessages(chatId);
+    return _obxStorageRepository.getChatMessages(controller.chatId);
   }
 
   Future<void> _onChatEvent(ChatEvent event, Emitter<ChatState> emit) async {
     await event.when(
       loadChats: (chatId) async {
-        await _listenChats(chatId, emit);
+        await _listenUserStatus(chatId, emit);
       },
       checkChat: (senderId, receiverId) async {
         await _checkChat(senderId, receiverId, emit);
@@ -92,20 +90,27 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
           isLoading: true, senderId: senderId, receiverId: receiverId),
     );
     try {
-      log("ChatId: $chatId");
-      bool chatExists = await _chatRepository.doesChatExist(chatId);
-      if (!chatExists) {
-        await _chatRepository.createChat(
-          chatId,
-          senderId: senderId,
-          receiverId: receiverId,
-        );
-        unawaited(saveReceipentDetails());
-      }
+      log("ChatId: ${controller.chatId}");
+      bool chatExists =
+          _localStorageRepository.getBool(controller.chatId) ?? false;
+
+      // if (!chatExists) {
+      //   bool chatExistsRemote =
+      //       await _chatRepository.doesChatExist(controller.chatId);
+      //   if (!chatExistsRemote) {
+      //     await _chatRepository.createChat(
+      //       controller.chatId,
+      //       senderId: senderId,
+      //       receiverId: receiverId,
+      //     );
+      //     unawaited(saveReceipentDetails());
+      //   }
+      // }
       emit(
-        state.copyWith(doesChatExist: true, chatId: chatId, isLoading: false),
+        state.copyWith(
+            doesChatExist: true, chatId: controller.chatId, isLoading: false),
       );
-      _listenChats(chatId, emit);
+      _listenUserStatus(controller.chatId, emit);
     } on Exception catch (e) {
       emit(
         state.copyWith(
@@ -116,23 +121,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  Future<void> _listenChats(String chatId, Emitter<ChatState> emit) async {
-    listenOnLocalMessages();
-    await _chatSubscription?.cancel(); // Cancel any existing subscription
-    _chatSubscription = onListenChats().listen(
-      null,
-      onError: (e) {
-        emit(
-          state.copyWith(
-            error: e,
-          ),
-        );
-      },
-    );
-    _chatSubscription?.onData((data) {
-      _saveToLocalDatabase(data);
-      addChatMessage(data);
-    });
+  Future<void> _listenUserStatus(String chatId, Emitter<ChatState> emit) async {
     await _userStatusSubscription?.cancel();
     _userStatusSubscription = _userStatusRepository
         .getUserStatus(state.receiverId!)
@@ -144,57 +133,21 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         );
   }
 
-  void _saveToLocalDatabase(List<Message> event) {
-    _obxStorageRepository.saveMessage(
-      chatId: chatId,
-      messageId: event.last.id,
-      content: event.last.content ?? '',
-      senderId: event.last.senderId ?? '',
-      type: event.last.messageType ?? ChatMessageType.TEXT,
-      epochTime: event.last.epochTime.millisecondsSinceEpoch,
-      timestamp: event.last.sentAt?.toDate() ?? DateTime.now(),
-    );
-  }
-
-  void listenOnLocalMessages() {
-    _localChatSubscription =
-        _obxStorageRepository.getChatMessagesStream(chatId).listen((event) {
-      addChatMessage(event);
-    });
-  }
-
-  void addChatMessage(List<Message> messages) {
-    _chatMessages.add(messages);
-  }
-
   Future<void> _cancelChatSubscription() async {
     _loggerService.info('Cancelling chat subscription');
-    if (_chatSubscription != null) {
-      _chatSubscription!.cancel();
-      _chatSubscription = null;
-    }
     if (_userStatusSubscription != null) {
       _userStatusSubscription!.cancel();
       _userStatusSubscription = null;
     }
-    await _chatMessages.close();
   }
 
-  Future<void> _sendMessage(Message message, Emitter<ChatState> emit) async {
+  Future<void> _sendMessage(Message message, Emitter<ChatState> emit,
+      {bool attachmentMessage = false}) async {
     // emit(state.copyWith(isLoading: true));
     try {
       String messageId =
           await _chatRepository.sendMessage(state.chatId!, message);
       _loggerService.log('Message sent: $messageId');
-      _obxStorageRepository.saveMessage(
-        chatId: chatId,
-        messageId: messageId,
-        content: message.content ?? '',
-        senderId: message.senderId ?? '',
-        type: message.messageType ?? ChatMessageType.TEXT,
-        epochTime: message.epochTime.millisecondsSinceEpoch,
-        timestamp: message.sentAt?.toDate() ?? DateTime.now(),
-      );
     } on Exception catch (e) {
       emit(state.copyWith(error: e));
     }
@@ -211,6 +164,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         file: file,
         chatID: state.chatId!,
       );
+      emit(state.copyWith(
+          uploadTask: {source: DocumentUploadTask(isPreLoading: true)}));
       await for (DocumentUploadTask task in uploadTask) {
         if (task.isComplete) {
           Message message = Message(
@@ -221,11 +176,9 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             sentAt: Timestamp.now(),
             epochTime: DateTime.now(),
           );
-          String messageId =
-              await _chatRepository.sendMessage(state.chatId!, message);
-          message = message.copyWith(id: messageId);
-          _sendMessage(message, emit);
+          _sendMessage(message, emit, attachmentMessage: true);
           emit(state.copyWith(uploadTask: null));
+          return;
         } else if (task.progress > 0) {
           emit(state.copyWith(uploadTask: {source: task}));
         }
@@ -262,6 +215,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         log('Saving recipient user: $receiptUser');
         await _obxStorageRepository.saveRecipientUser(receiptUser);
       }
+      await _localStorageRepository.saveBool(state.chatId!, true);
     } on Exception {
       rethrow;
     }

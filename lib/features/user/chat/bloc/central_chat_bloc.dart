@@ -9,9 +9,7 @@ import 'package:nesters/data/repository/database/object_box/repository/obx_stora
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
 import 'package:nesters/data/repository/user/recipient_user/recipient_user_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
-import 'package:nesters/domain/models/chat/message.dart';
-import 'package:nesters/domain/models/chat/message_type.dart';
-import 'package:nesters/features/user/chat/bloc/components/chat_handler.dart';
+import 'package:nesters/features/user/chat/bloc/controllers/chat_controller.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -24,7 +22,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
     on<CentralChatEvent>(_onCentralChatEvent);
   }
 
-  final Map<String, ChatHandler> _chatHandlers = {};
+  final Map<String, ChatController> _chatControllers = {};
   final Duration _fetchTimeDurationLimit = 4.day;
   StreamSubscription<List<QuickChatUser>>? _recipientUserStreamSubscription;
   late String userId;
@@ -38,8 +36,8 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
       GetIt.I<RecipientUserRepository>();
   final RemoteChatRepository _chatRepository = GetIt.I<RemoteChatRepository>();
 
-  ChatHandler getChatHandler(String chatId) {
-    return _chatHandlers[chatId]!;
+  ChatController getChatController(String chatId) {
+    return _chatControllers[chatId]!;
   }
 
   Future<void> _onCentralChatEvent(
@@ -67,7 +65,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
       List<QuickChatUser> chatUsers =
           _obxStorageRepository.getChatUserProfiles();
       if (chatUsers.isNotEmpty) {
-        _updateChatHandlers(
+        _updateChatController(
           chatUsers.map(
             (e) {
               return ChatInfo(
@@ -81,7 +79,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
         );
         emit(
           CentralChatState.loaded(
-            _chatHandlers.values.map((e) => e.toChatState()).toList(),
+            _chatControllers.values.map((e) => e.toChatInfo()).toList(),
           ),
         );
       }
@@ -97,13 +95,13 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
                     receiverId: recipient.userId ?? '',
                   ))
               .toList();
-          _updateChatHandlers(chatStates);
+          _updateChatController(chatStates);
           return state.copyWith(chatStates: chatStates, isLoading: false);
         },
       );
       emit(
         CentralChatState.loaded(
-          _chatHandlers.values.map((e) => e.toChatState()).toList(),
+          _chatControllers.values.map((e) => e.toChatInfo()).toList(),
         ),
       );
       add(const CentralChatEvent.loadChats());
@@ -119,15 +117,11 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
       // ================== Load from remote (force) ==================
       emit(CentralChatState.loading());
       List<ChatInfo> chatStates = [];
-      List<ChatHandler> chatHandlers = await _fetchRemoteRecipientUsers();
-      for (ChatHandler chatHandler in chatHandlers) {
-        chatStates.add(chatHandler.toChatState());
+      List<ChatController> chatControllers = await _fetchRemoteRecipientUsers();
+      for (ChatController chatHandler in chatControllers) {
+        chatStates.add(chatHandler.toChatInfo());
       }
-      _updateChatHandlers(chatStates);
-      for (ChatHandler chatHandler in _chatHandlers.values) {
-        chatStates.add(chatHandler.toChatState());
-      }
-
+      _updateChatController(chatStates);
       emit(CentralChatState.loaded(chatStates));
     } on Exception catch (e) {
       emit(CentralChatState.error(e));
@@ -141,74 +135,78 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
       return _chatRepository.generateChatId(senderId, receiverId);
     }).map((chatUsers) {
       for (QuickChatUser user in chatUsers) {
-        ChatHandler chatHandler = _createChatHandler(user, userId);
-        _addToChatHandlers(chatHandler);
+        ChatController chatController = _createChatController(user, userId);
+        _addToChatController(chatController);
       }
       unawaited(_obxStorageRepository.updateChatUser(chatUsers));
       return chatUsers;
     });
   }
 
-  void _updateChatHandlers(List<ChatInfo> chatStates) {
+  void _updateChatController(List<ChatInfo> chatStates) {
     // ================== Update chat handlers ==================
     for (ChatInfo chatState in chatStates) {
-      ChatHandler chatHandler = _createChatHandler(
+      ChatController chatHandler = _createChatController(
         chatState.recipientUser,
         userId,
       );
-      StreamSubscription<List<Message>> remoteChatSubscription =
-          _chatRepository.getChatMessages(chatHandler.chatId).listen(null);
-      chatHandler.addRemoteMessageListener(remoteChatSubscription);
-      _addToChatHandlers(chatHandler);
+      _addToChatController(chatHandler);
       log("Intialized Chat Handler: ${chatHandler.liveChatStream}");
     }
   }
 
-  void _addToChatHandlers(ChatHandler chatHandler) {
-    // ================== Add chat handler to the map ==================
+  void _addToChatController(ChatController chatHandler) {
+    // ================== Add chat controllers to the map ==================
     bool chatExists = false;
-    for (ChatHandler handler in _chatHandlers.values) {
+    for (ChatController handler in _chatControllers.values) {
       if (handler.recipientUser.userId == chatHandler.recipientUser.userId) {
         chatExists = true;
         break;
       }
     }
     if (!chatExists) {
-      _chatHandlers.putIfAbsent(chatHandler.chatId, () {
+      _chatControllers.putIfAbsent(chatHandler.chatId, () {
         return chatHandler;
       });
     }
   }
 
-  ChatHandler _createChatHandler(QuickChatUser recipientUser, String senderId) {
-    return ChatHandler(
+  ChatController _createChatController(
+      QuickChatUser recipientUser, String senderId) {
+    return ChatController(
       chatId: recipientUser.chatId!,
       senderId: senderId,
       receiverId: recipientUser.userId!,
       recipientUser: recipientUser,
+      localChatSubscription:
+          _obxStorageRepository.getChatMessagesSubject(recipientUser.chatId!),
+      remoteChatStream: (epochTime) {
+        return _chatRepository.getChatMessagesSubject(recipientUser.chatId!);
+      },
+      storage: _obxStorageRepository,
     );
   }
 
-  Future<List<ChatHandler>> _fetchRemoteRecipientUsers() async {
+  Future<List<ChatController>> _fetchRemoteRecipientUsers() async {
     List<QuickChatUser> chatUsers = await _recipientUserRepository
         .getRecipientUsers(userId, (senderId, receiverId) {
       return _chatRepository.generateChatId(senderId, receiverId);
     });
-    List<ChatHandler> chatHandlers = [];
+    List<ChatController> chatControllers = [];
     for (QuickChatUser user in chatUsers) {
-      chatHandlers.add(_createChatHandler(user, userId));
+      chatControllers.add(_createChatController(user, userId));
     }
     unawaited(_obxStorageRepository.updateChatUser(chatUsers));
     unawaited(_localStorage.saveInt(LocalStorageKeys.lastSavedRecipientUsers,
         DateTime.now().millisecondsSinceEpoch));
-    return chatHandlers;
+    return chatControllers;
   }
 
   @override
   Future<void> close() {
     _recipientUserStreamSubscription?.cancel();
-    for (ChatHandler chatHandler in _chatHandlers.values) {
-      chatHandler.dispose();
+    for (ChatController chatHandler in _chatControllers.values) {
+      chatHandler.closeChat();
     }
     return super.close();
   }

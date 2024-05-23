@@ -7,8 +7,11 @@ import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
+import 'package:nesters/domain/models/chat/message.dart';
+import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
 
 class ChatHomePage extends StatelessWidget {
   const ChatHomePage({super.key});
@@ -62,23 +65,49 @@ class _ChatHomeViewState extends State<ChatHomeView> {
                               return Column(
                                 children: [
                                   ListTile(
-                                    onTap: () {
-                                      String route =
-                                          '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatUser.chatId}';
-                                      GoRouter.of(context).go(
-                                        route,
-                                        extra: chatUser.toUser(),
-                                      );
-                                    },
-                                    leading: CircleAvatar(
-                                      backgroundImage: NetworkImage(
-                                        chatUser.photoUrl ?? '',
+                                      onTap: () {
+                                        String route =
+                                            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatUser.chatId}';
+                                        GoRouter.of(context).go(
+                                          route,
+                                          extra: chatUser.toUser(),
+                                        );
+                                      },
+                                      leading: CircleAvatar(
+                                        backgroundImage: NetworkImage(
+                                          chatUser.photoUrl ?? '',
+                                        ),
                                       ),
-                                    ),
-                                    title: Text(
-                                      chatUser.fullName ?? '',
-                                    ),
-                                  ),
+                                      title: Text(
+                                        chatUser.fullName ?? '',
+                                      ),
+                                      subtitle: StreamBuilder<Message?>(
+                                        stream: context
+                                            .read<CentralChatBloc>()
+                                            .getChatController(chatUser.chatId!)
+                                            .latestMessageStream,
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasData) {
+                                            bool isMe =
+                                                snapshot.data?.senderId ==
+                                                    context
+                                                        .read<UserBloc>()
+                                                        .state
+                                                        .user
+                                                        .id;
+                                            String senderName = isMe
+                                                ? 'You: '
+                                                : '';
+                                            return Text(
+                                              '$senderName${(snapshot.data?.messageType == ChatMessageType.TEXT) ? snapshot.data?.content ?? '' : '📷 Attachment'}',
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            );
+                                          } else {
+                                            return const Text('');
+                                          }
+                                        },
+                                      )),
                                   // const Divider(),
                                 ],
                               );

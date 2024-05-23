@@ -92,4 +92,16 @@ class Message {
       );
     }
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is Message && other.epochTime == epochTime;
+  }
+
+  @override
+  int get hashCode => epochTime.hashCode;
+
+  String toShortString() {
+    return 'Message: $content, sentAt: ${epochTime.millisecondsSinceEpoch}\n';
+  }
 }
