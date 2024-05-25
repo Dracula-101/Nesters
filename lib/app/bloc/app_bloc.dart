@@ -11,6 +11,7 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
+import 'package:nesters/data/repository/device/device_info_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
@@ -51,6 +52,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       GetIt.instance.get<ObxStorageRepository>();
   final LocalNotificationRepository _localNotificationRepository =
       GetIt.instance.get<LocalNotificationRepository>();
+  final DeviceInfoRepository _deviceInfoRepository =
+      GetIt.instance.get<DeviceInfoRepository>();
   AppLifecycleListener? _appLifecycleListener;
   String? userId;
   bool isCompletedOnboarding = false;
@@ -63,6 +66,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         _localStorageRepository.init().timeInMilliseconds,
         _obxStorageRepository.init().timeInMilliseconds,
         _localNotificationRepository.init().timeInMilliseconds,
+        _deviceInfoRepository.init().timeInMilliseconds,
       ]);
       int totalIntializationTime = 0;
       for (int time in repositoryIntialize) {
@@ -87,7 +91,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   Future<void> loadAndSaveToken() async {
     try {
       String token = await _rNotificationRepository.getToken();
-      _loggerService.info('Token: $token');
+      _loggerService.info(
+          'Token: ${token.substring(0, 10)}******************************');
       await _localStorageRepository.saveString(
           token, LocalStorageKeys.userToken);
     } catch (e) {
@@ -117,6 +122,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         user != null, isCompletedOnboarding, user?.isProfileCreated ?? false);
     _initalizeAppLifecycleListener(user != null);
     _checkNotificationPermission(user);
+    _saveDeviceInfo(user);
     _addNotificationListener(user);
     _handleLocalStorage(user);
   }
@@ -177,6 +183,18 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           }
         },
       );
+    }
+  }
+
+  void _saveDeviceInfo(User? user) {
+    bool isDeviceInfoSaved =
+        _localStorageRepository.getBool(LocalStorageKeys.deviceInfoSaved) ??
+            false;
+    if (!isDeviceInfoSaved && user != null) {
+      unawaited(_deviceInfoRepository.saveDeviceInfo(user.id).whenComplete(() {
+        unawaited(_localStorageRepository.saveBool(
+            LocalStorageKeys.deviceInfoSaved, true));
+      }));
     }
   }
 

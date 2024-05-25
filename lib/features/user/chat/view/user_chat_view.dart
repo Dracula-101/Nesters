@@ -28,13 +28,7 @@ class UserChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ChatBloc(
-        chatId: chatId,
-        onListenChats: () {
-          return context
-              .read<CentralChatBloc>()
-              .getChatHandler(chatId)
-              .liveChatStream;
-        },
+        controller: context.read<CentralChatBloc>().getChatController(chatId),
       ),
       child: ChatView(receiverProf: userProfile, chatId: chatId),
     );
@@ -230,7 +224,9 @@ class _ChatViewState extends State<ChatView> {
         BlocBuilder<ChatBloc, ChatState>(
           builder: (context, state) {
             return state.uploadTask != null
-                ? const CircularProgressIndicator()
+                ? const CircularProgressIndicator(
+                    strokeWidth: 1.5,
+                  )
                 : const SizedBox();
           },
         ),
@@ -338,8 +334,8 @@ class _ChatViewState extends State<ChatView> {
               } else {
                 return ChatMessage(
                   user: e.senderId == currentUser.id
-                      ? _currentChatUser as ChatUser
-                      : _otherChatUser as ChatUser,
+                      ? _currentChatUser!
+                      : _otherChatUser!,
                   createdAt: e.sentAt!.toDate(),
                   medias: [
                     ChatMedia(

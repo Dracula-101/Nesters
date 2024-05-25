@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
@@ -9,6 +10,8 @@ import 'package:nesters/domain/models/chat/message.dart';
 import 'package:path/path.dart' as path_provider;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:rxdart/src/subjects/subject.dart';
 import 'user_chat_repository.dart';
 // import 'package:image_downloader/image_downloader.dart';
 
@@ -66,6 +69,35 @@ class FirebaseChatRepository extends RemoteChatRepository {
                 }))
             .toList();
       });
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  Subject<List<Message>> getChatMessagesSubject(String chatId) {
+    try {
+      Subject<List<Message>> subject = BehaviorSubject<List<Message>>();
+      StreamSubscription subscription = _store
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .orderBy('epochTime', descending: true)
+          .snapshots()
+          .map((event) {
+        return event.docs
+            .map((e) => Message.fromMap({
+                  ...e.data(),
+                  'id': e.id,
+                }))
+            .toList();
+      }).listen((event) {
+        subject.add(event);
+      });
+      subject.doOnCancel(() {
+        subscription.cancel();
+      });
+      return subject;
     } on Exception {
       rethrow;
     }
@@ -131,13 +163,15 @@ class FirebaseChatRepository extends RemoteChatRepository {
     );
     return uploadTask.snapshotEvents.asyncMap(
       (event) async {
-        return event.state == TaskState.success
-            ? DocumentUploadTask.success(
-                await fileRef.getDownloadURL(),
-              )
-            : DocumentUploadTask.inProgress(
-                event.bytesTransferred.toDouble() / event.totalBytes.toDouble(),
-              );
+        if (event.state == TaskState.success) {
+          return DocumentUploadTask.success(
+            await fileRef.getDownloadURL(),
+          );
+        } else {
+          return DocumentUploadTask.inProgress(
+            event.bytesTransferred.toDouble() / event.totalBytes.toDouble(),
+          );
+        }
       },
     );
   }

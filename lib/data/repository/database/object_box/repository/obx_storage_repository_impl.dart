@@ -10,6 +10,8 @@ import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/objectbox.g.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:rxdart/src/subjects/subject.dart';
 
 class ObjectBoxStorageRepository extends ObxStorageRepository {
   late Store store;
@@ -92,30 +94,22 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
   }
 
   @override
-  void saveMessage({
-    required String chatId,
-    required String messageId,
-    required String content,
-    required String senderId,
-    required ChatMessageType type,
-    required int epochTime,
-    required DateTime timestamp,
-  }) {
+  void saveMessage(String chatId, Message message) {
     try {
-      MessageEntity message = MessageEntity(
-        messageId: messageId,
-        content: content,
-        messageType: type.toString(),
-        senderId: senderId,
-        sentAt: timestamp,
-        epochTime: epochTime,
+      MessageEntity messageEntity = MessageEntity(
+        messageId: message.id,
+        content: message.content ?? '',
+        messageType: message.messageType.toString(),
+        senderId: message.senderId ?? '',
+        sentAt: message.sentAt?.toDate() ?? DateTime.now(),
+        epochTime: message.epochTime.millisecondsSinceEpoch,
       );
       final chatEntity = chatEntityBox
           .query(ChatEntity_.chatId.equals(chatId))
           .build()
           .findFirst();
-      message.chat.target = chatEntity;
-      messageEntityBox.put(message);
+      messageEntity.chat.target = chatEntity;
+      messageEntityBox.put(messageEntity);
     } catch (e) {
       rethrow;
     }
@@ -158,6 +152,30 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
           return chatEntity.messages.map((e) => e.toMessage()).toList();
         },
       );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Subject<List<Message>> getChatMessagesSubject(String chatId) {
+    try {
+      Subject<List<Message>> subject = BehaviorSubject<List<Message>>();
+      StreamSubscription streamSubscription =
+          chatEntityBox.query(ChatEntity_.chatId.equals(chatId)).watch().listen(
+        (query) {
+          final chatEntity = query.findFirst();
+          if (chatEntity == null) {
+            subject.add([]);
+            return;
+          }
+          subject.add(chatEntity.messages.map((e) => e.toMessage()).toList());
+        },
+      );
+      subject.onCancel = () {
+        streamSubscription.cancel();
+      };
+      return subject;
     } catch (e) {
       rethrow;
     }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:nesters/domain/models/chat/message.dart';
+import 'package:rxdart/rxdart.dart';
 
 abstract class RemoteChatRepository {
   String generateChatId(String senderId, String receiverId);
@@ -13,6 +14,7 @@ abstract class RemoteChatRepository {
   });
   Future<List<Message>> fetchChatMessages(String chatId);
   Stream<List<Message>> getChatMessages(String chatId);
+  Subject<List<Message>> getChatMessagesSubject(String chatId);
   Future<String> sendMessage(String chatId, Message message);
 
   Stream<DocumentUploadTask> uploadDocument({
@@ -23,25 +25,29 @@ abstract class RemoteChatRepository {
 }
 
 class DocumentUploadTask {
+  final bool isPreLoading;
   final double progress;
   final String? url;
   final bool isComplete;
 
   DocumentUploadTask({
-    required this.progress,
-    required this.url,
-    required this.isComplete,
+    this.progress = 0.0,
+    this.url = "",
+    this.isComplete = false,
+    this.isPreLoading = false,
   });
 
   DocumentUploadTask copyWith({
     double? progress,
     String? url,
     bool? isComplete,
+    bool? isPreLoading,
   }) {
     return DocumentUploadTask(
       progress: progress ?? this.progress,
       url: url ?? this.url,
       isComplete: isComplete ?? this.isComplete,
+      isPreLoading: isPreLoading ?? this.isPreLoading,
     );
   }
 
@@ -50,6 +56,7 @@ class DocumentUploadTask {
       progress: 100,
       url: url,
       isComplete: true,
+      isPreLoading: false,
     );
   }
 
@@ -58,6 +65,7 @@ class DocumentUploadTask {
       progress: progress,
       url: null,
       isComplete: false,
+      isPreLoading: false,
     );
   }
 

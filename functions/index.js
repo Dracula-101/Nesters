@@ -8,17 +8,38 @@ exports.testNotification = functions.https.onRequest(async (req, res) => {
     if (req.method === "GET") {
       return res.status(405).send("Method Not Allowed");
     } else if (req.method === "POST") {
+      if (!req.body.chatId) {
+        return res.status(400).send("Chat ID is required");
+      }
+      if (!req.body.senderId) {
+        return res.status(400).send("Sender ID is required");
+      }
+      const senderData = await admin
+        .firestore()
+        .collection("users")
+        .doc(req.body.senderId)
+        .get();
+      if (!senderData) {
+        return res.status(400).send("Sender data not found");
+      }
+      const senderName = senderData.data().fullName;
+      const senderPhotoUrl = senderData.data().photoUrl;
+      const senderToken = senderData.data().token;
+      if (!senderToken) {
+        return res.status(400).send("Sender token not found");
+      }
+
       message = {
-        token: req.body.token,
+        token: senderToken,
         notification: {
-          title: req.body.title,
-          body: req.body.body,
+          title: req.body.title || "New Message",
+          body: req.body.body || "You have a new message",
         },
         data: {
-          photoUrl: req.body.photoUrl,
-          notificationType: req.body.notificationType,
+          photoUrl: req.body.photoUrl || "https://via.placeholder.com/150",
+          notificationType: req.body.notificationType || "chat",
           chatId: req.body.chatId,
-          senderName: req.body.senderName,
+          senderName: senderName || "Unknown",
           senderId: req.body.senderId,
         },
       };
@@ -28,7 +49,10 @@ exports.testNotification = functions.https.onRequest(async (req, res) => {
     res.send("Notification sent successfully");
   } catch (e) {
     console.log(e);
-    res.status(500).send("Error sending notification");
+    res.status(500).send({
+      error: e,
+      message: "An error occurred while sending notification",
+    });
   }
 });
 
@@ -63,6 +87,10 @@ exports.sendNotification = functions.firestore
       );
       const senderName = senderUser.data().fullName;
       const senderPhotoUrl = senderUser.data().photoUrl;
+      if (!receiverFcmToken || !senderName || !senderPhotoUrl) {
+        return;
+      }
+
       const message = {
         token: receiverFcmToken,
         notification: {
@@ -78,7 +106,7 @@ exports.sendNotification = functions.firestore
         },
       };
       const notificationResponse = await admin.messaging().send(message);
-      console.log("notificationResponse", notificationResponse);
+      console.log("Notifcation sent successfully", notificationResponse);
     } catch (e) {
       console.error(e);
     }
