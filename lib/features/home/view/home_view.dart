@@ -4,9 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
-import 'package:nesters/features/home/view/pages/notification_page.dart';
 import 'package:nesters/features/home/view/pages/user_list_view_page.dart';
-import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/theme/theme.dart';
 
@@ -29,7 +28,10 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           authenticated: (user) => user.id,
           orElse: () => throw Exception('User not authenticated'),
         );
-    context.read<CentralChatBloc>().add(CentralChatEvent.loadProfiles(userId));
+    context
+        .read<CentralChatBloc>()
+        .add(CentralChatEvent.initalizeUserStatusSocket(userId));
+    context.read<CentralChatBloc>().add(const CentralChatEvent.loadProfiles());
   }
 
   @override

@@ -10,8 +10,9 @@ class UserStatus {
   factory UserStatus.fromJson(Map<dynamic, dynamic> json, String userId) {
     return UserStatus(
       status: Status.fromString(json['status']),
-      lastSeen:
-          json['lastSeen'] != null ? DateTime.parse(json['lastSeen']) : null,
+      lastSeen: json['lastSeen'] != null
+          ? DateTime.fromMillisecondsSinceEpoch(json['lastSeen'])
+          : null,
       userId: userId,
     );
   }

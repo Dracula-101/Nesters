@@ -28,7 +28,7 @@ const USER_OFFLINE = "Offline";
 const USER_ONLINE = "Online";
 const CONNECTION = "connection";
 const DISCONNECT = "disconnect";
-const UPDATE_USER_STATUS = "updateUserStatus";
+const UPDATE_USER_STATUS = "update";
 
 function initializeApp() {
   try {
@@ -81,10 +81,22 @@ async function onSocketDisconnection(socket) {
   });
 }
 
+async function onUpdateUserStatus(userId, status) {
+  const userStatus = status.user_status ? USER_ONLINE : USER_OFFLINE;
+  await updateUserStatus(userId, {
+    status: userStatus,
+    lastSeen: Date.now(),
+  });
+}
+
 async function onSocketConnection(socket) {
   const userId = checkSocketConnection(socket);
   const user = await getUser(userId);
   await updateUserStatus(userId, { status: USER_ONLINE });
+  socket.on(
+    UPDATE_USER_STATUS,
+    async (status) => await onUpdateUserStatus(userId, status)
+  );
   socket.on(DISCONNECT, async () => await onSocketDisconnection(socket));
 }
 

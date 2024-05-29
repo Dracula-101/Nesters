@@ -4,9 +4,12 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/config/app_secrets_repository.dart';
+import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
@@ -33,17 +36,14 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   // Repositories
-  final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
-  final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
-  final LocalStorageRepository _localStorageRepository =
-      GetIt.I<LocalStorageRepository>();
-  final ObxStorageRepository _obxStorageRepository =
-      GetIt.I<ObxStorageRepository>();
-  final RecipientUserRepository _recipientQuickUserRepository =
-      GetIt.I<RecipientUserRepository>();
-  final RemoteChatRepository _chatRepository = GetIt.I<RemoteChatRepository>();
-  final UserStatusRepository _userStatusRepository =
-      GetIt.I<UserStatusRepository>();
+  final _loggerService = GetIt.I<AppLoggerService>();
+  final _mediaRepository = GetIt.I<MediaRepository>();
+  final _localStorageRepository = GetIt.I<LocalStorageRepository>();
+  final _obxStorageRepository = GetIt.I<ObxStorageRepository>();
+  final _recipientQuickUserRepository = GetIt.I<RecipientUserRepository>();
+  final _chatRepository = GetIt.I<RemoteChatRepository>();
+  final _userStatusRepository = GetIt.I<UserStatusRepository>();
+  final _appSecretsRepository = GetIt.I<AppSecretsRepository>();
 
   // Streams
   Stream<List<Message>> get chatMessages =>
@@ -106,6 +106,18 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       //     unawaited(saveReceipentDetails());
       //   }
       // }
+      // socket = IO.io(
+      //   'wss://${_appSecretsRepository.getSecret(AppSecretsKeys.USER_STATUS_SOCKET_URL)}',
+      //   IO.OptionBuilder().setTransports(
+      //     ['websocket'],
+      //   ).setExtraHeaders({
+      //     'userid': senderId,
+      //   }).build(),
+      // );
+      // socket?.connect();
+      // socket?.onConnect(
+      //   (_) => _loggerService.log('User status socket connected'),
+      // );
       emit(
         state.copyWith(
             doesChatExist: true, chatId: controller.chatId, isLoading: false),
@@ -123,14 +135,11 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   Future<void> _listenUserStatus(String chatId, Emitter<ChatState> emit) async {
     await _userStatusSubscription?.cancel();
-    _userStatusSubscription = _userStatusRepository
-        .getUserStatus(state.receiverId!)
-        .asBroadcastStream()
-        .listen(
-          (event) => _userStatusController.add(
-            event ?? UserStatus.empty(state.senderId!),
-          ),
-        );
+    _userStatusSubscription =
+        _userStatusRepository.getUserStatus(state.receiverId!).listen(null);
+    _userStatusSubscription?.onData((event) {
+      _userStatusController.add(event);
+    });
   }
 
   Future<void> _cancelChatSubscription() async {

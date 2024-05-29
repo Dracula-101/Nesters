@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
-import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'message_controller.dart';

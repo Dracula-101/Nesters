@@ -54,7 +54,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       GetIt.instance.get<LocalNotificationRepository>();
   final DeviceInfoRepository _deviceInfoRepository =
       GetIt.instance.get<DeviceInfoRepository>();
-  AppLifecycleListener? _appLifecycleListener;
   String? userId;
   bool isCompletedOnboarding = false;
   NavigationArgs? initalizationArgs;
@@ -120,7 +119,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     userId ??= user?.id;
     _intializeNavigationHandler(
         user != null, isCompletedOnboarding, user?.isProfileCreated ?? false);
-    _initalizeAppLifecycleListener(user != null);
+    // _initalizeAppLifecycleListener(user != null);
     _checkNotificationPermission(user);
     _saveDeviceInfo(user);
     _addNotificationListener(user);
@@ -157,34 +156,35 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     AppRouterService.navigatorKey.currentContext!.go(route);
   }
 
-  void _initalizeAppLifecycleListener(bool isLoggedIn) {
-    if (!isLoggedIn) {
-      if (userId != null) {
-        unawaited(
-            _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!));
-      }
-      _appLifecycleListener?.dispose();
-      _appLifecycleListener = null;
-    } else {
-      unawaited(_userStatusRepository.updateUserStatus(Status.ONLINE, userId!));
-      _appLifecycleListener ??= AppLifecycleListener(
-        onExitRequested: () async {
-          if (userId == null) return AppExitResponse.exit;
-          await _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
-          return AppExitResponse.exit;
-        },
-        onStateChange: (lifecycleState) {
-          if (lifecycleState == AppLifecycleState.resumed) {
-            if (userId == null) return;
-            _userStatusRepository.updateUserStatus(Status.ONLINE, userId!);
-          } else if (lifecycleState == AppLifecycleState.paused) {
-            if (userId == null) return;
-            _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
-          }
-        },
-      );
-    }
-  }
+  // Note: Remove after adding sockets
+  // void _initalizeAppLifecycleListener(bool isLoggedIn) {
+  //   if (!isLoggedIn) {
+  //     if (userId != null) {
+  //       unawaited(
+  //           _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!));
+  //     }
+  //     _appLifecycleListener?.dispose();
+  //     _appLifecycleListener = null;
+  //   } else {
+  //     unawaited(_userStatusRepository.updateUserStatus(Status.ONLINE, userId!));
+  //     _appLifecycleListener ??= AppLifecycleListener(
+  //       onExitRequested: () async {
+  //         if (userId == null) return AppExitResponse.exit;
+  //         await _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
+  //         return AppExitResponse.exit;
+  //       },
+  //       onStateChange: (lifecycleState) {
+  //         if (lifecycleState == AppLifecycleState.resumed) {
+  //           if (userId == null) return;
+  //           _userStatusRepository.updateUserStatus(Status.ONLINE, userId!);
+  //         } else if (lifecycleState == AppLifecycleState.paused) {
+  //           if (userId == null) return;
+  //           _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
+  //         }
+  //       },
+  //     );
+  //   }
+  // }
 
   void _saveDeviceInfo(User? user) {
     bool isDeviceInfoSaved =

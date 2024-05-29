@@ -120,5 +120,6 @@ class DeviceInfoRepositoryImpl implements DeviceInfoRepository {
           ? AppleProvider.debug
           : AppleProvider.appAttestWithDeviceCheckFallback,
     );
+    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
   }
 }

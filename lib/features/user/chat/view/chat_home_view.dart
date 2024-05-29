@@ -1,17 +1,13 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
-import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
+import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
-import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
-import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 
 class ChatHomePage extends StatelessWidget {
   const ChatHomePage({super.key});
@@ -38,7 +34,29 @@ class ChatHomeView extends StatefulWidget {
   State<ChatHomeView> createState() => _ChatHomeViewState();
 }
 
-class _ChatHomeViewState extends State<ChatHomeView> {
+class _ChatHomeViewState extends State<ChatHomeView>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    context.read<CentralChatBloc>().add(
+          CentralChatEvent.updateUserStatus(
+            state == AppLifecycleState.resumed ? Status.ONLINE : Status.OFFLINE,
+          ),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CentralChatBloc, CentralChatState>(
@@ -95,9 +113,8 @@ class _ChatHomeViewState extends State<ChatHomeView> {
                                                         .state
                                                         .user
                                                         .id;
-                                            String senderName = isMe
-                                                ? 'You: '
-                                                : '';
+                                            String senderName =
+                                                isMe ? 'You: ' : '';
                                             return Text(
                                               '$senderName${(snapshot.data?.messageType == ChatMessageType.TEXT) ? snapshot.data?.content ?? '' : '📷 Attachment'}',
                                               maxLines: 1,
