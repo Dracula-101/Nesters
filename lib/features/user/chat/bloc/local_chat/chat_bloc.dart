@@ -22,6 +22,7 @@ import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
 import 'package:nesters/features/user/chat/bloc/controllers/chat_controller.dart';
 import 'package:nesters/utils/logger/logger.dart';
+import 'package:rxdart/rxdart.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
@@ -43,16 +44,15 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final _recipientQuickUserRepository = GetIt.I<RecipientUserRepository>();
   final _chatRepository = GetIt.I<RemoteChatRepository>();
   final _userStatusRepository = GetIt.I<UserStatusRepository>();
-  final _appSecretsRepository = GetIt.I<AppSecretsRepository>();
 
   // Streams
   Stream<List<Message>> get chatMessages =>
-      controller.liveChatStream.asBroadcastStream();
+      controller.liveChatStream.asBroadcastStream().distinctUnique();
 
   final StreamController<UserStatus> _userStatusController =
       StreamController.broadcast();
   Stream<UserStatus>? get userStatus =>
-      _userStatusController.stream.asBroadcastStream();
+      _userStatusController.stream.asBroadcastStream().distinctUnique();
 
   StreamSubscription? _userStatusSubscription;
 
@@ -122,6 +122,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         state.copyWith(
             doesChatExist: true, chatId: controller.chatId, isLoading: false),
       );
+      controller.clearNewMessages();
       _listenUserStatus(controller.chatId, emit);
     } on Exception catch (e) {
       emit(
@@ -232,6 +233,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   @override
   Future<void> close() async {
+    controller.clearNewMessages();
     await _cancelChatSubscription();
     return super.close();
   }

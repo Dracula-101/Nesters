@@ -5,6 +5,7 @@
 class AppVectorImages {
   static const String _mainFolder = 'assets/svg';
   static const String onboardingPreviewImage = '$_mainFolder/preview.svg';
+  static const String noChatsBackgroundImage = '$_mainFolder/no_chats.svg';
 }
 
 class AppRasterImages {

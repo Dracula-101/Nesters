@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:delightful_toast/toast/components/toast_card.dart';
+import 'package:delightful_toast/delight_toast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
@@ -15,15 +17,76 @@ import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/detail/bloc/profile_bloc.dart';
 import 'package:nesters/features/user/detail/view/shimmer_profile.dart';
+import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:nesters/utils/extensions/strings.dart';
 
-class UserProfilePage extends StatelessWidget {
+class UserProfilePage extends StatefulWidget {
   final String id;
-  const UserProfilePage({super.key, required this.id});
+  final bool showRequestDialog;
+  const UserProfilePage(
+      {super.key, required this.id, required this.showRequestDialog});
+
+  @override
+  State<UserProfilePage> createState() => _UserProfilePageState();
+}
+
+class _UserProfilePageState extends State<UserProfilePage> {
+  bool isDialogShown = false;
+
+  void _handleOuterRequest(String userId, UserProfile otherUserProfile) {
+    final User currentUser = context.read<AuthBloc>().state.maybeWhen(
+          authenticated: (user) => user,
+          orElse: () => throw Exception('User not authenticated'),
+        );
+    String currentUserId = currentUser.id;
+    String chatId = GetIt.I<RemoteChatRepository>().generateChatId(
+      currentUserId,
+      otherUserProfile.id ?? '',
+    );
+    bool doesChatExists =
+        context.read<CentralChatBloc>().doesChatExists(chatId);
+    if (doesChatExists && widget.showRequestDialog) {
+      GoRouter.of(context).go(
+        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+        extra: otherUserProfile.toUser(),
+      );
+    } else {
+      showRequestDialog(
+        context,
+        otherUserProfile.id ?? '',
+        otherUserProfile.fullName ?? '',
+        otherUserProfile.profileImage ?? '',
+        () {
+          context.read<RequestBloc>().add(
+                RequestEvent.sendRequest(
+                  otherUserProfile.id ?? '',
+                ),
+              );
+        },
+      );
+    }
+  }
+
+  void showToast(String title, Color color, IconData icon) {
+    DelightToastBar(
+      autoDismiss: true,
+      snackbarDuration: const Duration(seconds: 2),
+      builder: (context) {
+        return ToastCard(
+          title: Text(title, style: AppTheme.bodyMedium),
+          leading: Icon(
+            icon,
+            color: color,
+          ),
+          shadowColor: AppTheme.blackShades.shade100,
+        );
+      },
+    ).show(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,40 +101,172 @@ class UserProfilePage extends StatelessWidget {
               ),
               onPressed: () {
                 if (state.isLoading) return;
-                final User currentUser = context
-                    .read<AuthBloc>()
-                    .state
-                    .maybeWhen(
-                      authenticated: (user) => user,
-                      orElse: () => throw Exception('User not authenticated'),
-                    );
-
-                String currentUserId = currentUser.id;
-                String otherUserId = state.userProfile?.id ?? '';
-                String chatId = GetIt.I<RemoteChatRepository>().generateChatId(
-                  currentUserId,
-                  otherUserId,
-                );
-                GoRouter.of(context).go(
-                  '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
-                  extra: state.userProfile?.toUser(),
-                );
+                _handleOuterRequest(widget.id, state.userProfile!);
               },
             );
           },
         ),
         resizeToAvoidBottomInset: true,
-        body: ProfileView(
-          userId: id,
+        body: BlocListener<RequestBloc, RequestState>(
+          listener: (context, state) {
+            if (state.requestSentError) {
+              showToast(
+                'Failed to send request!',
+                AppTheme.errorColor,
+                FontAwesomeIcons.circleXmark,
+              );
+            } else if (state.requestSentSuccess) {
+              showToast(
+                'Request sent successfully!',
+                AppTheme.successColor,
+                FontAwesomeIcons.circleCheck,
+              );
+            }
+          },
+          child: ProfileView(
+            userId: widget.id,
+            onShowRequestDialog: (userId, otherUserProfile) {
+              if (widget.showRequestDialog) {
+                _handleOuterRequest(userId, otherUserProfile);
+              }
+            },
+          ),
         ),
       ),
     );
+  }
+
+  void showRequestDialog(
+    BuildContext context,
+    String userId,
+    String name,
+    String photoUrl,
+    VoidCallback onSendRequest,
+  ) {
+    if (isDialogShown) return;
+    setState(() {
+      isDialogShown = true;
+    });
+    showGeneralDialog(
+      context: GoRouter.of(context).routerDelegate.navigatorKey.currentContext!,
+      barrierDismissible: true,
+      useRootNavigator: false,
+      routeSettings: const RouteSettings(name: 'accept_request'),
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black87,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (BuildContext buildContext, Animation<double> animation,
+          Animation<double> secondaryAnimation) {
+        double iconSize = 100;
+        return Material(
+          color: Colors.transparent,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: 270,
+                maxHeight: 250,
+                minHeight: 220,
+                minWidth: MediaQuery.of(context).size.width * 0.7,
+              ),
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  Container(
+                    height: 250 - iconSize / 2,
+                    width: double.maxFinite,
+                    padding: EdgeInsets.only(
+                        left: 10, right: 10, top: iconSize / 2 + 5),
+                    margin: EdgeInsets.only(top: iconSize / 2),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          name,
+                          style: AppTheme.titleLarge,
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          'is not in your chat list',
+                          style: AppTheme.bodySmallLightVariant,
+                          textAlign: TextAlign.center,
+                        ),
+                        const Divider(),
+                        Text(
+                          'Do you want to send a request?',
+                          style: AppTheme.bodyMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () {
+                                onSendRequest();
+                                Navigator.of(buildContext).pop();
+                              },
+                              child: const Text('Send'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(buildContext).pop();
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    height: iconSize,
+                    width: iconSize,
+                    decoration: BoxDecoration(
+                      color: AppTheme.surface,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppTheme.greyShades.shade300,
+                        width: 2,
+                      ),
+                      image: DecorationImage(
+                        image: CachedNetworkImageProvider(
+                          photoUrl,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (BuildContext context, Animation<double> animation,
+          Animation<double> secondaryAnimation, Widget child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: const Offset(0, 0),
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeInOut,
+          )),
+          child: child,
+        );
+      },
+    ).then((value) => setState(() => isDialogShown = false));
   }
 }
 
 class ProfileView extends StatefulWidget {
   final String userId;
-  const ProfileView({super.key, required this.userId});
+  final Function(String, UserProfile) onShowRequestDialog;
+  const ProfileView(
+      {super.key, required this.userId, required this.onShowRequestDialog});
 
   @override
   State<ProfileView> createState() => _ProfileViewState();
@@ -88,7 +283,15 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProfileBloc, ProfileState>(
+    return BlocConsumer<ProfileBloc, ProfileState>(
+      listener: (context, state) {
+        if (state.userProfile != null) {
+          widget.onShowRequestDialog(
+            state.userProfile!.id!,
+            state.userProfile!,
+          );
+        }
+      },
       builder: (context, state) {
         return state.isLoading
             ? const ShimmerProfile()

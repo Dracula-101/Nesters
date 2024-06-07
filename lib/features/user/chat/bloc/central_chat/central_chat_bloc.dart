@@ -14,6 +14,7 @@ import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/features/user/chat/bloc/controllers/chat_controller.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 part 'central_chat_event.dart';
@@ -81,6 +82,19 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
     socket?.onConnect((data) => _logger.info('Connected to socket'));
   }
 
+  Stream<int> showMessageNotificationStream() {
+    // merge all chat controllers' new message streams
+    return Rx.combineLatest(
+      _chatControllers.values.map((e) => e.newMessageCount),
+      (List<int?> newMessageCounts) {
+        return newMessageCounts.fold<int>(
+          0,
+          (previousValue, element) => previousValue + (element ?? 0),
+        );
+      },
+    );
+  }
+
   void _changeUserStatus(Status status, Emitter<CentralChatState> emit) async {
     try {
       socket?.emit(
@@ -90,6 +104,10 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
     } on Exception catch (e) {
       emit(state.copyWith(error: e));
     }
+  }
+
+  bool doesChatExists(String chatId) {
+    return _chatControllers.containsKey(chatId);
   }
 
   FutureOr<void> _loadProfiles(Emitter<CentralChatState> emit) async {

@@ -98,7 +98,12 @@ class UserQuickProfileWidget extends StatelessWidget {
                           ),
                         ),
                         InkWell(
-                          onTap: () {},
+                          onTap: () {
+                            GoRouter.of(context).go(
+                              '${AppRouterService.homeScreen}/${AppRouterService.userProfile}/${userQuickProfile.id}',
+                              extra: true,
+                            );
+                          },
                           child: Icon(
                             FontAwesomeIcons.telegram,
                             color: AppTheme.primary,

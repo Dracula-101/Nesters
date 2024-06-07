@@ -52,6 +52,9 @@ class AppColor {
   static Color lightGrey = const Color(0xFFF4F2FF);
   static Color greyAccent = Colors.grey[300]!;
   static Color greyVariant = const Color(0xFF90909C);
+
+  //Green
+  static Color successGreen = const Color.fromARGB(255, 54, 212, 62);
 }
 
 // ==================== Light Theme ====================

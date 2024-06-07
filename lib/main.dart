@@ -39,10 +39,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   GetIt locator = GetIt.instance;
   LocalNotificationRepository notificationRepository =
       locator<LocalNotificationRepository>();
-  notificationRepository.showChatNotification(
+  notificationRepository.showNotification(
     title: message.notification?.title ?? '',
     body: message.notification?.body ?? '',
-    id: 0,
     payload: json.encode(message.data),
   );
 }

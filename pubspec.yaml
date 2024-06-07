@@ -55,6 +55,8 @@ dependencies:
   connectivity_plus: ^6.0.3
   firebase_app_check: ^0.2.1+17
   socket_io_client: ^2.0.3+1
+  intl: ^0.18.1
+  delightful_toast: ^1.1.0
 
 dev_dependencies:
   flutter_test:

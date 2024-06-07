@@ -1,5 +1,6 @@
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/database/remote/supadatabase_repository.dart';
+import 'package:nesters/data/repository/user/firebase_user_repository.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:get_it/get_it.dart';
 
@@ -49,6 +50,7 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
     storageRepository: localStorageRepository,
     logger: appLoggerService,
   );
+  UserChatRepository userChatRepository = FirebaseChatUserRepository();
   UserStatusRepository userStatusRepository = FirebaseUserStatusRepository();
   LocalNotificationRepository notificationRepository =
       LocalNotificationRepository(appRouterService: appRouterService);
@@ -70,6 +72,7 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   locator.registerSingleton(databaseRepository);
   locator.registerSingleton(userRepository);
   locator.registerSingleton(remoteChatRepository);
+  locator.registerSingleton(userChatRepository);
   locator.registerSingleton(firebaseRecipientQuickUserRepository);
   locator.registerSingleton(userStatusRepository);
   locator.registerSingleton(notificationRepository);

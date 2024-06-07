@@ -1,16 +1,18 @@
 import 'package:dash_chat_2/dash_chat_2.dart';
+import 'package:flutter/widgets.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+@immutable
 class Message {
-  String id;
-  String? senderId;
-  String? content;
-  ChatMessageType? messageType;
-  Timestamp? sentAt;
-  DateTime epochTime;
+  final String id;
+  final String? senderId;
+  final String? content;
+  final ChatMessageType? messageType;
+  final Timestamp? sentAt;
+  final DateTime epochTime;
 
-  Message({
+  const Message({
     required this.id,
     this.senderId,
     this.content,

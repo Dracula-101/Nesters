@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:rxdart/rxdart.dart';
 
 class UserChatPage extends StatelessWidget {
   final String chatId;
@@ -340,7 +341,7 @@ class _ChatViewState extends State<ChatView> {
                   user: e.senderId == currentUser.id
                       ? _currentChatUser as ChatUser
                       : _otherChatUser as ChatUser,
-                  createdAt: e.sentAt!.toDate(),
+                  createdAt: e.sentAt?.toDate() ?? DateTime.now(),
                   text: e.content ?? '',
                 );
               } else {

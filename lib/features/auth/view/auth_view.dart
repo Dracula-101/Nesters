@@ -99,7 +99,10 @@ class _AuthViewState extends State<AuthView> {
               context.read<AuthBloc>().add(AuthGoogleSiginInEvent());
             },
             child: state.maybeWhen(
-              loading: () => const CircularProgressIndicator(),
+              loading: () => CircularProgressIndicator(
+                color: AppTheme.surface,
+                strokeWidth: 1.5,
+              ),
               orElse: () => Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -115,7 +118,7 @@ class _AuthViewState extends State<AuthView> {
                   Text(
                     'Sign in with Google',
                     style: AppTheme.titleSmall.copyWith(
-                      color: AppTheme.primary,
+                      color: AppTheme.surface,
                     ),
                   ),
                 ],

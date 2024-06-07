@@ -73,11 +73,11 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
   }
 
   Future<void> _firebaseMessagingBackgroundHandler(
-      RemoteMessage message) async {
+    RemoteMessage message,
+  ) async {
     notificationRepository.showNotification(
       title: message.notification?.title ?? 'Title',
       body: message.notification?.body ?? 'Body',
-      id: message.messageId.hashCode,
       payload: jsonEncode(
         message.data,
       ),
@@ -91,10 +91,9 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
         FirebaseMessaging.onMessageOpenedApp.listen(null);
     _onMessageReceived?.onData(
       (message) {
-        notificationRepository.showChatNotification(
+        notificationRepository.showNotification(
           title: message.notification?.title ?? 'Title',
           body: message.notification?.body ?? 'Body',
-          id: 0,
           payload: jsonEncode(
             message.data,
           ),

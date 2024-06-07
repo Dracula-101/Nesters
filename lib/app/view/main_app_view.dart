@@ -6,6 +6,7 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
+import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 
 class RootApp extends StatelessWidget with WidgetsBindingObserver {
@@ -23,17 +24,21 @@ class RootApp extends StatelessWidget with WidgetsBindingObserver {
           create: (context) => AuthBloc(),
         ),
         BlocProvider(
-          create: (context) => HomeBloc(),
+          create: (context) => CentralChatBloc(),
         ),
         BlocProvider(
-          create: (context) => CentralChatBloc(),
-        )
+          create: (context) => RequestBloc(),
+        ),
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         routerConfig: appRouterService.appRouter,
         title: 'Nesters',
         theme: AppTheme.lightTheme,
+        onNavigationNotification: (notification) {
+          print(notification);
+          return true;
+        },
         builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(

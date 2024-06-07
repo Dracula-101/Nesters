@@ -1,15 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
+import 'package:nesters/domain/models/user/request/request.dart';
+import 'package:nesters/domain/models/user/user.dart';
+import 'package:http/http.dart' as http;
 
-abstract class RecipientChatUserRepository {
+abstract class UserChatRepository {
+  final AppSecretsRepository _appSecretsRepository;
+  UserChatRepository({required AppSecretsRepository appSecretsRepository})
+      : _appSecretsRepository = appSecretsRepository;
+
   Future<QuickChatUser?> getUserNameAndProfile(String userId);
+  Stream<List<Request>> getSentUserRequests(User currentUser);
+  Stream<List<Request>> getReceivedUserRequests(User currentUser);
+  Future<void> sendRequest(String currentUserId, String recipientUserId);
+  Future<void> acceptRequest(String currentUserId, String recipientUserId);
+  Future<void> rejectRequest(String currentUserId, String recipientUserId);
+
+  createChatRoom(String senderId, String receiverId) {}
 }
 
-class FirebaseRecipientChatUserRepository
-    implements RecipientChatUserRepository {
+class FirebaseChatUserRepository implements UserChatRepository {
   final FirebaseFirestore _store = FirebaseFirestore.instance;
   final String _userCollectionName = 'users';
   final String _userIdKey = 'userId';
+  final String _acceptedRequestKey = 'isAccepted';
+  final String _bannedRequestKey = 'isBanned';
+  final String _sentRequestPath = 'sentRequests';
+  final String _receivedRequestPath = 'receivedRequests';
 
   @override
   Future<QuickChatUser?> getUserNameAndProfile(String userId) async {
@@ -30,4 +49,159 @@ class FirebaseRecipientChatUserRepository
       rethrow;
     }
   }
+
+  @override
+  Stream<List<Request>> getReceivedUserRequests(User currentUser) {
+    try {
+      return _store
+          .collection(_userCollectionName)
+          .doc(currentUser.id)
+          .collection(_receivedRequestPath)
+          .snapshots()
+          .map((event) {
+        List<Request> requests = [];
+        List<Request> bannedRequests = [];
+        for (var element in event.docs) {
+          Map<String, dynamic> data = element.data();
+          Request request = Request.fromReceiverRequest(data, currentUser);
+          if (request.isBanned) {
+            bannedRequests.add(request);
+          } else {
+            requests.add(request);
+          }
+        }
+        requests.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+        bannedRequests.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+        requests.addAll(bannedRequests);
+        return requests;
+      });
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  Stream<List<Request>> getSentUserRequests(User currentUser) {
+    try {
+      return _store
+          .collection(_userCollectionName)
+          .doc(currentUser.id)
+          .collection(_sentRequestPath)
+          .snapshots()
+          .map((event) {
+        List<Request> requests = [];
+        List<Request> bannedRequests = [];
+        for (var element in event.docs) {
+          Map<String, dynamic> data = element.data();
+          Request request = Request.fromSenderRequest(data, currentUser);
+          if (request.isBanned) {
+            bannedRequests.add(request);
+          } else {
+            requests.add(request);
+          }
+        }
+        requests.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+        bannedRequests.sort((a, b) => a.sentAt.compareTo(b.sentAt));
+        requests.addAll(bannedRequests);
+        return requests;
+      });
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> sendRequest(String currentUserId, String recipientUserId) async {
+    try {
+      List<QuickChatUser?> users = await Future.wait([
+        getUserNameAndProfile(currentUserId),
+        getUserNameAndProfile(recipientUserId)
+      ]);
+      if (users.any((element) => element == null)) return;
+      Request data = Request.createReq(users[0]!, users[1]!);
+      CollectionReference senderCollection = _store
+          .collection(_userCollectionName)
+          .doc(currentUserId)
+          .collection(_sentRequestPath);
+      CollectionReference receiverCollection = _store
+          .collection(_userCollectionName)
+          .doc(recipientUserId)
+          .collection(_receivedRequestPath);
+      await Future.wait([
+        senderCollection.doc(recipientUserId).set(data.toReceiverMap()),
+        receiverCollection.doc(currentUserId).set(data.toSenderMap())
+      ]);
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> acceptRequest(String currentUserId, String recipientUserId) {
+    try {
+      CollectionReference senderCollection = _store
+          .collection(_userCollectionName)
+          .doc(currentUserId)
+          .collection(_receivedRequestPath);
+      CollectionReference receiverCollection = _store
+          .collection(_userCollectionName)
+          .doc(recipientUserId)
+          .collection(_sentRequestPath);
+      return Future.wait([
+        senderCollection
+            .doc(recipientUserId)
+            .update({_acceptedRequestKey: true, _bannedRequestKey: false}),
+        receiverCollection
+            .doc(currentUserId)
+            .update({_acceptedRequestKey: true, _bannedRequestKey: false})
+      ]);
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> rejectRequest(String senderUserId, String recipientUserId) {
+    try {
+      CollectionReference senderCollection = _store
+          .collection(_userCollectionName)
+          .doc(recipientUserId)
+          .collection(_sentRequestPath);
+      CollectionReference receiverCollection = _store
+          .collection(_userCollectionName)
+          .doc(senderUserId)
+          .collection(_receivedRequestPath);
+      return Future.wait([
+        senderCollection
+            .doc(senderUserId)
+            .update({_acceptedRequestKey: false, _bannedRequestKey: true}),
+        receiverCollection
+            .doc(recipientUserId)
+            .update({_acceptedRequestKey: false, _bannedRequestKey: true})
+      ]);
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> createChatRoom(String senderId, String receiverId) async {
+    try {
+      String firebaseUrl =
+          _appSecretsRepository.getSecret(AppSecretsKeys.CLOUD_FUNCTION_URL);
+      await http.post(
+        Uri.parse('$firebaseUrl/sendAcceptNotification'),
+        body: {
+          'senderId': senderId,
+          'receiverId': receiverId,
+        },
+      );
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  AppSecretsRepository get _appSecretsRepository =>
+      GetIt.instance.get<AppSecretsRepository>();
 }

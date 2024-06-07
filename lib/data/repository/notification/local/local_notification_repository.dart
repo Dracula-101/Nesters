@@ -91,35 +91,43 @@ class LocalNotificationRepository {
   Future<void> showNotification({
     required String title,
     required String body,
-    required int id,
     required String payload,
   }) async {
-    String photoUrl = json.decode(payload)['photoUrl'];
-    log('Photo Url: $photoUrl');
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      _channelId,
-      _channelName,
-      channelDescription: _channelDescription,
-      importance: Importance.max,
-      priority: Priority.max,
-      icon: '@mipmap/ic_launcher',
-    );
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      android: androidPlatformChannelSpecifics,
-    );
-    await flutterLocalNotificationsPlugin.show(
-      id,
-      null,
-      body,
-      platformChannelSpecifics,
-      payload: payload,
-    );
+    Map<String, dynamic> message = json.decode(payload);
+    String notificationType = message['notificationType'];
+    NotificationType type = notificationType == 'chat'
+        ? NotificationType.chat
+        : NotificationType.request;
+    switch (type) {
+      case NotificationType.chat:
+        await _showChatNotification(
+          title: title,
+          body: body,
+          payload: message,
+        );
+        break;
+      case NotificationType.request:
+        await _showRequestNotification(
+          title: title,
+          body: body,
+          payload: message,
+        );
+        break;
+    }
   }
 
   Future<AndroidNotificationDetails> _chatNotificationChannelDetails(
-      String title, String payload, String body) async {
-    return AndroidNotificationDetails(
+    int id,
+    String title,
+    Map<String, dynamic> payload,
+    String body,
+  ) async {
+    MessagingStyleInformation? messagingStyle =
+        await flutterLocalNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>()!
+            .getActiveNotificationMessagingStyle(id);
+    AndroidNotificationDetails notificationDetails = AndroidNotificationDetails(
       _channelId,
       _channelName,
       channelDescription: _channelDescription,
@@ -130,50 +138,97 @@ class LocalNotificationRepository {
         Person(
           name: title,
           icon: ByteArrayAndroidIcon.fromBase64String(
-            await base64encodedImage(
-              json.decode(payload)['photoUrl'],
-            ),
+            await base64encodedImage(payload['photoUrl']),
           ),
         ),
         conversationTitle: title,
         groupConversation: false,
-        htmlFormatContent: true,
-        htmlFormatTitle: true,
         messages: [
+          ...messagingStyle?.messages ?? [],
           Message(
-            body,
-            DateTime.now(),
+            title,
+            payload.containsKey('time')
+                ? DateTime.fromMillisecondsSinceEpoch(
+                    int.parse(payload['time']),
+                  )
+                : DateTime.now(),
             null,
-          ),
+          )
         ],
       ),
       category: AndroidNotificationCategory.message,
     );
+    return notificationDetails;
   }
 
-  Future<void> showChatNotification(
-      {required String title,
-      required String body,
-      required int id,
-      required String payload}) async {
+  AndroidNotificationDetails _requestNotificationChannelDetails(
+    int id,
+    String title,
+    Map<String, dynamic> payload,
+    String body,
+  ) {
+    return const AndroidNotificationDetails(
+      _channelId,
+      _channelName,
+      channelDescription: _channelDescription,
+      importance: Importance.max,
+      priority: Priority.max,
+      icon: '@mipmap/ic_launcher',
+      styleInformation: DefaultStyleInformation(true, true),
+      category: AndroidNotificationCategory.event,
+    );
+  }
+
+  int generateChatMessageId(Map<String, dynamic> payload) {
+    String senderId = payload['senderId'];
+    String notificationId =
+        senderId.replaceAll(RegExp(r'[^0-9]'), '').substring(0, 3);
+    return int.tryParse(notificationId) ?? 0;
+  }
+
+  Future<void> _showChatNotification({
+    required String title,
+    required String body,
+    required Map<String, dynamic> payload,
+  }) async {
+    int messageId = generateChatMessageId(payload);
     AndroidNotificationDetails androidPlatformChannelSpecifics =
-        await _chatNotificationChannelDetails(title, payload, body);
+        await _chatNotificationChannelDetails(messageId, title, payload, body);
     String currentPath =
         appRouterService.appRouter.routeInformationProvider.value.uri.path;
-    String chatId = json.decode(payload)['chatId'];
+    String chatId = payload['chatId'];
     log("Received Notification -> Current Path: $currentPath, Chat Id: $chatId");
     if (!currentPath.contains(chatId)) {
       NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
       );
       await flutterLocalNotificationsPlugin.show(
-        id,
-        null,
+        messageId,
+        title,
         body,
         platformChannelSpecifics,
-        payload: payload,
+        payload: jsonEncode(payload),
       );
     }
+  }
+
+  Future<void> _showRequestNotification({
+    required String title,
+    required String body,
+    required Map<String, dynamic> payload,
+  }) async {
+    AndroidNotificationDetails androidPlatformChannelSpecifics =
+        _requestNotificationChannelDetails(0, title, payload, body);
+    NotificationDetails platformChannelSpecifics = NotificationDetails(
+      android: androidPlatformChannelSpecifics,
+    );
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: jsonEncode(payload),
+    );
   }
 
   Future<void> cancelNotification(int id) async {
@@ -184,3 +239,5 @@ class LocalNotificationRepository {
     await flutterLocalNotificationsPlugin.cancelAll();
   }
 }
+
+enum NotificationType { chat, request }
