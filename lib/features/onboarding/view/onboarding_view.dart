@@ -151,7 +151,7 @@ class _OnboardingViewState extends State<OnboardingView> {
         child: Text(
           currentIndex == contents.length - 1 ? 'Continue' : 'Next',
           style: AppTheme.titleSmall.copyWith(
-            color: AppTheme.primary,
+            color: AppTheme.surface,
           ),
         ),
       ),

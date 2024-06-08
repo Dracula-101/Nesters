@@ -1,17 +1,16 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
-import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
+import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
-import 'package:nesters/domain/models/chat/message.dart';
-import 'package:nesters/domain/models/chat/message_type.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
-import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
-import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
+import 'package:nesters/domain/models/user/status/status.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
+import 'package:nesters/features/user/chat/view/widgets/chat_user_widget.dart';
+import 'package:nesters/features/user/request/bloc/request_bloc.dart';
+import 'package:nesters/theme/theme.dart';
 
 class ChatHomePage extends StatelessWidget {
   const ChatHomePage({super.key});
@@ -21,8 +20,9 @@ class ChatHomePage extends StatelessWidget {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text(
+          title: Text(
             'Messages',
+            style: AppTheme.headlineVerySmall,
           ),
         ),
         body: const ChatHomeView(),
@@ -38,7 +38,29 @@ class ChatHomeView extends StatefulWidget {
   State<ChatHomeView> createState() => _ChatHomeViewState();
 }
 
-class _ChatHomeViewState extends State<ChatHomeView> {
+class _ChatHomeViewState extends State<ChatHomeView>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    context.read<CentralChatBloc>().add(
+          CentralChatEvent.updateUserStatus(
+            state == AppLifecycleState.resumed ? Status.ONLINE : Status.OFFLINE,
+          ),
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CentralChatBloc, CentralChatState>(
@@ -47,93 +69,164 @@ class _ChatHomeViewState extends State<ChatHomeView> {
             ? const Center(
                 child: CircularProgressIndicator(),
               )
-            : state.error == null
-                ? RefreshIndicator(
-                    onRefresh: () {
-                      context.read<CentralChatBloc>().add(
-                            const CentralChatEvent.forcedLoadProfiles(),
-                          );
-                      return Future<void>.value();
-                    },
-                    child: CustomScrollView(
-                      slivers: [
-                        SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              QuickChatUser chatUser =
-                                  state.chatStates[index].recipientUser;
-                              return Column(
-                                children: [
-                                  ListTile(
-                                      onTap: () {
-                                        String route =
-                                            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatUser.chatId}';
-                                        GoRouter.of(context).go(
-                                          route,
-                                          extra: chatUser.toUser(),
-                                        );
-                                      },
-                                      leading: CircleAvatar(
-                                        backgroundImage: NetworkImage(
-                                          chatUser.photoUrl ?? '',
-                                        ),
-                                      ),
-                                      title: Text(
-                                        chatUser.fullName ?? '',
-                                      ),
-                                      subtitle: StreamBuilder<Message?>(
-                                        stream: context
-                                            .read<CentralChatBloc>()
-                                            .getChatController(chatUser.chatId!)
-                                            .latestMessageStream,
-                                        builder: (context, snapshot) {
-                                          if (snapshot.hasData) {
-                                            bool isMe =
-                                                snapshot.data?.senderId ==
-                                                    context
-                                                        .read<UserBloc>()
-                                                        .state
-                                                        .user
-                                                        .id;
-                                            String senderName = isMe
-                                                ? 'You: '
-                                                : '';
-                                            return Text(
-                                              '$senderName${(snapshot.data?.messageType == ChatMessageType.TEXT) ? snapshot.data?.content ?? '' : '📷 Attachment'}',
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            );
-                                          } else {
-                                            return const Text('');
-                                          }
-                                        },
-                                      )),
-                                  // const Divider(),
-                                ],
-                              );
-                            },
-                            childCount: state.chatStates.length,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('No chats available'),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<CentralChatBloc>().add(
-                                const CentralChatEvent.forcedLoadProfiles());
-                          },
-                          child: const Text('Refresh'),
-                        )
-                      ],
-                    ),
-                  );
+            : state.chatStates.isNotEmpty
+                ? _buildChatsView(state.chatStates)
+                : _buildNoChatsView();
       },
+    );
+  }
+
+  Widget _buildChatsView(List<ChatInfo> chatStates) {
+    return RefreshIndicator(
+      onRefresh: () {
+        context.read<CentralChatBloc>().add(
+              const CentralChatEvent.forcedLoadProfiles(),
+            );
+        return Future<void>.value();
+      },
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: GestureDetector(
+              onTap: () {
+                GoRouter.of(context).go(
+                    '${AppRouterService.homeScreen}/${AppRouterService.userRequest}');
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 4.0,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.greyShades.shade300,
+                      blurRadius: 4.0,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 4.0),
+                      Icon(
+                        FontAwesomeIcons.telegram,
+                        color: AppTheme.primaryShades.shade400,
+                        size: 28,
+                      ),
+                      const SizedBox(width: 8.0),
+                      Text(
+                        'Requests',
+                        style: AppTheme.bodyMediumLightVariant,
+                      ),
+                      const Spacer(),
+                      BlocBuilder<RequestBloc, RequestState>(
+                        builder: (context, state) {
+                          int count = state.requestReceivedUsers?.fold(0,
+                                  (previousValue, element) {
+                                if (!element.isAccepted && !element.isBanned) {
+                                  return (previousValue ?? 0) + 1;
+                                } else {
+                                  return previousValue;
+                                }
+                              }) ??
+                              0;
+                          if (count != 0) {
+                            return Container(
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryShades.shade400,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                count.toString(),
+                                style: AppTheme.labelSmall.copyWith(
+                                  color: AppTheme.surface,
+                                ),
+                              ),
+                            );
+                          } else {
+                            return const SizedBox();
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 4.0),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: AppTheme.primaryShades.shade400,
+                      ),
+                      const SizedBox(width: 4.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Divider(
+              color: AppTheme.greyShades.shade200,
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                QuickChatUser chatUser = chatStates[index].recipientUser;
+                return ChatUserWidget(
+                  user: chatUser,
+                  lastMessage: context
+                      .read<CentralChatBloc>()
+                      .getChatController(chatUser.chatId!)
+                      .latestMessageStream,
+                  newMessageCount: context
+                      .read<CentralChatBloc>()
+                      .getChatController(chatUser.chatId!)
+                      .newMessageCount,
+                  onTap: () {
+                    String route =
+                        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatUser.chatId}';
+                    GoRouter.of(context).go(
+                      route,
+                      extra: chatUser.toUser(),
+                    );
+                  },
+                );
+              },
+              childCount: chatStates.length,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoChatsView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Opacity(
+            opacity: 0.8,
+            child: SvgPicture.asset(
+              AppVectorImages.noChatsBackgroundImage,
+              width: MediaQuery.of(context).size.width * 0.6,
+              height: MediaQuery.of(context).size.width * 0.6,
+            ),
+          ),
+          Text(
+            'No chats yet',
+            style: AppTheme.titleLarge,
+          ),
+          Text(
+            'Send a request to chat with someone',
+            style: AppTheme.bodyMediumLightVariant,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }

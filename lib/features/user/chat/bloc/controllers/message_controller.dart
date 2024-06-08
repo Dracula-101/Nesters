@@ -6,15 +6,21 @@ import 'package:rxdart/rxdart.dart';
 class MessageController {
   final BehaviorSubject<List<Message>> _liveChatStreamController =
       BehaviorSubject.seeded([]);
-  Stream<List<Message>> get liveChatStream => _liveChatStreamController.stream;
+  Stream<List<Message>> get liveChatStream =>
+      _liveChatStreamController.stream.distinctUnique();
   int _lastSyncedEpochTime = 0;
 
   StreamSubscription<List<Message>>? _remoteStreamSubscription;
   final BehaviorSubject<List<Message>> _newMessagesStream = BehaviorSubject();
   Stream<List<Message>> get newMessageStream =>
-      _newMessagesStream.stream.asBroadcastStream();
-  Stream<Message?> get latestMessageStream =>
-      liveChatStream.map((event) => event.lastOrNull);
+      _newMessagesStream.stream.distinctUnique().asBroadcastStream();
+  Stream<Message?> get latestMessageStream => _liveChatStreamController.stream
+      .map((event) => event.isEmpty ? null : event.last)
+      .distinctUnique()
+      .asBroadcastStream();
+  final BehaviorSubject<int?> _newMessageCountStream = BehaviorSubject();
+  Stream<int?> get newMessageCountStream =>
+      _newMessageCountStream.stream.asBroadcastStream();
   static const Duration _syncInterval = Duration(minutes: 30);
   Timer? _timer;
 
@@ -57,7 +63,8 @@ class MessageController {
   }
 
   void _listenRemoteStream() {
-    _remoteStreamSubscription?.onData(addMessages);
+    _remoteStreamSubscription
+        ?.onData((messages) => addMessages(messages, fromLocal: false));
   }
 
   void addMessage(Message message) {
@@ -70,7 +77,7 @@ class MessageController {
     _newMessagesStream.add([message]);
   }
 
-  void addMessages(List<Message> messages) {
+  void addMessages(List<Message> messages, {bool fromLocal = true}) {
     final List<Message> currentMessages = _liveChatStreamController.value;
     final List<Message> newMessages = messages
         .where((element) => !currentMessages.contains(element))
@@ -80,6 +87,13 @@ class MessageController {
     updatedMessages.sort((a, b) => a.epochTime.compareTo(b.epochTime));
     _liveChatStreamController.add(updatedMessages);
     _newMessagesStream.add(newMessages);
+    int currentNewMessageCount = _newMessageCountStream.valueOrNull ?? 0;
+    int newMessageCount =
+        (_newMessageCountStream.valueOrNull ?? 0) + newMessages.length;
+    int finalMessageCount =
+        newMessageCount - (fromLocal ? currentNewMessageCount : 0);
+    _newMessageCountStream
+        .add(finalMessageCount > 0 ? finalMessageCount : null);
   }
 
   List<Message> _filterMessages(
@@ -101,6 +115,10 @@ class MessageController {
         ? _lastSyncedEpochTime
         : filteredMessages.last.epochTime.microsecondsSinceEpoch;
     return filteredMessages;
+  }
+
+  void clearNewMessages() {
+    _newMessageCountStream.add(null);
   }
 
   Future<void> close() async {

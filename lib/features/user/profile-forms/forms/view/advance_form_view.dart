@@ -133,7 +133,8 @@ class _AdvancedFormViewPageState extends State<AdvancedFormViewPage>
                               child: CircularProgressIndicator(
                                 value: state.questionsComplete / 17,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                    AppTheme.primary),
+                                  AppTheme.surface,
+                                ),
                                 strokeWidth: 8,
                                 strokeCap: StrokeCap.round,
                               ),
@@ -207,7 +208,7 @@ class _SubmitButtonState extends State<SubmitButton> {
       child: Text(
         'Next',
         style: AppTheme.titleLarge.copyWith(
-          color: AppTheme.onPrimary,
+          color: AppTheme.surface,
           fontWeight: FontWeight.w600,
         ),
       ),

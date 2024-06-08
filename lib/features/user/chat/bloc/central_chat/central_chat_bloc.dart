@@ -4,14 +4,18 @@ import 'dart:developer';
 import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
 import 'package:nesters/data/repository/user/recipient_user/recipient_user_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
+import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/features/user/chat/bloc/controllers/chat_controller.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 part 'central_chat_event.dart';
 part 'central_chat_state.dart';
@@ -27,14 +31,15 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   StreamSubscription<List<QuickChatUser>>? _recipientUserStreamSubscription;
   late String userId;
 
-  final AppLoggerService _logger = GetIt.I<AppLoggerService>();
-  final LocalStorageRepository _localStorage =
-      GetIt.I<LocalStorageRepository>();
-  final ObxStorageRepository _obxStorageRepository =
-      GetIt.I<ObxStorageRepository>();
-  final RecipientUserRepository _recipientUserRepository =
-      GetIt.I<RecipientUserRepository>();
-  final RemoteChatRepository _chatRepository = GetIt.I<RemoteChatRepository>();
+  final _logger = GetIt.I<AppLoggerService>();
+  final _localStorage = GetIt.I<LocalStorageRepository>();
+  final _obxStorageRepository = GetIt.I<ObxStorageRepository>();
+  final _recipientUserRepository = GetIt.I<RecipientUserRepository>();
+  final _chatRepository = GetIt.I<RemoteChatRepository>();
+  final _appSecretsRepository = GetIt.I<AppSecretsRepository>();
+
+  // Socket
+  late IO.Socket? socket;
 
   ChatController getChatController(String chatId) {
     return _chatControllers[chatId]!;
@@ -45,8 +50,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
     Emitter<CentralChatState> emit,
   ) async {
     await event.when(
-      loadProfiles: (userId) async {
-        this.userId = userId;
+      loadProfiles: () async {
         await _loadProfiles(emit);
       },
       forcedLoadProfiles: () async {
@@ -55,7 +59,55 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
       loadChats: () async {
         await _loadChats();
       },
+      initalizeUserStatusSocket: (userId) {
+        this.userId = userId;
+        _initializeSocket();
+      },
+      updateUserStatus: (Status status) async {
+        _changeUserStatus(status, emit);
+      },
     );
+  }
+
+  void _initializeSocket() {
+    String url =
+        'wss://${_appSecretsRepository.getSecret(AppSecretsKeys.USER_STATUS_SOCKET_URL)}';
+    socket = IO.io(
+      url,
+      IO.OptionBuilder().setTransports(['websocket']).setExtraHeaders({
+        'userid': userId,
+      }).build(),
+    );
+    socket?.connect();
+    socket?.onConnect((data) => _logger.info('Connected to socket'));
+  }
+
+  Stream<int> showMessageNotificationStream() {
+    // merge all chat controllers' new message streams
+    return Rx.combineLatest(
+      _chatControllers.values.map((e) => e.newMessageCount),
+      (List<int?> newMessageCounts) {
+        return newMessageCounts.fold<int>(
+          0,
+          (previousValue, element) => previousValue + (element ?? 0),
+        );
+      },
+    );
+  }
+
+  void _changeUserStatus(Status status, Emitter<CentralChatState> emit) async {
+    try {
+      socket?.emit(
+        'update',
+        {'user_status': status == Status.ONLINE},
+      );
+    } on Exception catch (e) {
+      emit(state.copyWith(error: e));
+    }
+  }
+
+  bool doesChatExists(String chatId) {
+    return _chatControllers.containsKey(chatId);
   }
 
   FutureOr<void> _loadProfiles(Emitter<CentralChatState> emit) async {

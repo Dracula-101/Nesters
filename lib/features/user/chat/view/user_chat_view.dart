@@ -1,13 +1,14 @@
 import 'dart:developer';
 
+import 'package:firebase_database/firebase_database.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
 import 'package:nesters/domain/models/user/user.dart';
-import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
-import 'package:nesters/features/user/chat/bloc/chat_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/local_chat/chat_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -17,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:rxdart/rxdart.dart';
 
 class UserChatPage extends StatelessWidget {
   final String chatId;
@@ -47,7 +49,7 @@ class ChatView extends StatefulWidget {
 
 class _ChatViewState extends State<ChatView> {
   late final User currentUser;
-  ValueNotifier<bool> _isInputMessageEmpty = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> _isInputMessageEmpty = ValueNotifier<bool>(true);
   ChatUser? _currentChatUser, _otherChatUser;
   bool isInputMessageEmpty = true;
 
@@ -144,7 +146,7 @@ class _ChatViewState extends State<ChatView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(widget.receiverProf.fullName, style: AppTheme.labelLarge),
-              StreamBuilder<UserStatus>(
+              StreamBuilder<UserStatus?>(
                 stream: context.read<ChatBloc>().userStatus,
                 builder: (context, snapshot) {
                   return Text(
@@ -160,7 +162,18 @@ class _ChatViewState extends State<ChatView> {
                 },
               )
             ],
-          )
+          ),
+          Spacer(),
+          IconButton(
+            icon: const Icon(
+              Icons.call,
+            ),
+            onPressed: () {
+              FirebaseDatabase.instance.ref('user_status').once().then((event) {
+                log('Data: ${event.snapshot}');
+              });
+            },
+          ),
         ],
       ),
     );
@@ -328,7 +341,7 @@ class _ChatViewState extends State<ChatView> {
                   user: e.senderId == currentUser.id
                       ? _currentChatUser as ChatUser
                       : _otherChatUser as ChatUser,
-                  createdAt: e.sentAt!.toDate(),
+                  createdAt: e.sentAt?.toDate() ?? DateTime.now(),
                   text: e.content ?? '',
                 );
               } else {

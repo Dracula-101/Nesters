@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
-import 'package:nesters/features/user/chat/bloc/central_chat_bloc.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'message_controller.dart';
@@ -38,25 +38,32 @@ class ChatController {
       .mapNotNull((messages) => messages.reversed.toList());
   Stream<Message?> get latestMessageStream =>
       _messageController.latestMessageStream;
+  Stream<int?> get newMessageCount => _messageController.newMessageCountStream;
 
   void _intializeController() {
     _messageController = MessageController(
       intialMessages: storage.getChatMessages(chatId),
       getRemoteStream: remoteChatStream,
     );
-    _newMessageSubscription = _messageController.newMessageStream.listen(null);
+    _newMessageSubscription =
+        _messageController.newMessageStream.distinctUnique().listen(null);
     _newMessageSubscription?.onData(_onNewLocalMessage);
   }
 
   void _listenToLocalMessages() {
-    _localStreamSubscription =
-        localChatSubscription.listen(_messageController.addMessages);
+    _localStreamSubscription = localChatSubscription
+        .distinctUnique()
+        .listen(_messageController.addMessages);
   }
 
   void _onNewLocalMessage(List<Message> messages) {
     for (final message in messages) {
       storage.saveMessage(chatId, message);
     }
+  }
+
+  void clearNewMessages() {
+    _messageController.clearNewMessages();
   }
 
   // void addMessage(Message message) {

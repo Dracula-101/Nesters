@@ -107,6 +107,27 @@ SnackBarThemeData _appSnackBarTheme = SnackBarThemeData(
   actionTextColor: onSurfaceVariantLight,
 );
 
+ElevatedButtonThemeData _appElevatedButtonTheme = ElevatedButtonThemeData(
+  style: ButtonStyle(
+    backgroundColor: MaterialStateProperty.all(primaryLight),
+    foregroundColor: MaterialStateProperty.all(onPrimaryLight),
+    shape: MaterialStateProperty.all(
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ),
+    padding: MaterialStateProperty.all(
+      const EdgeInsets.symmetric(
+        vertical: 0,
+        horizontal: 24,
+      ),
+    ),
+    enableFeedback: true,
+    splashFactory: InkRipple.splashFactory,
+    visualDensity: VisualDensity.standard,
+  ),
+);
+
 class PrimaryShades extends ColorShades {
   PrimaryShades() : super(AppColor.appBlue.value);
 

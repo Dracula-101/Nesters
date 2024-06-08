@@ -14,6 +14,7 @@ import 'package:nesters/features/user/chat/view/user_chat_view.dart';
 import 'package:nesters/features/user/detail/view/profile.dart';
 import 'package:nesters/features/user/profile-forms/forms/view/advance_form_view.dart';
 import 'package:nesters/features/user/profile-forms/forms/view/basic_form_view.dart';
+import 'package:nesters/features/user/request/request.dart';
 
 class AppRouterService {
   static const String splashScreen = '/';
@@ -25,6 +26,7 @@ class AppRouterService {
   static const String userProfileAdvanceFormScreen = '/advance_form';
   static const String userProfile = 'user_profile';
   static const String userChatHome = 'chat';
+  static const String userRequest = 'request';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -89,7 +91,12 @@ class AppRouterService {
               AppRoute(
                 '$userProfile/:id',
                 (params) {
-                  return UserProfilePage(id: params.pathParameters['id'] ?? '');
+                  bool showDialog =
+                      params.extra is bool ? params.extra as bool : false;
+                  return UserProfilePage(
+                    id: params.pathParameters['id'] ?? '',
+                    showRequestDialog: showDialog,
+                  );
                 },
               ),
               AppRoute(
@@ -98,6 +105,10 @@ class AppRouterService {
                   chatId: params.pathParameters['chatId'] ?? '',
                   userProfile: params.extra as User,
                 ),
+              ),
+              AppRoute(
+                userRequest,
+                (_) => const RequestPage(),
               ),
             ],
           ),
