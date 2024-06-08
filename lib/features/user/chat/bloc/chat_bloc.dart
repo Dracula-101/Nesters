@@ -46,11 +46,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       GetIt.I<UserStatusRepository>();
 
   // Streams
-<<<<<<< HEAD
-  final StreamController<List<Message>> _chatMessages =
-      StreamController.broadcast();
-=======
->>>>>>> 2d60a568555e1faae526575eb99a9b0a588d93e5
   Stream<List<Message>> get chatMessages =>
       controller.liveChatStream.asBroadcastStream();
 
