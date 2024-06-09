@@ -161,13 +161,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
         return Material(
           color: Colors.transparent,
           child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 270,
-                maxHeight: 250,
-                minHeight: 220,
-                minWidth: MediaQuery.of(context).size.width * 0.7,
-              ),
+            child: SizedBox(
+              width: (MediaQuery.of(context).size.width * 0.7).clamp(250, 280),
               child: Stack(
                 alignment: Alignment.topCenter,
                 children: [

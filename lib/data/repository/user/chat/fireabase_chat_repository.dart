@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:nesters/domain/models/chat/message.dart';
@@ -11,19 +12,33 @@ import 'package:path/path.dart' as path_provider;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:rxdart/src/subjects/subject.dart';
 import 'user_chat_repository.dart';
 // import 'package:image_downloader/image_downloader.dart';
 
 class FirebaseChatRepository extends RemoteChatRepository {
   final FirebaseFirestore _store = FirebaseFirestore.instance;
   final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final HttpClient httpClient = HttpClient();
 
   @override
   String generateChatId(String senderId, String receiverId) {
     final sortedIds = [receiverId, senderId]..sort();
     return sortedIds.join('_');
+  }
+
+  @override
+  Future<void> tokenChangeListener() async {
+    try {
+      _firebaseMessaging.onTokenRefresh.listen(
+        (token) async {
+          log('Token Refreshed $token');
+          await _store.collection('users').doc('token').set({'token': token});
+        },
+      );
+    } on Exception {
+      rethrow;
+    }
   }
 
   @override

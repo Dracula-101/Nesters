@@ -134,11 +134,11 @@ exports.sendRequestNotification = functions.firestore
       const receiverUser = receiverData.data();
       const receiverName = receiverUser.fullName;
       const receiverPhotoUrl = receiverUser.photoUrl;
+      const receiverFCMToken = receiverUser.token;
 
       const senderUser = senderData.data();
-      const senderFCMToken = senderUser.token;
 
-      if (!senderFCMToken) {
+      if (!receiverFCMToken) {
         return;
       }
       if (!receiverName || !receiverPhotoUrl) {
@@ -146,7 +146,7 @@ exports.sendRequestNotification = functions.firestore
       }
 
       const message = {
-        token: senderFCMToken,
+        token: receiverFCMToken,
         notification: {
           title: receiverName,
           body: "You have a new request",
@@ -177,11 +177,12 @@ exports.sendAcceptNotification = functions.https.onRequest(async (req, res) => {
       if (!req.body.receiverId) {
         return res.status(400).send("Receiver ID is required");
       }
-      const senderData = await admin
-        .firestore()
-        .collection("users")
-        .doc(req.body.senderId)
-        .get();
+      const userInfoPromise = [
+        admin.firestore().collection("users").doc(senderId).get(),
+        admin.firestore().collection("users").doc(receiverId).get(),
+      ];
+      const [senderData, receiverData] = await Promise.all(userInfoPromise);
+
       chatId = [req.body.senderId, req.body.receiverId].sort().join("_");
 
       if (!senderData) {
@@ -189,13 +190,13 @@ exports.sendAcceptNotification = functions.https.onRequest(async (req, res) => {
       }
       const senderName = senderData.data().fullName;
       const senderPhotoUrl = senderData.data().photoUrl;
-      const senderToken = senderData.data().token;
-      if (!senderToken) {
+      const receiverToken = receiverData.data().token;
+      if (!receiverToken) {
         return res.status(400).send("Sender token not found");
       }
 
       message = {
-        token: senderToken,
+        token: receiverToken,
         notification: {
           title: "Request Accepted",
           body: "Your request has been accepted from " + senderName,

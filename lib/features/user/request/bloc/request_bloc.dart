@@ -81,10 +81,11 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
         return;
       }
       await emit.forEach(
-        Rx.zipList([
+        Rx.combineLatest2(
           chatRepository.getSentUserRequests(user),
           chatRepository.getReceivedUserRequests(user),
-        ]),
+          (List<Request> sent, List<Request> received) => [sent, received],
+        ),
         onData: (data) {
           return RequestState(
             requestSentUsers: data[0],

@@ -6,7 +6,7 @@ import 'package:rxdart/rxdart.dart';
 abstract class RemoteChatRepository {
   String generateChatId(String senderId, String receiverId);
   Future<bool> doesChatExist(String chatId);
-
+  Future<void> tokenChangeListener();
   Future<void> createChat(
     String chatId, {
     required String senderId,

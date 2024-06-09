@@ -15,6 +15,7 @@ import 'package:nesters/data/repository/database/object_box/repository/obx_stora
 import 'package:nesters/data/repository/device/device_info_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
+import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/request/request.dart';
@@ -56,6 +57,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       GetIt.instance.get<LocalNotificationRepository>();
   final DeviceInfoRepository _deviceInfoRepository =
       GetIt.instance.get<DeviceInfoRepository>();
+  final RemoteChatRepository _remoteChatRepository =
+      GetIt.instance.get<RemoteChatRepository>();
+
   String? userId;
   bool isCompletedOnboarding = false;
   NavigationArgs? initalizationArgs;
@@ -75,10 +79,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       }
       isCompletedOnboarding = _userRepository.checkUserOnboardingStatus();
       unawaited(loadAndSaveToken());
-      int totalUnusedTime = (1500 - totalIntializationTime).isNegative
-          ? 0
-          : (1500 - totalIntializationTime);
-      await Future.delayed(totalUnusedTime.ms);
+      _remoteChatRepository.tokenChangeListener();
       _loggerService
           .info('Repository Intialized in : $totalIntializationTime ms');
       add(AppEvent.loaded(
@@ -126,6 +127,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     _saveDeviceInfo(user);
     _addNotificationListener(user);
     _handleLocalStorage(user);
+    _addTokenChangeListener(user);
   }
 
   Future<User?> _checkUserProfileCreated(User? user) async {
@@ -242,6 +244,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       unawaited(_localStorageRepository.clear());
     }
   }
+
+  void _addTokenChangeListener(User? user) {}
 }
 
 abstract class NavigationArgs {
