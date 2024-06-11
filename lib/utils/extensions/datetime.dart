@@ -1,7 +1,7 @@
 part of 'extensions.dart';
 
 extension DateTimeExtension on DateTime {
-  String toUI() {
+  String toLongUIDateTime() {
     bool isWithinSeconds = DateTime.now().difference(this).inSeconds.abs() < 60;
     bool isWithinMinutes = DateTime.now().difference(this).inMinutes.abs() < 60;
     bool isWithinHours = DateTime.now().difference(this).inHours.abs() < 24;
@@ -30,6 +30,13 @@ extension DateTimeExtension on DateTime {
         return '$day, $date${suffix()} $month$year, $time';
       }
     }
+  }
+
+  String toShortUIDate() {
+    String day = this.day.toString();
+    String month = _toMonth(this.month);
+    String year = this.year.toString();
+    return '$day ${month.substring(0, 3)} $year';
   }
 
   String _toDay(int weekday) {

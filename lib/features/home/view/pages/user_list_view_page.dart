@@ -157,7 +157,8 @@ class _UserListPageState extends State<UserListPage> {
                   size: 20,
                 ),
                 onPressed: () {
-                  GetIt.I.get<ObxStorageRepository>().close();
+                  GoRouter.of(context).go(
+                      '${AppRouterService.homeScreen}/${AppRouterService.sublettingForm}');
                 },
               )
             ],

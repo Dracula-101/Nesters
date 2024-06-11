@@ -61,8 +61,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       GetIt.instance.get<RemoteChatRepository>();
 
   String? userId;
-  bool isCompletedOnboarding = false;
-  NavigationArgs? initalizationArgs;
+  bool isOnboardingCompleted = false;
+  NavigationArgs? initializationArgs;
 
   Future<void> _loadApp(AppEvent event, Emitter<AppState> emit) async {
     emit(const AppState.loadInProgress());
@@ -77,13 +77,13 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       for (int time in repositoryIntialize) {
         totalIntializationTime += time.isNegative ? 0 : time;
       }
-      isCompletedOnboarding = _userRepository.checkUserOnboardingStatus();
+      isOnboardingCompleted = _userRepository.checkUserOnboardingStatus();
       unawaited(loadAndSaveToken());
       _remoteChatRepository.tokenChangeListener();
       _loggerService
           .info('Repository Intialized in : $totalIntializationTime ms');
       add(AppEvent.loaded(
-          isSuccessful: true, isOnboaringComplete: isCompletedOnboarding));
+          isSuccessful: true, isOnboaringComplete: isOnboardingCompleted));
     } catch (e) {
       _loggerService.error('Error loading app: $e');
       emit(const AppState.loadFailure());
@@ -114,6 +114,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   void _authHandler(User? user) {
+    //here we will handle the user authentication, and navigate to the appropriate screen, and more...
     if (user != null) {
       _loggerService.info('User is logged in - ${user.email}');
     } else {
@@ -121,13 +122,12 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
     userId ??= user?.id;
     _intializeNavigationHandler(
-        user != null, isCompletedOnboarding, user?.isProfileCreated ?? false);
+        user != null, isOnboardingCompleted, user?.isProfileCreated ?? false);
     // _initalizeAppLifecycleListener(user != null);
-    _checkNotificationPermission(user);
+    _initializeNotificationSettings(user);
     _saveDeviceInfo(user);
     _addNotificationListener(user);
     _handleLocalStorage(user);
-    _addTokenChangeListener(user);
   }
 
   Future<User?> _checkUserProfileCreated(User? user) async {
@@ -141,6 +141,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   void _intializeNavigationHandler(
       bool isLoggedIn, bool isOnboardingComplete, bool isUserProfileCreated) {
+    //used for initial routing when the app is loaded
     String? route;
     if (!isOnboardingComplete) {
       route = AppRouterService.onboardingScreen;
@@ -149,9 +150,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else if (!isUserProfileCreated) {
       route = AppRouterService.userProfileBasicFormScreen;
     } else {
-      if (initalizationArgs != null) {
-        route = initalizationArgs?.route;
-        initalizationArgs = null;
+      if (initializationArgs != null) {
+        route = initializationArgs?.route;
+        initializationArgs = null;
       }
       route ??= AppRouterService.homeScreen;
     }
@@ -191,6 +192,12 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   // }
 
   void _saveDeviceInfo(User? user) {
+    /// This function saves the device information for a user if it has not been saved previously.
+    ///
+    /// It performs the following steps:
+    /// 1. Checks if the device information has already been saved to local storage.
+    /// 2. If not, and if the user is not null, it saves the device information using the device info repository.
+    /// 3. Once the device information is successfully saved, it updates local storage to indicate that the device information has been saved.
     bool isDeviceInfoSaved =
         _localStorageRepository.getBool(LocalStorageKeys.deviceInfoSaved) ??
             false;
@@ -202,7 +209,13 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
   }
 
-  FutureOr<void> _checkNotificationPermission(User? user) async {
+  FutureOr<void> _initializeNotificationSettings(User? user) async {
+    /// This function handles the initialization and configuration of notification settings for a user.
+    ///
+    /// It performs the following steps:
+    /// 1. Initializes the notification repository.
+    /// 2. Checks if a notification token is stored in local storage. If not, retrieves a new token from the repository and saves it to local storage.
+    /// 3. Checks if the user's data has already been saved to local storage. If not, saves the user data to the notification repository and updates local storage.
     if (user != null) {
       _rNotificationRepository.init();
       String? token =
@@ -223,15 +236,24 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           photoUrl: user.photoUrl,
           token: token,
         )
-            .then((value) {
-          _localStorageRepository.saveBool(
-              LocalStorageKeys.userDataSaved, true);
-        });
+            .then(
+          (value) {
+            _localStorageRepository.saveBool(
+              LocalStorageKeys.userDataSaved,
+              true,
+            );
+          },
+        );
       }
     }
   }
 
   void _addNotificationListener(User? user) {
+    /// Adds or removes notification listener based on the presence of the user.
+    ///
+    /// This function performs the following actions:
+    /// 1. If a user is provided, it adds a listener to receive notifications using the notification repository.
+    /// 2. If no user is provided (i.e., user is null), it removes the notification listener.
     if (user != null) {
       _rNotificationRepository.listenToNotification();
     } else {
@@ -240,12 +262,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   void _handleLocalStorage(User? user) {
+    /// Handles local storage based on the presence of the user.
+    ///
+    /// This function performs the following action:
+    /// 1. If no user is provided (i.e., user is null), it clears the local storage.
     if (user == null) {
       unawaited(_localStorageRepository.clear());
     }
   }
-
-  void _addTokenChangeListener(User? user) {}
 }
 
 abstract class NavigationArgs {

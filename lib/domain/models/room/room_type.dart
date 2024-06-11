@@ -1,9 +1,9 @@
 // ignore_for_file: constant_identifier_names
-
 enum UserRoomType {
   ANYTHING,
   PRIVATE,
   SHARED,
+  FLEX,
   UNKNOWN;
 
   static UserRoomType fromString(String value) {
@@ -14,6 +14,8 @@ enum UserRoomType {
         return UserRoomType.SHARED;
       case 'Anything':
         return UserRoomType.ANYTHING;
+      case 'Flex':
+        return UserRoomType.FLEX;
       default:
         return UserRoomType.UNKNOWN;
     }
@@ -28,8 +30,25 @@ enum UserRoomType {
         return 'SHARED';
       case UserRoomType.ANYTHING:
         return 'ANYTHING';
+      case UserRoomType.FLEX:
+        return 'FLEX';
       default:
         return 'UNKNOWN';
+    }
+  }
+
+  String toUI() {
+    switch (this) {
+      case UserRoomType.PRIVATE:
+        return 'Private';
+      case UserRoomType.SHARED:
+        return 'Shared';
+      case UserRoomType.ANYTHING:
+        return 'Anything';
+      case UserRoomType.FLEX:
+        return 'Flex';
+      default:
+        return 'Unknown';
     }
   }
 }

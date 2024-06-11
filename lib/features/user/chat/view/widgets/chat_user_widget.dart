@@ -24,61 +24,70 @@ class ChatUserWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(4.0),
-              decoration: BoxDecoration(
-                color: AppTheme.background,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.greyShades.shade300,
-                    blurRadius: 2,
-                    offset: const Offset(0, 2),
+            Flexible(
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4.0),
+                    decoration: BoxDecoration(
+                      color: AppTheme.background,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.greyShades.shade300,
+                          blurRadius: 2,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl: user.photoUrl ?? '',
+                      imageBuilder: (context, imageProvider) => CircleAvatar(
+                        radius: 22,
+                        backgroundImage: imageProvider,
+                      ),
+                      placeholder: (context, url) => CircleAvatar(
+                        radius: 22,
+                        backgroundColor: AppTheme.primary,
+                      ),
+                      errorWidget: (context, url, error) => CircleAvatar(
+                        radius: 22,
+                        backgroundColor: AppTheme.primary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user.fullName ?? '',
+                          style: AppTheme.titleMedium,
+                        ),
+                        StreamBuilder<Message?>(
+                          stream: lastMessage,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              final message = snapshot.data!;
+                              return Text(
+                                message.content?.startsWith('http') ?? false
+                                    ? '📷 Image'
+                                    : message.content ?? '',
+                                style: AppTheme.bodyMediumLightVariant,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: false,
+                              );
+                            }
+                            return const SizedBox();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              child: CachedNetworkImage(
-                imageUrl: user.photoUrl ?? '',
-                imageBuilder: (context, imageProvider) => CircleAvatar(
-                  radius: 22,
-                  backgroundImage: imageProvider,
-                ),
-                placeholder: (context, url) => CircleAvatar(
-                  radius: 22,
-                  backgroundColor: AppTheme.primary,
-                ),
-                errorWidget: (context, url, error) => CircleAvatar(
-                  radius: 22,
-                  backgroundColor: AppTheme.primary,
-                ),
-              ),
             ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.fullName ?? '',
-                  style: AppTheme.titleMedium,
-                ),
-                StreamBuilder<Message?>(
-                  stream: lastMessage,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      final message = snapshot.data!;
-                      return Text(
-                        message.content?.startsWith('http') ?? false
-                            ? '📷 Image'
-                            : message.content ?? '',
-                        style: AppTheme.bodyMediumLightVariant,
-                      );
-                    }
-                    return const SizedBox();
-                  },
-                ),
-              ],
-            ),
-            const Spacer(),
             StreamBuilder<int?>(
               stream: newMessageCount,
               builder: (context, snapshot) {

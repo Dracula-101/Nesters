@@ -1,4 +1,4 @@
-//==================== Env ==============================
+//==================== Environment Configuration ==============================
 const dotenv = require("dotenv").config();
 const FIREBASE_DATABASE_URL = process.env.FIREBASE_DATABASE_URL;
 const PORT = parseInt(process.env.PORT) || 8080;

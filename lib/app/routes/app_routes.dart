@@ -9,6 +9,7 @@ import 'package:nesters/features/auth/view/auth_view.dart';
 import 'package:nesters/features/home/view/home_view.dart';
 import 'package:nesters/features/onboarding/view/onboarding_view.dart';
 import 'package:nesters/features/splash/view/splash_view.dart';
+import 'package:nesters/features/sublet/form/view/sublet_form_page.dart';
 import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/features/user/chat/view/user_chat_view.dart';
 import 'package:nesters/features/user/detail/view/profile.dart';
@@ -17,16 +18,17 @@ import 'package:nesters/features/user/profile-forms/forms/view/basic_form_view.d
 import 'package:nesters/features/user/request/request.dart';
 
 class AppRouterService {
-  static const String splashScreen = '/';
-  static const String onboardingScreen = '/onboarding';
   static const String homeScreen = '/home';
-  static const String notificationScreen = '/notification';
   static const String loginScreen = '/login';
-  static const String userProfileBasicFormScreen = '/basic_form';
-  static const String userProfileAdvanceFormScreen = '/advance_form';
-  static const String userProfile = 'user_profile';
+  static const String notificationScreen = '/notification';
+  static const String onboardingScreen = '/onboarding';
+  static const String splashScreen = '/';
   static const String userChatHome = 'chat';
+  static const String userProfile = 'user_profile';
+  static const String userProfileAdvanceFormScreen = '/advance_form';
+  static const String userProfileBasicFormScreen = '/basic_form';
   static const String userRequest = 'request';
+  static const String sublettingForm = 'subletting_form';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -60,26 +62,6 @@ class AppRouterService {
         },
         routes: [
           AppRoute(
-            splashScreen,
-            (_) => const SplashPage(),
-          ),
-          AppRoute(
-            onboardingScreen,
-            (_) => const OnboardingPage(),
-          ),
-          AppRoute(
-            loginScreen,
-            (_) => const AuthPage(),
-          ),
-          AppRoute(
-            userProfileBasicFormScreen,
-            (_) => const UserProfileBasicForm(),
-          ),
-          AppRoute(
-            userProfileAdvanceFormScreen,
-            (_) => const UserProfileAdvanceForm(),
-          ),
-          AppRoute(
             homeScreen,
             (params) {
               int page = params.pathParameters['page'] == null
@@ -88,6 +70,13 @@ class AppRouterService {
               return HomeScaffold(initialIndex: page);
             },
             routes: [
+              AppRoute(
+                '$userChatHome/:chatId',
+                (params) => UserChatPage(
+                  chatId: params.pathParameters['chatId'] ?? '',
+                  userProfile: params.extra as User,
+                ),
+              ),
               AppRoute(
                 '$userProfile/:id',
                 (params) {
@@ -100,17 +89,34 @@ class AppRouterService {
                 },
               ),
               AppRoute(
-                '$userChatHome/:chatId',
-                (params) => UserChatPage(
-                  chatId: params.pathParameters['chatId'] ?? '',
-                  userProfile: params.extra as User,
-                ),
-              ),
-              AppRoute(
                 userRequest,
                 (_) => const RequestPage(),
               ),
+              AppRoute(
+                sublettingForm,
+                (_) => const SubletFormPage(),
+              )
             ],
+          ),
+          AppRoute(
+            loginScreen,
+            (_) => const AuthPage(),
+          ),
+          AppRoute(
+            onboardingScreen,
+            (_) => const OnboardingPage(),
+          ),
+          AppRoute(
+            splashScreen,
+            (_) => const SplashPage(),
+          ),
+          AppRoute(
+            userProfileAdvanceFormScreen,
+            (_) => const UserProfileAdvanceForm(),
+          ),
+          AppRoute(
+            userProfileBasicFormScreen,
+            (_) => const UserProfileBasicForm(),
           ),
         ],
       ),

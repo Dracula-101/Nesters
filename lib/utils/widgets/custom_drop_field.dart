@@ -105,6 +105,7 @@ class _CustomDropdownFieldState<T> extends State<CustomDropdownField> {
                 vertical: 6.0,
               ),
           child: DropdownButtonFormField<String>(
+            borderRadius: BorderRadius.circular(10),
             items: widget.items
                 .map(
                   (e) => DropdownMenuItem<String>(
@@ -114,6 +115,7 @@ class _CustomDropdownFieldState<T> extends State<CustomDropdownField> {
                 )
                 .toList(),
             onChanged: (value) {
+              widget.controller.text = value.toString();
               if (widget.onChanged != null) {
                 widget.onChanged!(value);
               }

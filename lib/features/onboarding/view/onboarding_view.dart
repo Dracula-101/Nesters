@@ -137,7 +137,7 @@ class _OnboardingViewState extends State<OnboardingView> {
         onPressed: () {
           if (currentIndex == contents.length - 1) {
             unawaited(GetIt.I<UserRepository>().setOnBoardingComplete());
-            context.read<AppBloc>().isCompletedOnboarding = true;
+            context.read<AppBloc>().isOnboardingCompleted = true;
             GoRouter.of(context).go(AppRouterService.loginScreen);
           } else {
             _pageController.nextPage(

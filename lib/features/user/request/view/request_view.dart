@@ -189,19 +189,13 @@ class _RequestViewState extends State<RequestView> {
         return Material(
           color: Colors.transparent,
           child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: 270,
-                maxHeight: 250,
-                minHeight: 220,
-                minWidth: MediaQuery.of(context).size.width * 0.7,
-              ),
+            child: SizedBox(
+              width: (MediaQuery.of(context).size.width * 0.75).clamp(250, 290),
               child: Stack(
                 alignment: Alignment.topCenter,
                 children: [
                   Container(
                     height: 250 - iconSize / 2,
-                    width: double.maxFinite,
                     padding: EdgeInsets.only(
                         left: 10,
                         right: 10,
@@ -375,7 +369,7 @@ class RequestWidget extends StatelessWidget {
                           isSent ? user.sender.name : user.receiver.name,
                         ),
                         Text(
-                          user.sentAt.toUI(),
+                          user.sentAt.toLongUIDateTime(),
                           style: AppTheme.labelMediumLightVariant,
                         ),
                         const SizedBox(height: 5),

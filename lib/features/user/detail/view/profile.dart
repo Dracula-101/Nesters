@@ -162,7 +162,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
           color: Colors.transparent,
           child: Center(
             child: SizedBox(
-              width: (MediaQuery.of(context).size.width * 0.7).clamp(250, 280),
+              width: (MediaQuery.of(context).size.width * 0.75).clamp(250, 290),
               child: Stack(
                 alignment: Alignment.topCenter,
                 children: [

@@ -8,18 +8,6 @@ class CentralChatState with _$CentralChatState {
     required bool isLoading,
   }) = _CentralChatState;
 
-  factory CentralChatState.loading() => const CentralChatState(
-        chatStates: [],
-        isLoading: true,
-        error: null,
-      );
-
-  factory CentralChatState.noChatsAvailable() => const CentralChatState(
-        chatStates: [],
-        isLoading: false,
-        error: null,
-      );
-
   factory CentralChatState.error(Exception e) => CentralChatState(
         chatStates: [],
         isLoading: false,
@@ -32,14 +20,26 @@ class CentralChatState with _$CentralChatState {
         isLoading: false,
         error: null,
       );
+
+  factory CentralChatState.loading() => const CentralChatState(
+        chatStates: [],
+        isLoading: true,
+        error: null,
+      );
+
+  factory CentralChatState.noChatsAvailable() => const CentralChatState(
+        chatStates: [],
+        isLoading: false,
+        error: null,
+      );
 }
 
 @freezed
 class ChatInfo with _$ChatInfo {
   const factory ChatInfo({
     required String chatId,
-    required QuickChatUser recipientUser,
     required String receiverId,
+    required QuickChatUser recipientUser,
     required String senderId,
   }) = _ChatInfo;
 }

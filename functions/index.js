@@ -177,6 +177,8 @@ exports.sendAcceptNotification = functions.https.onRequest(async (req, res) => {
       if (!req.body.receiverId) {
         return res.status(400).send("Receiver ID is required");
       }
+      const senderId = req.body.senderId;
+      const receiverId = req.body.receiverId;
       const userInfoPromise = [
         admin.firestore().collection("users").doc(senderId).get(),
         admin.firestore().collection("users").doc(receiverId).get(),
@@ -215,7 +217,7 @@ exports.sendAcceptNotification = functions.https.onRequest(async (req, res) => {
     const chatCollection = admin.firestore().collection("chats");
     const chatData = {
       participants: [req.body.senderId, req.body.receiverId],
-      createdAt: Date.now().toISOString(),
+      createdAt: new Date().toISOString().replace("Z", ""),
       id: chatId,
     };
     await chatCollection.doc(chatId).set(chatData);
