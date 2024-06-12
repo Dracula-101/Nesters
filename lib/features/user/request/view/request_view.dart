@@ -385,7 +385,7 @@ class RequestWidget extends StatelessWidget {
                                 color: user.isBanned
                                     ? AppTheme.errorColor.withOpacity(0.1)
                                     : user.isAccepted
-                                        ? AppTheme.successColor.withOpacity(0.1)
+                                        ? AppTheme.success.withOpacity(0.1)
                                         : AppTheme.primary.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
@@ -403,7 +403,7 @@ class RequestWidget extends StatelessWidget {
                                               : FontAwesomeIcons.check,
                                           color: user.isBanned
                                               ? AppTheme.errorColor
-                                              : AppTheme.successColor,
+                                              : AppTheme.success,
                                           size: 16,
                                         ),
                                         const SizedBox(width: 5),
@@ -414,7 +414,7 @@ class RequestWidget extends StatelessWidget {
                                           style: AppTheme.labelSmall.copyWith(
                                             color: user.isBanned
                                                 ? AppTheme.errorColor
-                                                : AppTheme.successColor,
+                                                : AppTheme.success,
                                           ),
                                         ),
                                       ],
@@ -438,8 +438,7 @@ class RequestWidget extends StatelessWidget {
                                   decoration: BoxDecoration(
                                     color: user.isBanned
                                         ? AppTheme.errorColor.withOpacity(0.1)
-                                        : AppTheme.successColor
-                                            .withOpacity(0.1),
+                                        : AppTheme.success.withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   alignment: Alignment.center,
@@ -455,7 +454,7 @@ class RequestWidget extends StatelessWidget {
                                             : FontAwesomeIcons.check,
                                         color: user.isBanned
                                             ? AppTheme.errorColor
-                                            : AppTheme.successColor,
+                                            : AppTheme.success,
                                         size: 16,
                                       ),
                                       const SizedBox(width: 5),
@@ -464,7 +463,7 @@ class RequestWidget extends StatelessWidget {
                                         style: AppTheme.labelSmall.copyWith(
                                           color: user.isBanned
                                               ? AppTheme.errorColor
-                                              : AppTheme.successColor,
+                                              : AppTheme.success,
                                         ),
                                       ),
                                     ],

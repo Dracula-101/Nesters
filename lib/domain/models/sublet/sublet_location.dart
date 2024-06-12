@@ -3,8 +3,7 @@ class Location {
   double? latitude;
   double? longitude;
 
-  Location(
-      {required this.address, required this.latitude, required this.longitude});
+  Location({this.address, this.latitude, this.longitude});
 
   Map<String, dynamic> toMap() {
     return {

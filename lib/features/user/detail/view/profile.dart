@@ -118,7 +118,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
             } else if (state.requestSentSuccess) {
               showToast(
                 'Request sent successfully!',
-                AppTheme.successColor,
+                AppTheme.success,
                 FontAwesomeIcons.circleCheck,
               );
             }

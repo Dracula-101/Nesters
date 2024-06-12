@@ -39,7 +39,30 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SubletFormCubit, SubletFormState>(
+    return BlocConsumer<SubletFormCubit, SubletFormState>(
+      listener: (context, state) {
+        if (state.submitError != null) {
+          context.showSnackBar(
+            'An unknown error occurred, please try again later',
+            icon: Icon(
+              FontAwesomeIcons.triangleExclamation,
+              color: AppTheme.error,
+            ),
+          );
+        }
+        if (state.isSubmitComplete ?? false) {
+          Future.delayed(1.sec).then((value) {
+            context.showSnackBar(
+              'Sublet submitted successfully',
+              icon: Icon(
+                FontAwesomeIcons.circleCheck,
+                color: AppTheme.success,
+              ),
+            );
+            Navigator.of(context).pop();
+          });
+        }
+      },
       builder: (context, state) {
         return GestureDetector(
           onTap: () {
@@ -51,13 +74,24 @@ class CustomBottomNavigationBar extends StatelessWidget {
                 const EdgeInsets.symmetric(horizontal: 18.0, vertical: 18.0),
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: AppTheme.primary,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Text(
-              'Next',
-              style: AppTheme.titleLarge.copyWith(
-                color: AppTheme.surface,
+            child: DynamicProgressIndicator(
+              currentValue: state.imageUploadTask?.progress ?? 1.0,
+              totalValue: 1.0,
+              height: 60,
+              width: double.infinity,
+              backgroundColor: AppTheme.primaryShades.shade300,
+              progressColor: AppTheme.primaryShades.shade600,
+              child: Text(
+                state.isSubmitComplete ?? false
+                    ? 'Submitted'
+                    : state.imageUploadTask != null
+                        ? 'Uploading ${((state.imageUploadTask?.progress ?? 0.01) * 100).toInt()}%'
+                        : 'Next',
+                style: AppTheme.titleLarge.copyWith(
+                  color: AppTheme.surface,
+                ),
               ),
             ),
           ),
@@ -83,7 +117,6 @@ class _SubletFormViewState extends State<SubletFormView>
   void initState() {
     super.initState();
     _tabController = TabController(
-      initialIndex: 2,
       length: 3,
       vsync: this,
     );
@@ -110,34 +143,38 @@ class _SubletFormViewState extends State<SubletFormView>
   }
 
   Widget _buildTabBar() {
-    return BlocBuilder<SubletFormCubit, SubletFormState>(
+    return BlocConsumer<SubletFormCubit, SubletFormState>(
+      listener: (context, state) {},
       builder: (context, state) {
         return TabBar(
           controller: _tabController,
           onTap: (index) {
-            if (index == 1 && !state.hasSecondPageAccess) {
-              context.showSnackBar(
-                'Please fill in the details page first',
-                icon: Icon(
-                  FontAwesomeIcons.triangleExclamation,
-                  color: AppTheme.error,
-                ),
-              );
-              _tabController?.animateTo(0);
-              return;
+            if (!state.hasSecondPageAccess) {
+              if ((_tabController?.index ?? 0) >= 1) {
+                context.showSnackBar(
+                  'Please fill in the details page first',
+                  icon: Icon(
+                    FontAwesomeIcons.triangleExclamation,
+                    color: AppTheme.error,
+                  ),
+                );
+                _tabController?.animateTo(0);
+                return;
+              }
+            } else if (!state.hasThirdPageAccess) {
+              if ((_tabController?.index ?? 0) == 2) {
+                context.showSnackBar(
+                  'Please fill in the background page first',
+                  icon: Icon(
+                    FontAwesomeIcons.triangleExclamation,
+                    color: AppTheme.error,
+                  ),
+                );
+                _tabController?.animateTo(1);
+                return;
+              }
             }
-            if (index == 2 && !state.hasThirdPageAccess) {
-              context.showSnackBar(
-                'Please fill in the details first and location page second',
-                icon: Icon(
-                  FontAwesomeIcons.triangleExclamation,
-                  color: AppTheme.error,
-                ),
-              );
-              _tabController?.animateTo(0);
-              return;
-            }
-            _tabIndexNotifier.value = index;
+            // _tabIndexNotifier.value = index;
           },
           tabs: [
             const Tab(
@@ -191,6 +228,66 @@ class _SubletFormViewState extends State<SubletFormView>
               ),
               SubletPhotoForm(
                 controller: _tabController,
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class DynamicProgressIndicator extends StatefulWidget {
+  final double currentValue;
+  final double totalValue;
+  final Widget child;
+  final double? height;
+  final double? width;
+  final Color? backgroundColor;
+  final Color? progressColor;
+
+  const DynamicProgressIndicator({
+    super.key,
+    required this.currentValue,
+    required this.totalValue,
+    required this.child,
+    this.height,
+    this.width,
+    this.backgroundColor,
+    this.progressColor,
+  });
+
+  @override
+  State<DynamicProgressIndicator> createState() =>
+      _DynamicProgressIndicatorState();
+}
+
+class _DynamicProgressIndicatorState extends State<DynamicProgressIndicator> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: widget.height ?? 10,
+      width: widget.width ?? 100,
+      decoration: BoxDecoration(
+        color: widget.backgroundColor ?? AppTheme.primaryShades.shade300,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: widget.height ?? 10,
+                width: constraints.maxWidth *
+                    (widget.currentValue / widget.totalValue),
+                decoration: BoxDecoration(
+                  color: widget.progressColor ?? AppTheme.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              Center(
+                child: widget.child,
               ),
             ],
           );

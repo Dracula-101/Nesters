@@ -16,13 +16,14 @@ class SubletModel {
   // 9]amenities available - Object (dryer, washing machine, extra options)
   // 10]room size beds and baths - Object ( bed,  bath )
   // 11]shared/private/flex -Options
-
+  int id;
+  String? userId;
   String? roomDescription;
   String? roommateDescription;
   String? roommateGenderPref;
   double? rent;
   List<String>? photos;
-  LeasePeriod? leaseTime;
+  LeasePeriod? leasePeriod;
   Amenities? amenitiesAvailable;
   ApartmentSize? apartmentSize;
   UserRoomType? roomType;
@@ -30,62 +31,69 @@ class SubletModel {
   bool? isAvailable;
 
   SubletModel({
-    required this.roomDescription,
-    required this.roommateDescription,
-    required this.roommateGenderPref,
-    required this.rent,
-    required this.photos,
-    required this.leaseTime,
-    required this.amenitiesAvailable,
-    required this.apartmentSize,
-    required this.roomType,
-    required this.location,
+    required this.id,
+    this.userId,
+    this.roomDescription,
+    this.roommateDescription,
+    this.roommateGenderPref,
+    this.rent,
+    this.photos,
+    this.leasePeriod,
+    this.amenitiesAvailable,
+    this.apartmentSize,
+    this.roomType,
+    this.location,
     this.isAvailable = true,
   });
 
   bool isSubletActive() {
-    return leaseTime?.isLeaseActive() ?? false;
+    return leasePeriod?.isLeaseActive() ?? false;
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'roomDescription': roomDescription ?? '',
-      'roommateDescription': roommateDescription ?? '',
-      'roommateGenderPref': roommateGenderPref ?? '',
+      'id': id,
+      'user_id': userId ?? '',
+      'room_description': roomDescription ?? '',
+      'roommate_description': roommateDescription ?? '',
+      'roommate_gender_pref': roommateGenderPref ?? '',
       'rent': rent ?? 0.0,
       'photos': photos ?? [],
-      'leaseTime': leaseTime?.toMap() ?? {},
-      'amenitiesAvailable': amenitiesAvailable?.toMap() ?? {},
-      'apartmentSize': apartmentSize?.toMap() ?? {},
-      'roomType': roomType ?? '',
+      'amenities_available': amenitiesAvailable?.toMap() ?? {},
+      'room_type': (roomType ?? '').toString(),
       'location': location?.toMap() ?? {},
-      'isAvailable': isAvailable ?? true,
+      'is_available': isAvailable ?? true,
+      ...apartmentSize?.toMap() ?? {},
+      ...leasePeriod?.toMap() ?? {},
     };
   }
 
   factory SubletModel.fromMap(Map<String, dynamic> map) {
     return SubletModel(
-      roomDescription: map['roomDescription'] ?? '',
-      roommateDescription: map['roommateDescription'] ?? '',
-      roommateGenderPref: map['roommateGenderPref'] ?? '',
-      rent: map['rent'] ?? 0.0,
+      id: map['id'] ?? DateTime.now().millisecondsSinceEpoch,
+      userId: map['user_id'] ?? '',
+      roomDescription: map['room_description'] ?? '',
+      roommateDescription: map['roommate_description'] ?? '',
+      roommateGenderPref: map['roommate_gender_pref'] ?? '',
+      rent: double.tryParse(map['rent'].toString()),
       photos: List<String>.from(map['photos'] ?? []),
-      leaseTime: LeasePeriod.fromMap(map['leaseTime'] ?? {}),
-      amenitiesAvailable: Amenities.fromMap(map['amenitiesAvailable'] ?? {}),
-      apartmentSize: ApartmentSize.fromMap(map['apartmentSize'] ?? {}),
-      roomType: map['roomType'] ?? '',
+      leasePeriod: LeasePeriod.fromMap(map),
+      amenitiesAvailable: Amenities.fromMap(map['amenities_available'] ?? {}),
+      apartmentSize: ApartmentSize.fromMap(map),
+      roomType: UserRoomType.fromString(map['room_type'] ?? ''),
       location: Location.fromMap(map['location'] ?? {}),
-      isAvailable: map['isAvailable'] ?? true,
+      isAvailable: map['is_available'] ?? true,
     );
   }
 
   SubletModel copyWith({
+    String? userId,
     String? roomDescription,
     String? roommateDescription,
     String? roommateGenderPref,
     double? rent,
     List<String>? photos,
-    LeasePeriod? leaseTime,
+    LeasePeriod? leasePeriod,
     Amenities? amenitiesAvailable,
     ApartmentSize? apartmentSize,
     UserRoomType? roomType,
@@ -93,12 +101,14 @@ class SubletModel {
     bool? isAvailable,
   }) {
     return SubletModel(
+      id: id,
+      userId: userId ?? this.userId,
       roomDescription: roomDescription ?? this.roomDescription,
       roommateDescription: roommateDescription ?? this.roommateDescription,
       roommateGenderPref: roommateGenderPref ?? this.roommateGenderPref,
       rent: rent ?? this.rent,
       photos: photos ?? this.photos,
-      leaseTime: leaseTime ?? this.leaseTime,
+      leasePeriod: leasePeriod ?? this.leasePeriod,
       amenitiesAvailable: amenitiesAvailable ?? this.amenitiesAvailable,
       apartmentSize: apartmentSize ?? this.apartmentSize,
       roomType: roomType ?? this.roomType,

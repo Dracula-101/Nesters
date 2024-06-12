@@ -8,7 +8,11 @@ class SubletFormState with _$SubletFormState {
     @Default(0) int pageNumber,
     @Default(false) bool hasSecondPageAccess,
     @Default(false) bool hasThirdPageAccess,
-    @Default(0) int validatingPage,
+    @Default(false) bool isValidating,
+    bool? isSubmitting,
+    bool? isSubmitComplete,
+    Exception? submitError,
+    SubletImageUploadTask? imageUploadTask,
   }) = _SubletFormState;
 
   factory SubletFormState.initial() => const SubletFormState(

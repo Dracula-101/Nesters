@@ -20,7 +20,7 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
       TextEditingController();
   final TextEditingController _roommateDescriptionController =
       TextEditingController();
-
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool hasDryer = false,
       hasWashingMachine = false,
       hasDishwasher = false,
@@ -37,18 +37,43 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
   @override
   bool get wantKeepAlive => true;
 
+  bool validatePage() {
+    bool allFieldsValid = _formKey.currentState?.validate() ?? false;
+    return allFieldsValid;
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return BlocListener<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
-        // NOTE: No need for validation here
-        context.read<SubletFormCubit>().showPageValid(2);
-        widget.controller?.animateTo(2);
+        if (state.isValidating) {
+          if (validatePage()) {
+            context.read<SubletFormCubit>().showPageValid(2);
+            context.read<SubletFormCubit>().addSecondPageData(
+                  roomDescription: _roomDescriptionController.text.trim(),
+                  roommateDescription:
+                      _roommateDescriptionController.text.trim(),
+                  hasAC: hasAC,
+                  hasBalcony: hasBalcony,
+                  hasDishwasher: hasDishwasher,
+                  hasDryer: hasDryer,
+                  hasFurnished: hasFurnished,
+                  hasGym: hasGym,
+                  hasHeater: hasHeater,
+                  hasParking: hasParking,
+                  hasPatio: hasPatio,
+                  hasPool: hasPool,
+                  hasWashingMachine: hasWashingMachine,
+                );
+            widget.controller?.animateTo(2);
+          }
+        }
       },
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
+          key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -88,9 +113,16 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
     return CustomTextField(
       controller: _roomDescriptionController,
       labelText: 'Room Description',
-      hintText: 'Describe the room',
+      hintText:
+          'Ex. This spacious room is bright and cheerful with natural light 🌞 streaming through a large window 🪟. It features a luxurious king-size bed 🛏️, stylish furniture 🪑 with ample storage, cozy reading corner 🌿, and modern decor accented with tasteful artwork 🖼️.',
       alignLabelWithHint: true,
-      maxLines: 4,
+      maxLines: 5,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Please enter a room description';
+        }
+        return null;
+      },
     );
   }
 
@@ -129,9 +161,16 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
     return CustomTextField(
       controller: _roommateDescriptionController,
       labelText: 'Roommate Description',
-      hintText: 'Eg: We are a group of 3 students looking for a 4th roommate.',
+      hintText:
+          'Eg: We are currently three male Master\'s students at NYU, all studying Computer Science. Friendly and focused, we maintain a balanced study and social environment.',
       alignLabelWithHint: true,
-      maxLines: 2,
+      maxLines: 3,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Please enter a roommate description';
+        }
+        return null;
+      },
     );
   }
 

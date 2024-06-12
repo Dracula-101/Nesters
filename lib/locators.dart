@@ -1,5 +1,7 @@
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/database/remote/supadatabase_repository.dart';
+import 'package:nesters/data/repository/sublet/sublet_repository.dart';
+import 'package:nesters/data/repository/sublet/sublet_repository_impl.dart';
 import 'package:nesters/data/repository/user/firebase_user_repository.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:get_it/get_it.dart';
@@ -60,6 +62,8 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
     appRouterService: appRouterService,
   )..listenToNotification();
   ObxStorageRepository objectbox = ObjectBoxStorageRepository();
+  SubletRepository subletRepository = SubletRepositoryImpl();
+
   // Register all repositories
   locator.registerSingleton(appSecretsRepository);
   locator.registerSingleton(localStorageRepository);
@@ -78,4 +82,5 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   locator.registerSingleton(notificationRepository);
   locator.registerSingleton(remoteNotificationRepository);
   locator.registerSingleton(objectbox);
+  locator.registerSingleton(subletRepository);
 }

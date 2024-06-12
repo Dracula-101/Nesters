@@ -2,7 +2,7 @@ class LeasePeriod {
   DateTime? startDate;
   DateTime? endDate;
 
-  LeasePeriod({required this.startDate, required this.endDate});
+  LeasePeriod({this.startDate, this.endDate});
 
   bool isLeaseActive() {
     final now = DateTime.now();
@@ -14,15 +14,15 @@ class LeasePeriod {
 
   Map<String, dynamic> toMap() {
     return {
-      'startDate': startDate?.millisecondsSinceEpoch,
-      'endDate': endDate?.millisecondsSinceEpoch,
+      'start_date': startDate?.millisecondsSinceEpoch,
+      'end_date': endDate?.millisecondsSinceEpoch,
     };
   }
 
   factory LeasePeriod.fromMap(Map<String, dynamic> map) {
     return LeasePeriod(
-      startDate: DateTime.fromMillisecondsSinceEpoch(map['startDate'] ?? 0),
-      endDate: DateTime.fromMillisecondsSinceEpoch(map['endDate'] ?? 0),
+      startDate: DateTime.fromMillisecondsSinceEpoch(map['start_date'] ?? 0),
+      endDate: DateTime.fromMillisecondsSinceEpoch(map['end_date'] ?? 0),
     );
   }
 

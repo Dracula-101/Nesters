@@ -9,12 +9,16 @@ enum UserRoomType {
   static UserRoomType fromString(String value) {
     switch (value) {
       case 'Private':
+      case 'PRIVATE':
         return UserRoomType.PRIVATE;
       case 'Shared':
+      case 'SHARED':
         return UserRoomType.SHARED;
       case 'Anything':
+      case 'ANYTHING':
         return UserRoomType.ANYTHING;
       case 'Flex':
+      case 'FLEX':
         return UserRoomType.FLEX;
       default:
         return UserRoomType.UNKNOWN;

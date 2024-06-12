@@ -2,7 +2,7 @@ class ApartmentSize {
   int? beds;
   int? baths;
 
-  ApartmentSize({required this.beds, required this.baths});
+  ApartmentSize({this.beds, this.baths});
 
   Map<String, dynamic> toMap() {
     return {

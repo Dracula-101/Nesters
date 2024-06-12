@@ -5,6 +5,8 @@ import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/pages/user_list_view_page.dart';
+import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
+import 'package:nesters/features/sublet/list/view/sublet_list_page.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
@@ -47,6 +49,12 @@ class _HomeScaffoldState extends State<HomeScaffold> {
                 ),
           ),
         ),
+        BlocProvider(
+          create: (context) => SubletBloc(),
+        ),
+        BlocProvider(
+          create: (context) => RequestBloc(),
+        ),
       ],
       child: HomeView(initialIndex: widget.initialIndex),
     );
@@ -78,6 +86,16 @@ class _HomeViewState extends State<HomeView> {
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Icon(
                     FontAwesomeIcons.house,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ),
+              NavigationDestination(
+                label: 'Sublet',
+                icon: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Icon(
+                    FontAwesomeIcons.bed,
                     color: AppTheme.primary,
                   ),
                 ),
@@ -134,6 +152,7 @@ class _HomeViewState extends State<HomeView> {
                       index: value,
                       children: const [
                         UserListPage(),
+                        SubletListPage(),
                         ChatHomePage(),
                       ],
                     );

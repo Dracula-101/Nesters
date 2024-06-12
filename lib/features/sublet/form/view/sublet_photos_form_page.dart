@@ -2,7 +2,9 @@ import 'dart:io';
 
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 
@@ -14,21 +16,44 @@ class SubletPhotoForm extends StatefulWidget {
   State<SubletPhotoForm> createState() => _SubletPhotoFormState();
 }
 
-class _SubletPhotoFormState extends State<SubletPhotoForm> {
+class _SubletPhotoFormState extends State<SubletPhotoForm>
+    with AutomaticKeepAliveClientMixin {
   final List<XFile> _imageList = [];
   final ImagePicker _picker = ImagePicker();
   final ValueNotifier<int> _index = ValueNotifier<int>(0);
+
+  @override
+  bool get wantKeepAlive => true;
+
+  void showImageErrorSnackbar() {
+    context.showErrorSnackBar('Atleast one image is required to proceed');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildImages(),
-          _buildSpacing(),
-          _buildSelectedImages(),
-        ],
+    super.build(context);
+    return BlocListener<SubletFormCubit, SubletFormState>(
+      listener: (context, state) {
+        if (state.isValidating) {
+          if (_imageList.isEmpty) {
+            showImageErrorSnackbar();
+          } else {
+            context
+                .read<SubletFormCubit>()
+                .createSublet(_imageList.map((e) => e.path).toList());
+          }
+        }
+      },
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildImages(),
+            _buildSpacing(),
+            _buildSelectedImages(),
+          ],
+        ),
       ),
     );
   }

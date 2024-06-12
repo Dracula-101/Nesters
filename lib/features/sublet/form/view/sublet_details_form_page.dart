@@ -83,10 +83,21 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
     super.build(context);
     return BlocListener<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
-        bool validatePage = state.validatingPage == 0;
-        if (validatePage) {
+        if (state.isValidating) {
           if (validateAllFields()) {
+            context.read<SubletFormCubit>().onPageChange(1);
             context.read<SubletFormCubit>().showPageValid(1);
+            context.read<SubletFormCubit>().addFirstPageData(
+                  address: _addressController.text.trim(),
+                  startDate: startDate!,
+                  endDate: endDate!,
+                  rentPrice: double.parse(_rentPriceController.text.trim()),
+                  roomType: UserRoomType.fromString(
+                      _roomTypeContoller.text.capitalize),
+                  roomateGender: _roomateGenderController.text.trim(),
+                  beds: beds,
+                  baths: baths,
+                );
             widget.controller!.animateTo(1);
           }
         }

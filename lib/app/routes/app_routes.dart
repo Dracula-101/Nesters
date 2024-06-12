@@ -24,6 +24,7 @@ class AppRouterService {
   static const String onboardingScreen = '/onboarding';
   static const String splashScreen = '/';
   static const String userChatHome = 'chat';
+  static const String sublet = 'sublet';
   static const String userProfile = 'user_profile';
   static const String userProfileAdvanceFormScreen = '/advance_form';
   static const String userProfileBasicFormScreen = '/basic_form';

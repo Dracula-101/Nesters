@@ -31,7 +31,7 @@ extension CustomSnackBar on BuildContext {
     showSnackBar(message,
         icon: Icon(
           FontAwesomeIcons.circleCheck,
-          color: AppTheme.successColor,
+          color: AppTheme.success,
         ));
   }
 }
