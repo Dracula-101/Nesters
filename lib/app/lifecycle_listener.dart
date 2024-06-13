@@ -12,7 +12,7 @@ class LifecycleListener extends StatefulWidget {
 
 class _LifecycleListenerState extends State<LifecycleListener>
     with WidgetsBindingObserver {
-  final AppLoggerService _appLoggerService = GetIt.I<AppLoggerService>();
+  final AppLogger _appLoggerService = GetIt.I<AppLogger>();
 
   @override
   void initState() {

@@ -27,6 +27,22 @@ class Amenities {
     this.extraAmenities,
   });
 
+  // nullsafe method
+  bool hasAmenities() {
+    return (hasDryer ?? false) ||
+        (hasWashingMachine ?? false) ||
+        (hasDishwasher ?? false) ||
+        (hasParking ?? false) ||
+        (hasGym ?? false) ||
+        (hasPool ?? false) ||
+        (hasBalcony ?? false) ||
+        (hasPatio ?? false) ||
+        (hasAC ?? false) ||
+        (hasHeater ?? false) ||
+        (hasFurnished ?? false) ||
+        (extraAmenities?.isNotEmpty ?? false);
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'has_dryer': hasDryer ?? false,

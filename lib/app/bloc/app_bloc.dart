@@ -40,8 +40,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     add(const AppEvent.load());
   }
 
-  final AppLoggerService _loggerService =
-      GetIt.instance.get<AppLoggerService>();
+  final AppLogger _loggerService = GetIt.instance.get<AppLogger>();
   final AuthRepository _authRepository = GetIt.instance.get<AuthRepository>();
   final UserStatusRepository _userStatusRepository =
       GetIt.instance.get<UserStatusRepository>();

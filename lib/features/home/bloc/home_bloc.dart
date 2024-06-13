@@ -21,7 +21,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final UserRepository _userRepository = GetIt.I<UserRepository>();
   final NetworkCheckerRepository _networkCheckerRepository =
       GetIt.I<NetworkCheckerRepository>();
-  final AppLoggerService _logger = GetIt.I<AppLoggerService>();
+  final AppLogger _logger = GetIt.I<AppLogger>();
 
   void _onEvent(HomeEvent event, Emitter<HomeState> emit) {
     event.when(

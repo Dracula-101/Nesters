@@ -16,7 +16,7 @@ class MediaCompressor {
     );
     File compressedFile = File(file.path);
     await compressedFile.writeAsBytes(result);
-    GetIt.I<AppLoggerService>().debug(
+    GetIt.I<AppLogger>().debug(
         'Actual Size: $fileSize, Compressed file size: ${compressedFile.lengthSync()}');
     return compressedFile;
   }

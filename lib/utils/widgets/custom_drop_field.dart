@@ -391,7 +391,7 @@ class _CustomBottomSheetDropdownFieldState<T>
             _selectedItem = value;
           });
           if (widget.onEditingComplete != null && _selectedItem == null) {
-            GetIt.I<AppLoggerService>().debug('Editing complete called');
+            GetIt.I<AppLogger>().debug('Editing complete called');
             widget.onEditingComplete!();
           }
         },
@@ -626,7 +626,7 @@ class _CustomDynamicSearchableDropDropFieldState
                           },
                           onSubmitted: (value) {
                             setState(() {
-                              GetIt.I<AppLoggerService>()
+                              GetIt.I<AppLogger>()
                                   .debug('Search value: $value');
                               _items = widget.asyncSearchItems(value);
                             });

@@ -34,7 +34,7 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   GetIt locator = GetIt.instance;
   // Initalize All repositories
   LocalStorageRepository localStorageRepository = GetStorageRepository();
-  AppLoggerService appLoggerService = AppLoggerService();
+  AppLogger appLoggerService = AppLogger();
   MediaRepository mediaRepository = MediaRepository();
   NetworkCheckerRepository networkCheckerRepository =
       NetworkCheckerRepositoryImpl()..init();

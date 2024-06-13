@@ -21,7 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
-  final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
+  final AppLogger _loggerService = GetIt.I<AppLogger>();
 
   Future<void> _onGoogleSignIn(
     AuthGoogleSiginInEvent event,

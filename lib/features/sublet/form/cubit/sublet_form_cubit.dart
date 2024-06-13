@@ -18,7 +18,7 @@ class SubletFormCubit extends Cubit<SubletFormState> {
 
   final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
-  final AppLoggerService _logger = GetIt.I<AppLoggerService>();
+  final AppLogger _logger = GetIt.I<AppLogger>();
   int subletId = DateTime.now().millisecondsSinceEpoch;
 
   void validatePage() {

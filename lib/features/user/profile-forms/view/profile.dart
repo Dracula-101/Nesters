@@ -54,7 +54,7 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   final UserRepository userRepository = GetIt.I<UserRepository>();
-  final AppLoggerService _loggerService = GetIt.I<AppLoggerService>();
+  final AppLogger _loggerService = GetIt.I<AppLogger>();
   late UserProfile userProfile;
   bool _loading = true;
 

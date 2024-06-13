@@ -31,7 +31,7 @@ class FormCubit extends Cubit<CurrentFormState> {
       bio
     ];
     int inCompleteQuestions = checkVariables(questions);
-    GetIt.I<AppLoggerService>().info(
+    GetIt.I<AppLogger>().info(
         'personType: $personType, primaryLang: $primaryLang, secondaryLang: $secondaryLang, city: $city, indianState: $indianState, bio: $bio');
     emit(state.copyWith(
       questionsComplete: questions.length - inCompleteQuestions,

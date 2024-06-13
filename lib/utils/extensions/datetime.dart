@@ -32,11 +32,38 @@ extension DateTimeExtension on DateTime {
     }
   }
 
-  String toShortUIDate() {
+  String toUIDate() {
     String day = this.day.toString();
     String month = _toMonth(this.month);
     String year = this.year.toString();
-    return '$day ${month.substring(0, 3)} $year';
+    bool isToday = DateTime.now().day == this.day;
+    bool isYesterday = DateTime.now().day - this.day == 1;
+    int dayDiff = DateTime.now().difference(this).inDays.abs();
+    int weekDiff = DateTime.now().difference(this).inDays.abs() ~/ 7;
+    int monthDiff = DateTime.now().difference(this).inDays.abs() ~/ 30;
+    int yearDiff = DateTime.now().difference(this).inDays.abs() ~/ 365;
+    if (isToday) {
+      return 'Today';
+    } else if (isYesterday) {
+      return 'Yesterday';
+    } else if (dayDiff >= 2 && dayDiff <= 7) {
+      return '$dayDiff days ago';
+    } else if (weekDiff >= 1 && weekDiff <= 4) {
+      return '$weekDiff week${weekDiff > 1 ? 's' : ''} ago';
+    } else if (monthDiff >= 1 && monthDiff <= 12) {
+      return '$monthDiff month${monthDiff > 1 ? 's' : ''} ago';
+    } else if (yearDiff >= 1) {
+      return '$yearDiff year${yearDiff > 1 ? 's' : ''} ago';
+    } else {
+      return '$day ${month.substring(0, 3)} $year';
+    }
+  }
+
+  String toShortUIDate({bool shortenYear = false}) {
+    String day = this.day.toString();
+    String month = _toMonth(this.month);
+    String year = this.year.toString();
+    return '$day ${month.substring(0, 3)} ${shortenYear ? '\'${year.substring(2)}' : year}';
   }
 
   String _toDay(int weekday) {

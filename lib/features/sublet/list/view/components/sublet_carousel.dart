@@ -13,7 +13,21 @@ class SubletPhotoCarousel extends StatefulWidget {
 class _SubletPhotoCarouselState extends State<SubletPhotoCarousel> {
   final PageController _pageController = PageController();
   double coverHeight = 40;
-  ValueNotifier<int> _currentPage = ValueNotifier<int>(0);
+  final ValueNotifier<int> _currentPage = ValueNotifier<int>(0);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      preloadImages();
+    });
+  }
+
+  Future<void> preloadImages() async {
+    await Future.wait(
+      widget.photos.map((photo) => precacheImage(NetworkImage(photo), context)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

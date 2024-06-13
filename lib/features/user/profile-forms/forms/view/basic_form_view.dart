@@ -131,11 +131,11 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
           .then(
         (url) {
           photoUrl = url;
-          GetIt.I<AppLoggerService>().info('Image uploaded: $url');
+          GetIt.I<AppLogger>().info('Image uploaded: $url');
         },
       ).catchError(
         (error) {
-          GetIt.I<AppLoggerService>().error('Error uploading image: $error');
+          GetIt.I<AppLogger>().error('Error uploading image: $error');
         },
       );
       final imageUrl = supabase_flutter.Supabase.instance.client.storage

@@ -5,7 +5,7 @@ import 'package:nesters/utils/logger/logger.dart';
 class AppBlocObserver extends BlocObserver {
   AppBlocObserver();
 
-  final AppLoggerService _appLogger = GetIt.I<AppLoggerService>();
+  final AppLogger _appLogger = GetIt.I<AppLogger>();
 
   @override
   void onEvent(Bloc<dynamic, dynamic> bloc, Object? event) {

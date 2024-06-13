@@ -1,7 +1,7 @@
 import 'package:logger/logger.dart';
 import 'dart:developer' as dev;
 
-class AppLoggerService {
+class AppLogger {
   final Logger _logger = Logger(
     printer: PrettyPrinter(
         methodCount: 2, // number of method calls to be displayed

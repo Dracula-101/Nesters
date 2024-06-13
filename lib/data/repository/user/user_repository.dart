@@ -14,7 +14,7 @@ class UserRepository {
   UserRepository({
     required DatabaseRepository databaseRepository,
     required LocalStorageRepository storageRepository,
-    required AppLoggerService logger,
+    required AppLogger logger,
     // required FirestoreRepository firestoreRepository,
   })  : _databaseRepository = databaseRepository,
         _storageRepository = storageRepository,
@@ -22,7 +22,7 @@ class UserRepository {
 
   final DatabaseRepository _databaseRepository;
   final LocalStorageRepository _storageRepository;
-  final AppLoggerService _logger;
+  final AppLogger _logger;
 
   String universityCollection = "universities";
   String masterDegreeCollection = "masters";

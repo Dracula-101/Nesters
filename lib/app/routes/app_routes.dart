@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/view/app_scaffold.dart';
+import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/view/auth_view.dart';
 import 'package:nesters/features/home/view/home_view.dart';
 import 'package:nesters/features/onboarding/view/onboarding_view.dart';
 import 'package:nesters/features/splash/view/splash_view.dart';
+import 'package:nesters/features/sublet/detail/view/sublet_detail_page.dart';
 import 'package:nesters/features/sublet/form/view/sublet_form_page.dart';
 import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/features/user/chat/view/user_chat_view.dart';
@@ -30,6 +32,7 @@ class AppRouterService {
   static const String userProfileBasicFormScreen = '/basic_form';
   static const String userRequest = 'request';
   static const String sublettingForm = 'subletting_form';
+  static const String subletDetail = 'sublet_detail';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -88,6 +91,12 @@ class AppRouterService {
                     showRequestDialog: showDialog,
                   );
                 },
+              ),
+              AppRoute(
+                subletDetail,
+                (params) => SubletDetailPage(
+                  sublet: params.extra as SubletModel,
+                ),
               ),
               AppRoute(
                 userRequest,

@@ -12,7 +12,7 @@ abstract class SubletRepository {
     required String subletId,
   });
 
-  Future<List<SubletModel>> getSublets({int maxResults = 10});
+  Future<List<SubletModel>> getSublets({int range = 10, int paginationKey = 0});
 }
 
 class SubletImageUploadTask {

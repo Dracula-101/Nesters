@@ -64,10 +64,13 @@ class SubletRepositoryImpl implements SubletRepository {
   }
 
   @override
-  Future<List<SubletModel>> getSublets({int maxResults = 10}) async {
+  Future<List<SubletModel>> getSublets(
+      {int range = 10, int paginationKey = 0}) async {
     try {
-      final response =
-          await _supabaseClient.from('sublets').select().limit(maxResults);
+      final response = await _supabaseClient
+          .from('sublets')
+          .select()
+          .range(paginationKey, paginationKey + range);
       return response.map((e) => SubletModel.fromMap(e)).toList();
     } catch (e) {
       throw Exception('Failed to get sublets: $e');

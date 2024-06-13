@@ -31,7 +31,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   StreamSubscription<List<QuickChatUser>>? _recipientUserStreamSubscription;
   late String userId;
 
-  final _logger = GetIt.I<AppLoggerService>();
+  final _logger = GetIt.I<AppLogger>();
   final _localStorage = GetIt.I<LocalStorageRepository>();
   final _obxStorageRepository = GetIt.I<ObxStorageRepository>();
   final _recipientUserRepository = GetIt.I<RecipientUserRepository>();

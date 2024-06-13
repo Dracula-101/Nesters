@@ -37,7 +37,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   }
 
   // Repositories
-  final _loggerService = GetIt.I<AppLoggerService>();
+  final _loggerService = GetIt.I<AppLogger>();
   final _mediaRepository = GetIt.I<MediaRepository>();
   final _localStorageRepository = GetIt.I<LocalStorageRepository>();
   final _obxStorageRepository = GetIt.I<ObxStorageRepository>();
