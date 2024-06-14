@@ -32,7 +32,7 @@ class CustomCard extends StatelessWidget {
         borderRadius: borderRadius ?? BorderRadius.circular(8),
         border: Border.all(
           color: AppTheme.greyShades.shade400,
-          width: 0.5,
+          width: 0.35,
         ),
         boxShadow: [
           BoxShadow(

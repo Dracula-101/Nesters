@@ -77,7 +77,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
 
   @override
   void dispose() {
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark);
     _scrollController.dispose();
     _hasScrolled.dispose();
     super.dispose();
@@ -91,7 +91,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
           return AnnotatedRegion<SystemUiOverlayStyle>(
             value: SystemUiOverlayStyle(
               statusBarColor: value ? AppTheme.surface : Colors.transparent,
-              statusBarBrightness: Brightness.light,
+              statusBarBrightness: Brightness.dark,
             ),
             child: child!,
           );
@@ -449,12 +449,25 @@ class _HeroCarouselState extends State<HeroCarousel> {
               _currentPage.value = index;
             },
             itemBuilder: (context, index) {
-              return CachedNetworkImage(
-                fadeInDuration: 0.sec,
-                imageUrl: widget.images[index],
-                fit: BoxFit.cover,
-                placeholder: (context, url) => const Center(
-                  child: CircularProgressIndicator(),
+              return GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => FullScreenImage(
+                          images: widget.images, initialIndex: index),
+                    ),
+                  );
+                },
+                child: Hero(
+                  tag: 'hero_image_${widget.images[index]}',
+                  child: CachedNetworkImage(
+                    fadeInDuration: 0.sec,
+                    imageUrl: widget.images[index],
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
                 ),
               );
             },
@@ -612,6 +625,105 @@ class AmenitiesWidget extends StatelessWidget {
           ),
           const SizedBox(width: 4),
         ],
+      ),
+    );
+  }
+}
+
+class FullScreenImage extends StatefulWidget {
+  final List<String> images;
+  final int initialIndex;
+  const FullScreenImage(
+      {super.key, required this.images, required this.initialIndex});
+
+  @override
+  State<FullScreenImage> createState() => _FullScreenImageState();
+}
+
+class _FullScreenImageState extends State<FullScreenImage> {
+  late final PageController _pageController;
+  final ValueNotifier<int> _currentPage = ValueNotifier(0);
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(
+      initialPage: widget.initialIndex,
+    );
+    _currentPage.value = widget.initialIndex;
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _currentPage.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppTheme.onSurface,
+      appBar: AppBar(
+        backgroundColor: AppTheme.onSurface,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_outlined,
+            color: AppTheme.surface,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+      ),
+      bottomNavigationBar: SizedBox(
+        width: double.infinity,
+        height: 60,
+        child: Center(
+          child: ValueListenableBuilder(
+            valueListenable: _currentPage,
+            builder: (context, value, child) {
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.surface.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${value + 1} / ${widget.images.length}',
+                  style: AppTheme.bodySmall,
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+      body: PageView.builder(
+        controller: _pageController,
+        allowImplicitScrolling: true,
+        itemCount: widget.images.length,
+        onPageChanged: (index) {
+          _currentPage.value = index;
+        },
+        itemBuilder: (context, index) {
+          // zoomable image
+          return InteractiveViewer(
+            maxScale: 5,
+            child: Hero(
+              tag: 'hero_image_${widget.images[index]}',
+              child: CachedNetworkImage(
+                fadeInDuration: 0.sec,
+                imageUrl: widget.images[index],
+                fit: BoxFit.contain,
+                placeholder: (context, url) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

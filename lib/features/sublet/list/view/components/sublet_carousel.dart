@@ -43,12 +43,10 @@ class _SubletPhotoCarouselState extends State<SubletPhotoCarousel> {
             return CachedNetworkImage(
               imageUrl: widget.photos[index],
               fit: BoxFit.cover,
-              placeholder: (context, url) => const Center(
-                child: CircularProgressIndicator(),
-              ),
               errorWidget: (context, url, error) => const Center(
                 child: Icon(Icons.error),
               ),
+              fadeInDuration: Duration.zero,
             );
           },
         ),
