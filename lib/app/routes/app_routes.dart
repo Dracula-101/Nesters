@@ -3,11 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/view/app_scaffold.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/view/auth_view.dart';
 import 'package:nesters/features/home/view/home_view.dart';
+import 'package:nesters/features/marketplace/detail/view/marketplace_detail_page.dart';
+import 'package:nesters/features/marketplace/form/view/marketplace_form_page.dart';
 import 'package:nesters/features/onboarding/view/onboarding_view.dart';
 import 'package:nesters/features/splash/view/splash_view.dart';
 import 'package:nesters/features/sublet/detail/view/sublet_detail_page.dart';
@@ -22,17 +25,19 @@ import 'package:nesters/features/user/request/request.dart';
 class AppRouterService {
   static const String homeScreen = '/home';
   static const String loginScreen = '/login';
+  static const String marketplaceDetail = 'marketplace_detail';
+  static const String marketplaceForm = 'marketplace_form';
   static const String notificationScreen = '/notification';
   static const String onboardingScreen = '/onboarding';
   static const String splashScreen = '/';
-  static const String userChatHome = 'chat';
   static const String sublet = 'sublet';
+  static const String subletDetail = 'sublet_detail';
+  static const String sublettingForm = 'subletting_form';
+  static const String userChatHome = 'chat';
   static const String userProfile = 'user_profile';
   static const String userProfileAdvanceFormScreen = '/advance_form';
   static const String userProfileBasicFormScreen = '/basic_form';
   static const String userRequest = 'request';
-  static const String sublettingForm = 'subletting_form';
-  static const String subletDetail = 'sublet_detail';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -105,7 +110,17 @@ class AppRouterService {
               AppRoute(
                 sublettingForm,
                 (_) => const SubletFormPage(),
-              )
+              ),
+              AppRoute(
+                marketplaceForm,
+                (_) => const MarketplaceFormPage(),
+              ),
+              AppRoute(
+                marketplaceDetail,
+                (params) => MarketplaceDetailPage(
+                  marketplace: params.extra as MarketplaceModel,
+                ),
+              ),
             ],
           ),
           AppRoute(

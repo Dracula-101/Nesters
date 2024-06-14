@@ -45,12 +45,12 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocListener<SubletFormCubit, SubletFormState>(
+    return BlocListener<MarketplaceFormCubit, MarketplaceFormState>(
       listener: (context, state) {
         if (state.isValidating) {
           if (validatePage()) {
-            context.read<SubletFormCubit>().showPageValid(2);
-            context.read<SubletFormCubit>().addSecondPageData(
+            context.read<MarketplaceFormCubit>().showPageValid(2);
+            context.read<MarketplaceFormCubit>().addSecondPageData(
                   roomDescription: _roomDescriptionController.text.trim(),
                   roommateDescription:
                       _roommateDescriptionController.text.trim(),

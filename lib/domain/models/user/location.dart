@@ -5,7 +5,7 @@ class Location {
 
   Location({this.address, this.latitude, this.longitude});
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'address': address ?? '',
       'latitude': latitude ?? 0.0,
@@ -13,7 +13,7 @@ class Location {
     };
   }
 
-  factory Location.fromMap(Map<String, dynamic> map) {
+  factory Location.fromJson(Map<String, dynamic> map) {
     return Location(
       address: map['address'] ?? '',
       latitude: map['latitude'] ?? 0.0,

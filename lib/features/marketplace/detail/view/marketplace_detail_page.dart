@@ -2,26 +2,25 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nesters/domain/models/sublet/amenities.dart';
-import 'package:nesters/domain/models/sublet/sublet_model.dart';
-import 'package:nesters/features/sublet/detail/cubit/sublet_detail_cubit.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/features/marketplace/detail/cubit/marketplace_detail_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
-class SubletDetailPage extends StatelessWidget {
-  final SubletModel sublet;
-  const SubletDetailPage({super.key, required this.sublet});
+class MarketplaceDetailPage extends StatelessWidget {
+  final MarketplaceModel marketplace;
+  const MarketplaceDetailPage({super.key, required this.marketplace});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SubletDetailCubit(),
+      create: (context) => MarketplaceDetailCubit(),
       child: Scaffold(
-        bottomNavigationBar: SubletContactButton(),
+        bottomNavigationBar: const MarketplaceContactButton(),
         body: Stack(
           children: [
-            SubletDetailView(sublet: sublet),
+            MarketplaceDetailView(marketplace: marketplace),
             Positioned(
               top: 48,
               left: 16,
@@ -55,8 +54,8 @@ class SubletDetailPage extends StatelessWidget {
   }
 }
 
-class SubletContactButton extends StatelessWidget {
-  const SubletContactButton({super.key});
+class MarketplaceContactButton extends StatelessWidget {
+  const MarketplaceContactButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -77,15 +76,15 @@ class SubletContactButton extends StatelessWidget {
   }
 }
 
-class SubletDetailView extends StatefulWidget {
-  final SubletModel sublet;
-  const SubletDetailView({super.key, required this.sublet});
+class MarketplaceDetailView extends StatefulWidget {
+  final MarketplaceModel marketplace;
+  const MarketplaceDetailView({super.key, required this.marketplace});
 
   @override
-  State<SubletDetailView> createState() => _SubletDetailViewState();
+  State<MarketplaceDetailView> createState() => _MarketplaceDetailViewState();
 }
 
-class _SubletDetailViewState extends State<SubletDetailView> {
+class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
   final ScrollController _scrollController = ScrollController();
   final ValueNotifier<bool> _hasScrolled = ValueNotifier(false);
   final double scrollMaxExtent = 200;
@@ -123,31 +122,27 @@ class _SubletDetailViewState extends State<SubletDetailView> {
           controller: _scrollController,
           slivers: [
             SliverToBoxAdapter(
-              child: HeroCarousel(images: widget.sublet.photos ?? []),
+              child: HeroCarousel(images: widget.marketplace.photos ?? []),
             ),
-            _buildSubletDetails(),
+            _buildMarketplaceDetails(),
           ],
         ));
   }
 
-  Widget _buildSubletDetails() {
+  Widget _buildMarketplaceDetails() {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       sliver: SliverList.list(
         children: [
-          _buildRentTitle(),
+          _buildPriceTitle(),
           _buildSpacing(height: 4),
-          _buildApartmentInfo(),
+          _buildName(),
           _buildSpacing(height: 12),
           _buildAddress(),
           _buildSpacing(height: 12),
           _buildLeasePeriod(),
           _buildSpacing(height: 12),
-          _buildAmeneties(),
-          _buildSpacing(height: 12),
-          _buildRoomDescription(),
-          _buildSpacing(height: 12),
-          _buildRoomateDescription(),
+          _buildMarketplaceDescription(),
           _buildSpacing(height: 120),
         ],
       ),
@@ -158,7 +153,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
     return SizedBox(height: height);
   }
 
-  Widget _buildRentTitle() {
+  Widget _buildPriceTitle() {
     return RichText(
       text: TextSpan(
         children: [
@@ -167,81 +162,9 @@ class _SubletDetailViewState extends State<SubletDetailView> {
             style: AppTheme.headlineSmall,
           ),
           TextSpan(
-            text: '${widget.sublet.rent}',
+            text: '${widget.marketplace.price}',
             style: AppTheme.headlineLarge.copyWith(
               fontWeight: FontWeight.w600,
-            ),
-          ),
-          TextSpan(
-            text: ' / month',
-            style: AppTheme.titleLarge,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildApartmentInfo() {
-    return CustomCard(
-      child: Row(
-        children: [
-          Expanded(
-            flex: 2,
-            child: Column(
-              children: [
-                Icon(
-                  Icons.king_bed_rounded,
-                  color: AppTheme.primary,
-                  size: 28,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${widget.sublet.apartmentSize?.beds} Bed${widget.sublet.apartmentSize?.beds == 1 ? '' : 's'}',
-                  style: AppTheme.bodyMediumLightVariant,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(
-            height: 48,
-            child: VerticalDivider(),
-          ),
-          Expanded(
-            flex: 2,
-            child: Column(
-              children: [
-                Icon(
-                  Icons.bathtub_rounded,
-                  color: AppTheme.primary,
-                  size: 28,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${widget.sublet.apartmentSize?.baths} Bath${widget.sublet.apartmentSize?.baths == 1 ? '' : 's'}',
-                  style: AppTheme.bodyMediumLightVariant,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(
-            height: 48,
-            child: VerticalDivider(),
-          ),
-          Expanded(
-            flex: 3,
-            child: Column(
-              children: [
-                Icon(
-                  Icons.house_rounded,
-                  color: AppTheme.primary,
-                  size: 28,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${widget.sublet.roomType!.toUI()} Room',
-                  style: AppTheme.bodyMediumLightVariant,
-                ),
-              ],
             ),
           ),
         ],
@@ -255,7 +178,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Lease Period',
+            'Available Period',
             style: AppTheme.bodyLarge.copyWith(
               color: AppTheme.primary,
             ),
@@ -270,7 +193,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
               ),
               const SizedBox(width: 4),
               Text(
-                widget.sublet.leasePeriod?.startDate
+                widget.marketplace.period?.periodFrom
                         ?.toShortUIDate(shortenYear: true) ??
                     '',
                 style: AppTheme.bodyMediumLightVariant,
@@ -288,7 +211,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
               ),
               const SizedBox(width: 4),
               Text(
-                widget.sublet.leasePeriod?.endDate
+                widget.marketplace.period?.periodTill
                         ?.toShortUIDate(shortenYear: true) ??
                     '',
                 style: AppTheme.bodyMediumLightVariant,
@@ -323,7 +246,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.sublet.location?.address ?? '',
+              widget.marketplace.location?.address ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],
@@ -333,50 +256,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
     ));
   }
 
-  Widget _buildAmeneties() {
-    return CustomCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Amenities',
-            style: AppTheme.bodyLarge.copyWith(
-              color: AppTheme.primary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          AmenitiesWidget(
-            amenities: widget.sublet.amenitiesAvailable ?? Amenities(),
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRoomDescription() {
-    return CustomCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Room Description',
-            style: AppTheme.bodyLarge.copyWith(
-              color: AppTheme.primary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.sublet.roomDescription ?? '',
-            style: AppTheme.bodyMediumLightVariant,
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRoomateDescription() {
+  Widget _buildName() {
     return CustomCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -387,14 +267,14 @@ class _SubletDetailViewState extends State<SubletDetailView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Roommate Description',
+                  widget.marketplace.category?.name ?? '',
                   style: AppTheme.bodyLarge.copyWith(
                     color: AppTheme.primary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  widget.sublet.roommateDescription ?? '',
+                  widget.marketplace.name ?? '',
                   style: AppTheme.bodyMediumLightVariant,
                 ),
                 const SizedBox(height: 8),
@@ -418,7 +298,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Roommate Preference : ${widget.sublet.roommateGenderPref ?? ''}',
+                  'View On Amazon',
                   style: AppTheme.bodyMediumLightVariant.copyWith(
                     color: AppTheme.primary,
                   ),
@@ -426,6 +306,28 @@ class _SubletDetailViewState extends State<SubletDetailView> {
               ],
             ),
           )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMarketplaceDescription() {
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Product Description',
+            style: AppTheme.bodyLarge.copyWith(
+              color: AppTheme.primary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            widget.marketplace.description ?? '',
+            style: AppTheme.bodyMediumLightVariant,
+          ),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -528,125 +430,6 @@ class _HeroCarouselState extends State<HeroCarousel> {
                 ),
               ),
             ),
-        ],
-      ),
-    );
-  }
-}
-
-class AmenitiesWidget extends StatelessWidget {
-  final Amenities amenities;
-  const AmenitiesWidget({super.key, required this.amenities});
-
-  bool get hasAmenities => amenities.hasAmenities();
-
-  @override
-  Widget build(BuildContext context) {
-    bool ac = amenities.hasAC ?? false;
-    bool dryer = amenities.hasDryer ?? false;
-    bool washingMachine = amenities.hasWashingMachine ?? false;
-    bool dishwasher = amenities.hasDishwasher ?? false;
-    bool parking = amenities.hasParking ?? false;
-    bool gym = amenities.hasGym ?? false;
-    bool pool = amenities.hasPool ?? false;
-    bool balcony = amenities.hasBalcony ?? false;
-    bool patio = amenities.hasPatio ?? false;
-    bool heater = amenities.hasHeater ?? false;
-    bool furnished = amenities.hasFurnished ?? false;
-
-    return hasAmenities
-        ? Wrap(
-            runAlignment: WrapAlignment.start,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              if (ac)
-                _buildAmenityTile(
-                  icon: Icons.ac_unit_rounded,
-                  title: 'AC',
-                ),
-              if (heater)
-                _buildAmenityTile(
-                  icon: Icons.fireplace_rounded,
-                  title: 'Heater',
-                ),
-              if (dryer)
-                _buildAmenityTile(
-                  icon: Icons.dry_rounded,
-                  title: 'Dryer',
-                ),
-              if (washingMachine)
-                _buildAmenityTile(
-                  icon: Icons.wash_rounded,
-                  title: 'Washing Machine',
-                ),
-              if (dishwasher)
-                _buildAmenityTile(
-                  icon: Icons.dinner_dining_rounded,
-                  title: 'Dishwasher',
-                ),
-              if (furnished)
-                _buildAmenityTile(
-                  icon: Icons.weekend_rounded,
-                  title: 'Furnished',
-                ),
-              if (parking)
-                _buildAmenityTile(
-                  icon: Icons.local_parking_rounded,
-                  title: 'Parking',
-                ),
-              if (gym)
-                _buildAmenityTile(
-                  icon: Icons.fitness_center_rounded,
-                  title: 'Gym',
-                ),
-              if (pool)
-                _buildAmenityTile(
-                  icon: Icons.pool_rounded,
-                  title: 'Pool',
-                ),
-              if (balcony)
-                _buildAmenityTile(
-                  icon: Icons.apartment_rounded,
-                  title: 'Balcony',
-                ),
-              if (patio)
-                _buildAmenityTile(
-                  icon: Icons.deck_rounded,
-                  title: 'Patio',
-                ),
-            ],
-          )
-        : Text(
-            'No Amenities Available',
-            style: AppTheme.bodyMediumLightVariant,
-          );
-  }
-
-  Widget _buildAmenityTile({required IconData icon, required String title}) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppTheme.primary.withOpacity(0.8),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: AppTheme.primary.withOpacity(0.8),
-            size: 16,
-          ),
-          const SizedBox(width: 6),
-          Text(
-            title,
-            style: AppTheme.labelMedium,
-          ),
-          const SizedBox(width: 4),
         ],
       ),
     );

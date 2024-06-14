@@ -401,7 +401,8 @@ class _CustomBottomSheetDropdownFieldState<T>
 }
 
 class CustomDynamicSearchableDropDropField extends StatefulWidget {
-  final Stream<List<dynamic>> Function(String) asyncSearchItems;
+  final Stream<List<dynamic>> Function(String)? asyncSearchItems;
+  final Future<List<dynamic>>? asyncStaticItems;
   final String Function(dynamic)? itemAsString;
   final TextEditingController controller;
   final String? hintText;
@@ -441,47 +442,49 @@ class CustomDynamicSearchableDropDropField extends StatefulWidget {
   final bool? alignLabelWithHint;
   final Widget Function(BuildContext)? emptyBuilder;
 
-  const CustomDynamicSearchableDropDropField(
-      {super.key,
-      required this.asyncSearchItems,
-      required this.controller,
-      this.itemAsString,
-      this.hintText,
-      this.labelText,
-      this.obscureText,
-      this.keyboardType,
-      this.textInputAction,
-      this.validator,
-      this.onFieldSubmitted,
-      this.onChanged,
-      this.autofillHints,
-      this.focusNode,
-      this.autofocus,
-      this.prefixIcon,
-      this.suffixIcon,
-      this.contentPadding,
-      this.margin,
-      this.fillColor,
-      this.borderColor,
-      this.focusBorder,
-      this.enabledBorder,
-      this.disabledBorder,
-      this.errorBorder,
-      this.cursorColor,
-      this.prefixIconColor,
-      this.suffixIconColor,
-      this.hintTextColor,
-      this.textColor,
-      this.backgroundColor,
-      this.errorText,
-      this.isDense,
-      this.autocorrect,
-      this.enableSuggestions,
-      this.maxLines,
-      this.alignLabelWithHint,
-      this.searchText,
-      this.emptyBuilder,
-      this.onEditingComplete});
+  const CustomDynamicSearchableDropDropField({
+    super.key,
+    this.asyncSearchItems,
+    this.asyncStaticItems,
+    required this.controller,
+    this.itemAsString,
+    this.hintText,
+    this.labelText,
+    this.obscureText,
+    this.keyboardType,
+    this.textInputAction,
+    this.validator,
+    this.onFieldSubmitted,
+    this.onChanged,
+    this.autofillHints,
+    this.focusNode,
+    this.autofocus,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.contentPadding,
+    this.margin,
+    this.fillColor,
+    this.borderColor,
+    this.focusBorder,
+    this.enabledBorder,
+    this.disabledBorder,
+    this.errorBorder,
+    this.cursorColor,
+    this.prefixIconColor,
+    this.suffixIconColor,
+    this.hintTextColor,
+    this.textColor,
+    this.backgroundColor,
+    this.errorText,
+    this.isDense,
+    this.autocorrect,
+    this.enableSuggestions,
+    this.maxLines,
+    this.alignLabelWithHint,
+    this.searchText,
+    this.emptyBuilder,
+    this.onEditingComplete,
+  });
   @override
   State<CustomDynamicSearchableDropDropField> createState() =>
       _CustomDynamicSearchableDropDropFieldState();
@@ -490,8 +493,11 @@ class CustomDynamicSearchableDropDropField extends StatefulWidget {
 class _CustomDynamicSearchableDropDropFieldState
     extends State<CustomDynamicSearchableDropDropField> {
   dynamic _selectedItem;
-  final Debouncer _debouncer = Debouncer(milliseconds: 500);
-  Stream<List<dynamic>>? _items;
+  final Debouncer _debouncer = Debouncer(milliseconds: 1000);
+  Stream<List<dynamic>>? _searchItems;
+  List<dynamic>? _items = [];
+  List<dynamic>? _filteredItems = [];
+  GlobalKey _rebuildKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -597,7 +603,8 @@ class _CustomDynamicSearchableDropDropFieldState
             return PopScope(
               onPopInvoked: (value) {
                 setState(() {
-                  _items = null;
+                  _searchItems = null;
+                  _filteredItems = null;
                 });
               },
               child: AlertDialog(
@@ -618,17 +625,34 @@ class _CustomDynamicSearchableDropDropFieldState
                             border: InputBorder.none,
                           ),
                           onChanged: (value) {
-                            _debouncer.run(() {
-                              setState(() {
-                                _items = widget.asyncSearchItems(value);
+                            if (widget.asyncStaticItems != null) {
+                              if (!mounted) return;
+                              _rebuildKey.currentState?.setState(() {
+                                _filteredItems = _items
+                                    ?.where((element) => widget.itemAsString!
+                                            (element)
+                                        .toLowerCase()
+                                        .contains(value.toLowerCase()))
+                                    .toList();
                               });
-                            });
+                            } else if (widget.asyncSearchItems != null) {
+                              _debouncer.run(() {
+                                if (!mounted) return;
+                                setState(() {
+                                  _searchItems = widget.asyncSearchItems != null
+                                      ? widget.asyncSearchItems!(value)
+                                      : null;
+                                });
+                              });
+                            }
                           },
                           onSubmitted: (value) {
                             setState(() {
                               GetIt.I<AppLogger>()
                                   .debug('Search value: $value');
-                              _items = widget.asyncSearchItems(value);
+                              _searchItems = widget.asyncSearchItems != null
+                                  ? widget.asyncSearchItems!(value)
+                                  : null;
                             });
                           },
                         ),
@@ -637,51 +661,109 @@ class _CustomDynamicSearchableDropDropFieldState
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.5,
                         width: MediaQuery.of(context).size.width * 0.8,
-                        child: StreamBuilder(
-                          stream: _items,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            } else if (snapshot.hasError) {
-                              return const Center(
-                                child: Text('An error occurred'),
-                              );
-                            } else if (snapshot.hasData) {
-                              return SizedBox(
-                                child: ListView.builder(
-                                  shrinkWrap: true, //MUST TO ADDED
-                                  itemCount: snapshot.data?.length,
-                                  itemBuilder: (context, index) {
-                                    return ListTile(
-                                      contentPadding: const EdgeInsets.all(0),
-                                      title: Text(
-                                        widget.itemAsString!(
-                                            snapshot.data?[index]),
-                                      ),
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedItem = snapshot.data?[index];
-                                          widget.controller.text =
-                                              widget.itemAsString!(
-                                                  snapshot.data?[index]);
-                                          _items = null;
-                                        });
-                                        Navigator.of(context).pop();
+                        child: widget.asyncSearchItems == null
+                            ? FutureBuilder(
+                                future: widget.asyncStaticItems?.then((value) {
+                                  _items = value;
+                                  _filteredItems = value;
+                                  return _items;
+                                }),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return const Center(
+                                      child: Text('An error occurred'),
+                                    );
+                                  } else if (snapshot.data != null) {
+                                    return StatefulBuilder(
+                                      key: _rebuildKey,
+                                      builder: (context, setState) {
+                                        return ListView.builder(
+                                          shrinkWrap: true, //MUST TO ADDED
+                                          itemCount: _filteredItems?.length,
+                                          itemBuilder: (context, index) {
+                                            return ListTile(
+                                              contentPadding:
+                                                  const EdgeInsets.all(0),
+                                              title: Text(
+                                                widget.itemAsString!(
+                                                    _filteredItems?[index]),
+                                              ),
+                                              onTap: () {
+                                                setState(() {
+                                                  _selectedItem =
+                                                      _filteredItems?[index];
+                                                  widget
+                                                      .controller.text = widget
+                                                          .itemAsString!(
+                                                      _filteredItems?[index]);
+                                                });
+                                                Navigator.of(context)
+                                                    .pop(_selectedItem);
+                                              },
+                                            );
+                                          },
+                                        );
                                       },
                                     );
-                                  },
-                                ),
-                              );
-                            } else {
-                              return widget.emptyBuilder != null
-                                  ? widget.emptyBuilder!(context)
-                                  : const SizedBox();
-                            }
-                          },
-                        ),
+                                  } else {
+                                    return widget.emptyBuilder != null
+                                        ? widget.emptyBuilder!(context)
+                                        : const SizedBox();
+                                  }
+                                },
+                              )
+                            : StreamBuilder(
+                                stream: _searchItems,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                      child: CircularProgressIndicator(),
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return const Center(
+                                      child: Text('An error occurred'),
+                                    );
+                                  } else if (snapshot.hasData) {
+                                    return SizedBox(
+                                      child: ListView.builder(
+                                        shrinkWrap: true, //MUST TO ADDED
+                                        itemCount: snapshot.data?.length,
+                                        itemBuilder: (context, index) {
+                                          return ListTile(
+                                            contentPadding:
+                                                const EdgeInsets.all(0),
+                                            title: Text(
+                                              widget.itemAsString!(
+                                                  snapshot.data?[index]),
+                                            ),
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedItem =
+                                                    snapshot.data?[index];
+                                                widget.controller.text =
+                                                    widget.itemAsString!(
+                                                        snapshot.data?[index]);
+                                                _searchItems = null;
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  } else {
+                                    return widget.emptyBuilder != null
+                                        ? widget.emptyBuilder!(context)
+                                        : const SizedBox();
+                                  }
+                                },
+                              ),
                       ),
                     ],
                   ),

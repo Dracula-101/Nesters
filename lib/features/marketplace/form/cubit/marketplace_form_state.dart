@@ -1,22 +1,21 @@
-part of 'sublet_form_cubit.dart';
+part of 'marketplace_form_cubit.dart';
 
 @freezed
 class MarketplaceFormState with _$MarketplaceFormState {
   const factory MarketplaceFormState({
-    required SubletModel? sublet,
+    required MarketplaceModel? item,
     Exception? error,
     @Default(0) int pageNumber,
     @Default(false) bool hasSecondPageAccess,
-    @Default(false) bool hasThirdPageAccess,
     @Default(false) bool isValidating,
     bool? isSubmitting,
     bool? isSubmitComplete,
     Exception? submitError,
-    SubletImageUploadTask? imageUploadTask,
-  }) = _SubletFormState;
+    MarketplaceImageUploadTask? imageUploadTask,
+  }) = _MarketplaceFormState;
 
   factory MarketplaceFormState.initial() => const MarketplaceFormState(
-        sublet: null,
+        item: null,
         pageNumber: 0,
       );
 }

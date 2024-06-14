@@ -6,65 +6,58 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
-import 'package:nesters/data/repository/sublet/sublet_repository.dart';
-import 'package:nesters/domain/models/sublet/sublet_model.dart';
-import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
-import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
+import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
+import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
-class SubletListPage extends StatelessWidget {
-  const SubletListPage({super.key});
+class MarketplaceListPage extends StatelessWidget {
+  const MarketplaceListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          GoRouter.of(context).go(
-            '${AppRouterService.homeScreen}/${AppRouterService.sublettingForm}',
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
-      body: const SafeArea(
-        child: SubletListView(),
+    return const Scaffold(
+      body: SafeArea(
+        child: MarketplaceListView(),
       ),
     );
   }
 }
 
-class SubletListView extends StatefulWidget {
-  const SubletListView({super.key});
+class MarketplaceListView extends StatefulWidget {
+  const MarketplaceListView({super.key});
 
   @override
-  State<SubletListView> createState() => _SubletListViewState();
+  State<MarketplaceListView> createState() => _MarketplaceListViewState();
 }
 
-class _SubletListViewState extends State<SubletListView> {
-  final PagingController<int, SubletModel> _pagingController =
+class _MarketplaceListViewState extends State<MarketplaceListView> {
+  final PagingController<int, MarketplaceModel> _pagingController =
       PagingController(firstPageKey: 0);
-  final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
+  final MarketplaceRepository _marketplaceRepository =
+      GetIt.I<MarketplaceRepository>();
   final AppLogger _logger = GetIt.I<AppLogger>();
   final int _pageSize = 10;
 
-  Future<void> loadSublets(int pageKey) async {
+  Future<void> loadMarketplaces(int pageKey) async {
     try {
-      _logger.info('Loading sublets for page $pageKey');
-      final List<SubletModel> sublets = await _subletRepository.getSublets(
+      _logger.info('Loading marketplaces for page $pageKey');
+      final List<MarketplaceModel> marketplaces =
+          await _marketplaceRepository.getMarketplaces(
         paginationKey: pageKey,
       );
 
-      final isLastPage = sublets.length < _pageSize;
+      final isLastPage = marketplaces.length < _pageSize;
       if (isLastPage) {
-        _pagingController.appendLastPage(sublets);
+        _pagingController.appendLastPage(marketplaces);
       } else {
-        _pagingController.appendPage(sublets, pageKey + _pageSize);
+        _pagingController.appendPage(marketplaces, pageKey + _pageSize);
       }
       // ignore: use_build_context_synchronously
-      context
-          .read<SubletBloc>()
-          .add(SubletEvent.saveSublets(_pagingController.itemList ?? []));
+      context.read<MarketplaceBloc>().add(
+          MarketplaceEvent.saveMarketplaces(_pagingController.itemList ?? []));
     } catch (error) {
       _pagingController.error = error;
     }
@@ -74,7 +67,7 @@ class _SubletListViewState extends State<SubletListView> {
   void initState() {
     super.initState();
     _pagingController.addPageRequestListener((pageKey) {
-      loadSublets(pageKey);
+      loadMarketplaces(pageKey);
     });
   }
 
@@ -86,12 +79,12 @@ class _SubletListViewState extends State<SubletListView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SubletBloc, SubletState>(
+    return BlocBuilder<MarketplaceBloc, MarketplaceState>(
       builder: (context, state) {
         return RefreshIndicator(
           child: CustomScrollView(
             slivers: [
-              _buildSubletList(state.subletList ?? []),
+              _buildMarketplaceList(state.marketplaceList ?? []),
             ],
           ),
           onRefresh: () {
@@ -115,23 +108,23 @@ class _SubletListViewState extends State<SubletListView> {
     );
   }
 
-  Widget _buildSubletList(List<SubletModel> sublets) {
+  Widget _buildMarketplaceList(List<MarketplaceModel> marketplaces) {
     return PagedSliverList(
       pagingController: _pagingController,
-      builderDelegate: PagedChildBuilderDelegate<SubletModel>(
+      builderDelegate: PagedChildBuilderDelegate<MarketplaceModel>(
         firstPageProgressIndicatorBuilder: (context) =>
             _buildLoadingIndicator(),
         firstPageErrorIndicatorBuilder: (context) =>
             _buildErrorIndicator(_pagingController.error),
-        itemBuilder: (context, sublet, index) {
-          return SubletModelWidget(
+        itemBuilder: (context, marketplace, index) {
+          return MarketplaceModelWidget(
             onPressed: () {
               GoRouter.of(context).go(
-                '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
-                extra: sublet,
+                '${AppRouterService.homeScreen}/${AppRouterService.marketplaceDetail}',
+                extra: marketplace,
               );
             },
-            sublet: sublet,
+            marketplace: marketplace,
           );
         },
       ),

@@ -6,15 +6,15 @@ import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/sublet/amenities.dart';
 import 'package:nesters/domain/models/sublet/apartment_size.dart';
 import 'package:nesters/domain/models/sublet/lease_period.dart';
-import 'package:nesters/domain/models/sublet/sublet_location.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'sublet_form_state.dart';
 part 'sublet_form_cubit.freezed.dart';
 
-class SubletFormCubit extends Cubit<SubletFormState> {
-  SubletFormCubit() : super(SubletFormState.initial());
+class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
+  MarketplaceFormCubit() : super(MarketplaceFormState.initial());
 
   final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();

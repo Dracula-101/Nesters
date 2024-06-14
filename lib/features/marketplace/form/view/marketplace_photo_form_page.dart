@@ -8,15 +8,15 @@ import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 
-class SubletPhotoForm extends StatefulWidget {
+class MarketplacePhotoForm extends StatefulWidget {
   final TabController? controller;
-  const SubletPhotoForm({super.key, this.controller});
+  const MarketplacePhotoForm({super.key, this.controller});
 
   @override
-  State<SubletPhotoForm> createState() => _SubletPhotoFormState();
+  State<MarketplacePhotoForm> createState() => _MarketplacePhotoFormState();
 }
 
-class _SubletPhotoFormState extends State<SubletPhotoForm>
+class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
     with AutomaticKeepAliveClientMixin {
   final List<XFile> _imageList = [];
   final ImagePicker _picker = ImagePicker();
@@ -194,7 +194,7 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
         ),
         const SizedBox(height: 8),
         Text(
-          'Add up to 5 stunning photos to attract more tenants now!',
+          'Add up to 5 stunning photos to attract more buyers now!',
           textAlign: TextAlign.center,
           style: AppTheme.labelMediumLightVariant,
         )

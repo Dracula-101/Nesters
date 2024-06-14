@@ -2,7 +2,7 @@ import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/sublet/amenities.dart';
 import 'package:nesters/domain/models/sublet/apartment_size.dart';
 import 'package:nesters/domain/models/sublet/lease_period.dart';
-import 'package:nesters/domain/models/sublet/sublet_location.dart';
+import 'package:nesters/domain/models/user/location.dart';
 
 class SubletModel {
   // 1]address -String
@@ -61,7 +61,7 @@ class SubletModel {
       'photos': photos ?? [],
       'amenities_available': amenitiesAvailable?.toMap() ?? {},
       'room_type': (roomType ?? '').toString(),
-      'location': location?.toMap() ?? {},
+      'location': location?.toJson() ?? {},
       'is_available': isAvailable ?? true,
       ...apartmentSize?.toMap() ?? {},
       ...leasePeriod?.toMap() ?? {},
@@ -81,7 +81,7 @@ class SubletModel {
       amenitiesAvailable: Amenities.fromMap(map['amenities_available'] ?? {}),
       apartmentSize: ApartmentSize.fromMap(map),
       roomType: UserRoomType.fromString(map['room_type'] ?? ''),
-      location: Location.fromMap(map['location'] ?? {}),
+      location: Location.fromJson(map['location'] ?? {}),
       isAvailable: map['is_available'] ?? true,
     );
   }

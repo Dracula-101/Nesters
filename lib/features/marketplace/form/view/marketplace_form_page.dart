@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
-import 'package:nesters/features/sublet/form/view/sublet_background_form_page.dart';
-import 'package:nesters/features/sublet/form/view/sublet_details_form_page.dart';
-import 'package:nesters/features/sublet/form/view/sublet_photos_form_page.dart';
+import 'package:nesters/features/marketplace/form/cubit/marketplace_form_cubit.dart';
+import 'package:nesters/features/marketplace/form/view/marketplace_detail_form_page.dart';
+import 'package:nesters/features/marketplace/form/view/marketplace_photo_form_page.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
-class SubletFormPage extends StatelessWidget {
-  const SubletFormPage({super.key});
+class MarketplaceFormPage extends StatelessWidget {
+  const MarketplaceFormPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => MarketplaceFormCubit(),
+      create: (context) => MarketplaceFormCubit(),
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: const Text('Issue a Sublet'),
+          title: const Text('Issue a Marketplace'),
         ),
         bottomNavigationBar: const CustomBottomNavigationBar(),
-        body: const SafeArea(child: SubletFormView()),
+        body: const SafeArea(child: MarketplaceFormView()),
       ),
     );
   }
@@ -50,7 +49,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         if (state.isSubmitComplete ?? false) {
           Future.delayed(1.sec).then((value) {
             context.showSnackBar(
-              'Sublet submitted successfully',
+              'Item submitted successfully in marketplace',
               icon: Icon(
                 FontAwesomeIcons.circleCheck,
                 color: AppTheme.success,
@@ -98,14 +97,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
   }
 }
 
-class SubletFormView extends StatefulWidget {
-  const SubletFormView({super.key});
+class MarketplaceFormView extends StatefulWidget {
+  const MarketplaceFormView({super.key});
 
   @override
-  State<SubletFormView> createState() => _SubletFormViewState();
+  State<MarketplaceFormView> createState() => _MarketplaceFormViewState();
 }
 
-class _SubletFormViewState extends State<SubletFormView>
+class _MarketplaceFormViewState extends State<MarketplaceFormView>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
   final ValueNotifier<int> _tabIndexNotifier = ValueNotifier(0);
@@ -114,7 +113,7 @@ class _SubletFormViewState extends State<SubletFormView>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 3,
+      length: 2,
       vsync: this,
     );
     _tabIndexNotifier.addListener(() {
@@ -160,20 +159,8 @@ class _SubletFormViewState extends State<SubletFormView>
                 _tabController?.animateTo(0);
                 return;
               }
-            } else if (!state.hasThirdPageAccess) {
-              if ((_tabController?.index ?? 0) == 2) {
-                context.showSnackBar(
-                  'Please fill in the background page first',
-                  icon: Icon(
-                    FontAwesomeIcons.triangleExclamation,
-                    color: AppTheme.error,
-                  ),
-                );
-                _tabController?.animateTo(1);
-                return;
-              }
             }
-            // _tabIndexNotifier.value = index;
+            _tabIndexNotifier.value = index;
           },
           tabs: [
             const Tab(
@@ -183,23 +170,11 @@ class _SubletFormViewState extends State<SubletFormView>
             ),
             Tab(
               child: Text(
-                'Background',
+                'Photos',
                 style: AppTheme.bodyMedium.copyWith(
                   color: _tabIndexNotifier.value == 1
                       ? AppTheme.primary
                       : state.hasSecondPageAccess
-                          ? AppTheme.greyShades.shade700
-                          : AppTheme.greyShades.shade400,
-                ),
-              ),
-            ),
-            Tab(
-              child: Text(
-                'Photos',
-                style: AppTheme.bodyMedium.copyWith(
-                  color: _tabIndexNotifier.value == 2
-                      ? AppTheme.primary
-                      : state.hasThirdPageAccess
                           ? AppTheme.greyShades.shade700
                           : AppTheme.greyShades.shade400,
                 ),
@@ -219,13 +194,10 @@ class _SubletFormViewState extends State<SubletFormView>
             physics: const NeverScrollableScrollPhysics(),
             controller: _tabController,
             children: [
-              SubletDetailsForm(
+              MarketplaceDetailsForm(
                 controller: _tabController,
               ),
-              SubletBackgroundInfo(
-                controller: _tabController,
-              ),
-              SubletPhotoForm(
+              MarketplacePhotoForm(
                 controller: _tabController,
               ),
             ],

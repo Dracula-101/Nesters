@@ -26,6 +26,9 @@ class RootApp extends StatelessWidget with WidgetsBindingObserver {
         BlocProvider(
           create: (context) => CentralChatBloc(),
         ),
+        BlocProvider(
+          create: (context) => RequestBloc(),
+        )
       ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
