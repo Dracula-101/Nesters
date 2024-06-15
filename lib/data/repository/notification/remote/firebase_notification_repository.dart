@@ -113,6 +113,7 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
             fullName: message.data['senderName'],
             photoUrl: message.data['photoUrl'],
             email: '',
+            accessToken: '',
           );
           String currentPath = appRouterService
               .appRouter.routeInformationProvider.value.uri.path;

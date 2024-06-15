@@ -214,6 +214,7 @@ class UserProfile extends Equatable {
       fullName: fullName ?? '',
       email: '',
       photoUrl: profileImage ?? '',
+      accessToken: '',
       isProfileCompleted: true,
       isProfileCreated: true,
     );

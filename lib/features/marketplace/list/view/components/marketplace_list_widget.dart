@@ -67,24 +67,24 @@ class MarketplaceModelWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildMarketplaceInfo(),
-                _buildMarketplaceRent(),
+                _buildMarketplacePrice(),
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: DottedLine(
-                width: double.infinity,
-                color: AppTheme.greyShades.shade400,
-                dashWidth: 7,
-                spaceWidth: 2,
-                height: 2,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8, left: 10, right: 10),
-              child: _buildLocation(),
-            ),
-            const SizedBox(height: 8),
+            // Padding(
+            //   padding: const EdgeInsets.symmetric(horizontal: 10),
+            //   child: DottedLine(
+            //     width: double.infinity,
+            //     color: AppTheme.greyShades.shade400,
+            //     dashWidth: 7,
+            //     spaceWidth: 2,
+            //     height: 2,
+            //   ),
+            // ),
+            // Padding(
+            //   padding: const EdgeInsets.only(top: 8, left: 10, right: 10),
+            //   child: _buildLocation(),
+            // ),
+            // const SizedBox(height: 8),
           ],
         ),
       ),
@@ -103,26 +103,18 @@ class MarketplaceModelWidget extends StatelessWidget {
             topRight: Radius.circular(12),
           ),
         ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.bed_rounded,
-              color: AppTheme.primary,
-              size: 16,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              '${marketplace.category?.toString()}',
-            )
-          ],
+        child: Text(
+          '${marketplace.category?.name.toString()}',
         ),
       ),
     );
   }
 
-  Widget _buildLeasePeriod() {
+  Widget _buildPickupPeriod() {
     return Row(
       children: [
+        Text('Pick-up from'),
+        const SizedBox(width: 4),
         Icon(
           Icons.calendar_today_rounded,
           color: AppTheme.primary,
@@ -134,24 +126,26 @@ class MarketplaceModelWidget extends StatelessWidget {
               '',
           style: AppTheme.bodyMediumLightVariant,
         ),
-        const Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Divider(),
+        if (marketplace.period?.periodTill != null) ...[
+          const Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Divider(),
+            ),
           ),
-        ),
-        Icon(
-          Icons.calendar_today_rounded,
-          color: AppTheme.primary,
-          size: 18,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          marketplace.period?.periodTill?.toShortUIDate(shortenYear: true) ??
-              '',
-          style: AppTheme.bodyMediumLightVariant,
-        ),
-        const SizedBox(width: 4),
+          Icon(
+            Icons.calendar_today_rounded,
+            color: AppTheme.primary,
+            size: 18,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            marketplace.period?.periodTill?.toShortUIDate(shortenYear: true) ??
+                '',
+            style: AppTheme.bodyMediumLightVariant,
+          ),
+          const SizedBox(width: 4),
+        ]
       ],
     );
   }
@@ -187,7 +181,7 @@ class MarketplaceModelWidget extends StatelessWidget {
       flex: 3,
       child: Padding(
         padding:
-            padding ?? const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+            padding ?? const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -196,8 +190,9 @@ class MarketplaceModelWidget extends StatelessWidget {
               style: AppTheme.bodyLarge,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 2),
-            _buildLeasePeriod(),
+            const SizedBox(height: 4),
+            _buildLocation(),
+            const SizedBox(height: 4),
           ],
         ),
       ),
@@ -224,7 +219,7 @@ class MarketplaceModelWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMarketplaceRent() {
+  Widget _buildMarketplacePrice() {
     return Flexible(
       flex: 1,
       child: Container(

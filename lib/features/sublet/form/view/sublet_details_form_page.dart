@@ -81,13 +81,13 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocListener<MarketplaceFormCubit, MarketplaceFormState>(
+    return BlocListener<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
         if (state.isValidating) {
           if (validateAllFields()) {
-            context.read<MarketplaceFormCubit>().onPageChange(1);
-            context.read<MarketplaceFormCubit>().showPageValid(1);
-            context.read<MarketplaceFormCubit>().addFirstPageData(
+            context.read<SubletFormCubit>().onPageChange(1);
+            context.read<SubletFormCubit>().showPageValid(1);
+            context.read<SubletFormCubit>().addFirstPageData(
                   address: _addressController.text.trim(),
                   startDate: startDate!,
                   endDate: endDate!,

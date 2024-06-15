@@ -37,6 +37,7 @@ class LocalNotificationRepository {
           fullName: message['senderName'],
           photoUrl: message['photoUrl'],
           email: '',
+          accessToken: '',
         );
         GetIt.I<AppRouterService>().appRouter.push(
               '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',

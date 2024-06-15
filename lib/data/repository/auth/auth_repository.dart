@@ -16,4 +16,7 @@ abstract class AuthRepository {
 
   // Check if user is signed in
   Future<bool> isSignedIn();
+
+  // Get the access token
+  Future<String?> getAccessToken();
 }

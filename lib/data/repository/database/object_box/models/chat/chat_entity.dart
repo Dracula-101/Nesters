@@ -33,6 +33,7 @@ class ChatEntity {
       id: userId,
       fullName: fullName,
       email: '',
+      accessToken: '',
       photoUrl: photoUrl,
     );
   }

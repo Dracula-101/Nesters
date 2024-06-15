@@ -6,6 +6,7 @@ class User extends Equatable {
     required this.fullName,
     required this.email,
     required this.photoUrl,
+    this.accessToken,
     this.isProfileCreated = false,
     this.isProfileCompleted = false,
   });
@@ -14,6 +15,7 @@ class User extends Equatable {
   final String fullName;
   final String email;
   final String photoUrl;
+  final String? accessToken;
   final bool isProfileCreated;
   final bool isProfileCompleted;
 
@@ -26,6 +28,7 @@ class User extends Equatable {
       fullName: json['fullName'],
       email: json['email'],
       photoUrl: json['photoUrl'],
+      accessToken: json['accessToken'],
     );
   }
 
@@ -35,6 +38,7 @@ class User extends Equatable {
       fullName: '',
       email: '',
       photoUrl: '',
+      accessToken: '',
     );
   }
 
@@ -44,6 +48,7 @@ class User extends Equatable {
       'fullName': fullName,
       'email': email,
       'photoUrl': photoUrl,
+      'accessToken': accessToken,
     };
   }
 
@@ -60,6 +65,7 @@ class User extends Equatable {
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       photoUrl: photoUrl ?? this.photoUrl,
+      accessToken: accessToken,
       isProfileCreated: isProfileCreated ?? this.isProfileCreated,
       isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
     );

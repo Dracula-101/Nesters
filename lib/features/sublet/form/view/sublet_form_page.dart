@@ -15,7 +15,7 @@ class SubletFormPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => MarketplaceFormCubit(),
+      create: (_) => SubletFormCubit(),
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
@@ -36,7 +36,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<MarketplaceFormCubit, MarketplaceFormState>(
+    return BlocConsumer<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
         if (state.submitError != null) {
           context.showSnackBar(
@@ -63,7 +63,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
       builder: (context, state) {
         return GestureDetector(
           onTap: () {
-            context.read<MarketplaceFormCubit>().validatePage();
+            context.read<SubletFormCubit>().validatePage();
           },
           child: Container(
             height: 60,
@@ -118,9 +118,7 @@ class _SubletFormViewState extends State<SubletFormView>
       vsync: this,
     );
     _tabIndexNotifier.addListener(() {
-      context
-          .read<MarketplaceFormCubit>()
-          .onPageChange(_tabIndexNotifier.value);
+      context.read<SubletFormCubit>().onPageChange(_tabIndexNotifier.value);
     });
   }
 
@@ -142,7 +140,7 @@ class _SubletFormViewState extends State<SubletFormView>
   }
 
   Widget _buildTabBar() {
-    return BlocConsumer<MarketplaceFormCubit, MarketplaceFormState>(
+    return BlocConsumer<SubletFormCubit, SubletFormState>(
       listener: (context, state) {},
       builder: (context, state) {
         return TabBar(
@@ -213,7 +211,7 @@ class _SubletFormViewState extends State<SubletFormView>
 
   Widget _buildTabContent() {
     return Expanded(
-      child: BlocBuilder<MarketplaceFormCubit, MarketplaceFormState>(
+      child: BlocBuilder<SubletFormCubit, SubletFormState>(
         builder: (context, state) {
           return TabBarView(
             physics: const NeverScrollableScrollPhysics(),

@@ -13,8 +13,8 @@ import 'package:nesters/utils/logger/logger.dart';
 part 'sublet_form_state.dart';
 part 'sublet_form_cubit.freezed.dart';
 
-class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
-  MarketplaceFormCubit() : super(MarketplaceFormState.initial());
+class SubletFormCubit extends Cubit<SubletFormState> {
+  SubletFormCubit() : super(SubletFormState.initial());
 
   final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();

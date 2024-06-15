@@ -29,11 +29,14 @@ class SupabaseAuthRepository extends AuthRepository {
   User? get currentUser {
     final user = _supabaseClient.auth.currentUser;
     if (user != null) {
+      String accessToken =
+          _supabaseClient.auth.currentSession?.accessToken ?? '';
       return User(
         id: user.id,
         email: user.email ?? "",
         fullName: user.userMetadata?['fullName'] ?? '',
         photoUrl: user.userMetadata?['avatar_url'] ?? '',
+        accessToken: accessToken,
       );
     }
     return null;
@@ -81,9 +84,15 @@ class SupabaseAuthRepository extends AuthRepository {
           email: event.session!.user.email ?? "",
           fullName: event.session!.user.userMetadata?['name'] ?? '',
           photoUrl: event.session!.user.userMetadata?['avatar_url'] ?? '',
+          accessToken: event.session!.accessToken,
         );
       }
       return null;
     });
+  }
+
+  @override
+  Future<String?> getAccessToken() async {
+    return Future.value(_supabaseClient.auth.currentSession?.accessToken);
   }
 }

@@ -32,14 +32,14 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocListener<MarketplaceFormCubit, MarketplaceFormState>(
+    return BlocListener<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
         if (state.isValidating) {
           if (_imageList.isEmpty) {
             showImageErrorSnackbar();
           } else {
             context
-                .read<MarketplaceFormCubit>()
+                .read<SubletFormCubit>()
                 .createSublet(_imageList.map((e) => e.path).toList());
           }
         }

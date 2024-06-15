@@ -7,7 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
-import 'package:nesters/constants/onboarding_data.dart';
+import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
@@ -55,48 +55,72 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   Widget _buildOnboardingInfo() {
     return Expanded(
-      child: PageView.builder(
+      child: PageView(
         controller: _pageController,
-        itemCount: contents.length,
         onPageChanged: (value) {
           setState(() {
             currentIndex = value;
           });
         },
-        itemBuilder: (_, index) {
-          return Padding(
-            padding: const EdgeInsets.all(
-              30,
+        children: [
+          _buildFirstPage(),
+          _buildSecondPage(),
+          _buildThirdPage(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFirstPage() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: AppTheme.primary,
+                width: 2,
+              ),
             ),
-            child: Column(
+            child: SvgPicture.asset(
+              AppVectorImages.onboardingPreviewImage,
+              height: MediaQuery.of(context).size.height * 0.3,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text.rich(
+            TextSpan(
+              text: 'Find ',
+              style: AppTheme.displayMedium,
               children: [
-                SvgPicture.asset(
-                  contents[index].image,
-                  height: 300,
+                TextSpan(
+                  text: 'your ',
+                  style: AppTheme.displaySmallLightVariant,
                 ),
-                Text(
-                  contents[index].title,
-                  style: AppTheme.displaySmall,
-                  textAlign: TextAlign.center,
+                TextSpan(
+                  text: 'perfect ',
+                  style: AppTheme.displaySmallLightVariant,
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Text(
-                  contents[index].description,
-                  style: AppTheme.bodyMedium.copyWith(
-                    color: AppTheme.onSurface.withOpacity(
-                      0.5,
-                    ),
-                  ),
-                  textAlign: TextAlign.justify,
+                TextSpan(
+                  text: 'roommate',
+                  style: AppTheme.displaySmallLightVariant,
                 ),
               ],
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildSecondPage() {
+    return SizedBox();
+  }
+
+  Widget _buildThirdPage() {
+    return SizedBox();
   }
 
   Widget _buildOnboardingPageIndicator() {
@@ -108,7 +132,7 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   List<Widget> buildProgressDot(BuildContext context, int index) {
     return List.generate(
-      contents.length,
+      3,
       (index) => AnimatedContainer(
         duration: 200.ms,
         height: 10,
@@ -135,7 +159,7 @@ class _OnboardingViewState extends State<OnboardingView> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          if (currentIndex == contents.length - 1) {
+          if (currentIndex == 2) {
             unawaited(GetIt.I<UserRepository>().setOnBoardingComplete());
             context.read<AppBloc>().isOnboardingCompleted = true;
             GoRouter.of(context).go(AppRouterService.loginScreen);
@@ -149,7 +173,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           }
         },
         child: Text(
-          currentIndex == contents.length - 1 ? 'Continue' : 'Next',
+          currentIndex == 2 ? 'Continue' : 'Next',
           style: AppTheme.titleSmall.copyWith(
             color: AppTheme.surface,
           ),

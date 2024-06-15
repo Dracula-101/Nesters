@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -363,7 +365,7 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
         size: 20,
       ),
       hintText: 'Enter the reference link',
-      controller: TextEditingController(),
+      controller: _referenceLinkController,
       onChanged: (value) {
         if (value.isNotEmpty) {
           String? referenceName;
@@ -378,6 +380,7 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
                   referenceName: referenceName,
                 )
               : null;
+          log('Selected Link: $referenceName');
         }
       },
       validator: (value) {

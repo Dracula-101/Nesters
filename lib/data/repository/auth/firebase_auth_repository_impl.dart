@@ -16,11 +16,13 @@ class FirebaseAuthRepository extends AuthRepository {
     if (firebaseUser == null) {
       return null;
     }
+    String? accessToken = _firebaseAuth.currentUser?.refreshToken;
     return User(
       id: firebaseUser.uid,
       email: firebaseUser.email ?? "",
       fullName: firebaseUser.displayName ?? "",
       photoUrl: firebaseUser.photoURL ?? '',
+      accessToken: accessToken ?? '',
     );
   }
 
@@ -57,16 +59,23 @@ class FirebaseAuthRepository extends AuthRepository {
 
   @override
   Stream<User?> get user {
-    return _firebaseAuth.authStateChanges().map((firebaseUser) {
+    return _firebaseAuth.authStateChanges().asyncMap((firebaseUser) async {
       if (firebaseUser == null) {
         return null;
       }
+      String? accessToken = await firebaseUser.getIdToken();
       return User(
         id: firebaseUser.uid,
         email: firebaseUser.email ?? "",
         fullName: firebaseUser.displayName ?? "",
         photoUrl: firebaseUser.photoURL ?? '',
+        accessToken: accessToken ?? '',
       );
     });
+  }
+
+  @override
+  Future<String?> getAccessToken() async {
+    return _firebaseAuth.currentUser?.getIdToken();
   }
 }

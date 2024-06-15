@@ -10,16 +10,24 @@ import 'package:nesters/data/repository/marketplace/marketplace_repository.dart'
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
-import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
-class MarketplaceListPage extends StatelessWidget {
-  const MarketplaceListPage({super.key});
+class MarketplacePage extends StatelessWidget {
+  const MarketplacePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SafeArea(
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        heroTag: 'marketplace_fab',
+        onPressed: () {
+          GoRouter.of(context).go(
+            '${AppRouterService.homeScreen}/${AppRouterService.marketplaceForm}',
+          );
+        },
+        child: const Icon(Icons.post_add),
+      ),
+      body: const SafeArea(
         child: MarketplaceListView(),
       ),
     );

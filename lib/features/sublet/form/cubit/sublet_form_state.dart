@@ -1,8 +1,8 @@
 part of 'sublet_form_cubit.dart';
 
 @freezed
-class MarketplaceFormState with _$MarketplaceFormState {
-  const factory MarketplaceFormState({
+class SubletFormState with _$SubletFormState {
+  const factory SubletFormState({
     required SubletModel? sublet,
     Exception? error,
     @Default(0) int pageNumber,
@@ -15,7 +15,7 @@ class MarketplaceFormState with _$MarketplaceFormState {
     SubletImageUploadTask? imageUploadTask,
   }) = _SubletFormState;
 
-  factory MarketplaceFormState.initial() => const MarketplaceFormState(
+  factory SubletFormState.initial() => const SubletFormState(
         sublet: null,
         pageNumber: 0,
       );

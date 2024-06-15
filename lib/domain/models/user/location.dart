@@ -16,8 +16,8 @@ class Location {
   factory Location.fromJson(Map<String, dynamic> map) {
     return Location(
       address: map['address'] ?? '',
-      latitude: map['latitude'] ?? 0.0,
-      longitude: map['longitude'] ?? 0.0,
+      latitude: double.tryParse(map['latitude'].toString()) ?? 0.0,
+      longitude: double.tryParse(map['longitude'].toString()) ?? 0.0,
     );
   }
 

@@ -106,7 +106,12 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
       ));
     } on Exception catch (e) {
       _logger.log('Error creating sublet: $e');
-      emit(state.copyWith(submitError: e));
+      emit(state.copyWith(
+        submitError: e,
+        isSubmitting: false,
+        isSubmitComplete: false,
+        imageUploadTask: null,
+      ));
     }
   }
 

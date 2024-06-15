@@ -45,20 +45,25 @@ class MarketplaceModel {
   });
 
   factory MarketplaceModel.fromJson(Map<String, dynamic> json) {
-    return MarketplaceModel(
-      id: json['id'],
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      price: json['price'] ?? 0,
-      category: MarketplaceCategoryModel.fromJson(json['category']),
-      photos: List<String>.from(json['photos'] ?? []),
-      reference: MarketplaceLinkModel.fromJson(json['link'] ?? {}),
-      location: Location.fromJson(json['location'] ?? {}),
-      period: MarketplacePeriodModel.fromJson(json['period'] ?? {}),
-      isAvailable: json['is_available'] ?? false,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(json['created_at']),
-      userId: json['user_id'],
-    );
+    try {
+      return MarketplaceModel(
+        id: json['id'],
+        name: json['name'] ?? '',
+        description: json['description'] ?? '',
+        price: double.tryParse(json['price'].toString())?.toInt(),
+        photos: List<String>.from(json['photos'] ?? []),
+        category: MarketplaceCategoryModel.fromJson(json['category']),
+        reference: MarketplaceLinkModel.fromJson(json['link'] ?? {}),
+        location: Location.fromJson(json['location'] ?? {}),
+        period: MarketplacePeriodModel.fromJson(json['period'] ?? {}),
+        isAvailable: json['is_available'] ?? false,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(json['created_at']),
+        userId: json['user_id'],
+      );
+    } catch (e, stacktrace) {
+      print('Error: $e, Stacktrace: $stacktrace');
+      return MarketplaceModel(id: 0);
+    }
   }
 
   Map<String, dynamic> toJson() {

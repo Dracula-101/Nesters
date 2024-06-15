@@ -6,8 +6,12 @@ class MarketplacePeriodModel {
 
   factory MarketplacePeriodModel.fromJson(Map<String, dynamic> json) {
     return MarketplacePeriodModel(
-      periodTill: DateTime.fromMillisecondsSinceEpoch(json['period_till']),
-      periodFrom: DateTime.fromMillisecondsSinceEpoch(json['period_from']),
+      periodTill: json['period_till'] == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(json['period_till']),
+      periodFrom: json['period_from'] == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(json['period_from']),
     );
   }
 

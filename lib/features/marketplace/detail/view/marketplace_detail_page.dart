@@ -7,6 +7,7 @@ import 'package:nesters/features/marketplace/detail/cubit/marketplace_detail_cub
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MarketplaceDetailPage extends StatelessWidget {
   final MarketplaceModel marketplace;
@@ -256,10 +257,18 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
     ));
   }
 
+  Future<void> _launchUrl(String url) async {
+    Uri uri = Uri.parse(url);
+    if (!await launchUrl(uri)) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
   Widget _buildName() {
     return CustomCard(
       padding: EdgeInsets.zero,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -267,43 +276,54 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.marketplace.category?.name ?? '',
-                  style: AppTheme.bodyLarge.copyWith(
-                    color: AppTheme.primary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
                   widget.marketplace.name ?? '',
+                  style: AppTheme.titleLarge,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  widget.marketplace.category?.name ?? '',
                   style: AppTheme.bodyMediumLightVariant,
                 ),
                 const SizedBox(height: 8),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.primary.withOpacity(0.1),
-              borderRadius:
-                  const BorderRadius.vertical(bottom: Radius.circular(8)),
-            ),
-            child: Row(
-              children: [
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.person_rounded,
-                  color: AppTheme.primary,
-                  size: 18,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'View On Amazon',
-                  style: AppTheme.bodyMediumLightVariant.copyWith(
+          GestureDetector(
+            onTap: () {
+              if (widget.marketplace.reference?.link != null) {
+                _launchUrl(widget.marketplace.reference!.link!);
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primary.withOpacity(0.1),
+                borderRadius:
+                    const BorderRadius.vertical(bottom: Radius.circular(8)),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.person_rounded,
                     color: AppTheme.primary,
+                    size: 18,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Text(
+                    'View on Store',
+                    style: AppTheme.bodyMediumLightVariant.copyWith(
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: AppTheme.primary,
+                    size: 14,
+                  ),
+                ],
+              ),
             ),
           )
         ],
