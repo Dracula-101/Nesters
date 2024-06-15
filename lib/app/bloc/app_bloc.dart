@@ -81,7 +81,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       _remoteChatRepository.tokenChangeListener();
       _loggerService
           .info('Repository Intialized in : $totalIntializationTime ms');
-      add(AppEvent.loaded(isSuccessful: true, isOnboaringComplete: false));
+      add(AppEvent.loaded(
+          isSuccessful: true, isOnboaringComplete: isOnboardingCompleted));
     } catch (e) {
       _loggerService.error('Error loading app: $e');
       emit(const AppState.loadFailure());

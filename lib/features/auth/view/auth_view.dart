@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/features/auth/auth.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 
 class AuthPage extends StatelessWidget {
   const AuthPage({super.key});
@@ -92,7 +93,11 @@ class _AuthViewState extends State<AuthView> {
       ),
       width: double.infinity,
       child: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {},
+        listener: (context, state) {
+          state.whenOrNull(error: (message) {
+            context.showErrorSnackBar(message);
+          });
+        },
         builder: (context, state) {
           return ElevatedButton(
             onPressed: () {

@@ -6,6 +6,11 @@ class AppVectorImages {
   static const String _mainFolder = 'assets/svg';
   static const String onboardingPreviewImage = '$_mainFolder/preview.svg';
   static const String noChatsBackgroundImage = '$_mainFolder/no_chats.svg';
+  static const String onboardingRoomates =
+      '$_mainFolder/onboarding_roommates.svg';
+  static const String onboardingMarketplace = '$_mainFolder/marketplaces.svg';
+  static const String onboardingSublet = '$_mainFolder/sublet.svg';
+  static const String onboardingCommunity = '$_mainFolder/community.svg';
 }
 
 class AppRasterImages {

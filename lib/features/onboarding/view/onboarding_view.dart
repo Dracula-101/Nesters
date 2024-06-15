@@ -32,6 +32,7 @@ class OnboardingView extends StatefulWidget {
 
 class _OnboardingViewState extends State<OnboardingView> {
   int currentIndex = 0;
+  int pageCount = 4;
   final PageController _pageController = PageController(initialPage: 0);
 
   @override
@@ -63,64 +64,146 @@ class _OnboardingViewState extends State<OnboardingView> {
           });
         },
         children: [
-          _buildFirstPage(),
-          _buildSecondPage(),
-          _buildThirdPage(),
+          _buildRommatePage(),
+          _buildCollegeCommunityPage(),
+          _buildSubletPage(),
+          _buildMarketplacePage(),
         ],
       ),
     );
   }
 
-  Widget _buildFirstPage() {
+  Widget _buildRommatePage() {
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: AppTheme.primary,
-                width: 2,
-              ),
-            ),
-            child: SvgPicture.asset(
-              AppVectorImages.onboardingPreviewImage,
-              height: MediaQuery.of(context).size.height * 0.3,
-            ),
+          SvgPicture.asset(
+            AppVectorImages.onboardingRoomates,
+            height: MediaQuery.of(context).size.height * 0.4,
           ),
           const SizedBox(height: 20),
-          Text.rich(
-            TextSpan(
-              text: 'Find ',
-              style: AppTheme.displayMedium,
-              children: [
-                TextSpan(
-                  text: 'your ',
-                  style: AppTheme.displaySmallLightVariant,
-                ),
-                TextSpan(
-                  text: 'perfect ',
-                  style: AppTheme.displaySmallLightVariant,
-                ),
-                TextSpan(
-                  text: 'roommate',
-                  style: AppTheme.displaySmallLightVariant,
-                ),
-              ],
+          Text(
+            'Find Your Perfect Roommate',
+            style: AppTheme.displaySmall,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.1,
+            child: Text(
+              // short description
+              "Effortlessly connect with potential roommates who share your interests and lifestyle preferences.",
+              style: AppTheme.labelLargeLightVariant,
+              textAlign: TextAlign.justify,
             ),
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.05,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSecondPage() {
-    return SizedBox();
+  Widget _buildSubletPage() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SvgPicture.asset(
+            AppVectorImages.onboardingSublet,
+            height: MediaQuery.of(context).size.height * 0.4,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'Sublet Your Room Effortlessly',
+            style: AppTheme.displaySmall,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.1,
+            child: Text(
+              "Easily find someone to take over your lease when a room is available in the apartment.",
+              style: AppTheme.labelLargeLightVariant,
+              textAlign: TextAlign.justify,
+            ),
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.05,
+          ),
+        ],
+      ),
+    );
   }
 
-  Widget _buildThirdPage() {
-    return SizedBox();
+  Widget _buildMarketplacePage() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SvgPicture.asset(
+            AppVectorImages.onboardingMarketplace,
+            height: MediaQuery.of(context).size.height * 0.4,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            "Sell Before You Leave",
+            style: AppTheme.displaySmall,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.1,
+            child: Text(
+              "Prepare for your move with ease by selling your items conveniently beforehand.",
+              style: AppTheme.labelLargeLightVariant,
+              textAlign: TextAlign.justify,
+            ),
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.05,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCollegeCommunityPage() {
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          SvgPicture.asset(
+            AppVectorImages.onboardingCommunity,
+            height: MediaQuery.of(context).size.height * 0.4,
+          ),
+          const SizedBox(height: 20),
+          Text(
+            'College Community',
+            style: AppTheme.displaySmall,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.1,
+            child: Text(
+              "Engage and Connect with Fellow Students and Batchmates",
+              style: AppTheme.labelLargeLightVariant,
+              textAlign: TextAlign.justify,
+            ),
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.05,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildOnboardingPageIndicator() {
@@ -132,7 +215,7 @@ class _OnboardingViewState extends State<OnboardingView> {
 
   List<Widget> buildProgressDot(BuildContext context, int index) {
     return List.generate(
-      3,
+      pageCount,
       (index) => AnimatedContainer(
         duration: 200.ms,
         height: 10,
@@ -159,7 +242,7 @@ class _OnboardingViewState extends State<OnboardingView> {
       width: double.infinity,
       child: ElevatedButton(
         onPressed: () {
-          if (currentIndex == 2) {
+          if (currentIndex == pageCount - 1) {
             unawaited(GetIt.I<UserRepository>().setOnBoardingComplete());
             context.read<AppBloc>().isOnboardingCompleted = true;
             GoRouter.of(context).go(AppRouterService.loginScreen);
@@ -173,7 +256,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           }
         },
         child: Text(
-          currentIndex == 2 ? 'Continue' : 'Next',
+          currentIndex == pageCount - 1 ? 'Continue' : 'Next',
           style: AppTheme.titleSmall.copyWith(
             color: AppTheme.surface,
           ),
