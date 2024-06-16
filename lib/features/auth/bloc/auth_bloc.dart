@@ -4,7 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/auth/error/auth_error.dart';
-import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -21,30 +21,37 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
+  final CrashServiceRepository _crashServiceRepository =
+      GetIt.I<CrashServiceRepository>();
   final AppLogger _loggerService = GetIt.I<AppLogger>();
 
   Future<void> _onGoogleSignIn(
     AuthGoogleSiginInEvent event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthState.loading());
-    await _authRepository.signInWithGoogle().catchError(
-      (error) {
-        _loggerService.error(error);
-        if (error is GoogleSignInFailedException) {
-          emit(AuthState.error(error.localizedMessage));
+    try {
+      emit(const AuthState.loading());
+      await _authRepository.signInWithGoogle();
+    } on Exception catch (error, stackTrace) {
+      _loggerService.error(error);
+      if (error is GoogleSignInFailedException) {
+        emit(AuthState.error(error.localizedMessage));
+      } else {
+        _crashServiceRepository.recordError(error, stackTrace: stackTrace);
+        if (error is AuthSignInError) {
+          emit(AuthState.error(error.message));
         } else {
-          emit(const AuthState.error("Unknown error"));
+          emit(AuthState.error(error.toString()));
         }
-      },
-    );
+      }
+    }
   }
 
-  void _onSignOut(
+  Future<void> _onSignOut(
     AuthSignOutEvent event,
     Emitter<AuthState> emit,
-  ) {
-    _authRepository.signOut().catchError(
+  ) async {
+    await _authRepository.signOut().catchError(
       (error) {
         _loggerService.error(error);
         emit(const AuthState.error("Couldn't sign out"));

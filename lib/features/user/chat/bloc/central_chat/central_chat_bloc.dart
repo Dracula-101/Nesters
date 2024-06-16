@@ -42,7 +42,11 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   late IO.Socket? socket;
 
   ChatController getChatController(String chatId) {
-    return _chatControllers[chatId]!;
+    try {
+      return _chatControllers[chatId]!;
+    } catch (e) {
+      throw Exception("Chat Controller not found");
+    }
   }
 
   Future<void> _onCentralChatEvent(

@@ -55,9 +55,6 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           create: (context) => SubletBloc(),
         ),
         BlocProvider(
-          create: (context) => RequestBloc(),
-        ),
-        BlocProvider(
           create: (context) => MarketplaceBloc(),
         )
       ],
