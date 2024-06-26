@@ -14,12 +14,10 @@ import 'package:nesters/data/repository/database/local/local_storage_repository.
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/device/device_info_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
+import 'package:nesters/data/repository/network/network_checker_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
-import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/domain/models/user/request/request.dart';
-import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -35,29 +33,28 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         () => null,
         load: () => _loadApp(event, emit),
         loaded: (isSuccessful, _) => _loadedApp(event, emit, isSuccessful),
+        networkChange: (data, isOnline) =>
+            _handleNetworkChange(emit, data, isOnline),
       );
     });
     add(const AppEvent.load());
+    _addNetworkListener();
   }
 
   final AppLogger _loggerService = GetIt.instance.get<AppLogger>();
-  final AuthRepository _authRepository = GetIt.instance.get<AuthRepository>();
-  final UserStatusRepository _userStatusRepository =
-      GetIt.instance.get<UserStatusRepository>();
-  final UserRepository _userRepository = GetIt.instance.get<UserRepository>();
-  final RemoteNotificationRepository _rNotificationRepository =
-      GetIt.instance.get<RemoteNotificationRepository>();
+  final _authRepository = GetIt.instance.get<AuthRepository>();
+  final _userRepository = GetIt.instance.get<UserRepository>();
+  final _localStorageRepository = GetIt.instance.get<LocalStorageRepository>();
+  final _obxStorageRepository = GetIt.instance.get<ObxStorageRepository>();
+  final _deviceInfoRepository = GetIt.instance.get<DeviceInfoRepository>();
+  final _remoteChatRepository = GetIt.instance.get<RemoteChatRepository>();
 
-  final LocalStorageRepository _localStorageRepository =
-      GetIt.instance.get<LocalStorageRepository>();
-  final ObxStorageRepository _obxStorageRepository =
-      GetIt.instance.get<ObxStorageRepository>();
-  final LocalNotificationRepository _localNotificationRepository =
+  final _localNotificationRepository =
       GetIt.instance.get<LocalNotificationRepository>();
-  final DeviceInfoRepository _deviceInfoRepository =
-      GetIt.instance.get<DeviceInfoRepository>();
-  final RemoteChatRepository _remoteChatRepository =
-      GetIt.instance.get<RemoteChatRepository>();
+  final _rNotificationRepository =
+      GetIt.instance.get<RemoteNotificationRepository>();
+  final _networkCheckerRepository =
+      GetIt.instance.get<NetworkCheckerRepository>();
 
   String? userId;
   bool isOnboardingCompleted = false;
@@ -87,6 +84,18 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       _loggerService.error('Error loading app: $e');
       emit(const AppState.loadFailure());
     }
+  }
+
+  void _addNetworkListener() {
+    _networkCheckerRepository.init();
+    _networkCheckerRepository.networkStatusStream
+        .asBroadcastStream()
+        .listen((event) {
+      add(AppEvent.networkChange(
+        data: event.networkData,
+        isOnline: event.isOnline,
+      ));
+    });
   }
 
   Future<void> loadAndSaveToken() async {
@@ -268,6 +277,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     if (user == null) {
       unawaited(_localStorageRepository.clear());
     }
+  }
+
+  void _handleNetworkChange(
+    Emitter<AppState> emit,
+    NetworkData data,
+    bool isOnline,
+  ) {
+    emit(AppState.networkChange(data: data, isOnline: isOnline));
   }
 }
 

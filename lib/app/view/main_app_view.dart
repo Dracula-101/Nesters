@@ -35,10 +35,6 @@ class RootApp extends StatelessWidget with WidgetsBindingObserver {
         routerConfig: appRouterService.appRouter,
         title: 'Nesters',
         theme: AppTheme.lightTheme,
-        onNavigationNotification: (notification) {
-          print(notification);
-          return true;
-        },
         builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(

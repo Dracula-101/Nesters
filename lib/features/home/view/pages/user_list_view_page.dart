@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
@@ -146,9 +148,45 @@ class _UserListPageState extends State<UserListPage> {
                   size: 20,
                 ),
                 onPressed: () {
-                  // GoRouter.of(context).go(
-                  //   '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}',
-                  // );
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      return StatefulBuilder(
+                        builder: (context, setState) {
+                          return PopScope(
+                            canPop: false,
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 24,
+                                  right: 24,
+                                  top: 36,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SvgPicture.asset(
+                                      AppVectorImages.noInternet,
+                                      height:
+                                          MediaQuery.of(context).size.height *
+                                              0.3,
+                                    ),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Text(
+                                      'No Internet Available',
+                                      style: AppTheme.titleMedium,
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
                 },
               ),
               IconButton(

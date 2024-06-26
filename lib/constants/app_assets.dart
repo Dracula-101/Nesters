@@ -11,6 +11,7 @@ class AppVectorImages {
   static const String onboardingMarketplace = '$_mainFolder/marketplaces.svg';
   static const String onboardingSublet = '$_mainFolder/sublet.svg';
   static const String onboardingCommunity = '$_mainFolder/community.svg';
+  static const String noInternet = '$_mainFolder/no_internet.svg';
 }
 
 class AppRasterImages {

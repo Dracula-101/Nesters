@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
@@ -23,6 +25,44 @@ class HomeScaffold extends StatefulWidget {
 }
 
 class _HomeScaffoldState extends State<HomeScaffold> {
+  bool _isNetworkDisabled = false;
+
+  void showNetworkDisabledBottomSheet() {
+    setState(() => _isNetworkDisabled = true);
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return PopScope(
+              canPop: false,
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    top: 36,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Network not available",
+                        style: AppTheme.titleLarge,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    ).then((value) => setState(() => _isNetworkDisabled = false));
+  }
+
   @override
   void initState() {
     super.initState();
@@ -58,7 +98,24 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           create: (context) => MarketplaceBloc(),
         )
       ],
-      child: HomeView(initialIndex: widget.initialIndex),
+      child: BlocListener<AppBloc, AppState>(
+        listener: (context, state) {
+          if (state is AppNetworkChange) {
+            if (state.isOnline) {
+              if (_isNetworkDisabled) {
+                if (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
+              }
+            } else {
+              if (!_isNetworkDisabled) {
+                showNetworkDisabledBottomSheet();
+              }
+            }
+          }
+        },
+        child: HomeView(initialIndex: widget.initialIndex),
+      ),
     );
   }
 }
