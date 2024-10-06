@@ -31,29 +31,45 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     setState(() => _isNetworkDisabled = true);
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppTheme.background,
       isDismissible: false,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return PopScope(
               canPop: false,
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(
-                    left: 24,
-                    right: 24,
-                    top: 36,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Network not available",
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.wifi_off_rounded,
+                      size: MediaQuery.of(context).size.width * 0.3,
+                      color: AppTheme.greyShades.shade300,
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    Center(
+                      child: Text(
+                        'No Internet Available',
                         style: AppTheme.titleLarge,
+                        textAlign: TextAlign.center,
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(
+                      height: 10,
+                    ),
+                    Text(
+                      'Check your internet connection and try again',
+                      style: AppTheme.bodyMediumLightVariant,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
             );

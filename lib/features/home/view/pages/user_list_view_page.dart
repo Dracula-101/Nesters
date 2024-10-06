@@ -144,61 +144,15 @@ class _UserListPageState extends State<UserListPage> {
               ),
               IconButton(
                 icon: const Icon(
-                  FontAwesomeIcons.solidCommentDots,
-                  size: 20,
-                ),
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (context) {
-                      return StatefulBuilder(
-                        builder: (context, setState) {
-                          return PopScope(
-                            canPop: false,
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 24,
-                                  right: 24,
-                                  top: 36,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SvgPicture.asset(
-                                      AppVectorImages.noInternet,
-                                      height:
-                                          MediaQuery.of(context).size.height *
-                                              0.3,
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    Text(
-                                      'No Internet Available',
-                                      style: AppTheme.titleMedium,
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(
-                  FontAwesomeIcons.solidBell,
+                  FontAwesomeIcons.gear,
                   size: 20,
                 ),
                 onPressed: () {
                   GoRouter.of(context).go(
-                      '${AppRouterService.homeScreen}/${AppRouterService.marketplaceForm}');
+                    '${AppRouterService.homeScreen}/${AppRouterService.settings}',
+                  );
                 },
-              )
+              ),
             ],
           ),
         );

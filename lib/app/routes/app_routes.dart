@@ -12,6 +12,7 @@ import 'package:nesters/features/home/view/home_view.dart';
 import 'package:nesters/features/marketplace/detail/view/marketplace_detail_page.dart';
 import 'package:nesters/features/marketplace/form/view/marketplace_form_page.dart';
 import 'package:nesters/features/onboarding/view/onboarding_view.dart';
+import 'package:nesters/features/settings/view/settings_view.dart';
 import 'package:nesters/features/splash/view/splash_view.dart';
 import 'package:nesters/features/sublet/detail/view/sublet_detail_page.dart';
 import 'package:nesters/features/sublet/form/view/sublet_form_page.dart';
@@ -38,6 +39,7 @@ class AppRouterService {
   static const String userProfileAdvanceFormScreen = '/advance_form';
   static const String userProfileBasicFormScreen = '/basic_form';
   static const String userRequest = 'request';
+  static const String settings = 'settings';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -121,6 +123,10 @@ class AppRouterService {
                   marketplace: params.extra as MarketplaceModel,
                 ),
               ),
+              AppRoute(
+                settings,
+                (_) => const SettingsPage(),
+              )
             ],
           ),
           AppRoute(

@@ -23,4 +23,5 @@ class AppRasterImages {
   static const String googleIcon = '$_mainFolder/icons/google.png';
   static const String userProfileBackgroundBanner =
       '$_mainFolder/user/profile/background.png';
+  static const String noInternetImage = '$_mainFolder/user/no_internet.png';
 }
