@@ -1,6 +1,9 @@
 part of 'user_filter_bloc.dart';
 
-@freezed
-class UserFilterEvent with _$UserFilterEvent {
+abstract class UserFilterEvent {
   const factory UserFilterEvent.started() = _Started;
+}
+
+class _Started implements UserFilterEvent {
+  const _Started();
 }

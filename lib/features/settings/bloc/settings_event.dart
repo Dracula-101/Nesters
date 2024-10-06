@@ -1,6 +1,9 @@
 part of 'settings_bloc.dart';
 
-@freezed
-class SettingsEvent with _$SettingsEvent {
+abstract class SettingsEvent {
   const factory SettingsEvent.started() = _Started;
+}
+
+class _Started implements SettingsEvent {
+  const _Started();
 }

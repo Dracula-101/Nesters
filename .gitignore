@@ -69,3 +69,6 @@ firebase.json
 
 # Object Box Files
 **.g.dart
+
+# Keystore file
+/keystores/release.keystore

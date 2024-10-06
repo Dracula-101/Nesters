@@ -48,7 +48,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.app.nesters"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
@@ -60,6 +59,12 @@ android {
     }
 
     signingConfigs {
+        debug {
+            keyAlias "DebugNesters"
+            keyPassword "debug-nesters"
+            storePassword "debug-nesters"
+            storeFile file("../../keystores/debug.keystore")
+        }
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
@@ -70,7 +75,7 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             manifestPlaceholders["crashlyticsCollectionEnabled"] = true
         }
         debug {
