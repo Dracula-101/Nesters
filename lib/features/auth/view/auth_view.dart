@@ -94,7 +94,7 @@ class _AuthViewState extends State<AuthView> {
       width: double.infinity,
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          state.whenOrNull(error: (message) {
+          state.when(error: (message) {
             context.showErrorSnackBar(message);
           });
         },
@@ -132,27 +132,6 @@ class _AuthViewState extends State<AuthView> {
           );
         },
       ),
-    );
-  }
-}
-
-class AppText extends Text {
-  /// code
-  ///
-  ///
-  ///
-  const AppText(
-    String data, {
-    TextAlign textAlign = TextAlign.start,
-  }) : super(
-          data,
-          textAlign: textAlign,
-        );
-  Widget build(BuildContext context) {
-    return Text(
-      'Find Your Perfect\nRoommate Here',
-      textAlign: TextAlign.center,
-      style: AppTheme.headlineSmall,
     );
   }
 }

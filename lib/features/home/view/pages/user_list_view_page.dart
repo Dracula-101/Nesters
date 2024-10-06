@@ -11,6 +11,7 @@ import 'package:nesters/data/repository/database/object_box/repository/obx_stora
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
+import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
@@ -60,8 +61,16 @@ class _UserListPageState extends State<UserListPage> {
         final nextPageKey = pageKey + newItems.length;
         _pagingController.appendPage(newItems, nextPageKey);
       }
-    } catch (error) {
+      if (mounted) {
+        context
+            .read<HomeBloc>()
+            .add(LoadProfileCompleteEvent(_pagingController.itemList ?? []));
+      }
+    } on Exception catch (error) {
       _pagingController.error = error;
+      if (mounted) {
+        context.read<HomeBloc>().add(LoadProfileErrorEvent(error));
+      }
     }
   }
 

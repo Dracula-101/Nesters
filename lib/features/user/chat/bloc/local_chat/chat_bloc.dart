@@ -6,7 +6,7 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/domain/models/user/status/status.dart';
@@ -26,13 +26,12 @@ import 'package:rxdart/rxdart.dart';
 
 part 'chat_event.dart';
 part 'chat_state.dart';
-part 'chat_bloc.freezed.dart';
 
 class ChatBloc extends Bloc<ChatEvent, ChatState> {
   final ChatController controller;
   ChatBloc({
     required this.controller,
-  }) : super(ChatState.initial()) {
+  }) : super(ChatState()) {
     on<ChatEvent>(_onChatEvent);
   }
 

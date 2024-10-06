@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
@@ -8,12 +9,11 @@ import 'package:nesters/domain/models/user/user.dart';
 
 part 'user_state.dart';
 part 'user_event.dart';
-part 'user_bloc.freezed.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
   UserBloc(
     User user,
-  ) : super(UserState.initial()) {
+  ) : super(UserState(user: user)) {
     on<UserEvent>(
       (event, emit) => event.when(
         loadUser: (user) => emit(state.copyWith(user: user)),

@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/firebase_user_repository.dart';
@@ -11,10 +12,9 @@ import 'package:rxdart/rxdart.dart';
 
 part 'request_event.dart';
 part 'request_state.dart';
-part 'request_bloc.freezed.dart';
 
 class RequestBloc extends Bloc<RequestEvent, RequestState> {
-  RequestBloc() : super(RequestState.initial()) {
+  RequestBloc() : super(RequestState()) {
     on<RequestEvent>(_onRequestEvent);
     authRepository.user.listen((user) {
       if (user != null) {
@@ -35,10 +35,12 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
   ) async {
     await event.when(
       started: () {
-        emit(RequestState.initial());
+        emit(RequestState(isLoading: true));
+        return Future.value();
       },
       changeScreen: (value) {
         emit(state.copyWith(currentScreen: value));
+        return Future.value();
       },
       loadUsers: () async {
         await _loadUsers(emit);
@@ -55,12 +57,15 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
         await _sendRequest(userId, emit);
         await _loadUsers(emit);
       },
-      cancelRequest: (String userId) {},
+      cancelRequest: (String userId) {
+        return Future.value();
+      },
       clearSentRequestStatus: () {
         emit(state.copyWith(
           requestSentSuccess: false,
           requestSentError: false,
         ));
+        return Future.value();
       },
     );
   }
@@ -74,10 +79,11 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
 
   Future<void> _loadUsers(Emitter<RequestState> emit) async {
     try {
-      emit(RequestState.loading());
+      emit(state.copyWith(isLoading: true));
       User? user = authRepository.currentUser;
       if (user == null) {
-        emit(RequestState.error(Exception('User not found')));
+        emit(state.copyWith(
+            error: Exception('User not found'), isLoading: false));
         return;
       }
       await emit.forEach(
@@ -93,20 +99,23 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
           );
         },
         onError: (error, stackTrace) {
-          return RequestState.error(error as Exception);
+          return state.copyWith(error: error as Exception);
         },
       );
     } on Exception catch (e) {
-      emit(RequestState.error(e));
+      emit(state.copyWith(error: e));
+    } finally {
+      emit(state.copyWith(isLoading: false));
     }
   }
 
   Future<void> _sendRequest(String userId, Emitter<RequestState> emit) async {
     try {
-      emit(RequestState.loading());
+      emit(RequestState(isLoading: true));
       User? user = authRepository.currentUser;
       if (user == null) {
-        emit(RequestState.error(Exception('User not found')));
+        emit(state.copyWith(
+            error: Exception('User not found'), isLoading: false));
         return;
       }
       if (doesRequestExist(userId)) {
@@ -119,23 +128,28 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
       await chatRepository.sendRequest(user.id, userId);
       emit(state.copyWith(requestSentSuccess: true));
     } on Exception catch (e) {
-      emit(state.copyWith(error: e, requestSentError: true, isLoading: false));
+      emit(state.copyWith(error: e, requestSentError: true));
+    } finally {
+      emit(state.copyWith(isLoading: false));
     }
   }
 
   Future<void> _acceptRequest(
       String receiverId, Emitter<RequestState> emit) async {
     try {
-      emit(RequestState.loading());
+      emit(RequestState(isLoading: true));
       User? user = authRepository.currentUser;
       if (user == null) {
-        emit(RequestState.error(Exception('User not found')));
+        emit(state.copyWith(
+            error: Exception('User not found'), isLoading: false));
         return;
       }
       await chatRepository.acceptRequest(user.id, receiverId);
       await _createChatRoom(user.id, receiverId, emit);
     } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(error: e));
+    } finally {
+      emit(state.copyWith(isLoading: false));
     }
   }
 
@@ -156,15 +170,18 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
     Emitter<RequestState> emit,
   ) async {
     try {
-      emit(RequestState.loading());
+      emit(RequestState(isLoading: true));
       User? user = authRepository.currentUser;
       if (user == null) {
-        emit(RequestState.error(Exception('User not found')));
+        emit(state.copyWith(
+            error: Exception('User not found'), isLoading: false));
         return;
       }
       await chatRepository.rejectRequest(user.id, receiverId);
     } on Exception catch (e) {
-      emit(RequestState.error(e));
+      emit(state.copyWith(error: e));
+    } finally {
+      emit(state.copyWith(isLoading: false));
     }
   }
 

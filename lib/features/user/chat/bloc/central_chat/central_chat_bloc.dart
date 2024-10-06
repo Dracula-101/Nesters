@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:flutter/foundation.dart';
+
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
@@ -19,10 +20,9 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 part 'central_chat_event.dart';
 part 'central_chat_state.dart';
-part 'central_chat_bloc.freezed.dart';
 
 class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
-  CentralChatBloc() : super(CentralChatState.loading()) {
+  CentralChatBloc() : super(const CentralChatState()) {
     on<CentralChatEvent>(_onCentralChatEvent);
   }
 
@@ -116,7 +116,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
 
   FutureOr<void> _loadProfiles(Emitter<CentralChatState> emit) async {
     try {
-      emit(CentralChatState.loading());
+      emit(state.copyWith(isLoading: true));
       // ================== Load from local storage ==================
       List<QuickChatUser> chatUsers =
           _obxStorageRepository.getChatUserProfiles();
@@ -134,8 +134,9 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
           ).toList(),
         );
         emit(
-          CentralChatState.loaded(
-            _chatControllers.values.map((e) => e.toChatInfo()).toList(),
+          state.copyWith(
+            chatStates:
+                _chatControllers.values.map((e) => e.toChatInfo()).toList(),
           ),
         );
       }
@@ -156,13 +157,14 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
         },
       );
       emit(
-        CentralChatState.loaded(
-          _chatControllers.values.map((e) => e.toChatInfo()).toList(),
+        state.copyWith(
+          chatStates:
+              _chatControllers.values.map((e) => e.toChatInfo()).toList(),
         ),
       );
       add(const CentralChatEvent.loadChats());
     } on Exception catch (e) {
-      emit(CentralChatState.error(e));
+      emit(state.copyWith(error: e));
     }
   }
 
@@ -171,16 +173,16 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   Future<void> _forceLoadProfiles(Emitter<CentralChatState> emit) async {
     try {
       // ================== Load from remote (force) ==================
-      emit(CentralChatState.loading());
+      emit(state.copyWith(isLoading: true));
       List<ChatInfo> chatStates = [];
       List<ChatController> chatControllers = await _fetchRemoteRecipientUsers();
       for (ChatController chatHandler in chatControllers) {
         chatStates.add(chatHandler.toChatInfo());
       }
       _updateChatController(chatStates);
-      emit(CentralChatState.loaded(chatStates));
+      emit(state.copyWith(chatStates: chatStates, isLoading: false));
     } on Exception catch (e) {
-      emit(CentralChatState.error(e));
+      emit(state.copyWith(error: e));
     }
   }
 

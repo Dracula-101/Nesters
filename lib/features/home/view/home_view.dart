@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
@@ -13,7 +12,6 @@ import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 import 'package:nesters/features/sublet/list/view/sublet_list_page.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/view/chat_home_view.dart';
-import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 
 class HomeScaffold extends StatefulWidget {
@@ -115,18 +113,18 @@ class _HomeScaffoldState extends State<HomeScaffold> {
         )
       ],
       child: BlocListener<AppBloc, AppState>(
+        listenWhen: (previous, current) =>
+            previous.isOnline != current.isOnline,
         listener: (context, state) {
-          if (state is AppNetworkChange) {
-            if (state.isOnline) {
-              if (_isNetworkDisabled) {
-                if (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
+          if (state.isOnline) {
+            if (_isNetworkDisabled) {
+              if (Navigator.canPop(context)) {
+                Navigator.pop(context);
               }
-            } else {
-              if (!_isNetworkDisabled) {
-                showNetworkDisabledBottomSheet();
-              }
+            }
+          } else {
+            if (!_isNetworkDisabled) {
+              showNetworkDisabledBottomSheet();
             }
           }
         },

@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
@@ -11,10 +11,9 @@ import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'marketplace_form_state.dart';
-part 'marketplace_form_cubit.freezed.dart';
 
 class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
-  MarketplaceFormCubit() : super(MarketplaceFormState.initial());
+  MarketplaceFormCubit() : super(const MarketplaceFormState());
 
   final MarketplaceRepository _marketplaceRepository =
       GetIt.I<MarketplaceRepository>();
