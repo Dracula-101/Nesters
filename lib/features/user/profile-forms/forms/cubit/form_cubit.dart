@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:get_it/get_it.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
@@ -7,7 +7,6 @@ import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'form_state.dart';
-part 'form_cubit.freezed.dart';
 
 class FormCubit extends Cubit<CurrentFormState> {
   FormCubit() : super(CurrentFormState.initial());

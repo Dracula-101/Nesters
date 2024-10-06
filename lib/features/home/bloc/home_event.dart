@@ -1,11 +1,19 @@
 part of 'home_bloc.dart';
 
-@freezed
-class HomeEvent with _$HomeEvent {
-  const factory HomeEvent.initial() = _Initial;
-  const factory HomeEvent.loading() = _Loading;
-  const factory HomeEvent.loaded(
-    PagingController<int, UserQuickProfile> pagingController,
-  ) = _Loaded;
-  const factory HomeEvent.fetchNextPage(List<UserQuickProfile> newProfiles) = _FetchNextPage;
+abstract class HomeEvent {
+  const HomeEvent();
 }
+
+class LoadProfileEvent extends HomeEvent {}
+
+class LoadProfileCompleteEvent extends HomeEvent {
+  final List<UserQuickProfile> profiles;
+  LoadProfileCompleteEvent(this.profiles);
+}
+
+class LoadProfileErrorEvent extends HomeEvent {
+  final Exception error;
+  LoadProfileErrorEvent(this.error);
+}
+
+class FetchNextPageEvent extends HomeEvent {}

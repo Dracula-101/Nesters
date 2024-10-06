@@ -1,5 +1,5 @@
 import 'package:bloc/bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
@@ -11,10 +11,9 @@ import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'sublet_form_state.dart';
-part 'sublet_form_cubit.freezed.dart';
 
 class SubletFormCubit extends Cubit<SubletFormState> {
-  SubletFormCubit() : super(SubletFormState.initial());
+  SubletFormCubit() : super(SubletFormState());
 
   final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();

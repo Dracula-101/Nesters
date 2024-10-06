@@ -29,13 +29,15 @@ class UserProfileBasicForm extends StatelessWidget {
       body: SafeArea(
         child: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
-            return state.maybeMap(
+            return state.maybeWhen(
               authenticated: (user) {
-                return UserProfileBasicFormView(user: user.user);
+                return UserProfileBasicFormView(user: user);
               },
-              orElse: () => const Center(
-                child: CircularProgressIndicator(),
-              ),
+              orElse: () {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              },
             );
           },
         ),

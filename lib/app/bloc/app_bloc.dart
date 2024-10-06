@@ -5,7 +5,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
@@ -24,15 +24,14 @@ import 'package:nesters/utils/logger/logger.dart';
 
 part 'app_state.dart';
 part 'app_event.dart';
-part 'app_bloc.freezed.dart';
 
 class AppBloc extends Bloc<AppEvent, AppState> {
-  AppBloc() : super(const AppState.initial()) {
+  AppBloc() : super(const AppState()) {
     on<AppEvent>((event, emit) async {
       event.when(
-        () => null,
         load: () => _loadApp(event, emit),
-        loaded: (isSuccessful, _) => _loadedApp(event, emit, isSuccessful),
+        loaded: (isSuccessful, isOnboaringComplete) =>
+            _loadedApp(event, emit, isSuccessful),
         networkChange: (data, isOnline) =>
             _handleNetworkChange(emit, data, isOnline),
       );
@@ -61,7 +60,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   NavigationArgs? initializationArgs;
 
   Future<void> _loadApp(AppEvent event, Emitter<AppState> emit) async {
-    emit(const AppState.loadInProgress());
+    emit(const AppState(isLoading: true));
     try {
       final repositoryIntialize = await Future.wait([
         _localStorageRepository.init().timeInMilliseconds,
@@ -80,9 +79,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           .info('Repository Intialized in : $totalIntializationTime ms');
       add(AppEvent.loaded(
           isSuccessful: true, isOnboaringComplete: isOnboardingCompleted));
-    } catch (e) {
+    } on Exception catch (e) {
       _loggerService.error('Error loading app: $e');
-      emit(const AppState.loadFailure());
+      add(const AppEvent.loaded(
+          isSuccessful: false, isOnboaringComplete: false));
     }
   }
 
@@ -115,9 +115,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         .asyncMap(_checkUserProfileCreated)
         .listen(_authHandler);
     if (isSuccessful) {
-      emit(const AppState.loadSuccess());
+      emit(const AppState(isLoading: false));
     } else {
-      emit(const AppState.loadFailure());
+      emit(AppState(error: Exception('Error loading app)'), isLoading: false));
     }
   }
 
@@ -284,7 +284,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     NetworkData data,
     bool isOnline,
   ) {
-    emit(AppState.networkChange(data: data, isOnline: isOnline));
+    emit(AppState(networkData: data, isOnline: isOnline));
   }
 }
 

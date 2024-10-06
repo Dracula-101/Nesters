@@ -2,30 +2,68 @@
 
 part of 'request_bloc.dart';
 
-@freezed
-class RequestState with _$RequestState {
-  factory RequestState({
-    @Default(RequestScreen.RECEIVED) RequestScreen currentScreen,
-    @Default(false) bool isLoading,
+class RequestState {
+  final RequestScreen currentScreen;
+  final bool isLoading;
+  final List<Request>? requestSentUsers;
+  final List<Request>? requestReceivedUsers;
+  final Exception? error;
+  final bool requestSentSuccess;
+  final bool requestSentError;
+
+  RequestState({
+    this.currentScreen = RequestScreen.RECEIVED,
+    this.isLoading = false,
+    this.requestSentUsers,
+    this.requestReceivedUsers,
+    this.error,
+    this.requestSentSuccess = false,
+    this.requestSentError = false,
+  });
+
+  RequestState copyWith({
+    RequestScreen? currentScreen,
+    bool? isLoading,
     List<Request>? requestSentUsers,
     List<Request>? requestReceivedUsers,
     Exception? error,
-    @Default(false) bool requestSentSuccess,
-    @Default(false) bool requestSentError,
-  }) = _RequestState;
+    bool? requestSentSuccess,
+    bool? requestSentError,
+  }) {
+    return RequestState(
+      currentScreen: currentScreen ?? this.currentScreen,
+      isLoading: isLoading ?? this.isLoading,
+      requestSentUsers: requestSentUsers ?? this.requestSentUsers,
+      requestReceivedUsers: requestReceivedUsers ?? this.requestReceivedUsers,
+      error: error ?? this.error,
+      requestSentSuccess: requestSentSuccess ?? this.requestSentSuccess,
+      requestSentError: requestSentError ?? this.requestSentError,
+    );
+  }
 
-  factory RequestState.initial() => RequestState(
-        isLoading: false,
-      );
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
 
-  factory RequestState.loading() => RequestState(
-        isLoading: true,
-      );
+    return other is RequestState &&
+        other.currentScreen == currentScreen &&
+        other.isLoading == isLoading &&
+        listEquals(other.requestSentUsers, requestSentUsers) &&
+        listEquals(other.requestReceivedUsers, requestReceivedUsers) &&
+        other.error == error &&
+        other.requestSentSuccess == requestSentSuccess &&
+        other.requestSentError == requestSentError;
+  }
 
-  factory RequestState.error(Exception error) => RequestState(
-        isLoading: false,
-        error: error,
-      );
+  @override
+  int get hashCode =>
+      currentScreen.hashCode ^
+      isLoading.hashCode ^
+      requestSentUsers.hashCode ^
+      requestReceivedUsers.hashCode ^
+      error.hashCode ^
+      requestSentSuccess.hashCode ^
+      requestSentError.hashCode;
 }
 
 enum RequestScreen {

@@ -131,7 +131,7 @@ class _AdvancedFormViewPageState extends State<AdvancedFormViewPage>
                             width: AppTheme.bodyLarge.fontSize! * 4,
                             height: AppTheme.bodyLarge.fontSize! * 4,
                             child: CircularProgressIndicator(
-                              value: state.questionsComplete / 17,
+                              value: (state.questionsComplete ?? 0) / 17,
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 AppTheme.surface,
                               ),
