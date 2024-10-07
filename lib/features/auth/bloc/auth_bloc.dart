@@ -1,6 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:flutter/widgets.dart';
-
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/auth/error/auth_error.dart';
@@ -13,9 +11,7 @@ part 'auth_event.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc() : super(const AuthState.initial()) {
-    on<AuthGoogleSiginInEvent>(_onGoogleSignIn);
-    on<AuthSignOutEvent>(_onSignOut);
-    on<AuthUserChangedEvent>(_onUserChanged);
+    on<AuthEvent>(_onEvent);
     initializeAuthListener();
   }
 
@@ -24,8 +20,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       GetIt.I<CrashServiceRepository>();
   final AppLogger _loggerService = GetIt.I<AppLogger>();
 
+  Future<void> _onEvent(
+    AuthEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    await event.when(
+      authUserChanged: (user) {
+        _onUserChanged(user, emit);
+      },
+      authGoogleSignIn: () async => await _onGoogleSignIn(emit),
+      authSignOut: () async => await _onSignOut(emit),
+    );
+  }
+
   Future<void> _onGoogleSignIn(
-    AuthGoogleSiginInEvent event,
     Emitter<AuthState> emit,
   ) async {
     try {
@@ -47,7 +55,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   Future<void> _onSignOut(
-    AuthSignOutEvent event,
     Emitter<AuthState> emit,
   ) async {
     await _authRepository.signOut().catchError(
@@ -59,10 +66,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   void _onUserChanged(
-    AuthUserChangedEvent event,
+    User? user,
     Emitter<AuthState> emit,
   ) {
-    final user = event.user;
     if (user != null) {
       emit(AuthState.authenticated(user));
     } else {
@@ -72,7 +78,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   void initializeAuthListener() {
     _authRepository.user.listen((user) {
-      add(AuthUserChangedEvent(user));
+      add(AuthEvent.authUserChanged(user));
     });
   }
 }

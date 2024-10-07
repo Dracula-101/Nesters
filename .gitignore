@@ -71,4 +71,4 @@ firebase.json
 **.g.dart
 
 # Keystore file
-/keystores/release.keystore
+/keystores/release-keystore.jks

@@ -11,7 +11,7 @@ extension CustomSnackBar on BuildContext {
       snackbarDuration: const Duration(seconds: 2),
       builder: (context) {
         return ToastCard(
-          title: Text(message, style: AppTheme.bodyMedium),
+          title: Text(message, style: AppTheme.bodySmall),
           leading: icon,
           shadowColor: AppTheme.blackShades.shade100,
         );

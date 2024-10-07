@@ -1,10 +1,5 @@
 part of 'profile_bloc.dart';
 
-// @freezed
-// class ProfileEvent with _$ProfileEvent {
-//   const factory ProfileEvent.load(String userId) = _Load;
-// }
-
 abstract class ProfileEvent {
   const ProfileEvent();
 

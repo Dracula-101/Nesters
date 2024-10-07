@@ -94,14 +94,17 @@ class _AuthViewState extends State<AuthView> {
       width: double.infinity,
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
-          state.when(error: (message) {
-            context.showErrorSnackBar(message);
-          });
+          state.maybeWhen(
+            error: (message) {
+              context.showErrorSnackBar(message);
+            },
+            orElse: () {},
+          );
         },
         builder: (context, state) {
           return ElevatedButton(
             onPressed: () {
-              context.read<AuthBloc>().add(AuthGoogleSiginInEvent());
+              context.read<AuthBloc>().add(const AuthEvent.googleSignIn());
             },
             child: state.maybeWhen(
               loading: () => CircularProgressIndicator(

@@ -16,11 +16,11 @@ abstract class AuthState {
 
   //whenorNull
   R when<R>({
-    R Function(User user)? authenticated,
-    R Function()? unauthenticated,
-    R Function()? initial,
-    R Function()? loading,
-    R Function(String message)? error,
+    required R Function(User user)? authenticated,
+    required R Function()? unauthenticated,
+    required R Function()? initial,
+    required R Function()? loading,
+    required R Function(String message)? error,
   }) {
     if (this is _Authenticated) {
       return authenticated?.call((this as _Authenticated).user) ??
@@ -90,25 +90,26 @@ abstract class AuthState {
 
   //maybeMap
   R? maybeMap<R>({
-    required R Function(User) authenticated,
-    required R Function() unauthenticated,
-    required R Function() initial,
-    required R Function() loading,
-    required R Function(String) error,
-    required R Function(AuthState) orElse,
+    R Function(User)? authenticated,
+    R Function()? unauthenticated,
+    R Function()? initial,
+    R Function()? loading,
+    R Function(String)? error,
+    R Function(AuthState)? orElse,
   }) {
     if (this is _Authenticated) {
-      return authenticated((this as _Authenticated).user);
+      return authenticated?.call((this as _Authenticated).user) ??
+          orElse?.call(this);
     } else if (this is _Unauthenticated) {
-      return unauthenticated();
+      return unauthenticated?.call() ?? orElse?.call(this);
     } else if (this is _Initial) {
-      return initial();
+      return initial?.call() ?? orElse?.call(this);
     } else if (this is _Loading) {
-      return loading();
+      return loading?.call() ?? orElse?.call(this);
     } else if (this is _Error) {
-      return error((this as _Error).message);
+      return error?.call((this as _Error).message) ?? orElse?.call(this);
     } else {
-      return orElse(this);
+      return orElse?.call(this);
     }
   }
 }

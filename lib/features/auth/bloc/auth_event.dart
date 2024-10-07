@@ -1,15 +1,92 @@
 part of 'auth_bloc.dart';
 
-abstract class AuthEvent {}
+abstract class AuthEvent {
+  const AuthEvent();
 
-// Auth Google Sign in Event
-class AuthGoogleSiginInEvent implements AuthEvent {}
+  const factory AuthEvent.googleSignIn() = _AuthGoogleSiginInEvent;
+  const factory AuthEvent.authSignOut() = _AuthSignOutEvent;
+  const factory AuthEvent.authUserChanged(User? user) = _AuthUserChangedEvent;
 
-// Auth Sign Out Event
-class AuthSignOutEvent implements AuthEvent {}
+  R when<R>({
+    required R Function() authGoogleSignIn,
+    required R Function() authSignOut,
+    required R Function(User? user) authUserChanged,
+  }) {
+    if (this is _AuthGoogleSiginInEvent) {
+      return authGoogleSignIn();
+    } else if (this is _AuthSignOutEvent) {
+      return authSignOut();
+    } else if (this is _AuthUserChangedEvent) {
+      return authUserChanged((this as _AuthUserChangedEvent).user);
+    } else {
+      throw Exception('Unknown event: $this');
+    }
+  }
 
-// Auth User Changed Event
-class AuthUserChangedEvent implements AuthEvent {
+  R maybeWhen<R>({
+    R Function()? authGoogleSignIn,
+    R Function()? authSignOut,
+    R Function(User? user)? authUserChanged,
+    required R Function() orElse,
+  }) {
+    if (this is _AuthGoogleSiginInEvent) {
+      return authGoogleSignIn != null ? authGoogleSignIn() : orElse();
+    } else if (this is _AuthSignOutEvent) {
+      return authSignOut != null ? authSignOut() : orElse();
+    } else if (this is _AuthUserChangedEvent) {
+      return authUserChanged != null
+          ? authUserChanged((this as _AuthUserChangedEvent).user)
+          : orElse();
+    } else {
+      throw Exception('Unknown event: $this');
+    }
+  }
+
+  R map<R>({
+    required R Function() authGoogleSignIn,
+    required R Function() authSignOut,
+    required R Function(User? user) authUserChanged,
+  }) {
+    if (this is _AuthGoogleSiginInEvent) {
+      return authGoogleSignIn();
+    } else if (this is _AuthSignOutEvent) {
+      return authSignOut();
+    } else if (this is _AuthUserChangedEvent) {
+      return authUserChanged((this as _AuthUserChangedEvent).user);
+    } else {
+      throw Exception('Unknown event: $this');
+    }
+  }
+
+  R maybeMap<R>({
+    R Function()? authGoogleSignIn,
+    R Function()? authSignOut,
+    R Function(User? user)? authUserChanged,
+    required R Function() orElse,
+  }) {
+    if (this is _AuthGoogleSiginInEvent) {
+      return authGoogleSignIn != null ? authGoogleSignIn() : orElse();
+    } else if (this is _AuthSignOutEvent) {
+      return authSignOut != null ? authSignOut() : orElse();
+    } else if (this is _AuthUserChangedEvent) {
+      return authUserChanged != null
+          ? authUserChanged((this as _AuthUserChangedEvent).user)
+          : orElse();
+    } else {
+      throw Exception('Unknown event: $this');
+    }
+  }
+}
+
+class _AuthGoogleSiginInEvent extends AuthEvent {
+  const _AuthGoogleSiginInEvent();
+}
+
+class _AuthSignOutEvent extends AuthEvent {
+  const _AuthSignOutEvent();
+}
+
+class _AuthUserChangedEvent extends AuthEvent {
   final User? user;
-  AuthUserChangedEvent(this.user);
+  const _AuthUserChangedEvent(this.user);
 }

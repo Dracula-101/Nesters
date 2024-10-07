@@ -6,7 +6,6 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:path/path.dart' as path_provider;
 import 'package:http/http.dart' as http;
@@ -211,12 +210,13 @@ class FirebaseChatRepository extends RemoteChatRepository {
       await file.writeAsBytes(response.bodyBytes);
 
       // Ask the user to save it
-      final params = SaveFileDialogParams(sourceFilePath: file.path);
-      final finalPath = await FlutterFileDialog.saveFile(params: params);
+      // TODO: Implement this
+      // final params = SaveFileDialogParams(sourceFilePath: file.path);
+      // final finalPath = await FlutterFileDialog.saveFile(params: params);
 
-      if (finalPath != null) {
-        message = 'Image saved successfully.';
-      }
+      // if (finalPath != null) {
+      //   message = 'Image saved successfully.';
+      // }
       return message;
     } on Exception {
       rethrow;

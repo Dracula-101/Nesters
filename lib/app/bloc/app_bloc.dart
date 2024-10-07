@@ -10,6 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
+import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/device/device_info_repository.dart';
@@ -47,6 +48,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   final _obxStorageRepository = GetIt.instance.get<ObxStorageRepository>();
   final _deviceInfoRepository = GetIt.instance.get<DeviceInfoRepository>();
   final _remoteChatRepository = GetIt.instance.get<RemoteChatRepository>();
+  final _crashServiceRepository = GetIt.instance.get<CrashServiceRepository>();
 
   final _localNotificationRepository =
       GetIt.instance.get<LocalNotificationRepository>();
@@ -68,19 +70,16 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         _localNotificationRepository.init().timeInMilliseconds,
         _deviceInfoRepository.init().timeInMilliseconds,
       ]);
-      int totalIntializationTime = 0;
-      for (int time in repositoryIntialize) {
-        totalIntializationTime += time.isNegative ? 0 : time;
-      }
       isOnboardingCompleted = _userRepository.checkUserOnboardingStatus();
       unawaited(loadAndSaveToken());
       _remoteChatRepository.tokenChangeListener();
-      _loggerService
-          .info('Repository Intialized in : $totalIntializationTime ms');
+      _loggerService.info(
+          "Local Storage: ${repositoryIntialize[0]} ms\nObject Box: ${repositoryIntialize[1]} ms\nLocal Notification: ${repositoryIntialize[2]} ms\nDevice Info: ${repositoryIntialize[3]} ms");
       add(AppEvent.loaded(
           isSuccessful: true, isOnboaringComplete: isOnboardingCompleted));
-    } on Exception catch (e) {
-      _loggerService.error('Error loading app: $e');
+    } on Exception catch (error, stacktrace) {
+      _loggerService.error('Error loading app: $error');
+      _crashServiceRepository.recordError(error, stackTrace: stacktrace);
       add(const AppEvent.loaded(
           isSuccessful: false, isOnboaringComplete: false));
     }
@@ -88,14 +87,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   void _addNetworkListener() {
     _networkCheckerRepository.init();
-    _networkCheckerRepository.networkStatusStream
-        .asBroadcastStream()
-        .listen((event) {
-      add(AppEvent.networkChange(
-        data: event.networkData,
-        isOnline: event.isOnline,
-      ));
-    });
+    _networkCheckerRepository.networkStatusStream.asBroadcastStream().listen(
+      (event) {
+        add(AppEvent.networkChange(
+          data: event.networkData,
+          isOnline: event.isOnline,
+        ));
+      },
+    );
   }
 
   Future<void> loadAndSaveToken() async {

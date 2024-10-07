@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
-import 'package:nesters/constants/app_assets.dart';
-import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
@@ -148,7 +145,7 @@ class _UserListPageState extends State<UserListPage> {
                   size: 20,
                 ),
                 onPressed: () {
-                  context.read<AuthBloc>().add(AuthSignOutEvent());
+                  context.read<AuthBloc>().add(const AuthEvent.authSignOut());
                 },
               ),
               IconButton(

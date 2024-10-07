@@ -1,4 +1,5 @@
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/auth/firebase_auth_repository_impl.dart';
 import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
 import 'package:nesters/data/repository/database/remote/supadatabase_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
