@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
@@ -89,8 +89,7 @@ class _ChatHomeViewState extends State<ChatHomeView>
           SliverToBoxAdapter(
             child: GestureDetector(
               onTap: () {
-                GoRouter.of(context).go(
-                    '${AppRouterService.homeScreen}/${AppRouterService.userRequest}');
+                GetIt.I<AppRouter>().navigateToUserRequest();
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(
@@ -186,12 +185,12 @@ class _ChatHomeViewState extends State<ChatHomeView>
                       .getChatController(chatUser.chatId!)
                       .newMessageCount,
                   onTap: () {
-                    String route =
-                        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatUser.chatId}';
-                    GoRouter.of(context).go(
-                      route,
-                      extra: chatUser.toUser(),
-                    );
+                    if (chatUser.chatId != null) {
+                      GetIt.I<AppRouter>().navigateToUserChat(
+                        chatId: chatUser.chatId!,
+                        user: chatUser.toUser(),
+                      );
+                    }
                   },
                 );
               },

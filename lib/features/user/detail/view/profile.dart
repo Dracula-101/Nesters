@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,7 +5,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:delightful_toast/toast/components/toast_card.dart';
 import 'package:delightful_toast/delight_toast.dart';
-import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
@@ -50,10 +47,8 @@ class _UserProfilePageState extends State<UserProfilePage> {
     bool doesChatExists =
         context.read<CentralChatBloc>().doesChatExists(chatId);
     if (doesChatExists && widget.showRequestDialog) {
-      GoRouter.of(context).go(
-        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
-        extra: otherUserProfile.toUser(),
-      );
+      GetIt.I<AppRouter>()
+          .navigateToUserChat(chatId: chatId, user: otherUserProfile.toUser());
     } else {
       showRequestDialog(
         context,
@@ -148,7 +143,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
       isDialogShown = true;
     });
     showGeneralDialog(
-      context: GoRouter.of(context).routerDelegate.navigatorKey.currentContext!,
+      context: AppRouter.navigatorKey.currentContext!,
       barrierDismissible: true,
       useRootNavigator: false,
       routeSettings: const RouteSettings(name: 'accept_request'),

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
+import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/domain/models/user/request/request.dart';
 import 'package:nesters/features/user/request/request.dart';
 import 'package:nesters/theme/theme.dart';
@@ -176,7 +176,7 @@ class _RequestViewState extends State<RequestView> {
 
   void showRequestDialog(Request user) {
     showGeneralDialog(
-      context: GoRouter.of(context).routerDelegate.navigatorKey.currentContext!,
+      context: AppRouter.navigatorKey.currentContext!,
       barrierDismissible: true,
       useRootNavigator: false,
       routeSettings: const RouteSettings(name: 'accept_request'),

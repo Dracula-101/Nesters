@@ -39,15 +39,13 @@ class LocalNotificationRepository {
           email: '',
           accessToken: '',
         );
-        GetIt.I<AppRouterService>().appRouter.push(
-              '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
-              extra: userProfile,
-            );
+        GetIt.I<AppRouter>()
+            .navigateToUserChat(chatId: chatId, user: userProfile);
       }
     }
   }
 
-  AppRouterService appRouterService;
+  AppRouter appRouterService;
   LocalNotificationRepository({required this.appRouterService});
 
   Future<void> init() async {
@@ -195,8 +193,7 @@ class LocalNotificationRepository {
     int messageId = generateChatMessageId(payload);
     AndroidNotificationDetails androidPlatformChannelSpecifics =
         await _chatNotificationChannelDetails(messageId, title, payload, body);
-    String currentPath =
-        appRouterService.appRouter.routeInformationProvider.value.uri.path;
+    String currentPath = appRouterService.currentRoute;
     String chatId = payload['chatId'];
     log("Received Notification -> Current Path: $currentPath, Chat Id: $chatId");
     if (!currentPath.contains(chatId)) {

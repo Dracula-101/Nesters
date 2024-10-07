@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/app/view/app_scaffold.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
-import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/settings/bloc/settings_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
@@ -15,7 +15,7 @@ class RootApp extends StatelessWidget with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final appRouterService = GetIt.I.get<AppRouterService>();
+    final appRouterService = GetIt.I.get<AppRouter>();
     return MultiBlocProvider(
       providers: [
         BlocProvider(
@@ -34,9 +34,12 @@ class RootApp extends StatelessWidget with WidgetsBindingObserver {
           create: (context) => SettingsBloc(),
         ),
       ],
-      child: MaterialApp.router(
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        routerConfig: appRouterService.appRouter,
+        initialRoute: Routes.SPLASH.toString(),
+        locale: const Locale('en'),
+        navigatorKey: AppRouter.navigatorKey,
+        routes: appRouterService.routes,
         title: 'Nesters',
         theme: AppTheme.lightTheme,
         builder: (context, child) {
@@ -46,7 +49,7 @@ class RootApp extends StatelessWidget with WidgetsBindingObserver {
                 1.0,
               ),
             ),
-            child: child!,
+            child: RootAppScaffold(child: child!),
           );
         },
       ),

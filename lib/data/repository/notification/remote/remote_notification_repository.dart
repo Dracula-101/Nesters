@@ -8,7 +8,7 @@ abstract class RemoteNotificationRepository {
   });
 
   final LocalNotificationRepository notificationRepository;
-  final AppRouterService appRouterService;
+  final AppRouter appRouterService;
 
   Future<bool> init();
   Future<String> getToken();

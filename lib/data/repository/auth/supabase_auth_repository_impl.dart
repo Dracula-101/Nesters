@@ -1,6 +1,7 @@
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import 'auth_repository.dart';
@@ -81,7 +82,12 @@ class SupabaseAuthRepository extends AuthRepository {
 
   @override
   Stream<User?> get user {
-    return _supabaseClient.auth.onAuthStateChange.map((event) {
+    return _supabaseClient.auth.onAuthStateChange
+        .distinctUnique(
+      equals: (previous, next) =>
+          previous.session?.user.id == next.session?.user.id,
+    )
+        .map((event) {
       if (event.session != null) {
         return User(
           id: event.session!.user.id,

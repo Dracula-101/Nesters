@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get_it/get_it.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/theme/theme.dart';
@@ -21,9 +21,11 @@ class UserQuickProfileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        GoRouter.of(context).go(
-          '${AppRouterService.homeScreen}/${AppRouterService.userProfile}/${userQuickProfile.id}',
-        );
+        if (userQuickProfile.id != null) {
+          GetIt.I
+              .get<AppRouter>()
+              .navigateToUserProfile(id: userQuickProfile.id!);
+        }
       },
       child: Container(
         padding: contentPadding ?? const EdgeInsets.all(12),
@@ -99,10 +101,10 @@ class UserQuickProfileWidget extends StatelessWidget {
                         ),
                         InkWell(
                           onTap: () {
-                            GoRouter.of(context).go(
-                              '${AppRouterService.homeScreen}/${AppRouterService.userProfile}/${userQuickProfile.id}',
-                              extra: true,
-                            );
+                            if (userQuickProfile.id != null) {
+                              GetIt.I.get<AppRouter>().navigateToUserProfile(
+                                  id: userQuickProfile.id!);
+                            }
                           },
                           child: Icon(
                             FontAwesomeIcons.telegram,

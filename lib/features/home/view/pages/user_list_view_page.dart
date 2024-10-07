@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
@@ -154,9 +153,7 @@ class _UserListPageState extends State<UserListPage> {
                   size: 20,
                 ),
                 onPressed: () {
-                  GoRouter.of(context).go(
-                    '${AppRouterService.homeScreen}/${AppRouterService.settings}',
-                  );
+                  GetIt.I.get<AppRouter>().navigateToSettings();
                 },
               ),
             ],

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
@@ -245,7 +244,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           if (currentIndex == pageCount - 1) {
             unawaited(GetIt.I<UserRepository>().setOnBoardingComplete());
             context.read<AppBloc>().isOnboardingCompleted = true;
-            GoRouter.of(context).go(AppRouterService.loginScreen);
+            GetIt.I<AppRouter>().navigateToLogin(replace: true);
           } else {
             _pageController.nextPage(
               duration: const Duration(

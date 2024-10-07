@@ -1,13 +1,8 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:get_it/get_it.dart';
-import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
@@ -41,7 +36,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     _addNetworkListener();
   }
 
-  final AppLogger _loggerService = GetIt.instance.get<AppLogger>();
+  final _routerService = GetIt.instance.get<AppRouter>();
+  final _loggerService = GetIt.instance.get<AppLogger>();
   final _authRepository = GetIt.instance.get<AuthRepository>();
   final _userRepository = GetIt.instance.get<UserRepository>();
   final _localStorageRepository = GetIt.instance.get<LocalStorageRepository>();
@@ -151,52 +147,21 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     //used for initial routing when the app is loaded
     String? route;
     if (!isOnboardingComplete) {
-      route = AppRouterService.onboardingScreen;
+      route = Routes.ONBOARDING.toString();
     } else if (!isLoggedIn) {
-      route = AppRouterService.loginScreen;
+      route = Routes.LOGIN.toString();
     } else if (!isUserProfileCreated) {
-      route = AppRouterService.userProfileBasicFormScreen;
+      route = Routes.BASIC_FORM.toString();
     } else {
       if (initializationArgs != null) {
         route = initializationArgs?.route;
         initializationArgs = null;
       }
-      route ??= AppRouterService.homeScreen;
+      route ??= Routes.HOME.toString();
     }
-    // route = AppRouterService.homeScreen;
     _loggerService.info('Initial Route: $route');
-    AppRouterService.navigatorKey.currentContext!.go(route);
+    _routerService.initRoute(route);
   }
-
-  // Note: Remove after adding sockets
-  // void _initalizeAppLifecycleListener(bool isLoggedIn) {
-  //   if (!isLoggedIn) {
-  //     if (userId != null) {
-  //       unawaited(
-  //           _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!));
-  //     }
-  //     _appLifecycleListener?.dispose();
-  //     _appLifecycleListener = null;
-  //   } else {
-  //     unawaited(_userStatusRepository.updateUserStatus(Status.ONLINE, userId!));
-  //     _appLifecycleListener ??= AppLifecycleListener(
-  //       onExitRequested: () async {
-  //         if (userId == null) return AppExitResponse.exit;
-  //         await _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
-  //         return AppExitResponse.exit;
-  //       },
-  //       onStateChange: (lifecycleState) {
-  //         if (lifecycleState == AppLifecycleState.resumed) {
-  //           if (userId == null) return;
-  //           _userStatusRepository.updateUserStatus(Status.ONLINE, userId!);
-  //         } else if (lifecycleState == AppLifecycleState.paused) {
-  //           if (userId == null) return;
-  //           _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
-  //         }
-  //       },
-  //     );
-  //   }
-  // }
 
   void _saveDeviceInfo(User? user) {
     /// This function saves the device information for a user if it has not been saved previously.
@@ -303,7 +268,6 @@ class ChatNavigationArgs implements NavigationArgs {
   final User? user;
 
   ChatNavigationArgs({required this.chatId, required this.user})
-      : route =
-            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+      : route = '${Routes.HOME}/${SubRoutes.USER_CHAT_HOME}',
         args = {'chatId': chatId, 'user': user};
 }

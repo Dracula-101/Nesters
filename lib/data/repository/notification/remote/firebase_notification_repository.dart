@@ -4,8 +4,6 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:nesters/app/bloc/app_bloc.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/domain/models/user/user.dart';
@@ -115,13 +113,10 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
             email: '',
             accessToken: '',
           );
-          String currentPath = appRouterService
-              .appRouter.routeInformationProvider.value.uri.path;
-          if (currentPath.contains(AppRouterService.homeScreen)) {
-            appRouterService.appRouter.go(
-              '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
-              extra: userProfile,
-            );
+          String currentPath = appRouterService.currentRoute;
+          if (currentPath.contains(Routes.HOME.toString())) {
+            appRouterService.navigateToUserChat(
+                chatId: chatId, user: userProfile);
           }
         }
       },

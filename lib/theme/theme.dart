@@ -21,8 +21,7 @@ ThemeData _lightThemeData = ThemeData(
 class AppTheme {
   AppTheme._();
 
-  static final BuildContext _context =
-      AppRouterService.navigatorKey.currentContext!;
+  static final BuildContext _context = AppRouter.navigatorKey.currentContext!;
   static ThemeData get lightTheme => _lightThemeData;
 
   static Color get primary => Theme.of(_context).primaryColor;
