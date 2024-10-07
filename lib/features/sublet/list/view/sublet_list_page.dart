@@ -19,6 +19,12 @@ class SubletListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Sublets',
+          style: AppTheme.titleLarge,
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           GoRouter.of(context).go(

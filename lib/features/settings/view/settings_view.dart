@@ -1,8 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:marquee/marquee.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/settings/bloc/settings_bloc.dart';
@@ -85,17 +83,10 @@ class _SettingsViewState extends State<SettingsView> {
                         state.user.fullName,
                         style: AppTheme.titleLarge,
                       ),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width - 200,
-                        height: 20,
-                        child: Marquee(
-                          text: state.user.email,
-                          style: AppTheme.labelSmallLightVariant,
-                          blankSpace: 20,
-                          velocity: 50,
-                          pauseAfterRound: const Duration(seconds: 1),
-                        ),
-                      ),
+                      Text(
+                        '${state.user.email.split('@').first.substring(0, 5)}*****@${state.user.email.split('@').last}',
+                        style: AppTheme.labelSmallLightVariant,
+                      )
                     ],
                   )
                 ],

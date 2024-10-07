@@ -10,6 +10,7 @@ import 'package:nesters/data/repository/marketplace/marketplace_repository.dart'
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
+import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 class MarketplacePage extends StatelessWidget {
@@ -18,6 +19,12 @@ class MarketplacePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Marketplace',
+          style: AppTheme.titleLarge,
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'marketplace_fab',
         onPressed: () {

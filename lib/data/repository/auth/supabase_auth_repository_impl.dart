@@ -17,6 +17,7 @@ class SupabaseAuthRepository extends AuthRepository {
       supabase.Supabase.instance.client;
 
   late final GoogleSignIn _googleSignIn = GoogleSignIn(
+    clientId: _appSecrets.getSecret(AppSecretsKeys.GOOGLE_IOS_CLIENT_ID),
     serverClientId: _appSecrets.getSecret(AppSecretsKeys.GOOGLE_WEB_CLIENT_ID),
   );
 

@@ -22,7 +22,7 @@ class ChatHomePage extends StatelessWidget {
         appBar: AppBar(
           title: Text(
             'Messages',
-            style: AppTheme.headlineVerySmall,
+            style: AppTheme.titleLarge,
           ),
         ),
         body: const ChatHomeView(),
