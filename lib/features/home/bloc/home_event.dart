@@ -17,3 +17,8 @@ class LoadProfileErrorEvent extends HomeEvent {
 }
 
 class FetchNextPageEvent extends HomeEvent {}
+
+class FilterProfileEvent extends HomeEvent {
+  final UserFilter filter;
+  FilterProfileEvent(this.filter);
+}

@@ -4,22 +4,26 @@ class HomeState {
   final List<UserQuickProfile>? profiles;
   final Exception? error;
   final bool isLoading;
+  final UserFilter? userFilter;
 
   const HomeState({
     this.profiles,
     this.error,
     this.isLoading = true,
+    this.userFilter,
   });
 
   HomeState copyWith({
     List<UserQuickProfile>? profiles,
     Exception? error,
     bool? isLoading,
+    UserFilter? userFilter,
   }) {
     return HomeState(
       profiles: profiles ?? this.profiles,
       error: error ?? this.error,
       isLoading: isLoading ?? this.isLoading,
+      userFilter: userFilter ?? this.userFilter,
     );
   }
 
