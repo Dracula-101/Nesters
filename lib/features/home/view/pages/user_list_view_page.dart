@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
+import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
 import 'package:nesters/theme/theme.dart';
@@ -81,6 +83,7 @@ class _UserListPageState extends State<UserListPage> {
       child: CustomScrollView(
         slivers: [
           _buildAppBar(),
+          _buildTopActionsBar(),
           _buildUserList(),
         ],
       ),
@@ -166,6 +169,96 @@ class _UserListPageState extends State<UserListPage> {
     );
   }
 
+  Widget _buildTopActionsBar() {
+    return SliverToBoxAdapter(
+      child: SizedBox(
+        height: 50,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          scrollDirection: Axis.horizontal,
+          children: [
+            TopActionButton(
+              icon: Icons.filter,
+              title: 'Filter',
+              onPressed: () {},
+            ),
+            BlocBuilder<UserBloc, UserState>(
+              builder: (context, state) {
+                return TopActionButton(
+                  icon: Icons.school,
+                  title: 'University',
+                  onPressed: () async {
+                    // open a modal bottom sheet
+                    if (state.universities.isEmpty) {
+                      context
+                          .read<UserBloc>()
+                          .add(const UserEvent.loadUniversities());
+                    }
+                    String? universityName = await showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      showDragHandle: true,
+                      enableDrag: true,
+                      isDismissible: true,
+                      scrollControlDisabledMaxHeightRatio: 0.5,
+                      useSafeArea: true,
+                      builder: (context) {
+                        return DraggableScrollableSheet(
+                          expand: false,
+                          builder: (context, scrollController) {
+                            return SingleChildScrollView(
+                              controller: scrollController,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 12, bottom: 16),
+                                      child: Text(
+                                        "Universities",
+                                        style: AppTheme.titleLarge,
+                                      )),
+                                  if (state.universities.isEmpty)
+                                    const Center(
+                                      child: CircularProgressIndicator(),
+                                    )
+                                  else
+                                    ...state.universities
+                                        .map((university) =>
+                                            UniversityFilterTile(
+                                              isSelected: false,
+                                              onTap: () {},
+                                              university: university!,
+                                            ))
+                                        .toList(),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+            TopActionButton(
+              icon: Icons.book,
+              title: 'Branch',
+              onPressed: () {},
+            ),
+            TopActionButton(
+              icon: Icons.person,
+              title: 'Gender',
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildUserList() {
     return PagedSliverList<int, UserQuickProfile>(
       pagingController: _pagingController,
@@ -205,6 +298,59 @@ class _UserListPageState extends State<UserListPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class UniversityFilterTile extends StatelessWidget {
+  final bool isSelected;
+  final VoidCallback? onTap;
+  final University university;
+  const UniversityFilterTile({
+    super.key,
+    required this.isSelected,
+    required this.onTap,
+    required this.university,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: AppColor.white,
+                child: ClipOval(
+                  child: Image.network(
+                    university.logo ?? '',
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  university.title ?? '',
+                  style: AppTheme.bodyMedium,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (isSelected)
+                const Icon(
+                  Icons.check,
+                )
+            ],
+          ),
+        ),
+        const Divider(),
+      ],
     );
   }
 }
