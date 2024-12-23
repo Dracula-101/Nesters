@@ -8,6 +8,7 @@ import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
+import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 class UserRepository {
@@ -49,7 +50,13 @@ class UserRepository {
   }
 
   Future<List<Degree?>> getAllDegrees() async {
-    return Future.value(List.empty());
+    try {
+      return await _databaseRepository
+          .searchDataFromFuture(masterDegreeCollection, 'title', '')
+          .then((event) => event.map((e) => Degree.fromJson(e)).toList());
+    } catch (e) {
+      return List.empty();
+    }
   }
 
   Future<bool?> checkUserCreated(String userId) async {
@@ -152,6 +159,48 @@ class UserRepository {
           stackTrace: stackTrace);
       rethrow;
     }
+  }
+
+  Future<List<UserQuickProfile>> getSingleFilteredQuickProfiles(
+      SingleUserFilter filter) async {
+    QueryData? query;
+    if (filter is UniversityFilter) {
+      query = QueryData(
+        fieldName: 'selected_college_name',
+        equalTo: FieldValue(
+          key: 'selected_college_name',
+          value: filter.university,
+        ),
+      );
+    } else if (filter is BranchFilter) {
+      query = QueryData(
+        fieldName: 'selected_course_name',
+        equalTo: FieldValue(
+          key: 'selected_course_name',
+          value: filter.branch,
+        ),
+      );
+    } else if (filter is GenderFilter) {
+      query = QueryData(
+        fieldName: 'gender',
+        equalTo: FieldValue(
+          key: 'gender',
+          value: filter.gender,
+        ),
+      );
+    }
+    if (query == null) {
+      throw Exception('Invalid filter type');
+    }
+    return await _databaseRepository
+        .getFilteredData(
+          userDetailCollection,
+          query,
+          columns:
+              'id, full_name, gender, profile_image, selected_college_name, selected_course_name, city, state, work_experience',
+        )
+        .then((event) =>
+            event.map((e) => UserQuickProfile.fromJson(e!)).toList());
   }
 
   Future<UserProfile> getUserProfile(String id) async {

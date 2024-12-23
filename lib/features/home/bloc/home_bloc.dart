@@ -18,11 +18,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     _listenToNetwork();
   }
 
+  final UserRepository _userRepository = GetIt.I<UserRepository>();
   final NetworkCheckerRepository _networkCheckerRepository =
       GetIt.I<NetworkCheckerRepository>();
   final AppLogger _logger = GetIt.I<AppLogger>();
 
-  void _onEvent(HomeEvent event, Emitter<HomeState> emit) {
+  void _onEvent(HomeEvent event, Emitter<HomeState> emit) async {
     if (event is LoadProfileEvent) {
       emit(state.copyWith(isLoading: true));
     } else if (event is FetchNextPageEvent) {
@@ -31,6 +32,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(state.copyWith(profiles: event.profiles, isLoading: false));
     } else if (event is LoadProfileErrorEvent) {
       emit(state.copyWith(error: event.error, isLoading: false));
+    } else if (event is SingleAddFilterProfileEvent) {
+      emit(state.copyWith(userFilter: null, isLoading: true));
+      final filteredUser =
+          await _userRepository.getSingleFilteredQuickProfiles(event.filter);
+      emit(state.copyWith(
+          filteredProfiles: filteredUser,
+          isLoading: false,
+          singleUserFilter: event.filter));
+    } else if (event is SingleRemoveFilterProfileEvent) {
+      emit(state.copyWith(singleUserFilter: null, filteredProfiles: null));
+    } else if (event is FilterProfileEvent) {
+      emit(state.copyWith(userFilter: event.filter, singleUserFilter: null));
     }
   }
 
