@@ -68,8 +68,6 @@ class HomeState {
       return loaded(profiles, error, isLoading);
     } else if (userFilter != null) {
       return filterUsers(userFilter);
-    } else if (singleUserFilter != null) {
-      return filterSingle(singleUserFilter);
     } else {
       return initial();
     }
@@ -113,6 +111,8 @@ class HomeState {
       return loaded(this);
     } else if (userFilter != null) {
       return filterUsers(this);
+    } else if (singleUserFilter != null) {
+      return singleFilter(this);
     } else {
       return initial(this);
     }

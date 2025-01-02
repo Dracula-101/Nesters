@@ -1,8 +1,11 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
+import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SubletRepositoryImpl implements SubletRepository {
   final supabase.SupabaseClient _supabaseClient =
@@ -72,6 +75,46 @@ class SubletRepositoryImpl implements SubletRepository {
           .select()
           .range(paginationKey, paginationKey + range);
       return response.map((e) => SubletModel.fromMap(e)).toList();
+    } catch (e) {
+      throw Exception('Failed to get sublets: $e');
+    }
+  }
+
+  @override
+  Future<List<SubletModel>> singleFilterSublet(
+      {required SingleSubletFilter filter}) {
+    // singlesublet filter
+    // - GenderPreferenceFilter, RentFilter, ApartmentTypeFilter, ApartmentSizeFilter
+    try {
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
+          _supabaseClient.from("sublets").select();
+      if (filter is GenderPreferenceFilter) {
+        queryBuilder = queryBuilder.eq(
+            "roommate_gender_pref", filter.preferredGender.toString());
+      } else if (filter is RentFilter) {
+        queryBuilder = queryBuilder
+            .gte("rent", filter.startRent)
+            .lte("rent", filter.endRent);
+      } else if (filter is ApartmentTypeFilter) {
+        queryBuilder =
+            queryBuilder.eq("room_type", filter.apartmentType.toString());
+      } else if (filter is ApartmentSizeFilter) {
+        log("Filter Apartment Size: ${filter.apartmentSize.beds} Beds, ${filter.apartmentSize.baths} Baths");
+        queryBuilder = queryBuilder
+            .gte("beds", filter.apartmentSize.beds ?? 0)
+            .gte("baths", filter.apartmentSize.baths ?? 0);
+      }
+      PostgrestTransformBuilder<List<Map<String, dynamic>>> response =
+          queryBuilder;
+      if (filter is ApartmentSizeFilter) {
+        response = response
+            .order("beds", ascending: true)
+            .order("baths", ascending: true);
+      }
+      return response
+          .order("created_at", ascending: false)
+          .select()
+          .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } catch (e) {
       throw Exception('Failed to get sublets: $e');
     }

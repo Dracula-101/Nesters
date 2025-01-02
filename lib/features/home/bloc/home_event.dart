@@ -18,6 +18,7 @@ class LoadProfileErrorEvent extends HomeEvent {
 
 class FetchNextPageEvent extends HomeEvent {}
 
+// Filters for user profile
 class SingleAddFilterProfileEvent extends HomeEvent {
   final SingleUserFilter filter;
   SingleAddFilterProfileEvent(this.filter);
@@ -31,3 +32,5 @@ class FilterProfileEvent extends HomeEvent {
   final UserFilter? filter;
   FilterProfileEvent(this.filter);
 }
+
+// Filters for sublet
