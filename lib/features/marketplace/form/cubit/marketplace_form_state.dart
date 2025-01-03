@@ -10,6 +10,7 @@ class MarketplaceFormState {
   final bool? isSubmitComplete;
   final Exception? submitError;
   final MarketplaceImageUploadTask? imageUploadTask;
+  final List<MarketplaceCategoryModel> marketplaceCategories;
 
   const MarketplaceFormState({
     this.item,
@@ -21,6 +22,7 @@ class MarketplaceFormState {
     this.isSubmitComplete,
     this.submitError,
     this.imageUploadTask,
+    this.marketplaceCategories = const [],
   });
 
   MarketplaceFormState copyWith({
@@ -33,6 +35,7 @@ class MarketplaceFormState {
     bool? isSubmitComplete,
     Exception? submitError,
     MarketplaceImageUploadTask? imageUploadTask,
+    List<MarketplaceCategoryModel>? marketplaceCategories,
   }) {
     return MarketplaceFormState(
       item: item ?? this.item,
@@ -44,6 +47,8 @@ class MarketplaceFormState {
       isSubmitComplete: isSubmitComplete ?? this.isSubmitComplete,
       submitError: submitError ?? this.submitError,
       imageUploadTask: imageUploadTask ?? this.imageUploadTask,
+      marketplaceCategories:
+          marketplaceCategories ?? this.marketplaceCategories,
     );
   }
 

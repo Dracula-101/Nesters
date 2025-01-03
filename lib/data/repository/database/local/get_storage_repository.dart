@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:get_storage/get_storage.dart';
 
 import 'error/local_storage_error.dart';
@@ -109,7 +111,7 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  double? getDouble(String key)  {
+  double? getDouble(String key) {
     try {
       final value = _getStorage.read(key);
       if (value is! double) {
@@ -169,8 +171,7 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  T? getClass<T>(
-      String key, T Function(Map<String, dynamic>) fromJson) {
+  T? getClass<T>(String key, T Function(Map<String, dynamic>) fromJson) {
     try {
       final value = _getStorage.read(key);
       if (value is! Map<String, dynamic>) {
@@ -194,15 +195,13 @@ class GetStorageRepository extends LocalStorageRepository {
   }
 
   @override
-  List<T?>? getListClass<T>(
+  List<T>? getListClass<T>(
       String key, T Function(Map<String, dynamic>) fromJson) {
     try {
       final value = _getStorage.read(key);
-      if (value is! List<Map<String, dynamic>>) {
-        throw LocalStorageObjectMisMatchError.fromMisMatchType(
-            List<Map<String, dynamic>>, value.runtimeType);
-      }
-      return value.map((e) => fromJson(e)).toList();
+      if (value == null) return null;
+      final decodedList = jsonDecode(value) as List;
+      return decodedList.map((e) => fromJson(e)).toList();
     } catch (e) {
       rethrow;
     }
@@ -212,7 +211,8 @@ class GetStorageRepository extends LocalStorageRepository {
   Future<void> saveListClass<T>(String key, List<T> value,
       Map<String, dynamic> Function(T) toJson) async {
     try {
-      await _getStorage.write(key, value.map((e) => toJson(e)).toList());
+      final encodedString = jsonEncode(value.map((e) => toJson(e)).toList());
+      await _getStorage.write(key, encodedString);
     } catch (e) {
       throw LocalStorageSaveError.fromKey(key);
     }

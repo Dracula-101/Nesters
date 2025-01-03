@@ -6,15 +6,24 @@ abstract class MarketplaceEvent {
   const factory MarketplaceEvent.initial() = _Initial;
   const factory MarketplaceEvent.saveMarketplaces(
       List<MarketplaceModel> marketplaces) = _SaveMarketplaces;
+  const factory MarketplaceEvent.applySingleFilter(
+      MarketplaceSingleFilter filter) = _ApplySingleFilter;
+  const factory MarketplaceEvent.removeSingleFilter() = _RemoveSingleFilter;
 
   R when<R>({
     required R Function() initial,
     required R Function(List<MarketplaceModel> marketplaces) saveMarketplaces,
+    required R Function(MarketplaceSingleFilter filter) applySingleFilter,
+    required R Function() removeSingleFilter,
   }) {
     if (this is _Initial) {
       return initial();
     } else if (this is _SaveMarketplaces) {
       return saveMarketplaces((this as _SaveMarketplaces).marketplaces);
+    } else if (this is _ApplySingleFilter) {
+      return applySingleFilter((this as _ApplySingleFilter).filter);
+    } else if (this is _RemoveSingleFilter) {
+      return removeSingleFilter();
     } else {
       throw StateError('Unknown type $this');
     }
@@ -23,6 +32,8 @@ abstract class MarketplaceEvent {
   R maybeWhen<R>({
     R Function()? initial,
     R Function(List<MarketplaceModel> marketplaces)? saveMarketplaces,
+    R Function(MarketplaceSingleFilter filter)? applySingleFilter,
+    R Function()? removeSingleFilter,
     required R Function() orElse,
   }) {
     if (this is _Initial) {
@@ -31,19 +42,31 @@ abstract class MarketplaceEvent {
       return saveMarketplaces != null
           ? saveMarketplaces((this as _SaveMarketplaces).marketplaces)
           : orElse();
+    } else if (this is _ApplySingleFilter) {
+      return applySingleFilter != null
+          ? applySingleFilter((this as _ApplySingleFilter).filter)
+          : orElse();
+    } else if (this is _RemoveSingleFilter) {
+      return removeSingleFilter != null ? removeSingleFilter() : orElse();
     } else {
-      throw StateError('Unknown type $this');
+      return orElse();
     }
   }
 
   R map<R>({
     required R Function() initial,
     required R Function(List<MarketplaceModel> marketPlace) saveMarketplaces,
+    required R Function(MarketplaceSingleFilter filter) applySingleFilter,
+    required R Function() removeSingleFilter,
   }) {
     if (this is _Initial) {
       return initial();
     } else if (this is _SaveMarketplaces) {
       return saveMarketplaces((this as _SaveMarketplaces).marketplaces);
+    } else if (this is _ApplySingleFilter) {
+      return applySingleFilter((this as _ApplySingleFilter).filter);
+    } else if (this is _RemoveSingleFilter) {
+      return removeSingleFilter();
     } else {
       throw StateError('Unknown type $this');
     }
@@ -52,6 +75,8 @@ abstract class MarketplaceEvent {
   R maybeMap<R>({
     R Function()? initial,
     R Function(List<MarketplaceModel> marketplaces)? saveMarketplaces,
+    R Function(MarketplaceSingleFilter filter)? applySingleFilter,
+    R Function()? removeSingleFilter,
     required R Function() orElse,
   }) {
     if (this is _Initial) {
@@ -60,8 +85,14 @@ abstract class MarketplaceEvent {
       return saveMarketplaces != null
           ? saveMarketplaces((this as _SaveMarketplaces).marketplaces)
           : orElse();
+    } else if (this is _ApplySingleFilter) {
+      return applySingleFilter != null
+          ? applySingleFilter((this as _ApplySingleFilter).filter)
+          : orElse();
+    } else if (this is _RemoveSingleFilter) {
+      return removeSingleFilter != null ? removeSingleFilter() : orElse();
     } else {
-      throw StateError('Unknown type $this');
+      return orElse();
     }
   }
 }
@@ -74,4 +105,22 @@ class _SaveMarketplaces extends MarketplaceEvent {
   final List<MarketplaceModel> marketplaces;
 
   const _SaveMarketplaces(this.marketplaces);
+}
+
+abstract class MarketplaceSingleFilter {}
+
+class MarketplaceCategoryFilter extends MarketplaceSingleFilter {
+  final MarketplaceCategoryModel category;
+
+  MarketplaceCategoryFilter(this.category);
+}
+
+class _ApplySingleFilter extends MarketplaceEvent {
+  final MarketplaceSingleFilter filter;
+
+  const _ApplySingleFilter(this.filter);
+}
+
+class _RemoveSingleFilter extends MarketplaceEvent {
+  const _RemoveSingleFilter();
 }

@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 
@@ -22,12 +23,20 @@ class MarketplaceBloc extends Bloc<MarketplaceEvent, MarketplaceState> {
 
   FutureOr<void> _marketplaceEventHandler(
       MarketplaceEvent event, Emitter<MarketplaceState> emit) async {
-    event.when(
-      initial: () {},
-      saveMarketplaces: (marketplaces) {
-        saveMarketplaces(marketplaces, emit);
-      },
-    );
+    await event.when(
+        initial: () {},
+        saveMarketplaces: (marketplaces) {
+          saveMarketplaces(marketplaces, emit);
+        },
+        applySingleFilter: (filter) async {
+          final filteredMarketplaces = await _marketplaceRepository
+              .getSingleFilteredMarketplaces(filter);
+          emit(state.copyWith(
+              marketplaceListFiltered: filteredMarketplaces, filter: filter));
+        },
+        removeSingleFilter: () {
+          emit(state.copyWith(filter: null, marketplaceListFiltered: null));
+        });
   }
 
   void saveMarketplaces(

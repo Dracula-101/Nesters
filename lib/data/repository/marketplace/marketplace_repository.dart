@@ -1,5 +1,6 @@
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 
 abstract class MarketplaceRepository {
   Future<String> createMarketplace({
@@ -17,6 +18,9 @@ abstract class MarketplaceRepository {
       {int range = 10, int paginationKey = 0});
 
   Future<List<MarketplaceCategoryModel>> getMarketplaceCategories();
+
+  Future<List<MarketplaceModel>> getSingleFilteredMarketplaces(
+      MarketplaceSingleFilter filter);
 }
 
 class MarketplaceImageUploadTask {

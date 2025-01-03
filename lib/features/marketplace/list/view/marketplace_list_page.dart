@@ -10,10 +10,6 @@ import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
-import 'package:nesters/features/home/view/pages/user_list_view_page.dart';
-import 'package:nesters/domain/models/college/degree.dart';
-import 'package:nesters/domain/models/college/university.dart';
-import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 
@@ -98,7 +94,12 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
           child: CustomScrollView(
             slivers: [
               _buildFilterBar(),
-              _buildMarketplaceList(state.marketplaceList ?? []),
+              state.singleFilter != null
+                  ? state.marketplaceListFiltered?.isEmpty == true
+                      ? _buildMarketplacePlaceholder()
+                      : _buildFilteredMarketplaceList(
+                          state.marketplaceListFiltered ?? [])
+                  : _buildMarketplaceList(state.marketplaceList ?? []),
             ],
           ),
           onRefresh: () {
@@ -119,6 +120,17 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
   Widget _buildErrorIndicator(Exception error) {
     return Center(
       child: Text('Error: $error'),
+    );
+  }
+
+  Widget _buildMarketplacePlaceholder() {
+    return SliverFillRemaining(
+      child: Center(
+        child: Text(
+          "No marketplaces found",
+          style: AppTheme.titleLarge,
+        ),
+      ),
     );
   }
 
@@ -145,6 +157,23 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
     );
   }
 
+  Widget _buildFilteredMarketplaceList(List<MarketplaceModel> marketplaces) {
+    return SliverList.builder(
+      itemCount: marketplaces.length,
+      itemBuilder: (context, index) {
+        return MarketplaceModelWidget(
+          onPressed: () {
+            GoRouter.of(context).go(
+              '${AppRouterService.homeScreen}/${AppRouterService.marketplaceDetail}',
+              extra: marketplaces[index],
+            );
+          },
+          marketplace: marketplaces[index],
+        );
+      },
+    );
+  }
+
   Widget _buildFilterBar() {
     return SliverAppBar(
         pinned: true,
@@ -159,8 +188,8 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
         ),
         title: SizedBox(
           height: 50,
-          child: BlocBuilder<HomeBloc, HomeState>(
-            builder: (context, homeState) {
+          child: BlocBuilder<MarketplaceBloc, MarketplaceState>(
+            builder: (context, marketplaceState) {
               return BlocBuilder<UserBloc, UserState>(
                 builder: (context, userState) {
                   return ListView(
@@ -173,28 +202,31 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                         onPressed: () {},
                         isActive: false,
                       ),
-                      if (homeState.singleUserFilter == null ||
-                          homeState.singleUserFilter is UniversityFilter)
+                      if (marketplaceState.singleFilter == null ||
+                          marketplaceState.singleFilter
+                              is MarketplaceCategoryFilter)
                         TopActionButton(
-                          icon: Icons.school,
-                          title: homeState.singleUserFilter is UniversityFilter
-                              ? (homeState.singleUserFilter as UniversityFilter)
-                                  .university
-                              : "University",
-                          isActive:
-                              homeState.singleUserFilter is UniversityFilter,
+                          icon: Icons.category,
+                          title: marketplaceState.singleFilter
+                                  is MarketplaceCategoryFilter
+                              ? (marketplaceState.singleFilter
+                                          as MarketplaceCategoryFilter)
+                                      .category
+                                      .name ??
+                                  ''
+                              : "Category",
+                          isActive: marketplaceState.singleFilter
+                              is MarketplaceCategoryFilter,
                           onPressed: () async {
-                            if (homeState.singleUserFilter
-                                is UniversityFilter) {
-                              context
-                                  .read<HomeBloc>()
-                                  .add(SingleRemoveFilterProfileEvent());
+                            if (marketplaceState.singleFilter
+                                is MarketplaceCategoryFilter) {
+                              context.read<MarketplaceBloc>().add(
+                                  const MarketplaceEvent.removeSingleFilter());
                             } else {
                               // open a modal bottom sheet
-                              if (userState.universities.isEmpty) {
-                                context
-                                    .read<UserBloc>()
-                                    .add(const UserEvent.loadUniversities());
+                              if (userState.marketplaceCategory.isEmpty) {
+                                context.read<UserBloc>().add(const UserEvent
+                                    .loadMarketplaceCategories());
                               }
                               showModalBottomSheet(
                                 context: context,
@@ -204,10 +236,10 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                 isDismissible: true,
                                 scrollControlDisabledMaxHeightRatio: 0.5,
                                 useSafeArea: true,
-                                builder: (context) {
+                                builder: (ctx) {
                                   return DraggableScrollableSheet(
                                     expand: false,
-                                    builder: (context, scrollController) {
+                                    builder: (ctx, scrollController) {
                                       return SingleChildScrollView(
                                         controller: scrollController,
                                         child: Column(
@@ -220,24 +252,32 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                                 padding: const EdgeInsets.only(
                                                     left: 12, bottom: 16),
                                                 child: Text(
-                                                  "Universities",
+                                                  "Categories",
                                                   style: AppTheme.titleLarge,
                                                 )),
-                                            if (userState.universities.isEmpty)
+                                            if (userState
+                                                .marketplaceCategory.isEmpty)
                                               const Center(
                                                 child:
                                                     CircularProgressIndicator(),
                                               )
                                             else
-                                              ...userState.universities
-                                                  .map((university) =>
-                                                      UniversityFilterTile(
-                                                        isSelected: false,
+                                              ...userState.marketplaceCategory
+                                                  .map((category) => ListTile(
+                                                        title: Text(
+                                                            category.name ??
+                                                                ""),
                                                         onTap: () {
-                                                          Navigator.of(context)
-                                                              .pop(university);
+                                                          context
+                                                              .read<
+                                                                  MarketplaceBloc>()
+                                                              .add(MarketplaceEvent
+                                                                  .applySingleFilter(
+                                                                      MarketplaceCategoryFilter(
+                                                                          category)));
+                                                          Navigator.pop(
+                                                              context);
                                                         },
-                                                        university: university!,
                                                       ))
                                                   .toList(),
                                           ],
@@ -246,193 +286,9 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                     },
                                   );
                                 },
-                              ).then((value) {
-                                if (value != null && value is University) {
-                                  context.read<HomeBloc>().add(
-                                      SingleAddFilterProfileEvent(
-                                          UniversityFilter(value.title ?? '')));
-                                }
-                              });
+                              );
                             }
                           },
-                        ),
-                      if (homeState.singleUserFilter == null ||
-                          homeState.singleUserFilter is BranchFilter)
-                        TopActionButton(
-                          icon: Icons.book,
-                          title: homeState.singleUserFilter is BranchFilter
-                              ? (homeState.singleUserFilter as BranchFilter)
-                                  .branch
-                              : "Branch",
-                          onPressed: () async {
-                            if (homeState.singleUserFilter is BranchFilter) {
-                              context
-                                  .read<HomeBloc>()
-                                  .add(SingleRemoveFilterProfileEvent());
-                            } else {
-                              if (userState.degrees.isEmpty) {
-                                context
-                                    .read<UserBloc>()
-                                    .add(const UserEvent.loadDegrees());
-                              }
-                              // open a modal bottom sheet
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                enableDrag: true,
-                                isDismissible: true,
-                                scrollControlDisabledMaxHeightRatio: 0.5,
-                                useSafeArea: true,
-                                builder: (context) {
-                                  return DraggableScrollableSheet(
-                                    expand: false,
-                                    builder: (context, scrollController) {
-                                      return SingleChildScrollView(
-                                        controller: scrollController,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 12, bottom: 16),
-                                              child: Text(
-                                                "Branches",
-                                                style: AppTheme.titleLarge,
-                                              ),
-                                            ),
-                                            if (userState.degrees.isEmpty)
-                                              const Center(
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              )
-                                            else
-                                              ...userState.degrees
-                                                  .map((degree) =>
-                                                      DegreeFilterTile(
-                                                        isSelected: false,
-                                                        onTap: () {
-                                                          Navigator.of(context)
-                                                              .pop(degree);
-                                                        },
-                                                        degree: degree!,
-                                                      ))
-                                                  .toList()
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ).then((value) {
-                                if (value != null && value is Degree) {
-                                  context.read<HomeBloc>().add(
-                                      SingleAddFilterProfileEvent(
-                                          BranchFilter(value.name)));
-                                }
-                              });
-                            }
-                          },
-                          isActive: homeState.singleUserFilter is BranchFilter,
-                        ),
-                      if (homeState.singleUserFilter == null ||
-                          homeState.singleUserFilter is GenderFilter)
-                        TopActionButton(
-                          icon: Icons.person,
-                          title: homeState.singleUserFilter is GenderFilter
-                              ? (homeState.singleUserFilter as GenderFilter)
-                                  .gender
-                              : 'Gender',
-                          onPressed: () async {
-                            if (homeState.singleUserFilter is GenderFilter) {
-                              context
-                                  .read<HomeBloc>()
-                                  .add(SingleRemoveFilterProfileEvent());
-                            } else {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                enableDrag: true,
-                                isDismissible: true,
-                                useSafeArea: true,
-                                builder: (context) {
-                                  return DraggableScrollableSheet(
-                                    expand: false,
-                                    initialChildSize: 0.3,
-                                    builder: (context, scrollController) {
-                                      return SingleChildScrollView(
-                                        controller: scrollController,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 12, bottom: 16),
-                                              child: Text(
-                                                "Gender",
-                                                style: AppTheme.titleLarge,
-                                              ),
-                                            ),
-                                            // male
-                                            ListTile(
-                                              title: const Text('Male'),
-                                              leading: Icon(
-                                                Icons.male,
-                                                color: AppTheme
-                                                    .greyShades.shade800,
-                                              ),
-                                              onTap: () {
-                                                Navigator.of(context)
-                                                    .pop('Male');
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('Female'),
-                                              onTap: () {
-                                                Navigator.of(context)
-                                                    .pop('Female');
-                                              },
-                                              leading: Icon(
-                                                Icons.female,
-                                                color: AppTheme
-                                                    .greyShades.shade800,
-                                              ),
-                                            ),
-                                            ListTile(
-                                              title: const Text('Other'),
-                                              onTap: () {
-                                                Navigator.of(context)
-                                                    .pop('Other');
-                                              },
-                                              leading: Icon(
-                                                Icons.transgender,
-                                                color: AppTheme
-                                                    .greyShades.shade800,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ).then((value) {
-                                if (value != null && value is String) {
-                                  context.read<HomeBloc>().add(
-                                      SingleAddFilterProfileEvent(
-                                          GenderFilter(value)));
-                                }
-                              });
-                            }
-                          },
-                          isActive: homeState.singleUserFilter is GenderFilter,
                         ),
                     ],
                   );

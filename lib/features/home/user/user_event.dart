@@ -7,11 +7,14 @@ class UserEvent {
   }) = _LoadUser;
   const factory UserEvent.loadUniversities() = _LoadUniversities;
   const factory UserEvent.loadDegrees() = _LoadDegrees;
+  const factory UserEvent.loadMarketplaceCategories() =
+      _LoadMarketplaceCategories;
 
   R when<R>({
     required R Function(User user) loadUser,
     required R Function() loadUniversities,
     required R Function() loadDegrees,
+    required R Function() loadMarketplaceCategories,
   }) {
     if (this is _LoadUser) {
       return loadUser((this as _LoadUser).user);
@@ -19,6 +22,8 @@ class UserEvent {
       return loadUniversities();
     } else if (this is _LoadDegrees) {
       return loadDegrees();
+    } else if (this is _LoadMarketplaceCategories) {
+      return loadMarketplaceCategories();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -28,6 +33,7 @@ class UserEvent {
     R Function(User user)? loadUser,
     R Function()? loadUniversities,
     R Function()? loadDegrees,
+    R Function()? loadMarketplaceCategories,
     required R Function() orElse,
   }) {
     if (this is _LoadUser) {
@@ -36,6 +42,10 @@ class UserEvent {
       return loadUniversities != null ? loadUniversities() : orElse();
     } else if (this is _LoadDegrees) {
       return loadDegrees != null ? loadDegrees() : orElse();
+    } else if (this is _LoadMarketplaceCategories) {
+      return loadMarketplaceCategories != null
+          ? loadMarketplaceCategories()
+          : orElse();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -45,6 +55,7 @@ class UserEvent {
     required R Function(User) loadUser,
     required R Function() loadUniversities,
     required R Function() loadDegrees,
+    required R Function() loadMarketplaceCategories,
   }) {
     if (this is _LoadUser) {
       return loadUser((this as _LoadUser).user);
@@ -52,6 +63,8 @@ class UserEvent {
       return loadUniversities();
     } else if (this is _LoadDegrees) {
       return loadDegrees();
+    } else if (this is _LoadMarketplaceCategories) {
+      return loadMarketplaceCategories();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -61,6 +74,7 @@ class UserEvent {
     R Function(User)? loadUser,
     R Function()? loadUniversities,
     R Function()? loadDegrees,
+    R Function()? loadMarketplaceCategories,
     required R Function() orElse,
   }) {
     if (this is _LoadUser) {
@@ -69,6 +83,10 @@ class UserEvent {
       return loadUniversities != null ? loadUniversities() : orElse();
     } else if (this is _LoadDegrees) {
       return loadDegrees != null ? loadDegrees() : orElse();
+    } else if (this is _LoadMarketplaceCategories) {
+      return loadMarketplaceCategories != null
+          ? loadMarketplaceCategories()
+          : orElse();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -86,4 +104,8 @@ class _LoadUniversities extends UserEvent {
 
 class _LoadDegrees extends UserEvent {
   const _LoadDegrees();
+}
+
+class _LoadMarketplaceCategories extends UserEvent {
+  const _LoadMarketplaceCategories();
 }
