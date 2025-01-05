@@ -7,13 +7,15 @@ class SupaDatabaseRepository extends DatabaseRepository {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
 
   @override
-  Future<Map<String, dynamic>?> getData(String table) async {
+  Future<List<Map<String, dynamic>>> getData(String table,
+      {String? orderByColumn, bool? isDescending}) async {
     try {
       // Execute the query to retrieve the first 30 rows from the table
-      final response = await _supabaseClient.from(table).select();
-
-      // Return the response
-      return {'data': response};
+      final response = await _supabaseClient
+          .from(table)
+          .select()
+          .order(orderByColumn ?? 'id', ascending: isDescending ?? true);
+      return response;
     } catch (e) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');

@@ -45,7 +45,7 @@ class UserRepository {
 
   Future<List<University?>> getAllUniversities() async {
     return await _databaseRepository
-        .searchDataFromFuture(universityCollection, 'title', '')
+        .getData("universities", orderByColumn: 'title')
         .then((event) => event.map((e) => University.fromJson(e)).toList());
   }
 

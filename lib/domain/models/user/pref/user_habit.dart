@@ -40,6 +40,15 @@ enum UserHabit {
     }
   }
 
+  static List<UserHabit> toList() {
+    return [
+      UserHabit.REGULAR,
+      UserHabit.OCCASIONAL,
+      UserHabit.RARELY,
+      UserHabit.NEVER,
+    ];
+  }
+
   String toDrinkingHabitText() {
     switch (this) {
       case UserHabit.REGULAR:
@@ -114,6 +123,16 @@ enum UserFoodHabit {
       default:
         return UserFoodHabit.UNKNOWN;
     }
+  }
+
+  static List<UserFoodHabit> toList() {
+    return [
+      UserFoodHabit.VEGAN,
+      UserFoodHabit.VEGETARIAN,
+      UserFoodHabit.PESCATARIAN,
+      UserFoodHabit.EGGETARIAN,
+      UserFoodHabit.NON_VEGETERIAN,
+    ];
   }
 
   String toUserFriendlyString() {

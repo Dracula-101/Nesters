@@ -1,4 +1,3 @@
-import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
@@ -8,7 +7,6 @@ class UserFilter {
   String? universityName;
   String? branchName;
   String? gender;
-  Language? language;
   UserFoodHabit? foodHabit;
   UserHabit? smokingHabit;
   UserHabit? drinkingHabit;
@@ -21,7 +19,6 @@ class UserFilter {
     this.branchName,
     this.drinkingHabit,
     this.gender,
-    this.language,
     this.foodHabit,
     this.smokingHabit,
     this.personType,
@@ -34,7 +31,6 @@ class UserFilter {
     String? universityName,
     String? branchName,
     String? gender,
-    Language? language,
     UserFoodHabit? foodHabit,
     UserHabit? smokingHabit,
     UserHabit? drinkingHabit,
@@ -46,7 +42,6 @@ class UserFilter {
       universityName: universityName ?? this.universityName,
       branchName: branchName ?? this.branchName,
       gender: gender ?? this.gender,
-      language: language ?? this.language,
       foodHabit: foodHabit ?? this.foodHabit,
       smokingHabit: smokingHabit ?? this.smokingHabit,
       drinkingHabit: drinkingHabit ?? this.drinkingHabit,

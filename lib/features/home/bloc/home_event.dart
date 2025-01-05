@@ -28,9 +28,11 @@ class SingleRemoveFilterProfileEvent extends HomeEvent {
   SingleRemoveFilterProfileEvent();
 }
 
-class FilterProfileEvent extends HomeEvent {
+class AddFilterProfileEvent extends HomeEvent {
   final UserFilter? filter;
-  FilterProfileEvent(this.filter);
+  AddFilterProfileEvent(this.filter);
 }
 
-// Filters for sublet
+class RemoveFilterProfileEvent extends HomeEvent {
+  RemoveFilterProfileEvent();
+}

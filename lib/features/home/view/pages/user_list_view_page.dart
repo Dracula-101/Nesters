@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -8,6 +9,8 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/room/room_type.dart';
+import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
@@ -16,6 +19,8 @@ import 'package:nesters/features/home/view/components/top_bar_action_button.dart
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/widgets/custom_flat_button.dart';
 
 class UserListPage extends StatefulWidget {
   const UserListPage({super.key});
@@ -195,7 +200,9 @@ class _UserListPageState extends State<UserListPage> {
                 TopActionButton(
                   icon: Icons.filter,
                   title: 'Filter',
-                  onPressed: () {},
+                  onPressed: () {
+                    showFilterDialog(context, homeState, userState);
+                  },
                   isActive: false,
                 ),
                 if (homeState.singleUserFilter == null ||
@@ -213,12 +220,6 @@ class _UserListPageState extends State<UserListPage> {
                             .read<HomeBloc>()
                             .add(SingleRemoveFilterProfileEvent());
                       } else {
-                        // open a modal bottom sheet
-                        if (userState.universities.isEmpty) {
-                          context
-                              .read<UserBloc>()
-                              .add(const UserEvent.loadUniversities());
-                        }
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
@@ -231,38 +232,43 @@ class _UserListPageState extends State<UserListPage> {
                             return DraggableScrollableSheet(
                               expand: false,
                               builder: (context, scrollController) {
-                                return SingleChildScrollView(
-                                  controller: scrollController,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                          padding: const EdgeInsets.only(
-                                              left: 12, bottom: 16),
-                                          child: Text(
-                                            "Universities",
-                                            style: AppTheme.titleLarge,
-                                          )),
-                                      if (userState.universities.isEmpty)
-                                        const Center(
-                                          child: CircularProgressIndicator(),
-                                        )
-                                      else
-                                        ...userState.universities
-                                            .map((university) =>
-                                                UniversityFilterTile(
-                                                  isSelected: false,
-                                                  onTap: () {
-                                                    Navigator.of(context)
-                                                        .pop(university);
-                                                  },
-                                                  university: university!,
-                                                ))
-                                            .toList(),
-                                    ],
-                                  ),
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 12, bottom: 16),
+                                        child: Text(
+                                          "Universities",
+                                          style: AppTheme.titleLarge,
+                                        )),
+                                    if (userState.universities.isEmpty)
+                                      const Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    else
+                                      Expanded(
+                                        child: ListView.builder(
+                                          controller: scrollController,
+                                          itemCount:
+                                              userState.universities.length,
+                                          itemBuilder: (context, index) {
+                                            return UniversityFilterTile(
+                                              isSelected: false,
+                                              onTap: () {
+                                                Navigator.of(context).pop(
+                                                  userState
+                                                      .universities[index]!,
+                                                );
+                                              },
+                                              university: userState
+                                                  .universities[index]!,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                  ],
                                 );
                               },
                             );
@@ -308,38 +314,41 @@ class _UserListPageState extends State<UserListPage> {
                             return DraggableScrollableSheet(
                               expand: false,
                               builder: (context, scrollController) {
-                                return SingleChildScrollView(
-                                  controller: scrollController,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 12, bottom: 16),
-                                        child: Text(
-                                          "Branches",
-                                          style: AppTheme.titleLarge,
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 12, bottom: 16),
+                                      child: Text(
+                                        "Branches",
+                                        style: AppTheme.titleLarge,
+                                      ),
+                                    ),
+                                    if (userState.degrees.isEmpty)
+                                      const Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    else
+                                      Expanded(
+                                        child: ListView.builder(
+                                          controller: scrollController,
+                                          itemCount: userState.degrees.length,
+                                          itemBuilder: (context, index) {
+                                            return DegreeFilterTile(
+                                              isSelected: false,
+                                              onTap: () {
+                                                Navigator.of(context).pop(
+                                                  userState.degrees[index]!,
+                                                );
+                                              },
+                                              degree: userState.degrees[index]!,
+                                            );
+                                          },
                                         ),
                                       ),
-                                      if (userState.degrees.isEmpty)
-                                        const Center(
-                                          child: CircularProgressIndicator(),
-                                        )
-                                      else
-                                        ...userState.degrees
-                                            .map((degree) => DegreeFilterTile(
-                                                  isSelected: false,
-                                                  onTap: () {
-                                                    Navigator.of(context)
-                                                        .pop(degree);
-                                                  },
-                                                  degree: degree!,
-                                                ))
-                                            .toList()
-                                    ],
-                                  ),
+                                  ],
                                 );
                               },
                             );
@@ -503,15 +512,361 @@ class _UserListPageState extends State<UserListPage> {
       },
     );
   }
+
+  void showFilterDialog(
+      BuildContext context, HomeState state, UserState userState) {
+    UserFilterTypes userFilterTypeSelected = UserFilterTypes.University;
+    String selectedUniversity = state.userFilter?.universityName ?? '';
+    String selectedBranch = state.userFilter?.branchName ?? '';
+    String selectedGender = state.userFilter?.gender ?? '';
+    UserFoodHabit selectedEatingHabit =
+        state.userFilter?.foodHabit ?? UserFoodHabit.UNKNOWN;
+    UserHabit selectedSmokingHabit =
+        state.userFilter?.smokingHabit ?? UserHabit.NEVER;
+    UserHabit selectedDrinkingHabit =
+        state.userFilter?.drinkingHabit ?? UserHabit.NEVER;
+    UserRoomType selectedRoomType =
+        state.userFilter?.roomType ?? UserRoomType.UNKNOWN;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return BlocProvider.value(
+              value: context.read<HomeBloc>(),
+              child: BlocBuilder<HomeBloc, HomeState>(
+                builder: (context, homeState) {
+                  return SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    child: Material(
+                      color: AppTheme.surface,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                top: 4, left: 16, right: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Filters',
+                                  style: AppTheme.titleLarge.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close),
+                                  iconSize: 20,
+                                  onPressed: () {
+                                    Navigator.of(ctx).pop();
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                          ),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.35,
+                                    child: ListView(
+                                      shrinkWrap: true,
+                                      children: [
+                                        ...UserFilterTypes.values.map(
+                                          (e) => filterTab(
+                                            e.toString(),
+                                            e == userFilterTypeSelected,
+                                            onTap: () {
+                                              setState(() {
+                                                userFilterTypeSelected = e;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.65,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          left: BorderSide(
+                                            color: AppTheme.greyShades.shade300,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Container(
+                                          child: switch (
+                                              userFilterTypeSelected) {
+                                        UserFilterTypes.University =>
+                                          ListView.builder(
+                                            shrinkWrap: true,
+                                            itemCount:
+                                                userState.universities.length,
+                                            itemBuilder: (context, index) {
+                                              return UniversityFilterTile(
+                                                isSelected:
+                                                    selectedUniversity ==
+                                                        userState
+                                                            .universities[
+                                                                index]!
+                                                            .title,
+                                                isDense: true,
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedUniversity =
+                                                        userState
+                                                                .universities[
+                                                                    index]
+                                                                ?.title ??
+                                                            '';
+                                                  });
+                                                },
+                                                university: userState
+                                                    .universities[index]!,
+                                              );
+                                            },
+                                          ),
+                                        UserFilterTypes.Branch =>
+                                          ListView.builder(
+                                            shrinkWrap: true,
+                                            itemCount: userState.degrees.length,
+                                            itemBuilder: (context, index) {
+                                              return DegreeFilterTile(
+                                                isSelected: selectedBranch ==
+                                                    userState
+                                                        .degrees[index]!.name,
+                                                isDense: true,
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedBranch = userState
+                                                        .degrees[index]!.name;
+                                                  });
+                                                },
+                                                degree:
+                                                    userState.degrees[index]!,
+                                              );
+                                            },
+                                          ),
+                                        UserFilterTypes.Gender => ListView(
+                                            children: [
+                                              filterTile(
+                                                'Male',
+                                                selectedGender == 'Male',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedGender = 'Male';
+                                                  });
+                                                },
+                                              ),
+                                              filterTile(
+                                                'Female',
+                                                selectedGender == 'Female',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedGender = 'Female';
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        UserFilterTypes.EatingHabits =>
+                                          ListView(
+                                            children: [
+                                              ...UserFoodHabit.toList().map(
+                                                (e) => filterTile(
+                                                  e
+                                                      .toUserFriendlyString()
+                                                      .capitalize,
+                                                  selectedEatingHabit == e,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedEatingHabit = e;
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        UserFilterTypes.SmokingHabits =>
+                                          ListView(
+                                            children: [
+                                              ...UserHabit.toList().map(
+                                                (e) => filterTile(
+                                                  e.toString().capitalize,
+                                                  selectedSmokingHabit == e,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedSmokingHabit = e;
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        UserFilterTypes.DrinkingHabits =>
+                                          ListView(
+                                            children: [
+                                              ...UserHabit.toList().map(
+                                                (e) => filterTile(
+                                                  e.toString().capitalize,
+                                                  selectedDrinkingHabit == e,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedDrinkingHabit = e;
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        UserFilterTypes.RoomType => ListView(
+                                            children: [
+                                              ...UserRoomType.toList().map(
+                                                (e) => filterTile(
+                                                  e.toUI(),
+                                                  selectedRoomType == e,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedRoomType = e;
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                      }),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            alignment: Alignment.centerRight,
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              child: Text(
+                                'Apply',
+                                style: AppTheme.bodyMedium.copyWith(
+                                  color: AppColor.white,
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget filterTile(
+    String title,
+    bool isSelected, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Row(
+        children: [
+          Transform.scale(
+            scale: 0.8,
+            child: CupertinoCheckbox(
+              activeColor: AppTheme.primary,
+              value: isSelected,
+              onChanged: (value) {
+                onTap?.call();
+              },
+            ),
+          ),
+          Flexible(
+            child: Text(
+              title,
+              style: AppTheme.bodyMedium.copyWith(
+                color: isSelected ? AppTheme.primary : AppTheme.onSurface,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget filterTab(String title, bool isSelected, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: AppTheme.greyShades.shade300,
+            ),
+            left: BorderSide(
+              color: isSelected ? AppTheme.primary : Colors.transparent,
+              width: isSelected ? 6 : 0,
+            ),
+            right: BorderSide(
+              color: AppTheme.greyShades.shade300,
+            ),
+          ),
+          color: !isSelected ? AppTheme.greyShades.shade100 : AppTheme.surface,
+        ),
+        child: Row(
+          children: [
+            Flexible(
+              child: Text(
+                title,
+                style: AppTheme.bodyMedium.copyWith(
+                  color: isSelected ? AppTheme.primary : AppTheme.onSurface,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class UniversityFilterTile extends StatelessWidget {
   final bool isSelected;
+  final bool isDense;
   final VoidCallback? onTap;
   final University university;
   const UniversityFilterTile({
     super.key,
     required this.isSelected,
+    this.isDense = false,
     required this.onTap,
     required this.university,
   });
@@ -520,42 +875,73 @@ class UniversityFilterTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: AppColor.white,
-                  child: ClipOval(
-                    child: Image.network(
-                      university.logo ?? '',
-                      fit: BoxFit.cover,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected && isDense
+              ? AppTheme.primary.withOpacity(0.1)
+              : AppTheme.surface,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: isDense && isSelected
+                            ? Border.all(
+                                color: isSelected
+                                    ? AppTheme.primary
+                                    : AppColor.white,
+                                width: 2,
+                              )
+                            : null,
+                      ),
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: AppColor.white,
+                        child: ClipOval(
+                          child: Image.network(
+                            university.logo ?? '',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      university.title ?? '',
+                      style: isDense
+                          ? AppTheme.bodySmall.copyWith(
+                              color: isSelected
+                                  ? AppTheme.primary
+                                  : AppTheme.bodyMedium.color,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            )
+                          : AppTheme.bodyMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    university.title ?? '',
-                    style: AppTheme.bodyMedium,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                if (isSelected)
-                  const Icon(
-                    Icons.check,
-                  )
-              ],
+                  if (isSelected && !isDense)
+                    const Icon(
+                      Icons.check,
+                    )
+                ],
+              ),
             ),
-          ),
-          const Divider(),
-        ],
+            const Divider(
+              height: 1,
+              thickness: 1,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -563,11 +949,13 @@ class UniversityFilterTile extends StatelessWidget {
 
 class DegreeFilterTile extends StatelessWidget {
   final bool isSelected;
+  final bool isDense;
   final VoidCallback? onTap;
   final Degree degree;
   const DegreeFilterTile({
     super.key,
     required this.isSelected,
+    this.isDense = false,
     required this.onTap,
     required this.degree,
   });
@@ -576,32 +964,82 @@ class DegreeFilterTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Flexible(
-                  child: Text(
-                    degree.name,
-                    style: AppTheme.bodyMedium,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected && isDense
+              ? AppTheme.primary.withOpacity(0.1)
+              : AppTheme.surface,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      degree.name,
+                      style: isDense
+                          ? AppTheme.bodySmall.copyWith(
+                              color: isSelected
+                                  ? AppTheme.primary
+                                  : AppTheme.bodyMedium.color,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            )
+                          : AppTheme.bodyMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                ),
-                if (isSelected)
-                  const Icon(
-                    Icons.check,
-                  )
-              ],
+                  if (isSelected && !isDense)
+                    const Icon(
+                      Icons.check,
+                    )
+                ],
+              ),
             ),
-          ),
-          const Divider(),
-        ],
+            const Divider(
+              height: 1,
+              thickness: 1,
+            ),
+          ],
+        ),
       ),
     );
+  }
+}
+
+enum UserFilterTypes {
+  University,
+  Branch,
+  Gender,
+  EatingHabits,
+  SmokingHabits,
+  DrinkingHabits,
+  RoomType;
+
+  //to string
+  @override
+  String toString() {
+    switch (this) {
+      case UserFilterTypes.University:
+        return 'University';
+      case UserFilterTypes.Branch:
+        return 'Branch';
+      case UserFilterTypes.Gender:
+        return 'Gender';
+      case UserFilterTypes.EatingHabits:
+        return 'Eating Habits';
+      case UserFilterTypes.SmokingHabits:
+        return 'Smoking Habits';
+      case UserFilterTypes.DrinkingHabits:
+        return 'Drinking Habits';
+      case UserFilterTypes.RoomType:
+        return 'Room Type';
+    }
   }
 }
