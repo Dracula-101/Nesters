@@ -133,4 +133,56 @@ extension DateTimeExtension on DateTime {
         return 'th';
     }
   }
+
+  String monthName(bool isShort) {
+    switch (month) {
+      case 1:
+        return isShort ? 'Jan' : 'January';
+      case 2:
+        return isShort ? 'Feb' : 'February';
+      case 3:
+        return isShort ? 'Mar' : 'March';
+      case 4:
+        return isShort ? 'Apr' : 'April';
+      case 5:
+        return isShort ? 'May' : 'May';
+      case 6:
+        return isShort ? 'Jun' : 'June';
+      case 7:
+        return isShort ? 'Jul' : 'July';
+      case 8:
+        return isShort ? 'Aug' : 'August';
+      case 9:
+        return isShort ? 'Sep' : 'September';
+      case 10:
+        return isShort ? 'Oct' : 'October';
+      case 11:
+        return isShort ? 'Nov' : 'November';
+      case 12:
+        return isShort ? 'Dec' : 'December';
+      default:
+        return '';
+    }
+  }
+
+  String dayName(bool isShort) {
+    switch (weekday) {
+      case 1:
+        return isShort ? 'Mon' : 'Monday';
+      case 2:
+        return isShort ? 'Tue' : 'Tuesday';
+      case 3:
+        return isShort ? 'Wed' : 'Wednesday';
+      case 4:
+        return isShort ? 'Thu' : 'Thursday';
+      case 5:
+        return isShort ? 'Fri' : 'Friday';
+      case 6:
+        return isShort ? 'Sat' : 'Saturday';
+      case 7:
+        return isShort ? 'Sun' : 'Sunday';
+      default:
+        return '';
+    }
+  }
 }

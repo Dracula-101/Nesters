@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
@@ -6,8 +8,12 @@ import 'package:nesters/domain/models/location/indian_city.dart';
 import 'package:nesters/domain/models/location/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
+import 'package:nesters/domain/models/user/person_type.dart';
+import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
+import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 class UserRepository {
@@ -44,12 +50,18 @@ class UserRepository {
 
   Future<List<University?>> getAllUniversities() async {
     return await _databaseRepository
-        .searchDataFromFuture(universityCollection, 'title', '')
+        .getData("universities", orderByColumn: 'title')
         .then((event) => event.map((e) => University.fromJson(e)).toList());
   }
 
   Future<List<Degree?>> getAllDegrees() async {
-    return Future.value(List.empty());
+    try {
+      return await _databaseRepository
+          .searchDataFromFuture(masterDegreeCollection, 'title', '')
+          .then((event) => event.map((e) => Degree.fromJson(e)).toList());
+    } catch (e) {
+      return List.empty();
+    }
   }
 
   Future<bool?> checkUserCreated(String userId) async {
@@ -152,6 +164,134 @@ class UserRepository {
           stackTrace: stackTrace);
       rethrow;
     }
+  }
+
+  Future<List<UserQuickProfile>> getSingleFilteredQuickProfiles(
+      SingleUserFilter filter) async {
+    QueryData? query;
+    if (filter is UniversityFilter) {
+      query = QueryData(
+        fieldName: 'selected_college_name',
+        equalTo: FieldValue(
+          key: 'selected_college_name',
+          value: filter.university,
+        ),
+      );
+    } else if (filter is BranchFilter) {
+      query = QueryData(
+        fieldName: 'selected_course_name',
+        equalTo: FieldValue(
+          key: 'selected_course_name',
+          value: filter.branch,
+        ),
+      );
+    } else if (filter is GenderFilter) {
+      query = QueryData(
+        fieldName: 'gender',
+        equalTo: FieldValue(
+          key: 'gender',
+          value: filter.gender,
+        ),
+      );
+    }
+    if (query == null) {
+      throw Exception('Invalid filter type');
+    }
+    return await _databaseRepository
+        .getFilteredData(
+          userDetailCollection,
+          query,
+          columns:
+              'id, full_name, gender, profile_image, selected_college_name, selected_course_name, city, state, work_experience',
+        )
+        .then((event) =>
+            event.map((e) => UserQuickProfile.fromJson(e!)).toList());
+  }
+
+  Future<List<UserQuickProfile>> getMultipleFilteredQuickProfiles(
+    UserFilter filters,
+  ) async {
+    List<QueryData> query = [];
+    if (filters.universityName != null && filters.universityName != "") {
+      query.add(
+        QueryData(
+          fieldName: 'selected_college_name',
+          equalTo: FieldValue(
+            key: 'selected_college_name',
+            value: filters.universityName,
+          ),
+        ),
+      );
+    }
+    if (filters.branchName != null && filters.branchName != "") {
+      query.add(
+        QueryData(
+          fieldName: 'selected_course_name',
+          equalTo: FieldValue(
+            key: 'selected_course_name',
+            value: filters.branchName,
+          ),
+        ),
+      );
+    }
+    if (filters.drinkingHabit != null &&
+        filters.drinkingHabit != UserHabit.UNKNOWN) {
+      query.add(
+        QueryData(
+          fieldName: "drinking_habit",
+          equalTo: FieldValue(
+            key: "drinking_habit",
+            value: filters.drinkingHabit,
+          ),
+        ),
+      );
+    }
+    if (filters.smokingHabit != null &&
+        filters.smokingHabit != UserHabit.UNKNOWN) {
+      query.add(
+        QueryData(
+          fieldName: "smoking_habit",
+          equalTo: FieldValue(
+            key: "smoking_habit",
+            value: filters.smokingHabit,
+          ),
+        ),
+      );
+    }
+    if (filters.personType != null &&
+        filters.personType != PersonType.UNKNOWN) {
+      query.add(
+        QueryData(
+          fieldName: "person_type",
+          equalTo: FieldValue(
+            key: "person_type",
+            value: filters.personType,
+          ),
+        ),
+      );
+    }
+    if (filters.flatmateGenderPref != null &&
+        filters.flatmateGenderPref != "") {
+      query.add(
+        QueryData(
+          fieldName: "gender",
+          equalTo: FieldValue(
+            key: "gender",
+            value: filters.flatmateGenderPref,
+          ),
+        ),
+      );
+    }
+    return await _databaseRepository
+        .getMultipleFilteredData(
+      userDetailCollection,
+      query,
+      columns:
+          'id, full_name, gender, profile_image, selected_college_name, selected_course_name, city, state, work_experience',
+    )
+        .then((value) {
+      return value.map((e) => UserQuickProfile.fromJson(e ?? {})).toList();
+    });
   }
 
   Future<UserProfile> getUserProfile(String id) async {

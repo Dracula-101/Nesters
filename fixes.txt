@@ -1,5 +1,9 @@
 error new user my gmail Pratik sen chat error,
 
+makle gender selction compulsory in the form.
+
+in home page, user branch filter takes more time to load.
+make gender field compulsory in thg form.
 subletting,
 ==========
 1]if sublet occupied ask and then close part functionality,

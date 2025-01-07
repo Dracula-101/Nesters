@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 class MarketplaceRepositoryImpl implements MarketplaceRepository {
@@ -88,6 +89,24 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       return response.map((e) => MarketplaceCategoryModel.fromJson(e)).toList();
     } catch (e) {
       throw Exception('Failed to get Marketplace Categories: $e');
+    }
+  }
+
+  @override
+  Future<List<MarketplaceModel>> getSingleFilteredMarketplaces(
+      MarketplaceSingleFilter filter) {
+    try {
+      supabase.PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
+          _supabaseClient.from("marketplaces").select();
+      if (filter is MarketplaceCategoryFilter) {
+        queryBuilder =
+            queryBuilder.eq('category->>id', filter.category.id ?? 0);
+      }
+      return queryBuilder.order("created_at", ascending: false).select().then(
+          (response) =>
+              response.map((e) => MarketplaceModel.fromJson(e)).toList());
+    } catch (e) {
+      throw Exception('Failed to get Marketplaces: $e');
     }
   }
 }

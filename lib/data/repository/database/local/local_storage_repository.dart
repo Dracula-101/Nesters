@@ -36,7 +36,7 @@ abstract class LocalStorageRepository {
       String key, T value, Map<String, dynamic> Function(T) toJson);
 
   // ================= List of Custom Classes =================
-  List<T?>? getListClass<T>(
+  List<T>? getListClass<T>(
       String key, T Function(Map<String, dynamic>) fromJson);
   Future<void> saveListClass<T>(
       String key, List<T> value, Map<String, dynamic> Function(T) toJson);
@@ -51,4 +51,8 @@ class LocalStorageKeys {
   static const userDataSaved = 'userDataSaved';
   static const lastSavedRecipientUsers = 'lastSavedRecipientUsers';
   static const deviceInfoSaved = 'deviceInfoSaved';
+
+  static const universityList = 'universityList';
+  static const degreeList = 'degreeList';
+  static const marketplaceCategoryList = 'marketplaceCategoryList';
 }

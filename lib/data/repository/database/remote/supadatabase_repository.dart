@@ -7,13 +7,15 @@ class SupaDatabaseRepository extends DatabaseRepository {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
 
   @override
-  Future<Map<String, dynamic>?> getData(String table) async {
+  Future<List<Map<String, dynamic>>> getData(String table,
+      {String? orderByColumn, bool? isDescending}) async {
     try {
       // Execute the query to retrieve the first 30 rows from the table
-      final response = await _supabaseClient.from(table).select();
-
-      // Return the response
-      return {'data': response};
+      final response = await _supabaseClient
+          .from(table)
+          .select()
+          .order(orderByColumn ?? 'id', ascending: isDescending ?? true);
+      return response;
     } catch (e) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');
@@ -47,6 +49,93 @@ class SupaDatabaseRepository extends DatabaseRepository {
       PostgrestTransformBuilder<List<Map<String, dynamic>>> finalResponse =
           response.range(offset, offset + limit);
       return await finalResponse;
+    } catch (e) {
+      throw Exception('Failed to get data: $e');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>?>> getFilteredData(
+      String table, QueryData queryData,
+      {String columns = '', String? removeRowId}) {
+    try {
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+          _supabaseClient.from(table).select(columns);
+      if (removeRowId != null) {
+        response = response.not('id', 'eq', removeRowId);
+      }
+      if (queryData.equalTo != null) {
+        response =
+            response.eq(queryData.equalTo!.key, queryData.equalTo!.value);
+      }
+
+      if (queryData.greaterThan != null) {
+        response = response.gt(
+            queryData.greaterThan!.key, queryData.greaterThan!.value);
+      }
+
+      if (queryData.greaterThanOrEqualTo != null) {
+        response = response.gte(queryData.greaterThanOrEqualTo!.key,
+            queryData.greaterThanOrEqualTo!.value);
+      }
+
+      if (queryData.lessThan != null) {
+        response =
+            response.lt(queryData.lessThan!.key, queryData.lessThan!.value);
+      }
+
+      if (queryData.lessThanOrEqualTo != null) {
+        response = response.lte(queryData.lessThanOrEqualTo!.key,
+            queryData.lessThanOrEqualTo!.value);
+      }
+      return response.order(queryData.fieldName).then((value) => value);
+    } catch (e) {
+      throw Exception('Failed to get data: $e');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>?>> getMultipleFilteredData(
+    String table,
+    List<QueryData> queryDataList, {
+    String columns = '',
+    String? removeRowId,
+  }) async {
+    try {
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+          _supabaseClient.from(table).select(columns);
+      if (removeRowId != null) {
+        response = response.not('id', 'eq', removeRowId);
+      }
+
+      for (var queryData in queryDataList) {
+        if (queryData.equalTo != null) {
+          log("Key: ${queryData.equalTo!.key} Value: ${queryData.equalTo!.value}");
+          response =
+              response.eq(queryData.equalTo!.key, queryData.equalTo!.value);
+        }
+        if (queryData.greaterThan != null) {
+          response = response.gt(
+              queryData.greaterThan!.key, queryData.greaterThan!.value);
+        }
+
+        if (queryData.greaterThanOrEqualTo != null) {
+          response = response.gte(queryData.greaterThanOrEqualTo!.key,
+              queryData.greaterThanOrEqualTo!.value);
+        }
+
+        if (queryData.lessThan != null) {
+          response =
+              response.lt(queryData.lessThan!.key, queryData.lessThan!.value);
+        }
+
+        if (queryData.lessThanOrEqualTo != null) {
+          response = response.lte(queryData.lessThanOrEqualTo!.key,
+              queryData.lessThanOrEqualTo!.value);
+        }
+      }
+
+      return response.then((value) => value);
     } catch (e) {
       throw Exception('Failed to get data: $e');
     }

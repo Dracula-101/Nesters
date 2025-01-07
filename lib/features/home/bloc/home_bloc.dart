@@ -1,7 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/data/repository/network/network_checker_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/profile/user_filter.dart';
@@ -18,11 +17,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     _listenToNetwork();
   }
 
+  final UserRepository _userRepository = GetIt.I<UserRepository>();
   final NetworkCheckerRepository _networkCheckerRepository =
       GetIt.I<NetworkCheckerRepository>();
   final AppLogger _logger = GetIt.I<AppLogger>();
 
-  void _onEvent(HomeEvent event, Emitter<HomeState> emit) {
+  void _onEvent(HomeEvent event, Emitter<HomeState> emit) async {
     if (event is LoadProfileEvent) {
       emit(state.copyWith(isLoading: true));
     } else if (event is FetchNextPageEvent) {
@@ -31,6 +31,37 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       emit(state.copyWith(profiles: event.profiles, isLoading: false));
     } else if (event is LoadProfileErrorEvent) {
       emit(state.copyWith(error: event.error, isLoading: false));
+    } else if (event is SingleAddFilterProfileEvent) {
+      emit(state.copyWith(userFilter: null, isLoading: true));
+      final filteredUser =
+          await _userRepository.getSingleFilteredQuickProfiles(event.filter);
+      emit(state.copyWith(
+          filteredProfiles: filteredUser,
+          isLoading: false,
+          singleUserFilter: event.filter));
+    } else if (event is SingleRemoveFilterProfileEvent) {
+      emit(state.copyWith(singleUserFilter: null, filteredProfiles: null));
+    } else if (event is AddFilterProfileEvent) {
+      emit(state.copyWith(isLoading: true));
+      if (event.filter == null) {
+        emit(state.copyWith(
+            userFilter: null,
+            singleUserFilter: null,
+            filteredProfiles: null,
+            isLoading: false));
+        return;
+      }
+      final filteredUser =
+          await _userRepository.getMultipleFilteredQuickProfiles(event.filter!);
+      _logger.debug(
+          "Filtered User: ${filteredUser.length} with filter: ${event.filter}");
+      emit(state.copyWith(
+          filteredProfiles: filteredUser,
+          isLoading: false,
+          userFilter: event.filter));
+    } else if (event is RemoveFilterProfileEvent) {
+      emit(state.copyWith(
+          userFilter: null, singleUserFilter: null, filteredProfiles: null));
     }
   }
 

@@ -41,6 +41,12 @@ enum UserRoomType {
     }
   }
 
+  static List<UserRoomType> toList() => [
+        UserRoomType.PRIVATE,
+        UserRoomType.SHARED,
+        UserRoomType.FLEX,
+      ];
+
   String toUI() {
     switch (this) {
       case UserRoomType.PRIVATE:

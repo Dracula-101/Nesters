@@ -6,6 +6,8 @@ class UserState {
   final bool isLoadingUniversities;
   final List<Degree?> degrees;
   final bool isLoadingDegrees;
+  final List<MarketplaceCategoryModel> marketplaceCategory;
+  final bool isLoadingMarketplaceCategory;
 
   const UserState({
     required this.user,
@@ -13,6 +15,8 @@ class UserState {
     this.isLoadingUniversities = false,
     this.degrees = const [],
     this.isLoadingDegrees = false,
+    this.marketplaceCategory = const [],
+    this.isLoadingMarketplaceCategory = false,
   });
 
   UserState copyWith({
@@ -21,6 +25,8 @@ class UserState {
     bool? isLoadingUniversities,
     List<Degree?>? degrees,
     bool? isLoadingDegrees,
+    List<MarketplaceCategoryModel>? marketplaceCategory,
+    bool? isLoadingMarketplaceCategory,
   }) {
     return UserState(
       user: user ?? this.user,
@@ -29,6 +35,9 @@ class UserState {
           isLoadingUniversities ?? this.isLoadingUniversities,
       degrees: degrees ?? this.degrees,
       isLoadingDegrees: isLoadingDegrees ?? this.isLoadingDegrees,
+      marketplaceCategory: marketplaceCategory ?? this.marketplaceCategory,
+      isLoadingMarketplaceCategory:
+          isLoadingMarketplaceCategory ?? this.isLoadingMarketplaceCategory,
     );
   }
 
@@ -41,7 +50,9 @@ class UserState {
         listEquals(other.universities, universities) &&
         other.isLoadingUniversities == isLoadingUniversities &&
         listEquals(other.degrees, degrees) &&
-        other.isLoadingDegrees == isLoadingDegrees;
+        other.isLoadingDegrees == isLoadingDegrees &&
+        listEquals(other.marketplaceCategory, marketplaceCategory) &&
+        other.isLoadingMarketplaceCategory == isLoadingMarketplaceCategory;
   }
 
   @override

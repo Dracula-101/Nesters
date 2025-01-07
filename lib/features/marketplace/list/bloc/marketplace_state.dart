@@ -2,20 +2,29 @@ part of 'marketplace_bloc.dart';
 
 class MarketplaceState {
   final List<MarketplaceModel>? marketplaceList;
+  final List<MarketplaceModel>? marketplaceListFiltered;
   final Exception? error;
+  final MarketplaceSingleFilter? singleFilter;
 
   const MarketplaceState({
     this.marketplaceList,
+    this.marketplaceListFiltered,
     this.error,
+    this.singleFilter,
   });
 
   MarketplaceState copyWith({
     List<MarketplaceModel>? marketplaceList,
+    List<MarketplaceModel>? marketplaceListFiltered,
     Exception? error,
+    MarketplaceSingleFilter? filter,
   }) {
     return MarketplaceState(
       marketplaceList: marketplaceList ?? this.marketplaceList,
+      marketplaceListFiltered:
+          marketplaceListFiltered ?? this.marketplaceListFiltered,
       error: error ?? this.error,
+      singleFilter: filter,
     );
   }
 
@@ -25,7 +34,9 @@ class MarketplaceState {
 
     return other is MarketplaceState &&
         listEquals(other.marketplaceList, marketplaceList) &&
-        other.error == error;
+        listEquals(other.marketplaceListFiltered, marketplaceListFiltered) &&
+        other.error == error &&
+        other.singleFilter == singleFilter;
   }
 
   @override

@@ -48,10 +48,28 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
   }
 
   bool validateAllFields() {
+    int? selectedCategoryId;
+    if (context
+            .read<MarketplaceFormCubit>()
+            .state
+            .marketplaceCategories
+            .isNotEmpty &&
+        _categoryController.text.isNotEmpty) {
+      final category = context
+          .read<MarketplaceFormCubit>()
+          .state
+          .marketplaceCategories
+          .firstWhere((element) => element.name == _categoryController.text);
+      selectedCategoryId = category.id;
+    } else {
+      context.read<MarketplaceFormCubit>().loadMarketplaceCategories();
+      return false;
+    }
+
     selectedCategory = _categoryController.text.isNotEmpty
         ? MarketplaceCategoryModel(
             name: _categoryController.text,
-            id: 1,
+            id: selectedCategoryId != -1 ? selectedCategoryId : null,
           )
         : null;
     if (_formKey.currentState!.validate()) {

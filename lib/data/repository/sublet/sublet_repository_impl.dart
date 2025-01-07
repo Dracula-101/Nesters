@@ -1,8 +1,12 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
+import 'package:nesters/domain/models/sublet/sublet_filter.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
+import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SubletRepositoryImpl implements SubletRepository {
   final supabase.SupabaseClient _supabaseClient =
@@ -72,6 +76,167 @@ class SubletRepositoryImpl implements SubletRepository {
           .select()
           .range(paginationKey, paginationKey + range);
       return response.map((e) => SubletModel.fromMap(e)).toList();
+    } catch (e) {
+      throw Exception('Failed to get sublets: $e');
+    }
+  }
+
+  @override
+  Future<List<SubletModel>> singleFilterSublet(
+      {required SingleSubletFilter filter}) {
+    // singlesublet filter
+    // - GenderPreferenceFilter, RentFilter, ApartmentTypeFilter, ApartmentSizeFilter
+    try {
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
+          _supabaseClient.from("sublets").select();
+      if (filter is GenderPreferenceFilter) {
+        queryBuilder = queryBuilder.eq(
+            "roommate_gender_pref", filter.preferredGender.toString());
+      } else if (filter is RentFilter) {
+        queryBuilder = queryBuilder
+            .gte("rent", filter.startRent)
+            .lte("rent", filter.endRent);
+      } else if (filter is ApartmentTypeFilter) {
+        queryBuilder =
+            queryBuilder.eq("room_type", filter.apartmentType.toString());
+      } else if (filter is ApartmentSizeFilter) {
+        log("Filter Apartment Size: ${filter.apartmentSize.beds} Beds, ${filter.apartmentSize.baths} Baths");
+        queryBuilder = queryBuilder
+            .gte("beds", filter.apartmentSize.beds ?? 0)
+            .gte("baths", filter.apartmentSize.baths ?? 0);
+      }
+      PostgrestTransformBuilder<List<Map<String, dynamic>>> response =
+          queryBuilder;
+      if (filter is ApartmentSizeFilter) {
+        response = response
+            .order("beds", ascending: true)
+            .order("baths", ascending: true);
+      }
+      return response
+          .order("created_at", ascending: false)
+          .select()
+          .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
+    } catch (e) {
+      throw Exception('Failed to get sublets: $e');
+    }
+  }
+
+  @override
+  Future<List<SubletModel>> multiFilterSublet({required SubletFilter filter}) {
+    try {
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
+          _supabaseClient.from("sublets").select();
+      if (filter.amenitiesAvailable != null &&
+          filter.amenitiesAvailable!.hasAmenities()) {
+        // {
+        //   "has_AC": false,
+        //   "has_gym": false,
+        //   "has_pool": true,
+        //   "has_dryer": true,
+        //   "has_patio": false,
+        //   "has_heater": true,
+        //   "has_balcony": false,
+        //   "has_parking": false,
+        //   "has_furnished": false,
+        //   "has_dishwasher": true,
+        //   "extra_amenities": [],
+        //   "has_washing_machine": true
+        // }
+        if (filter.amenitiesAvailable!.hasAC != null &&
+            filter.amenitiesAvailable!.hasAC == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_AC",
+              filter.amenitiesAvailable!.hasAC ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasGym != null &&
+            filter.amenitiesAvailable!.hasGym == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_gym",
+              filter.amenitiesAvailable!.hasGym ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasPool != null &&
+            filter.amenitiesAvailable!.hasPool == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_pool",
+              filter.amenitiesAvailable!.hasPool ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasDryer != null &&
+            filter.amenitiesAvailable!.hasDryer == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_dryer",
+              filter.amenitiesAvailable!.hasDryer ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasPatio != null &&
+            filter.amenitiesAvailable!.hasPatio == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_patio",
+              filter.amenitiesAvailable!.hasPatio ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasHeater != null &&
+            filter.amenitiesAvailable!.hasHeater == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_heater",
+              filter.amenitiesAvailable!.hasHeater ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasBalcony != null &&
+            filter.amenitiesAvailable!.hasBalcony == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_balcony",
+              filter.amenitiesAvailable!.hasBalcony ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasParking != null &&
+            filter.amenitiesAvailable!.hasParking == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_parking",
+              filter.amenitiesAvailable!.hasParking ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasFurnished != null &&
+            filter.amenitiesAvailable!.hasFurnished == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_furnished",
+              filter.amenitiesAvailable!.hasFurnished ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasDishwasher != null &&
+            filter.amenitiesAvailable!.hasDishwasher == true) {
+          queryBuilder = queryBuilder.eq("amenities_available->>has_dishwasher",
+              filter.amenitiesAvailable!.hasDishwasher ?? false);
+        }
+        if (filter.amenitiesAvailable!.hasWashingMachine != null &&
+            filter.amenitiesAvailable!.hasWashingMachine == true) {
+          queryBuilder = queryBuilder.eq(
+              "amenities_available->>has_washing_machine",
+              filter.amenitiesAvailable!.hasWashingMachine ?? false);
+        }
+      }
+      if (filter.apartmentSize != null && filter.apartmentSize?.beds != 0) {
+        queryBuilder = queryBuilder.gte(
+          "beds",
+          filter.apartmentSize!.beds ?? 0,
+        );
+      }
+      if (filter.apartmentSize != null && filter.apartmentSize?.baths != 0) {
+        queryBuilder = queryBuilder.gte(
+          "baths",
+          filter.apartmentSize!.baths ?? 0,
+        );
+      }
+
+      if (filter.startRent != null && filter.startRent != 0) {
+        queryBuilder = queryBuilder.gte("rent", filter.startRent!.toInt());
+      }
+      if (filter.endRent != null && filter.endRent != 0) {
+        queryBuilder = queryBuilder.lte("rent", filter.endRent!.toInt());
+      }
+
+      if (filter.roommateGenderPref != null &&
+          filter.roommateGenderPref != "") {
+        queryBuilder =
+            queryBuilder.eq("roommate_gender_pref", filter.roommateGenderPref!);
+      }
+      if (filter.roomType != null) {
+        queryBuilder = queryBuilder.eq(
+          "room_type",
+          filter.roomType.toString(),
+        );
+      }
+      if (filter.leasePeriod != null && filter.leasePeriod?.startDate != null) {
+        queryBuilder = queryBuilder.gte("start_date",
+            filter.leasePeriod!.startDate!.millisecondsSinceEpoch);
+      }
+      return queryBuilder
+          .order("created_at")
+          .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } catch (e) {
       throw Exception('Failed to get sublets: $e');
     }

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -6,15 +7,23 @@ import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/room/room_type.dart';
+import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
+import 'package:nesters/features/home/view/components/filter_tab.dart';
+import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/widgets/custom_flat_button.dart';
 
 class UserListPage extends StatefulWidget {
   const UserListPage({super.key});
@@ -61,6 +70,7 @@ class _UserListPageState extends State<UserListPage> {
         _pagingController.appendPage(newItems, nextPageKey);
       }
       if (mounted) {
+        //just a formality to notify the bloc that the profiles are loaded, pagination is handled by the paging controller library
         context
             .read<HomeBloc>()
             .add(LoadProfileCompleteEvent(_pagingController.itemList ?? []));
@@ -83,8 +93,13 @@ class _UserListPageState extends State<UserListPage> {
       child: CustomScrollView(
         slivers: [
           _buildAppBar(),
-          _buildTopActionsBar(),
-          _buildUserList(),
+          BlocBuilder<HomeBloc, HomeState>(
+            builder: (context, state) {
+              return state.filteredProfiles != null
+                  ? _buildFilteredUserList(state.filteredProfiles!)
+                  : _buildUserList();
+            },
+          ),
         ],
       ),
     );
@@ -163,6 +178,13 @@ class _UserListPageState extends State<UserListPage> {
                 },
               ),
             ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(50),
+              child: SizedBox(
+                height: 50,
+                child: _buildTopActionsBar(),
+              ),
+            ),
           ),
         );
       },
@@ -170,92 +192,275 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   Widget _buildTopActionsBar() {
-    return SliverToBoxAdapter(
-      child: SizedBox(
-        height: 50,
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          scrollDirection: Axis.horizontal,
-          children: [
-            TopActionButton(
-              icon: Icons.filter,
-              title: 'Filter',
-              onPressed: () {},
-            ),
-            BlocBuilder<UserBloc, UserState>(
-              builder: (context, state) {
-                return TopActionButton(
-                  icon: Icons.school,
-                  title: 'University',
-                  onPressed: () async {
-                    // open a modal bottom sheet
-                    if (state.universities.isEmpty) {
-                      context
-                          .read<UserBloc>()
-                          .add(const UserEvent.loadUniversities());
-                    }
-                    String? universityName = await showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      showDragHandle: true,
-                      enableDrag: true,
-                      isDismissible: true,
-                      scrollControlDisabledMaxHeightRatio: 0.5,
-                      useSafeArea: true,
-                      builder: (context) {
-                        return DraggableScrollableSheet(
-                          expand: false,
-                          builder: (context, scrollController) {
-                            return SingleChildScrollView(
-                              controller: scrollController,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
+    return BlocBuilder<HomeBloc, HomeState>(
+      builder: (context, homeState) {
+        return BlocBuilder<UserBloc, UserState>(
+          builder: (context, userState) {
+            return ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              scrollDirection: Axis.horizontal,
+              children: [
+                TopActionButton(
+                  icon: Icons.filter,
+                  title: 'Filter',
+                  onPressed: () {
+                    showFilterDialog(context, homeState, userState);
+                  },
+                  isActive: homeState.userFilter != null,
+                  closeIcon: false,
+                ),
+                if (homeState.singleUserFilter == null ||
+                    homeState.singleUserFilter is UniversityFilter)
+                  TopActionButton(
+                    icon: Icons.school,
+                    title: homeState.singleUserFilter is UniversityFilter
+                        ? (homeState.singleUserFilter as UniversityFilter)
+                            .university
+                        : "University",
+                    isActive: homeState.singleUserFilter is UniversityFilter,
+                    onPressed: () async {
+                      if (homeState.singleUserFilter is UniversityFilter) {
+                        context
+                            .read<HomeBloc>()
+                            .add(SingleRemoveFilterProfileEvent());
+                      } else {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          showDragHandle: true,
+                          enableDrag: true,
+                          isDismissible: true,
+                          scrollControlDisabledMaxHeightRatio: 0.5,
+                          useSafeArea: true,
+                          builder: (context) {
+                            return DraggableScrollableSheet(
+                              expand: false,
+                              builder: (context, scrollController) {
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 12, bottom: 16),
+                                        child: Text(
+                                          "Universities",
+                                          style: AppTheme.titleLarge,
+                                        )),
+                                    if (userState.universities.isEmpty)
+                                      const Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    else
+                                      Expanded(
+                                        child: ListView.builder(
+                                          controller: scrollController,
+                                          itemCount:
+                                              userState.universities.length,
+                                          itemBuilder: (context, index) {
+                                            return UniversityFilterTile(
+                                              isSelected: false,
+                                              onTap: () {
+                                                Navigator.of(context).pop(
+                                                  userState
+                                                      .universities[index]!,
+                                                );
+                                              },
+                                              university: userState
+                                                  .universities[index]!,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        ).then((value) {
+                          if (value != null && value is University) {
+                            context.read<HomeBloc>().add(
+                                SingleAddFilterProfileEvent(
+                                    UniversityFilter(value.title ?? '')));
+                          }
+                        });
+                      }
+                    },
+                  ),
+                if (homeState.singleUserFilter == null ||
+                    homeState.singleUserFilter is BranchFilter)
+                  TopActionButton(
+                    icon: Icons.book,
+                    title: homeState.singleUserFilter is BranchFilter
+                        ? (homeState.singleUserFilter as BranchFilter).branch
+                        : "Branch",
+                    onPressed: () async {
+                      if (homeState.singleUserFilter is BranchFilter) {
+                        context
+                            .read<HomeBloc>()
+                            .add(SingleRemoveFilterProfileEvent());
+                      } else {
+                        if (userState.degrees.isEmpty) {
+                          context
+                              .read<UserBloc>()
+                              .add(const UserEvent.loadDegrees());
+                        }
+                        // open a modal bottom sheet
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          showDragHandle: true,
+                          enableDrag: true,
+                          isDismissible: true,
+                          scrollControlDisabledMaxHeightRatio: 0.5,
+                          useSafeArea: true,
+                          builder: (context) {
+                            return DraggableScrollableSheet(
+                              expand: false,
+                              builder: (context, scrollController) {
+                                return Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
                                       padding: const EdgeInsets.only(
                                           left: 12, bottom: 16),
                                       child: Text(
-                                        "Universities",
+                                        "Branches",
                                         style: AppTheme.titleLarge,
-                                      )),
-                                  if (state.universities.isEmpty)
-                                    const Center(
-                                      child: CircularProgressIndicator(),
-                                    )
-                                  else
-                                    ...state.universities
-                                        .map((university) =>
-                                            UniversityFilterTile(
+                                      ),
+                                    ),
+                                    if (userState.degrees.isEmpty)
+                                      const Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    else
+                                      Expanded(
+                                        child: ListView.builder(
+                                          controller: scrollController,
+                                          itemCount: userState.degrees.length,
+                                          itemBuilder: (context, index) {
+                                            return DegreeFilterTile(
                                               isSelected: false,
-                                              onTap: () {},
-                                              university: university!,
-                                            ))
-                                        .toList(),
-                                ],
-                              ),
+                                              onTap: () {
+                                                Navigator.of(context).pop(
+                                                  userState.degrees[index]!,
+                                                );
+                                              },
+                                              degree: userState.degrees[index]!,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                  ],
+                                );
+                              },
                             );
                           },
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-            TopActionButton(
-              icon: Icons.book,
-              title: 'Branch',
-              onPressed: () {},
-            ),
-            TopActionButton(
-              icon: Icons.person,
-              title: 'Gender',
-              onPressed: () {},
-            ),
-          ],
-        ),
-      ),
+                        ).then((value) {
+                          if (value != null && value is Degree) {
+                            context.read<HomeBloc>().add(
+                                SingleAddFilterProfileEvent(
+                                    BranchFilter(value.name)));
+                          }
+                        });
+                      }
+                    },
+                    isActive: homeState.singleUserFilter is BranchFilter,
+                  ),
+                if (homeState.singleUserFilter == null ||
+                    homeState.singleUserFilter is GenderFilter)
+                  TopActionButton(
+                    icon: Icons.person,
+                    title: homeState.singleUserFilter is GenderFilter
+                        ? (homeState.singleUserFilter as GenderFilter).gender
+                        : 'Gender',
+                    onPressed: () async {
+                      if (homeState.singleUserFilter is GenderFilter) {
+                        context
+                            .read<HomeBloc>()
+                            .add(SingleRemoveFilterProfileEvent());
+                      } else {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          showDragHandle: true,
+                          enableDrag: true,
+                          isDismissible: true,
+                          useSafeArea: true,
+                          builder: (context) {
+                            return DraggableScrollableSheet(
+                              expand: false,
+                              initialChildSize: 0.3,
+                              builder: (context, scrollController) {
+                                return SingleChildScrollView(
+                                  controller: scrollController,
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 12, bottom: 16),
+                                        child: Text(
+                                          "Gender",
+                                          style: AppTheme.titleLarge,
+                                        ),
+                                      ),
+                                      // male
+                                      ListTile(
+                                        title: const Text('Male'),
+                                        leading: Icon(
+                                          Icons.male,
+                                          color: AppTheme.greyShades.shade800,
+                                        ),
+                                        onTap: () {
+                                          Navigator.of(context).pop('Male');
+                                        },
+                                      ),
+                                      ListTile(
+                                        title: const Text('Female'),
+                                        onTap: () {
+                                          Navigator.of(context).pop('Female');
+                                        },
+                                        leading: Icon(
+                                          Icons.female,
+                                          color: AppTheme.greyShades.shade800,
+                                        ),
+                                      ),
+                                      ListTile(
+                                        title: const Text('Other'),
+                                        onTap: () {
+                                          Navigator.of(context).pop('Other');
+                                        },
+                                        leading: Icon(
+                                          Icons.transgender,
+                                          color: AppTheme.greyShades.shade800,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ).then((value) {
+                          if (value != null && value is String) {
+                            context.read<HomeBloc>().add(
+                                SingleAddFilterProfileEvent(
+                                    GenderFilter(value)));
+                          }
+                        });
+                      }
+                    },
+                    isActive: homeState.singleUserFilter is GenderFilter,
+                  ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -300,57 +505,564 @@ class _UserListPageState extends State<UserListPage> {
       ),
     );
   }
+
+  Widget _buildFilteredUserList(List<UserQuickProfile> profiles) {
+    return SliverList.builder(
+      itemCount: profiles.length,
+      itemBuilder: (context, index) {
+        return UserQuickProfileWidget(
+          userQuickProfile: profiles[index],
+        );
+      },
+    );
+  }
+
+  void showFilterDialog(
+      BuildContext context, HomeState state, UserState userState) {
+    UserFilterTypes userFilterTypeSelected = UserFilterTypes.University;
+    String selectedUniversity = state.userFilter?.universityName ?? '';
+    String selectedBranch = state.userFilter?.branchName ?? '';
+    String selectedGender = state.userFilter?.flatmateGenderPref ?? '';
+    UserFoodHabit selectedEatingHabit =
+        state.userFilter?.foodHabit ?? UserFoodHabit.UNKNOWN;
+    UserHabit selectedSmokingHabit =
+        state.userFilter?.smokingHabit ?? UserHabit.UNKNOWN;
+    UserHabit selectedDrinkingHabit =
+        state.userFilter?.drinkingHabit ?? UserHabit.UNKNOWN;
+    UserRoomType selectedRoomType =
+        state.userFilter?.roomType ?? UserRoomType.UNKNOWN;
+    final TextEditingController _searchController = TextEditingController();
+    List<University?> filterUniversities = userState.universities;
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return BlocProvider.value(
+              value: context.read<HomeBloc>(),
+              child: BlocBuilder<HomeBloc, HomeState>(
+                builder: (context, homeState) {
+                  return SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    child: Material(
+                      color: AppTheme.surface,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                top: 4, left: 16, right: 16),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Filters',
+                                  style: AppTheme.titleLarge.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close),
+                                  iconSize: 20,
+                                  onPressed: () {
+                                    Navigator.of(ctx).pop();
+                                  },
+                                )
+                              ],
+                            ),
+                          ),
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                          ),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.topCenter,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.35,
+                                    child: ListView(
+                                      shrinkWrap: true,
+                                      children: [
+                                        ...UserFilterTypes.values.map(
+                                          (e) => FilterTab(
+                                            title: e.toString(),
+                                            isSelected:
+                                                e == userFilterTypeSelected,
+                                            onTap: () {
+                                              setState(() {
+                                                userFilterTypeSelected = e;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.65,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        border: Border(
+                                          left: BorderSide(
+                                            color: AppTheme.greyShades.shade300,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Container(
+                                          child: switch (
+                                              userFilterTypeSelected) {
+                                        UserFilterTypes.University => Column(
+                                            children: [
+                                              TextField(
+                                                decoration: InputDecoration(
+                                                  hintText: 'Search University',
+                                                  hintStyle: AppTheme.bodySmall,
+                                                  prefixIcon: Icon(
+                                                    Icons.search,
+                                                    color: AppTheme
+                                                        .greyShades.shade800,
+                                                  ),
+                                                  border: InputBorder.none,
+                                                  contentPadding:
+                                                      const EdgeInsets.all(8),
+                                                  isDense: true,
+                                                ),
+                                                onChanged: (value) {
+                                                  if (value == "") {
+                                                    setState(() {
+                                                      filterUniversities =
+                                                          userState
+                                                              .universities;
+                                                    });
+                                                  } else {
+                                                    setState(() {
+                                                      filterUniversities = userState
+                                                          .universities
+                                                          .where((element) =>
+                                                              element?.title
+                                                                  ?.toLowerCase()
+                                                                  .contains(value
+                                                                      .toLowerCase()) ??
+                                                              false)
+                                                          .toList();
+                                                    });
+                                                  }
+                                                },
+                                              ),
+                                              const Divider(
+                                                height: 1,
+                                                thickness: 1,
+                                              ),
+                                              Expanded(
+                                                  child: ListView.builder(
+                                                shrinkWrap: true,
+                                                itemCount:
+                                                    filterUniversities.length,
+                                                itemBuilder: (context, index) {
+                                                  return UniversityFilterTile(
+                                                    isSelected:
+                                                        selectedUniversity ==
+                                                            filterUniversities[
+                                                                    index]
+                                                                ?.title,
+                                                    isDense: true,
+                                                    onTap: () {
+                                                      setState(() {
+                                                        selectedUniversity =
+                                                            filterUniversities[
+                                                                        index]
+                                                                    ?.title ??
+                                                                '';
+                                                      });
+                                                    },
+                                                    university:
+                                                        filterUniversities[
+                                                            index]!,
+                                                  );
+                                                },
+                                              ))
+                                            ],
+                                          ),
+                                        UserFilterTypes.Branch =>
+                                          ListView.builder(
+                                            shrinkWrap: true,
+                                            itemCount: userState.degrees.length,
+                                            itemBuilder: (context, index) {
+                                              return DegreeFilterTile(
+                                                isSelected: selectedBranch ==
+                                                    userState
+                                                        .degrees[index]!.name,
+                                                isDense: true,
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedBranch = userState
+                                                        .degrees[index]!.name;
+                                                  });
+                                                },
+                                                degree:
+                                                    userState.degrees[index]!,
+                                              );
+                                            },
+                                          ),
+                                        UserFilterTypes.Gender => ListView(
+                                            children: [
+                                              FilterTile(
+                                                title: 'Male',
+                                                isSelected:
+                                                    selectedGender == 'Male',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedGender = 'Male';
+                                                  });
+                                                },
+                                              ),
+                                              FilterTile(
+                                                title: 'Female',
+                                                isSelected:
+                                                    selectedGender == 'Female',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedGender = 'Female';
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        UserFilterTypes.EatingHabits =>
+                                          ListView(
+                                            children: [
+                                              ...UserFoodHabit.toList().map(
+                                                (e) => FilterTile(
+                                                  title: e
+                                                      .toUserFriendlyString()
+                                                      .capitalize,
+                                                  isSelected:
+                                                      selectedEatingHabit == e,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedEatingHabit = e;
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        UserFilterTypes.SmokingHabits =>
+                                          ListView(
+                                            children: [
+                                              ...UserHabit.toList().map(
+                                                (e) => FilterTile(
+                                                  title:
+                                                      e.toString().capitalize,
+                                                  isSelected:
+                                                      selectedSmokingHabit == e,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedSmokingHabit = e;
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        UserFilterTypes.DrinkingHabits =>
+                                          ListView(
+                                            children: [
+                                              ...UserHabit.toList().map(
+                                                (e) => FilterTile(
+                                                  title:
+                                                      e.toString().capitalize,
+                                                  isSelected:
+                                                      selectedDrinkingHabit ==
+                                                          e,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedDrinkingHabit = e;
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        UserFilterTypes.RoomType => ListView(
+                                            children: [
+                                              ...UserRoomType.toList().map(
+                                                (e) => FilterTile(
+                                                  title: e.toUI(),
+                                                  isSelected:
+                                                      selectedRoomType == e,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedRoomType = e;
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                      }),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ),
+                          ),
+                          const Divider(
+                            height: 1,
+                            thickness: 1,
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    context
+                                        .read<HomeBloc>()
+                                        .add(RemoveFilterProfileEvent());
+                                    Navigator.of(ctx).pop();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.error,
+                                  ),
+                                  child: Text(
+                                    'Reset',
+                                    style: AppTheme.bodyMedium.copyWith(
+                                      color: AppTheme.onError,
+                                    ),
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    final filter = UserFilter(
+                                      universityName: selectedUniversity,
+                                      branchName: selectedBranch,
+                                      drinkingHabit: selectedDrinkingHabit,
+                                      foodHabit: selectedEatingHabit,
+                                      flatmateGenderPref: selectedGender,
+                                      roomType: selectedRoomType,
+                                      smokingHabit: selectedSmokingHabit,
+                                    );
+                                    context
+                                        .read<HomeBloc>()
+                                        .add(AddFilterProfileEvent(filter));
+                                    Navigator.of(ctx).pop();
+                                  },
+                                  child: Text(
+                                    'Apply',
+                                    style: AppTheme.bodyMedium.copyWith(
+                                      color: AppColor.white,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }
 
 class UniversityFilterTile extends StatelessWidget {
   final bool isSelected;
+  final bool isDense;
   final VoidCallback? onTap;
   final University university;
   const UniversityFilterTile({
     super.key,
     required this.isSelected,
+    this.isDense = false,
     required this.onTap,
     required this.university,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircleAvatar(
-                radius: 16,
-                backgroundColor: AppColor.white,
-                child: ClipOval(
-                  child: Image.network(
-                    university.logo ?? '',
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  university.title ?? '',
-                  style: AppTheme.bodyMedium,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              if (isSelected)
-                const Icon(
-                  Icons.check,
-                )
-            ],
-          ),
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected && isDense
+              ? AppTheme.primary.withOpacity(0.1)
+              : AppTheme.surface,
         ),
-        const Divider(),
-      ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DecoratedBox(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: isDense && isSelected
+                            ? Border.all(
+                                color: isSelected
+                                    ? AppTheme.primary
+                                    : AppColor.white,
+                                width: 2,
+                              )
+                            : null,
+                      ),
+                      child: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: AppColor.white,
+                        child: ClipOval(
+                          child: Image.network(
+                            university.logo ?? '',
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      )),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      university.title ?? '',
+                      style: isDense
+                          ? AppTheme.bodySmall.copyWith(
+                              color: isSelected
+                                  ? AppTheme.primary
+                                  : AppTheme.bodyMedium.color,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            )
+                          : AppTheme.bodyMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (isSelected && !isDense)
+                    const Icon(
+                      Icons.check,
+                    )
+                ],
+              ),
+            ),
+            const Divider(
+              height: 1,
+              thickness: 1,
+            ),
+          ],
+        ),
+      ),
     );
+  }
+}
+
+class DegreeFilterTile extends StatelessWidget {
+  final bool isSelected;
+  final bool isDense;
+  final VoidCallback? onTap;
+  final Degree degree;
+  const DegreeFilterTile({
+    super.key,
+    required this.isSelected,
+    this.isDense = false,
+    required this.onTap,
+    required this.degree,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected && isDense
+              ? AppTheme.primary.withOpacity(0.1)
+              : AppTheme.surface,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      degree.name,
+                      style: isDense
+                          ? AppTheme.bodySmall.copyWith(
+                              color: isSelected
+                                  ? AppTheme.primary
+                                  : AppTheme.bodyMedium.color,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            )
+                          : AppTheme.bodyMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (isSelected && !isDense)
+                    const Icon(
+                      Icons.check,
+                    )
+                ],
+              ),
+            ),
+            const Divider(
+              height: 1,
+              thickness: 1,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+enum UserFilterTypes {
+  University,
+  Branch,
+  Gender,
+  EatingHabits,
+  SmokingHabits,
+  DrinkingHabits,
+  RoomType;
+
+  //to string
+  @override
+  String toString() {
+    switch (this) {
+      case UserFilterTypes.University:
+        return 'University';
+      case UserFilterTypes.Branch:
+        return 'Branch';
+      case UserFilterTypes.Gender:
+        return 'Gender';
+      case UserFilterTypes.EatingHabits:
+        return 'Eating Habits';
+      case UserFilterTypes.SmokingHabits:
+        return 'Smoking Habits';
+      case UserFilterTypes.DrinkingHabits:
+        return 'Drinking Habits';
+      case UserFilterTypes.RoomType:
+        return 'Room Type';
+    }
   }
 }

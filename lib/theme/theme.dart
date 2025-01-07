@@ -37,6 +37,7 @@ class AppTheme {
   static Color get onSurface => Theme.of(_context).colorScheme.onSurface;
   static Color get shadowColor => Theme.of(_context).shadowColor;
   static Color get errorColor => Theme.of(_context).colorScheme.error;
+  static Color get onError => Theme.of(_context).colorScheme.onError;
   static Color get success => AppColor.successGreen;
 
   // font

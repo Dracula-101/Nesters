@@ -24,9 +24,12 @@ class _SubletPhotoCarouselState extends State<SubletPhotoCarousel> {
   }
 
   Future<void> preloadImages() async {
-    await Future.wait(
-      widget.photos.map((photo) => precacheImage(NetworkImage(photo), context)),
-    );
+    if (mounted) {
+      await Future.wait(
+        widget.photos
+            .map((photo) => precacheImage(NetworkImage(photo), context)),
+      );
+    }
   }
 
   @override

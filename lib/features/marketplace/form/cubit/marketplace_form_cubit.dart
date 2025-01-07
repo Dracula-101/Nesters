@@ -13,7 +13,9 @@ import 'package:nesters/utils/logger/logger.dart';
 part 'marketplace_form_state.dart';
 
 class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
-  MarketplaceFormCubit() : super(const MarketplaceFormState());
+  MarketplaceFormCubit() : super(const MarketplaceFormState()) {
+    loadMarketplaceCategories();
+  }
 
   final MarketplaceRepository _marketplaceRepository =
       GetIt.I<MarketplaceRepository>();
@@ -116,5 +118,10 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
 
   Future<List<MarketplaceCategoryModel>> getCategories() {
     return _marketplaceRepository.getMarketplaceCategories();
+  }
+
+  void loadMarketplaceCategories() {
+    getCategories()
+        .then((value) => emit(state.copyWith(marketplaceCategories: value)));
   }
 }

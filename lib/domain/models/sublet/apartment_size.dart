@@ -11,6 +11,13 @@ class ApartmentSize {
     };
   }
 
+  String toFormattedString() {
+    // check for the plural form of the word
+    String bedString = beds == 1 ? 'bed' : 'beds';
+    String bathString = baths == 1 ? 'bath' : 'baths';
+    return '$beds $bedString, $baths $bathString';
+  }
+
   factory ApartmentSize.fromMap(Map<String, dynamic> map) {
     return ApartmentSize(
       beds: map['beds'] ?? 0,
