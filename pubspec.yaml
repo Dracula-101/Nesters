@@ -78,7 +78,6 @@ flutter:
     - assets/images/user/
     - assets/images/user/profile/
     - assets/svg/
-    - assets/lottie/
     - assets/fonts/
     # ENV File
     - .env
