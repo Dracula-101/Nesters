@@ -42,6 +42,23 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     } else if (event is SingleRemoveFilterProfileEvent) {
       emit(state.copyWith(singleUserFilter: null, filteredProfiles: null));
     } else if (event is AddFilterProfileEvent) {
+      emit(state.copyWith(isLoading: true));
+      if (event.filter == null) {
+        emit(state.copyWith(
+            userFilter: null,
+            singleUserFilter: null,
+            filteredProfiles: null,
+            isLoading: false));
+        return;
+      }
+      final filteredUser =
+          await _userRepository.getMultipleFilteredQuickProfiles(event.filter!);
+      _logger.debug(
+          "Filtered User: ${filteredUser.length} with filter: ${event.filter}");
+      emit(state.copyWith(
+          filteredProfiles: filteredUser,
+          isLoading: false,
+          userFilter: event.filter));
     } else if (event is RemoveFilterProfileEvent) {
       emit(state.copyWith(
           userFilter: null, singleUserFilter: null, filteredProfiles: null));

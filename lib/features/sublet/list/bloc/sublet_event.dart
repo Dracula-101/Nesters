@@ -12,11 +12,18 @@ abstract class SubletEvent {
   const factory SubletEvent.removeSingleFilter() =
       _SingleRemoveFilterSubletEvent;
 
+  const factory SubletEvent.addFilterEvent(SubletFilter filter) =
+      _FilterAddEvent;
+
+  const factory SubletEvent.removeFilterEvent() = _FilterRemoveEvent;
+
   R when<R>({
     required R Function() initial,
     required R Function(List<SubletModel> sublets) saveSublets,
     required R Function(SingleSubletFilter filter) singleAddFilter,
     required R Function() singleRemoveFilter,
+    required R Function(SubletFilter filter) addFilter,
+    required R Function() removeFilter,
   }) {
     if (this is _Initial) {
       return initial();
@@ -26,6 +33,10 @@ abstract class SubletEvent {
       return singleAddFilter((this as _SingleAddFilterSubletEvent).filter);
     } else if (this is _SingleRemoveFilterSubletEvent) {
       return singleRemoveFilter();
+    } else if (this is _FilterAddEvent) {
+      return addFilter((this as _FilterAddEvent).filter);
+    } else if (this is _FilterRemoveEvent) {
+      return removeFilter();
     } else {
       throw StateError('Unknown type $this');
     }
@@ -36,6 +47,8 @@ abstract class SubletEvent {
     R Function(List<SubletModel> sublets)? saveSublets,
     R Function(SingleSubletFilter filter)? singleAddFilter,
     R Function()? singleRemoveFilter,
+    R Function(SubletFilter filter)? addFilter,
+    R Function()? removeFilter,
     required R Function() orElse,
   }) {
     if (this is _Initial) {
@@ -50,6 +63,12 @@ abstract class SubletEvent {
           : orElse();
     } else if (this is _SingleRemoveFilterSubletEvent) {
       return singleRemoveFilter != null ? singleRemoveFilter() : orElse();
+    } else if (this is _FilterAddEvent) {
+      return addFilter != null
+          ? addFilter((this as _FilterAddEvent).filter)
+          : orElse();
+    } else if (this is _FilterRemoveEvent) {
+      return removeFilter != null ? removeFilter() : orElse();
     } else {
       throw StateError('Unknown type $this');
     }
@@ -60,6 +79,8 @@ abstract class SubletEvent {
     required R Function(List<SubletModel> sublets) saveSublets,
     required R Function(SingleSubletFilter filter) singleAddFilter,
     required R Function() singleRemoveFilter,
+    required R Function(SubletFilter filter) addFilter,
+    required R Function() removeFilter,
   }) {
     if (this is _Initial) {
       return initial();
@@ -69,6 +90,10 @@ abstract class SubletEvent {
       return singleAddFilter((this as _SingleAddFilterSubletEvent).filter);
     } else if (this is _SingleRemoveFilterSubletEvent) {
       return singleRemoveFilter();
+    } else if (this is _FilterAddEvent) {
+      return addFilter((this as _FilterAddEvent).filter);
+    } else if (this is _FilterRemoveEvent) {
+      return removeFilter();
     } else {
       throw StateError('Unknown type $this');
     }
@@ -79,6 +104,8 @@ abstract class SubletEvent {
     R Function(List<SubletModel> sublets)? saveSublets,
     R Function(SingleSubletFilter filter)? singleAddFilter,
     R Function()? singleRemoveFilter,
+    R Function(SubletFilter filter)? addFilter,
+    R Function()? removeFilter,
     required R Function(SubletEvent) orElse,
   }) {
     if (this is _Initial) {
@@ -93,6 +120,12 @@ abstract class SubletEvent {
           : orElse(this);
     } else if (this is _SingleRemoveFilterSubletEvent) {
       return singleRemoveFilter != null ? singleRemoveFilter() : orElse(this);
+    } else if (this is _FilterAddEvent) {
+      return addFilter != null
+          ? addFilter((this as _FilterAddEvent).filter)
+          : orElse(this);
+    } else if (this is _FilterRemoveEvent) {
+      return removeFilter != null ? removeFilter() : orElse(this);
     } else {
       throw StateError('Unknown type $this');
     }
@@ -144,4 +177,13 @@ class ApartmentTypeFilter extends SingleSubletFilter {
   final UserRoomType apartmentType;
 
   ApartmentTypeFilter(this.apartmentType);
+}
+
+class _FilterAddEvent extends SubletEvent {
+  final SubletFilter filter;
+  const _FilterAddEvent(this.filter);
+}
+
+class _FilterRemoveEvent extends SubletEvent {
+  const _FilterRemoveEvent();
 }

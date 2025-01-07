@@ -1,3 +1,4 @@
+import 'package:nesters/domain/models/sublet/sublet_filter.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 
@@ -17,6 +18,10 @@ abstract class SubletRepository {
 
   Future<List<SubletModel>> singleFilterSublet({
     required SingleSubletFilter filter,
+  });
+
+  Future<List<SubletModel>> multiFilterSublet({
+    required SubletFilter filter,
   });
 }
 

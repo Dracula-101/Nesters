@@ -8,6 +8,12 @@ abstract class DatabaseRepository {
   Future<List<Map<String, dynamic>?>> getFilteredData(
       String table, QueryData queryData,
       {String columns = '', String? removeRowId});
+  Future<List<Map<String, dynamic>?>> getMultipleFilteredData(
+    String table,
+    List<QueryData> queryDataList, {
+    String columns = '',
+    String? removeRowId,
+  });
   Future<bool> checkExistsData(String table, FieldValue field);
   Future<void> setData(String table, SetData setData);
   Future<List<Map<String, dynamic>>> queryData(

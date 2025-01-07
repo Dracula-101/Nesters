@@ -6,7 +6,6 @@ class UserFilter {
   // Filters
   String? universityName;
   String? branchName;
-  String? gender;
   UserFoodHabit? foodHabit;
   UserHabit? smokingHabit;
   UserHabit? drinkingHabit;
@@ -18,7 +17,6 @@ class UserFilter {
     this.universityName,
     this.branchName,
     this.drinkingHabit,
-    this.gender,
     this.foodHabit,
     this.smokingHabit,
     this.personType,
@@ -41,7 +39,6 @@ class UserFilter {
     return UserFilter(
       universityName: universityName ?? this.universityName,
       branchName: branchName ?? this.branchName,
-      gender: gender ?? this.gender,
       foodHabit: foodHabit ?? this.foodHabit,
       smokingHabit: smokingHabit ?? this.smokingHabit,
       drinkingHabit: drinkingHabit ?? this.drinkingHabit,

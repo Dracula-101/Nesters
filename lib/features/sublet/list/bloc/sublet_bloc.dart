@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/sublet/apartment_size.dart';
+import 'package:nesters/domain/models/sublet/sublet_filter.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -37,6 +39,17 @@ class SubletBloc extends Bloc<SubletEvent, SubletState> {
       },
       singleRemoveFilter: () {
         emit(state.copyWith(singleSubletFilter: null));
+      },
+      addFilter: (filter) async {
+        final filteredSublets =
+            await _subletRepository.multiFilterSublet(filter: filter);
+        _logger.debug(
+            "Filtered Sublets: ${filteredSublets.length} with filter: $filter");
+        emit(state.copyWith(
+            filteredSubletList: filteredSublets, subletFilter: filter));
+      },
+      removeFilter: () {
+        emit(state.copyWith(subletFilter: null));
       },
     );
   }

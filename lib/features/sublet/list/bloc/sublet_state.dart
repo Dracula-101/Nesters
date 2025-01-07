@@ -6,12 +6,14 @@ class SubletState {
   final Exception? error;
   // Single category of sublet filtering
   final SingleSubletFilter? singleSubletFilter;
+  final SubletFilter? subletFilter;
 
   const SubletState({
     this.subletList,
     this.filteredSubletList,
     this.error,
     this.singleSubletFilter,
+    this.subletFilter,
   });
 
   SubletState copyWith({
@@ -19,12 +21,14 @@ class SubletState {
     List<SubletModel>? filteredSubletList,
     Exception? error,
     SingleSubletFilter? singleSubletFilter,
+    SubletFilter? subletFilter,
   }) {
     return SubletState(
       subletList: subletList ?? this.subletList,
       filteredSubletList: filteredSubletList ?? this.filteredSubletList,
       error: error ?? this.error,
       singleSubletFilter: singleSubletFilter,
+      subletFilter: subletFilter,
     );
   }
 
@@ -36,7 +40,8 @@ class SubletState {
         listEquals(other.subletList, subletList) &&
         other.error == error &&
         other.singleSubletFilter == singleSubletFilter &&
-        listEquals(other.filteredSubletList, filteredSubletList);
+        listEquals(other.filteredSubletList, filteredSubletList) &&
+        other.subletFilter == subletFilter;
   }
 
   @override

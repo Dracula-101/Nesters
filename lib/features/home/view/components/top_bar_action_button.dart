@@ -7,12 +7,14 @@ class TopActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onPressed;
   final bool isActive;
+  final bool closeIcon;
   const TopActionButton(
       {super.key,
       required this.title,
       required this.icon,
       required this.onPressed,
-      required this.isActive});
+      required this.isActive,
+      this.closeIcon = true});
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +36,13 @@ class TopActionButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              isActive ? Icons.close : icon,
-              size: 16,
-            ),
-            const SizedBox(width: 8),
+            if (closeIcon) ...[
+              Icon(
+                isActive ? Icons.close : icon,
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+            ],
             Text(
               title,
               style: AppTheme.labelMedium,

@@ -11,10 +11,13 @@ import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
+import 'package:nesters/features/home/view/components/filter_tab.dart';
+import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
@@ -203,7 +206,8 @@ class _UserListPageState extends State<UserListPage> {
                   onPressed: () {
                     showFilterDialog(context, homeState, userState);
                   },
-                  isActive: false,
+                  isActive: homeState.userFilter != null,
+                  closeIcon: false,
                 ),
                 if (homeState.singleUserFilter == null ||
                     homeState.singleUserFilter is UniversityFilter)
@@ -518,16 +522,17 @@ class _UserListPageState extends State<UserListPage> {
     UserFilterTypes userFilterTypeSelected = UserFilterTypes.University;
     String selectedUniversity = state.userFilter?.universityName ?? '';
     String selectedBranch = state.userFilter?.branchName ?? '';
-    String selectedGender = state.userFilter?.gender ?? '';
+    String selectedGender = state.userFilter?.flatmateGenderPref ?? '';
     UserFoodHabit selectedEatingHabit =
         state.userFilter?.foodHabit ?? UserFoodHabit.UNKNOWN;
     UserHabit selectedSmokingHabit =
-        state.userFilter?.smokingHabit ?? UserHabit.NEVER;
+        state.userFilter?.smokingHabit ?? UserHabit.UNKNOWN;
     UserHabit selectedDrinkingHabit =
-        state.userFilter?.drinkingHabit ?? UserHabit.NEVER;
+        state.userFilter?.drinkingHabit ?? UserHabit.UNKNOWN;
     UserRoomType selectedRoomType =
         state.userFilter?.roomType ?? UserRoomType.UNKNOWN;
-
+    final TextEditingController _searchController = TextEditingController();
+    List<University?> filterUniversities = userState.universities;
     showDialog(
       context: context,
       builder: (ctx) {
@@ -584,9 +589,10 @@ class _UserListPageState extends State<UserListPage> {
                                       shrinkWrap: true,
                                       children: [
                                         ...UserFilterTypes.values.map(
-                                          (e) => filterTab(
-                                            e.toString(),
-                                            e == userFilterTypeSelected,
+                                          (e) => FilterTab(
+                                            title: e.toString(),
+                                            isSelected:
+                                                e == userFilterTypeSelected,
                                             onTap: () {
                                               setState(() {
                                                 userFilterTypeSelected = e;
@@ -611,34 +617,77 @@ class _UserListPageState extends State<UserListPage> {
                                       child: Container(
                                           child: switch (
                                               userFilterTypeSelected) {
-                                        UserFilterTypes.University =>
-                                          ListView.builder(
-                                            shrinkWrap: true,
-                                            itemCount:
-                                                userState.universities.length,
-                                            itemBuilder: (context, index) {
-                                              return UniversityFilterTile(
-                                                isSelected:
-                                                    selectedUniversity ==
-                                                        userState
-                                                            .universities[
-                                                                index]!
-                                                            .title,
-                                                isDense: true,
-                                                onTap: () {
-                                                  setState(() {
-                                                    selectedUniversity =
-                                                        userState
-                                                                .universities[
-                                                                    index]
-                                                                ?.title ??
-                                                            '';
-                                                  });
+                                        UserFilterTypes.University => Column(
+                                            children: [
+                                              TextField(
+                                                decoration: InputDecoration(
+                                                  hintText: 'Search University',
+                                                  hintStyle: AppTheme.bodySmall,
+                                                  prefixIcon: Icon(
+                                                    Icons.search,
+                                                    color: AppTheme
+                                                        .greyShades.shade800,
+                                                  ),
+                                                  border: InputBorder.none,
+                                                  contentPadding:
+                                                      const EdgeInsets.all(8),
+                                                  isDense: true,
+                                                ),
+                                                onChanged: (value) {
+                                                  if (value == "") {
+                                                    setState(() {
+                                                      filterUniversities =
+                                                          userState
+                                                              .universities;
+                                                    });
+                                                  } else {
+                                                    setState(() {
+                                                      filterUniversities = userState
+                                                          .universities
+                                                          .where((element) =>
+                                                              element?.title
+                                                                  ?.toLowerCase()
+                                                                  .contains(value
+                                                                      .toLowerCase()) ??
+                                                              false)
+                                                          .toList();
+                                                    });
+                                                  }
                                                 },
-                                                university: userState
-                                                    .universities[index]!,
-                                              );
-                                            },
+                                              ),
+                                              const Divider(
+                                                height: 1,
+                                                thickness: 1,
+                                              ),
+                                              Expanded(
+                                                  child: ListView.builder(
+                                                shrinkWrap: true,
+                                                itemCount:
+                                                    filterUniversities.length,
+                                                itemBuilder: (context, index) {
+                                                  return UniversityFilterTile(
+                                                    isSelected:
+                                                        selectedUniversity ==
+                                                            filterUniversities[
+                                                                    index]
+                                                                ?.title,
+                                                    isDense: true,
+                                                    onTap: () {
+                                                      setState(() {
+                                                        selectedUniversity =
+                                                            filterUniversities[
+                                                                        index]
+                                                                    ?.title ??
+                                                                '';
+                                                      });
+                                                    },
+                                                    university:
+                                                        filterUniversities[
+                                                            index]!,
+                                                  );
+                                                },
+                                              ))
+                                            ],
                                           ),
                                         UserFilterTypes.Branch =>
                                           ListView.builder(
@@ -663,18 +712,20 @@ class _UserListPageState extends State<UserListPage> {
                                           ),
                                         UserFilterTypes.Gender => ListView(
                                             children: [
-                                              filterTile(
-                                                'Male',
-                                                selectedGender == 'Male',
+                                              FilterTile(
+                                                title: 'Male',
+                                                isSelected:
+                                                    selectedGender == 'Male',
                                                 onTap: () {
                                                   setState(() {
                                                     selectedGender = 'Male';
                                                   });
                                                 },
                                               ),
-                                              filterTile(
-                                                'Female',
-                                                selectedGender == 'Female',
+                                              FilterTile(
+                                                title: 'Female',
+                                                isSelected:
+                                                    selectedGender == 'Female',
                                                 onTap: () {
                                                   setState(() {
                                                     selectedGender = 'Female';
@@ -687,11 +738,12 @@ class _UserListPageState extends State<UserListPage> {
                                           ListView(
                                             children: [
                                               ...UserFoodHabit.toList().map(
-                                                (e) => filterTile(
-                                                  e
+                                                (e) => FilterTile(
+                                                  title: e
                                                       .toUserFriendlyString()
                                                       .capitalize,
-                                                  selectedEatingHabit == e,
+                                                  isSelected:
+                                                      selectedEatingHabit == e,
                                                   onTap: () {
                                                     setState(() {
                                                       selectedEatingHabit = e;
@@ -705,9 +757,11 @@ class _UserListPageState extends State<UserListPage> {
                                           ListView(
                                             children: [
                                               ...UserHabit.toList().map(
-                                                (e) => filterTile(
-                                                  e.toString().capitalize,
-                                                  selectedSmokingHabit == e,
+                                                (e) => FilterTile(
+                                                  title:
+                                                      e.toString().capitalize,
+                                                  isSelected:
+                                                      selectedSmokingHabit == e,
                                                   onTap: () {
                                                     setState(() {
                                                       selectedSmokingHabit = e;
@@ -721,9 +775,12 @@ class _UserListPageState extends State<UserListPage> {
                                           ListView(
                                             children: [
                                               ...UserHabit.toList().map(
-                                                (e) => filterTile(
-                                                  e.toString().capitalize,
-                                                  selectedDrinkingHabit == e,
+                                                (e) => FilterTile(
+                                                  title:
+                                                      e.toString().capitalize,
+                                                  isSelected:
+                                                      selectedDrinkingHabit ==
+                                                          e,
                                                   onTap: () {
                                                     setState(() {
                                                       selectedDrinkingHabit = e;
@@ -736,9 +793,10 @@ class _UserListPageState extends State<UserListPage> {
                                         UserFilterTypes.RoomType => ListView(
                                             children: [
                                               ...UserRoomType.toList().map(
-                                                (e) => filterTile(
-                                                  e.toUI(),
-                                                  selectedRoomType == e,
+                                                (e) => FilterTile(
+                                                  title: e.toUI(),
+                                                  isSelected:
+                                                      selectedRoomType == e,
                                                   onTap: () {
                                                     setState(() {
                                                       selectedRoomType = e;
@@ -763,15 +821,50 @@ class _UserListPageState extends State<UserListPage> {
                             width: MediaQuery.of(context).size.width,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 16, vertical: 8),
-                            alignment: Alignment.centerRight,
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              child: Text(
-                                'Apply',
-                                style: AppTheme.bodyMedium.copyWith(
-                                  color: AppColor.white,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    context
+                                        .read<HomeBloc>()
+                                        .add(RemoveFilterProfileEvent());
+                                    Navigator.of(ctx).pop();
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.error,
+                                  ),
+                                  child: Text(
+                                    'Reset',
+                                    style: AppTheme.bodyMedium.copyWith(
+                                      color: AppTheme.onError,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    final filter = UserFilter(
+                                      universityName: selectedUniversity,
+                                      branchName: selectedBranch,
+                                      drinkingHabit: selectedDrinkingHabit,
+                                      foodHabit: selectedEatingHabit,
+                                      flatmateGenderPref: selectedGender,
+                                      roomType: selectedRoomType,
+                                      smokingHabit: selectedSmokingHabit,
+                                    );
+                                    context
+                                        .read<HomeBloc>()
+                                        .add(AddFilterProfileEvent(filter));
+                                    Navigator.of(ctx).pop();
+                                  },
+                                  child: Text(
+                                    'Apply',
+                                    style: AppTheme.bodyMedium.copyWith(
+                                      color: AppColor.white,
+                                    ),
+                                  ),
+                                )
+                              ],
                             ),
                           )
                         ],
@@ -784,76 +877,6 @@ class _UserListPageState extends State<UserListPage> {
           },
         );
       },
-    );
-  }
-
-  Widget filterTile(
-    String title,
-    bool isSelected, {
-    VoidCallback? onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Transform.scale(
-            scale: 0.8,
-            child: CupertinoCheckbox(
-              activeColor: AppTheme.primary,
-              value: isSelected,
-              onChanged: (value) {
-                onTap?.call();
-              },
-            ),
-          ),
-          Flexible(
-            child: Text(
-              title,
-              style: AppTheme.bodyMedium.copyWith(
-                color: isSelected ? AppTheme.primary : AppTheme.onSurface,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget filterTab(String title, bool isSelected, {VoidCallback? onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: AppTheme.greyShades.shade300,
-            ),
-            left: BorderSide(
-              color: isSelected ? AppTheme.primary : Colors.transparent,
-              width: isSelected ? 6 : 0,
-            ),
-            right: BorderSide(
-              color: AppTheme.greyShades.shade300,
-            ),
-          ),
-          color: !isSelected ? AppTheme.greyShades.shade100 : AppTheme.surface,
-        ),
-        child: Row(
-          children: [
-            Flexible(
-              child: Text(
-                title,
-                style: AppTheme.bodyMedium.copyWith(
-                  color: isSelected ? AppTheme.primary : AppTheme.onSurface,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
     );
   }
 }
