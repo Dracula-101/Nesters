@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/domain/models/user/user.dart';
@@ -47,17 +49,9 @@ class SupabaseAuthRepository extends AuthRepository {
   Future<void> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) {
-      throw GoogleSignInFailedException('Google Sign In Cancelled');
+      throw GoogleSignInFailedException();
     }
     GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    if (googleAuth.idToken == null) {
-      throw GoogleSignInFailedException(
-          'Google Sign In Failed. ID Token missing');
-    }
-    if (googleAuth.accessToken == null) {
-      throw GoogleSignInFailedException(
-          'Google Sign In Failed. Access Token missing');
-    }
     supabase.AuthResponse response = await _supabaseClient.auth
         .signInWithIdToken(
           provider: supabase.OAuthProvider.google,
