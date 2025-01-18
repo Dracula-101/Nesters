@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
@@ -14,7 +15,9 @@ import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
+import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserRepository {
   UserRepository({
@@ -29,6 +32,7 @@ class UserRepository {
   final DatabaseRepository _databaseRepository;
   final LocalStorageRepository _storageRepository;
   final AppLogger _logger;
+  final SupabaseStorageClient _storageClient = Supabase.instance.client.storage;
 
   String universityCollection = "universities";
   String masterDegreeCollection = "masters";
@@ -62,6 +66,10 @@ class UserRepository {
     } catch (e) {
       return List.empty();
     }
+  }
+
+  List<String> getCountries() {
+    return countries;
   }
 
   Future<bool?> checkUserCreated(String userId) async {
@@ -305,4 +313,273 @@ class UserRepository {
       rethrow;
     }
   }
+
+  Future<void> updateProfile(UserEditProfile profile, String userId) async {
+    try {
+      return await _databaseRepository.updateData(
+        userDetailCollection,
+        UpdateData(columnId: "id", columnValue: userId, fields: [
+          UpdateFieldValue(
+              fieldName: "profile_image", newValue: profile.profileImage),
+          UpdateFieldValue(
+              fieldName: "selected_college_name",
+              newValue: profile.selectedCollegeName),
+          UpdateFieldValue(
+              fieldName: "selected_course_name",
+              newValue: profile.selectedCourseName),
+          UpdateFieldValue(
+              fieldName: "person_type",
+              newValue: profile.personType.toString()),
+          UpdateFieldValue(
+              fieldName: "work_experience", newValue: profile.workExperience),
+          UpdateFieldValue(
+              fieldName: "smoking_habit",
+              newValue: profile.smokingHabit.toString()),
+          UpdateFieldValue(
+              fieldName: "drinking_habit",
+              newValue: profile.drinkingHabit.toString()),
+          UpdateFieldValue(
+              fieldName: "food_habit", newValue: profile.foodHabit.toString()),
+          UpdateFieldValue(
+              fieldName: "cooking_skill",
+              newValue: profile.cookingSkill.toString()),
+          UpdateFieldValue(
+              fieldName: "cleanliness_habit",
+              newValue: profile.cleanlinessHabit.toString()),
+          UpdateFieldValue(fieldName: "bio", newValue: profile.bio),
+          UpdateFieldValue(fieldName: "hobbies", newValue: profile.hobbies),
+          UpdateFieldValue(
+              fieldName: "flatmates_gender_prefs",
+              newValue: profile.flatmatesGenderPrefs),
+          UpdateFieldValue(
+              fieldName: "room_type", newValue: profile.roomType.toUI()),
+        ]),
+      );
+    } catch (e) {
+      _logger.error('Error in updating user profile: $e');
+      rethrow;
+    }
+  }
+
+  Future<String> uploadProfileImage(
+    String profileImagePath,
+    String userId,
+  ) async {
+    try {
+      final File imageFile = File(profileImagePath);
+      final imageBytes = await imageFile.readAsBytes();
+      final storageImagePath =
+          '$userId/profile_image.${profileImagePath.split('.').last}';
+      await _storageClient.from('profile_images').uploadBinary(
+            storageImagePath,
+            imageBytes,
+            fileOptions: const FileOptions(
+              upsert: true,
+              cacheControl: '3600',
+            ),
+          );
+      final imageUrl =
+          _storageClient.from('profile_images').getPublicUrl(storageImagePath);
+      return imageUrl;
+    } catch (e) {
+      _logger.error('Error in updating user profile image: $e');
+      rethrow;
+    }
+  }
 }
+
+final List<String> countries = [
+  "Afghanistan",
+  "Albania",
+  "Algeria",
+  "Andorra",
+  "Angola",
+  "Antigua and Barbuda",
+  "Argentina",
+  "Armenia",
+  "Australia",
+  "Austria",
+  "Azerbaijan",
+  "Bahamas",
+  "Bahrain",
+  "Bangladesh",
+  "Barbados",
+  "Belarus",
+  "Belgium",
+  "Belize",
+  "Benin",
+  "Bhutan",
+  "Bolivia",
+  "Bosnia and Herzegovina",
+  "Botswana",
+  "Brazil",
+  "Brunei",
+  "Bulgaria",
+  "Burkina Faso",
+  "Burundi",
+  "Cabo Verde",
+  "Cambodia",
+  "Cameroon",
+  "Canada",
+  "Central African Republic",
+  "Chad",
+  "Chile",
+  "China",
+  "Colombia",
+  "Comoros",
+  "Congo (Congo-Brazzaville)",
+  "Costa Rica",
+  "Croatia",
+  "Cuba",
+  "Cyprus",
+  "Czechia (Czech Republic)",
+  "Denmark",
+  "Djibouti",
+  "Dominica",
+  "Dominican Republic",
+  "Ecuador",
+  "Egypt",
+  "El Salvador",
+  "Equatorial Guinea",
+  "Eritrea",
+  "Estonia",
+  "Eswatini (fmr. \"Swaziland\")",
+  "Ethiopia",
+  "Fiji",
+  "Finland",
+  "France",
+  "Gabon",
+  "Gambia",
+  "Georgia",
+  "Germany",
+  "Ghana",
+  "Greece",
+  "Grenada",
+  "Guatemala",
+  "Guinea",
+  "Guinea-Bissau",
+  "Guyana",
+  "Haiti",
+  "Honduras",
+  "Hungary",
+  "Iceland",
+  "India",
+  "Indonesia",
+  "Iran",
+  "Iraq",
+  "Ireland",
+  "Israel",
+  "Italy",
+  "Jamaica",
+  "Japan",
+  "Jordan",
+  "Kazakhstan",
+  "Kenya",
+  "Kiribati",
+  "Kuwait",
+  "Kyrgyzstan",
+  "Laos",
+  "Latvia",
+  "Lebanon",
+  "Lesotho",
+  "Liberia",
+  "Libya",
+  "Liechtenstein",
+  "Lithuania",
+  "Luxembourg",
+  "Madagascar",
+  "Malawi",
+  "Malaysia",
+  "Maldives",
+  "Mali",
+  "Malta",
+  "Marshall Islands",
+  "Mauritania",
+  "Mauritius",
+  "Mexico",
+  "Micronesia",
+  "Moldova",
+  "Monaco",
+  "Mongolia",
+  "Montenegro",
+  "Morocco",
+  "Mozambique",
+  "Myanmar (Burma)",
+  "Namibia",
+  "Nauru",
+  "Nepal",
+  "Netherlands",
+  "New Zealand",
+  "Nicaragua",
+  "Niger",
+  "Nigeria",
+  "North Korea",
+  "North Macedonia",
+  "Norway",
+  "Oman",
+  "Pakistan",
+  "Palau",
+  "Palestine State",
+  "Panama",
+  "Papua New Guinea",
+  "Paraguay",
+  "Peru",
+  "Philippines",
+  "Poland",
+  "Portugal",
+  "Qatar",
+  "Romania",
+  "Russia",
+  "Rwanda",
+  "Saint Kitts and Nevis",
+  "Saint Lucia",
+  "Saint Vincent and the Grenadines",
+  "Samoa",
+  "San Marino",
+  "Sao Tome and Principe",
+  "Saudi Arabia",
+  "Senegal",
+  "Serbia",
+  "Seychelles",
+  "Sierra Leone",
+  "Singapore",
+  "Slovakia",
+  "Slovenia",
+  "Solomon Islands",
+  "Somalia",
+  "South Africa",
+  "South Korea",
+  "South Sudan",
+  "Spain",
+  "Sri Lanka",
+  "Sudan",
+  "Suriname",
+  "Sweden",
+  "Switzerland",
+  "Syria",
+  "Tajikistan",
+  "Tanzania",
+  "Thailand",
+  "Timor-Leste",
+  "Togo",
+  "Tonga",
+  "Trinidad and Tobago",
+  "Tunisia",
+  "Turkey",
+  "Turkmenistan",
+  "Tuvalu",
+  "Uganda",
+  "Ukraine",
+  "United Arab Emirates",
+  "United Kingdom",
+  "United States of America",
+  "Uruguay",
+  "Uzbekistan",
+  "Vanuatu",
+  "Vatican City",
+  "Venezuela",
+  "Vietnam",
+  "Yemen",
+  "Zambia",
+  "Zimbabwe",
+];

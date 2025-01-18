@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
+import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
@@ -21,6 +24,8 @@ class SupabaseAuthRepository extends AuthRepository {
     serverClientId: _appSecrets.getSecret(AppSecretsKeys.GOOGLE_WEB_CLIENT_ID),
   );
 
+  UserProfile? _userProfile;
+
   @override
   User? get currentUser {
     final user = _supabaseClient.auth.currentUser;
@@ -31,7 +36,9 @@ class SupabaseAuthRepository extends AuthRepository {
         id: user.id,
         email: user.email ?? "",
         fullName: user.userMetadata?['fullName'] ?? '',
-        photoUrl: user.userMetadata?['avatar_url'] ?? '',
+        photoUrl: _userProfile?.profileImage ??
+            user.userMetadata?['avatar_url'] ??
+            '',
         accessToken: accessToken,
       );
     }
@@ -47,17 +54,9 @@ class SupabaseAuthRepository extends AuthRepository {
   Future<void> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) {
-      throw GoogleSignInFailedException('Google Sign In Cancelled');
+      throw GoogleSignInFailedException();
     }
     GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    if (googleAuth.idToken == null) {
-      throw GoogleSignInFailedException(
-          'Google Sign In Failed. ID Token missing');
-    }
-    if (googleAuth.accessToken == null) {
-      throw GoogleSignInFailedException(
-          'Google Sign In Failed. Access Token missing');
-    }
     supabase.AuthResponse response = await _supabaseClient.auth
         .signInWithIdToken(
           provider: supabase.OAuthProvider.google,
@@ -81,13 +80,25 @@ class SupabaseAuthRepository extends AuthRepository {
 
   @override
   Stream<User?> get user {
-    return _supabaseClient.auth.onAuthStateChange.map((event) {
+    return _supabaseClient.auth.onAuthStateChange.asyncMap((event) async {
       if (event.session != null) {
+        try {
+          _userProfile = await _supabaseClient
+              .from('user_details')
+              .select()
+              .eq('id', event.session!.user.id)
+              .single()
+              .then((value) => UserProfile.fromJson(value));
+        } catch (error) {
+          // user hasnt created a profile yet
+        }
         return User(
           id: event.session!.user.id,
           email: event.session!.user.email ?? "",
           fullName: event.session!.user.userMetadata?['name'] ?? '',
-          photoUrl: event.session!.user.userMetadata?['avatar_url'] ?? '',
+          photoUrl: _userProfile?.profileImage ??
+              event.session!.user.userMetadata?['avatar_url'] ??
+              '',
           accessToken: event.session!.accessToken,
         );
       }

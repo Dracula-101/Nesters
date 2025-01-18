@@ -80,14 +80,18 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   @override
   void initState() {
     super.initState();
-    String userId = context.read<AuthBloc>().state.maybeWhen(
-          authenticated: (user) => user.id,
-          orElse: () => throw Exception('User not authenticated'),
-        );
-    context
-        .read<CentralChatBloc>()
-        .add(CentralChatEvent.initalizeUserStatusSocket(userId));
-    context.read<CentralChatBloc>().add(const CentralChatEvent.loadProfiles());
+    if (mounted) {
+      String userId = context.read<AuthBloc>().state.maybeWhen(
+            authenticated: (user) => user.id,
+            orElse: () => throw Exception('User not authenticated'),
+          );
+      context
+          .read<CentralChatBloc>()
+          .add(CentralChatEvent.initalizeUserStatusSocket(userId));
+      context
+          .read<CentralChatBloc>()
+          .add(const CentralChatEvent.loadProfiles());
+    }
   }
 
   @override

@@ -3,6 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/auth/error/auth_error.dart';
 import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -25,7 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     await event.when(
-      authUserChanged: (user) {
+      authUserChanged: (user) async {
         _onUserChanged(user, emit);
       },
       authGoogleSignIn: () async => await _onGoogleSignIn(emit),

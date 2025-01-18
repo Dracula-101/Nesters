@@ -46,4 +46,22 @@ enum PersonType {
     }
   }
 
+  String toTextFieldValue() {
+    switch (this) {
+      case PersonType.AMBIVERT:
+        return 'Ambivert';
+      case PersonType.EXTROVERT:
+        return 'Extrovert';
+      case PersonType.INTROVERT:
+        return 'Introvert';
+      default:
+        return 'None';
+    }
+  }
+
+  static List<PersonType> get types => [
+        PersonType.AMBIVERT,
+        PersonType.EXTROVERT,
+        PersonType.INTROVERT,
+      ];
 }
