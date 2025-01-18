@@ -12,27 +12,27 @@ import 'package:nesters/domain/models/user/user.dart';
 class UserProfile extends Equatable {
   final String? id;
   final String? fullName;
-  final String? profileImage;
+  final String? profileImage; //changeable
   final City? city;
   final IndianState? state;
-  final String? selectedCollegeName;
-  final String? selectedCourseName;
+  final String? selectedCollegeName; //changeable
+  final String? selectedCourseName; //changeable
   final String? gender;
   final String? undergradCollegeName;
   final DateTime? birthDate;
-  final PersonType? personType;
+  final PersonType? personType; //changeable
   final Language? primaryLang;
   final Language? otherLang;
-  final int workExperience;
-  final UserHabit smokingHabit;
-  final UserHabit drinkingHabit;
-  final UserFoodHabit foodHabit;
-  final UserCookingSkill cookingSkill;
-  final UserCleanlinessHabit cleanlinessHabit;
-  final String bio;
-  final String hobbies;
-  final String flatmatesGenderPrefs;
-  final UserRoomType roomType;
+  final int workExperience; //changeable
+  final UserHabit smokingHabit; //changeable
+  final UserHabit drinkingHabit; //changeable
+  final UserFoodHabit foodHabit; //changeable
+  final UserCookingSkill cookingSkill; //changeable
+  final UserCleanlinessHabit cleanlinessHabit; //changeable
+  final String bio; //changeable
+  final String hobbies; //changeable
+  final String flatmatesGenderPrefs; //changeable
+  final UserRoomType roomType; //changeable
 
   const UserProfile({
     required this.id,

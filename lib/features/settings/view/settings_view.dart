@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/settings/bloc/settings_bloc.dart';
@@ -22,7 +24,7 @@ class SettingsPage extends StatelessWidget {
                   orElse: () => throw Exception('User not authenticated'),
                 ),
           ),
-          child: Scaffold(
+          child: const Scaffold(
             body: SettingsView(),
           ),
         );
@@ -130,7 +132,10 @@ class _SettingsViewState extends State<SettingsView> {
                 title: 'Edit Profile',
                 subtitle: 'Update your profile information',
                 icon: Icons.person,
-                onTap: () {},
+                onTap: () {
+                  GoRouter.of(context).go(
+                      "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.editProfile}");
+                },
               ),
               const Divider(thickness: 1, height: 1),
               SettingSwitch(

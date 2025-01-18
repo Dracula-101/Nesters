@@ -114,6 +114,7 @@ class _CustomDropdownFieldState<T> extends State<CustomDropdownField> {
                   ),
                 )
                 .toList(),
+            value: widget.controller.text,
             onChanged: (value) {
               widget.controller.text = value.toString();
               if (widget.onChanged != null) {
@@ -217,6 +218,7 @@ class CustomSearchableDropDownFieldState<T>
         color: AppTheme.greyShades.shade200,
         borderRadius: BorderRadius.circular(10),
       ),
+      padding: const EdgeInsets.only(left: 12),
       child: DropdownSearch(
         filterFn: (item, filter) {
           if (widget.filterFn != null) {
@@ -295,6 +297,7 @@ class CustomSearchableDropDownFieldState<T>
           }
           return item.toString();
         },
+        selectedItem: widget.controller.text,
       ),
     );
   }

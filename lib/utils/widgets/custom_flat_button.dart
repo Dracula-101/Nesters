@@ -3,6 +3,7 @@ import 'package:nesters/theme/theme.dart';
 
 class CustomFlatButton extends StatelessWidget {
   final String text;
+  final bool? isLoading;
   final TextStyle? textStyle;
   final EdgeInsetsGeometry? padding;
   final VoidCallback onPressed;
@@ -11,7 +12,8 @@ class CustomFlatButton extends StatelessWidget {
       required this.onPressed,
       this.padding,
       required this.text,
-      this.textStyle});
+      this.textStyle,
+      this.isLoading});
 
   @override
   Widget build(BuildContext context) {
@@ -27,11 +29,20 @@ class CustomFlatButton extends StatelessWidget {
             width: constraints.maxWidth,
             alignment: Alignment.center,
             padding: padding ?? const EdgeInsets.all(10),
-            child: Text(
-              text,
-              style: textStyle ??
-                  AppTheme.bodyMedium.copyWith(color: AppTheme.onPrimary),
-            ),
+            child: (isLoading ?? false)
+                ? AspectRatio(
+                    aspectRatio: 1,
+                    child: CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppTheme.onPrimary),
+                      strokeWidth: 1.5,
+                    ),
+                  )
+                : Text(
+                    text,
+                    style: textStyle ??
+                        AppTheme.bodyMedium.copyWith(color: AppTheme.onPrimary),
+                  ),
           ),
         );
       },

@@ -10,6 +10,8 @@ class UserBasicProfile extends Equatable {
   final String? selectedCollegeName;
   final String? selectedCourseName;
   final String? gender;
+  final String? state;
+  final String? country;
 
   const UserBasicProfile({
     required this.userId,
@@ -20,6 +22,8 @@ class UserBasicProfile extends Equatable {
     required this.selectedCollegeName,
     required this.selectedCourseName,
     required this.gender,
+    required this.state,
+    required this.country,
   });
 
   //tojson
@@ -32,6 +36,8 @@ class UserBasicProfile extends Equatable {
       'birth_date': birthDate,
       'selected_college_name': selectedCollegeName,
       'selected_course_name': selectedCourseName,
+      'state': state,
+      'country': country,
     };
   }
 
@@ -43,7 +49,9 @@ class UserBasicProfile extends Equatable {
         birthDate,
         selectedCollegeName,
         selectedCourseName,
-        gender
+        gender,
+        state,
+        country,
       ];
 
   List<FieldValue> toFieldValues() {
@@ -61,6 +69,8 @@ class UserBasicProfile extends Equatable {
       FieldValue(key: 'selected_college_name', value: selectedCollegeName),
       FieldValue(key: 'selected_course_name', value: selectedCourseName),
       FieldValue(key: 'gender', value: gender),
+      FieldValue(key: 'state', value: state),
+      FieldValue(key: 'country', value: country),
     ];
   }
 
@@ -84,6 +94,9 @@ class UserBasicProfile extends Equatable {
           .value,
       gender:
           fieldValues.firstWhere((element) => element.key == 'gender').value,
+      state: fieldValues.firstWhere((element) => element.key == 'state').value,
+      country:
+          fieldValues.firstWhere((element) => element.key == 'country').value,
     );
   }
 }

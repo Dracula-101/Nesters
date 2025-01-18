@@ -66,8 +66,11 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _collegeNameController = TextEditingController();
   final TextEditingController _courseNameController = TextEditingController();
-  final TextEditingController _genderController = TextEditingController();
+  final TextEditingController _genderController =
+      TextEditingController(text: "Not Selected");
   final TextEditingController _birthdateController = TextEditingController();
+  final TextEditingController _stateController = TextEditingController();
+  final TextEditingController _countryController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   bool isLoading = false;
 
@@ -114,36 +117,21 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       return value;
     });
     if (image != null) {
-      final imageBytes = await image.readAsBytes();
-      final mimeType = image.mimeType;
-      final userId =
-          supabase_flutter.Supabase.instance.client.auth.currentUser?.id;
-      final imagePath = '$userId/profile_image.${image.path.split('.').last}';
-      await supabase_flutter.Supabase.instance.client.storage
-          .from('profile_images')
-          .uploadBinary(
-            imagePath,
-            imageBytes,
-            fileOptions: supabase_flutter.FileOptions(
-              upsert: true,
-              cacheControl: '3600',
-              contentType: mimeType,
-            ),
-          )
-          .then(
-        (url) {
-          photoUrl = url;
-          GetIt.I<AppLogger>().info('Image uploaded: $url');
-        },
-      ).catchError(
-        (error) {
-          GetIt.I<AppLogger>().error('Error uploading image: $error');
-        },
-      );
-      final imageUrl = supabase_flutter.Supabase.instance.client.storage
-          .from('profile_images')
-          .getPublicUrl(imagePath);
-      photoUrl = imageUrl;
+      final imageUrl = await GetIt.I<UserRepository>()
+          .uploadProfileImage(image.path, widget.user.id)
+          .catchError((err) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error uploading profile image'),
+          ),
+        );
+        return Future.value("");
+      });
+      if (imageUrl != "") {
+        setState(() {
+          photoUrl = imageUrl;
+        });
+      }
     }
   }
 
@@ -168,14 +156,13 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       selectedCollegeName: _collegeNameController.text,
       selectedCourseName: _courseNameController.text,
       gender: _genderController.text,
+      state: _stateController.text,
+      country: _countryController.text,
     );
 
-    return GetIt.I<UserRepository>()
-        .setBasicUserProfileData(userBasicProfile)
-        .whenComplete(() {
-      setState(() {
-        isLoading = false;
-      });
+    GetIt.I<UserRepository>().setBasicUserProfileData(userBasicProfile);
+    setState(() {
+      isLoading = false;
     });
   }
 
@@ -203,6 +190,10 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
                 _buildCollegeNameField(),
                 _buildSpacing(20),
                 _buildDegreeNameField(),
+                _buildSpacing(20),
+                _buildStateField(),
+                _buildSpacing(20),
+                _buildCountryField(),
                 _buildSpacing(20),
                 _buildSubmitButton(),
               ],
@@ -503,7 +494,51 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         'Male',
         'Female',
         'Other',
+        'Not Selected',
       ],
+    );
+  }
+
+  Widget _buildStateField() {
+    return CustomTextField(
+      controller: _stateController,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Please enter your state';
+        }
+        return null;
+      },
+      labelText: 'State',
+      keyboardType: TextInputType.name,
+      isCapitalized: true,
+      prefixIcon: Icon(
+        FontAwesomeIcons.city,
+        color: AppTheme.primary,
+        size: 18,
+      ),
+    );
+  }
+
+  Widget _buildCountryField() {
+    return CustomSearchableDropDownField(
+      controller: _countryController,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Please enter your country';
+        }
+        return null;
+      },
+      asyncItems: (query) {
+        return Future.value(GetIt.I<UserRepository>().getCountries());
+      },
+      filterFn: (item, query) {
+        return item.toLowerCase().contains(query.toLowerCase());
+      },
+      labelText: 'Country',
+      prefixIcon: Icon(
+        Icons.location_city,
+        color: AppTheme.primary,
+      ),
     );
   }
 
@@ -511,18 +546,50 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     return Center(
       child: ElevatedButton(
         onPressed: () {
+          if (_genderController.text == "Not Selected") {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Please select your gender',
+                  style: AppTheme.bodyLarge,
+                ),
+              ),
+            );
+            return;
+          }
+          if (_stateController.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Please enter your state',
+                  style: AppTheme.bodyLarge,
+                ),
+              ),
+            );
+            return;
+          }
+          if (_countryController.text.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Please enter your country',
+                  style: AppTheme.bodyLarge,
+                ),
+              ),
+            );
+            return;
+          }
           if (_formKey.currentState!.validate()) {
-            setBasicUserProfile().catchError(
-              (error) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Error setting basic user profile'),
-                  ),
-                );
-              },
-            ).then((value) {
+            try {
+              setBasicUserProfile();
               context.go(AppRouterService.homeScreen);
-            });
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Error setting basic user profile'),
+                ),
+              );
+            }
           }
         },
         style: ElevatedButton.styleFrom(

@@ -74,12 +74,10 @@ class QueryData {
 
 class UpdateFieldValue {
   final String fieldName;
-  final dynamic oldValue;
   final dynamic newValue;
 
   UpdateFieldValue({
     required this.fieldName,
-    required this.oldValue,
     required this.newValue,
   });
   //getter
@@ -91,9 +89,13 @@ class UpdateFieldValue {
 }
 
 class UpdateData {
+  final String columnId;
+  final String columnValue;
   final List<UpdateFieldValue> fields;
 
   UpdateData({
+    required this.columnId,
+    required this.columnValue,
     required this.fields,
   });
 

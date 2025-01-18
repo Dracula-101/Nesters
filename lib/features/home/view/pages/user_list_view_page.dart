@@ -124,17 +124,13 @@ class _UserListPageState extends State<UserListPage> {
                   backgroundImage: const AssetImage(
                     'assets/images/user/user_placeholder.png',
                   ),
-                  child: ClipOval(
-                    child: state.user.photoUrl != ''
-                        ? Image.network(
-                            state.user.photoUrl,
-                            fit: BoxFit.cover,
-                          )
-                        : const Icon(
-                            Icons.person,
-                            size: 20,
-                          ),
-                  ),
+                  foregroundImage: NetworkImage(state.user.photoUrl),
+                  child: state.user.photoUrl.isEmpty
+                      ? const Icon(
+                          Icons.person,
+                          size: 20,
+                        )
+                      : null,
                 ),
                 const SizedBox(
                   width: 8,

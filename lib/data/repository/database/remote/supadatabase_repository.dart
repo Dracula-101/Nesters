@@ -208,13 +208,12 @@ class SupaDatabaseRepository extends DatabaseRepository {
   Future<void> updateData(String table, UpdateData newData) async {
     try {
       // Execute the update query using the Supabase client
-      final List<UpdateFieldValue> updateFields = newData.fields;
-      for (var field in updateFields) {
-        await _supabaseClient
-            .from(table)
-            .update({field.fieldName: field.newValue}).match(
-                {field.fieldName: field.oldValue});
-      }
+      await _supabaseClient
+          .from(table)
+          .update(
+            newData.toMap(),
+          )
+          .eq(newData.columnId, newData.columnValue);
     } catch (error) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to update data: $error');
