@@ -55,7 +55,7 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
     required MarketplaceCategoryModel? category,
     required MarketplaceLinkModel? link,
   }) {
-    MarketplaceModel? model = state.item?.copyWith(
+    MarketplaceModel? model = MarketplaceModel(
       id: state.item?.id ?? itemId,
       name: name,
       location: Location(address: address),
@@ -69,6 +69,8 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
       reference: link,
       description: description,
       price: itemPrice.toInt(),
+      photos: state.item?.photos,
+      userId: _authRepository.currentUser?.id,
     );
     emit(state.copyWith(item: model));
   }
@@ -88,14 +90,12 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
         imagePaths: state.selectedImages.map((e) => e.path).toList(),
       );
       List<String> uploadedImagesUrl = [];
-      if (!(state.isPreFilled ?? true)) {
-        await for (MarketplaceImageUploadTask value in uploadImageStream) {
-          emit(state.copyWith(imageUploadTask: value));
-          uploadedImagesUrl
-            ..clear()
-            ..addAll(value.urls?.toList() ?? []);
-          _logger.info('Uploading: ${value.progress}');
-        }
+      await for (MarketplaceImageUploadTask value in uploadImageStream) {
+        emit(state.copyWith(imageUploadTask: value));
+        uploadedImagesUrl
+          ..clear()
+          ..addAll(value.urls?.toList() ?? []);
+        _logger.info('Uploading: ${value.progress}');
       }
       MarketplaceModel? model = state.item?.copyWith(photos: uploadedImagesUrl);
       await _marketplaceRepository.createMarketplace(
@@ -120,8 +120,9 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
   }
 
   Future<void> updateSublet() async {
-    emit(state.copyWith(isSubmitting: true));
+    if (state.isSubmitting ?? false) return;
     try {
+      emit(state.copyWith(isSubmitting: true));
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(submitError: Exception('User ID is null')));

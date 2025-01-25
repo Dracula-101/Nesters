@@ -136,7 +136,7 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
     return BlocListener<MarketplaceFormCubit, MarketplaceFormState>(
       listener: (context, state) {
         if (state.isValidating) {
-          if (validateAllFields() && state.hasSecondPageAccess) {
+          if (validateAllFields() || state.hasSecondPageAccess) {
             context.read<MarketplaceFormCubit>().onPageChange(1);
             context.read<MarketplaceFormCubit>().showPageValid(1);
             widget.controller!.animateTo(1);

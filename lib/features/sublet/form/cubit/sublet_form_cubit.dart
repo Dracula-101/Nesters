@@ -66,7 +66,7 @@ class SubletFormCubit extends Cubit<SubletFormState> {
     required int beds,
     required int baths,
   }) {
-    SubletModel? model = state.sublet?.copyWith(
+    SubletModel model = SubletModel(
       id: state.sublet?.id ?? subletId,
       location: Location(address: address),
       leasePeriod: LeasePeriod(startDate: startDate, endDate: endDate),
@@ -74,6 +74,12 @@ class SubletFormCubit extends Cubit<SubletFormState> {
       roomType: roomType,
       roommateGenderPref: roomateGender,
       apartmentSize: ApartmentSize(beds: beds, baths: baths),
+      photos: state.sublet?.photos,
+      amenitiesAvailable: state.sublet?.amenitiesAvailable,
+      roomDescription: state.sublet?.roomDescription,
+      roommateDescription: state.sublet?.roommateDescription,
+      isAvailable: state.sublet?.isAvailable,
+      userId: state.sublet?.userId,
     );
     emit(state.copyWith(sublet: model));
   }
@@ -114,8 +120,9 @@ class SubletFormCubit extends Cubit<SubletFormState> {
   }
 
   Future<void> createSublet() async {
-    emit(state.copyWith(isSubmitting: true));
+    if (state.isSubmitting ?? false) return;
     try {
+      emit(state.copyWith(isSubmitting: true));
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(submitError: Exception('User ID is null')));
@@ -165,8 +172,9 @@ class SubletFormCubit extends Cubit<SubletFormState> {
   }
 
   Future<void> updateSublet() async {
-    emit(state.copyWith(isSubmitting: true));
+    if (state.isSubmitting ?? false) return;
     try {
+      emit(state.copyWith(isSubmitting: true));
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(submitError: Exception('User ID is null')));
