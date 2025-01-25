@@ -120,8 +120,9 @@ class SubletFormCubit extends Cubit<SubletFormState> {
   }
 
   Future<void> createSublet() async {
-    emit(state.copyWith(isSubmitting: true));
+    if (state.isSubmitting ?? false) return;
     try {
+      emit(state.copyWith(isSubmitting: true));
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(submitError: Exception('User ID is null')));
@@ -171,8 +172,9 @@ class SubletFormCubit extends Cubit<SubletFormState> {
   }
 
   Future<void> updateSublet() async {
-    emit(state.copyWith(isSubmitting: true));
+    if (state.isSubmitting ?? false) return;
     try {
+      emit(state.copyWith(isSubmitting: true));
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(submitError: Exception('User ID is null')));
