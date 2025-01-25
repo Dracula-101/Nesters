@@ -49,8 +49,9 @@ class SubletRepositoryImpl implements SubletRepository {
       for (final imagePath in imagePaths) {
         final file = File(imagePath);
         final fileName = file.path.split('/').last;
+        final date = DateTime.now().toString();
         String supabasePath =
-            '$basePathName/image_$index.${fileName.split('.').last}';
+            '$basePathName/image_$date.${fileName.split('.').last}';
         await _supabaseClient.storage
             .from('sublets')
             .upload(supabasePath, file);
@@ -59,7 +60,7 @@ class SubletRepositoryImpl implements SubletRepository {
         urls.add(url);
         yield SubletImageUploadTask(
           urls: urls,
-          progress: index++ / imagePaths.length,
+          progress: (index++ / imagePaths.length).clamp(0.1, 1.0),
         );
       }
     } catch (e) {
@@ -239,6 +240,37 @@ class SubletRepositoryImpl implements SubletRepository {
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } catch (e) {
       throw Exception('Failed to get sublets: $e');
+    }
+  }
+
+  @override
+  Future<List<SubletModel>> getSubletsByUserId({required String userId}) async {
+    try {
+      final sublets = await _supabaseClient
+          .from('sublets')
+          .select()
+          .eq('user_id', userId)
+          .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
+      return sublets;
+    } catch (e) {
+      throw Exception('Failed to get sublets: $e');
+    }
+  }
+
+  @override
+  Future<void> updateSublet(
+      {required String userId,
+      required int subletId,
+      required SubletModel sublet}) async {
+    try {
+      final sublets = await _supabaseClient
+          .from('sublets')
+          .update({...sublet.toMap(), 'user_id': userId})
+          .eq('id', subletId)
+          .eq('user_id', userId);
+      return sublets;
+    } catch (e) {
+      throw Exception('Failed to update sublet: $e');
     }
   }
 }

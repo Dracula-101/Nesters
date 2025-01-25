@@ -15,6 +15,7 @@ import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
@@ -120,11 +121,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       final imageUrl = await GetIt.I<UserRepository>()
           .uploadProfileImage(image.path, widget.user.id)
           .catchError((err) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Error uploading profile image'),
-          ),
-        );
+        context.showErrorSnackbar('Error uploading profile image');
         return Future.value("");
       });
       if (imageUrl != "") {
@@ -547,36 +544,15 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       child: ElevatedButton(
         onPressed: () {
           if (_genderController.text == "Not Selected") {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Please select your gender',
-                  style: AppTheme.bodyLarge,
-                ),
-              ),
-            );
+            context.showErrorSnackBar('Please select your gender');
             return;
           }
           if (_stateController.text.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Please enter your state',
-                  style: AppTheme.bodyLarge,
-                ),
-              ),
-            );
+            context.showErrorSnackBar('Please enter your state');
             return;
           }
           if (_countryController.text.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Please enter your country',
-                  style: AppTheme.bodyLarge,
-                ),
-              ),
-            );
+            context.showErrorSnackBar('Please enter your country');
             return;
           }
           if (_formKey.currentState!.validate()) {
@@ -584,11 +560,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
               setBasicUserProfile();
               context.go(AppRouterService.homeScreen);
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Error setting basic user profile'),
-                ),
-              );
+              context.showErrorSnackBar("Error setting basic user profile");
             }
           }
         },

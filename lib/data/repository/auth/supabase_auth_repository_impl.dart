@@ -90,7 +90,7 @@ class SupabaseAuthRepository extends AuthRepository {
               .single()
               .then((value) => UserProfile.fromJson(value));
         } catch (error) {
-          // user hasnt created a profile yet
+          return null;
         }
         return User(
           id: event.session!.user.id,

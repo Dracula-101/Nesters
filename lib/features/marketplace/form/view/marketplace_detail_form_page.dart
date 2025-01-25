@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_link_model.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/form/cubit/marketplace_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
@@ -12,7 +13,9 @@ import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarketplaceDetailsForm extends StatefulWidget {
   final TabController? controller;
-  const MarketplaceDetailsForm({super.key, this.controller});
+  final MarketplaceModel? marketplaceModel;
+  const MarketplaceDetailsForm(
+      {super.key, this.controller, this.marketplaceModel});
 
   @override
   State<MarketplaceDetailsForm> createState() => _MarketplaceDetailsFormState();
@@ -36,14 +39,32 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
   bool get wantKeepAlive => true;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.marketplaceModel != null) {
+      _nameContoller.text = widget.marketplaceModel!.name ?? '';
+      _categoryController.text = widget.marketplaceModel!.category?.name ?? '';
+      _descriptionController.text = widget.marketplaceModel!.description ?? '';
+      _addressController.text =
+          widget.marketplaceModel!.location?.address ?? '';
+      _itemPriceController.text = widget.marketplaceModel!.price.toString();
+      startDate = widget.marketplaceModel!.period?.periodFrom;
+      endDate = widget.marketplaceModel!.period?.periodTill;
+      _referenceLinkController.text =
+          widget.marketplaceModel!.reference?.link ?? '';
+    }
+    widget.controller?.addListener(() => addData());
+  }
+
+  @override
   void dispose() {
+    widget.controller?.removeListener(() => addData());
     _nameContoller.dispose();
     _categoryController.dispose();
     _descriptionController.dispose();
     _addressController.dispose();
     _itemPriceController.dispose();
     _referenceLinkController.dispose();
-
     super.dispose();
   }
 
@@ -96,25 +117,28 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
     context.showErrorSnackBar(message);
   }
 
+  void addData() {
+    context.read<MarketplaceFormCubit>().addFirstPageData(
+          name: _nameContoller.text,
+          address: _addressController.text,
+          description: _descriptionController.text,
+          itemPrice: double.parse(_itemPriceController.text),
+          startDate: widget.marketplaceModel?.period?.periodFrom ?? startDate,
+          endDate: endDate,
+          category: widget.marketplaceModel?.category ?? selectedCategory,
+          link: selectedLink,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return BlocListener<MarketplaceFormCubit, MarketplaceFormState>(
       listener: (context, state) {
         if (state.isValidating) {
-          if (validateAllFields()) {
+          if (validateAllFields() && state.hasSecondPageAccess) {
             context.read<MarketplaceFormCubit>().onPageChange(1);
             context.read<MarketplaceFormCubit>().showPageValid(1);
-            context.read<MarketplaceFormCubit>().addFirstPageData(
-                  name: _nameContoller.text,
-                  address: _addressController.text,
-                  description: _descriptionController.text,
-                  itemPrice: double.parse(_itemPriceController.text),
-                  startDate: startDate!,
-                  endDate: endDate,
-                  category: selectedCategory!,
-                  link: selectedLink,
-                );
             widget.controller!.animateTo(1);
           }
         }

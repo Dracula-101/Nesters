@@ -114,7 +114,7 @@ class _CustomDropdownFieldState<T> extends State<CustomDropdownField> {
                   ),
                 )
                 .toList(),
-            value: widget.controller.text,
+            value: widget.controller.text == '' ? null : widget.controller.text,
             onChanged: (value) {
               widget.controller.text = value.toString();
               if (widget.onChanged != null) {
@@ -297,7 +297,8 @@ class CustomSearchableDropDownFieldState<T>
           }
           return item.toString();
         },
-        selectedItem: widget.controller.text,
+        selectedItem:
+            widget.controller.text == '' ? null : widget.controller.text,
       ),
     );
   }

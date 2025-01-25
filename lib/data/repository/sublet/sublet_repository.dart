@@ -8,6 +8,12 @@ abstract class SubletRepository {
     required SubletModel sublet,
   });
 
+  Future<void> updateSublet({
+    required String userId,
+    required int subletId,
+    required SubletModel sublet,
+  });
+
   Stream<SubletImageUploadTask> uploadImages({
     required List<String> imagePaths,
     required String userId,
@@ -23,6 +29,8 @@ abstract class SubletRepository {
   Future<List<SubletModel>> multiFilterSublet({
     required SubletFilter filter,
   });
+
+  Future<List<SubletModel>> getSubletsByUserId({required String userId});
 }
 
 class SubletImageUploadTask {

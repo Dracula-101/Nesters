@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
 import 'package:nesters/features/sublet/form/view/sublet_background_form_page.dart';
 import 'package:nesters/features/sublet/form/view/sublet_details_form_page.dart';
@@ -10,35 +11,41 @@ import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class SubletFormPage extends StatelessWidget {
-  const SubletFormPage({super.key});
+  final SubletModel? sublet;
+  const SubletFormPage({super.key, this.sublet});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => SubletFormCubit(),
+      create: (_) => SubletFormCubit(sublet: sublet),
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
             onPressed: () => Navigator.of(context).pop(),
           ),
-          title: const Text('Issue a Sublet'),
+          title: Text(
+            sublet != null ? 'Edit your Sublet' : 'Issue a Sublet',
+          ),
         ),
-        bottomNavigationBar: const CustomBottomNavigationBar(),
-        body: const SafeArea(child: SubletFormView()),
+        bottomNavigationBar:
+            CustomBottomNavigationBar(editPage: sublet != null),
+        body: SafeArea(child: SubletFormView(sublet: sublet)),
       ),
     );
   }
 }
 
 class CustomBottomNavigationBar extends StatelessWidget {
-  const CustomBottomNavigationBar({super.key});
+  final bool editPage;
+  const CustomBottomNavigationBar({super.key, required this.editPage});
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
         if (state.submitError != null) {
+          // log("Error: ${state.submitError}");
           context.showSnackBar(
             'An unknown error occurred, please try again later',
             icon: Icon(
@@ -50,7 +57,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         if (state.isSubmitComplete ?? false) {
           Future.delayed(1.sec).then((value) {
             context.showSnackBar(
-              'Sublet submitted successfully',
+              'Sublet ${(state.isPreFilled ?? false) ? 'updated' : 'created'} successfully',
               icon: Icon(
                 FontAwesomeIcons.circleCheck,
                 color: AppTheme.success,
@@ -74,7 +81,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: DynamicProgressIndicator(
-              currentValue: state.imageUploadTask?.progress ?? 1.0,
+              currentValue: state.isSubmitComplete ?? false
+                  ? 1.0
+                  : state.imageUploadTask?.progress ?? 1.0,
               totalValue: 1.0,
               height: 60,
               width: double.infinity,
@@ -82,10 +91,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
               progressColor: AppTheme.primaryShades.shade600,
               child: Text(
                 state.isSubmitComplete ?? false
-                    ? 'Submitted'
+                    ? (state.isPreFilled ?? false)
+                        ? 'Updated'
+                        : 'Submitted'
                     : state.imageUploadTask != null
                         ? 'Uploading ${((state.imageUploadTask?.progress ?? 0.01) * 100).toInt()}%'
-                        : 'Next',
+                        : editPage
+                            ? 'Update'
+                            : 'Next',
                 style: AppTheme.titleLarge.copyWith(
                   color: AppTheme.surface,
                 ),
@@ -99,7 +112,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
 }
 
 class SubletFormView extends StatefulWidget {
-  const SubletFormView({super.key});
+  final SubletModel? sublet;
+  const SubletFormView({super.key, required this.sublet});
 
   @override
   State<SubletFormView> createState() => _SubletFormViewState();
@@ -140,11 +154,11 @@ class _SubletFormViewState extends State<SubletFormView>
   }
 
   Widget _buildTabBar() {
-    return BlocConsumer<SubletFormCubit, SubletFormState>(
-      listener: (context, state) {},
+    return BlocBuilder<SubletFormCubit, SubletFormState>(
       builder: (context, state) {
         return TabBar(
           controller: _tabController,
+          isScrollable: false,
           onTap: (index) {
             if (!state.hasSecondPageAccess) {
               if ((_tabController?.index ?? 0) >= 1) {
@@ -171,7 +185,6 @@ class _SubletFormViewState extends State<SubletFormView>
                 return;
               }
             }
-            // _tabIndexNotifier.value = index;
           },
           tabs: [
             const Tab(
@@ -219,12 +232,15 @@ class _SubletFormViewState extends State<SubletFormView>
             children: [
               SubletDetailsForm(
                 controller: _tabController,
+                sublet: widget.sublet,
               ),
               SubletBackgroundInfo(
                 controller: _tabController,
+                sublet: widget.sublet,
               ),
               SubletPhotoForm(
                 controller: _tabController,
+                sublet: widget.sublet,
               ),
             ],
           );

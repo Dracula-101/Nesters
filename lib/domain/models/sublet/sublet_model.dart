@@ -70,7 +70,7 @@ class SubletModel {
 
   factory SubletModel.fromMap(Map<String, dynamic> map) {
     return SubletModel(
-      id: map['id'] ?? DateTime.now().millisecondsSinceEpoch,
+      id: map['id'] ?? 0,
       userId: map['user_id'] ?? '',
       roomDescription: map['room_description'] ?? '',
       roommateDescription: map['roommate_description'] ?? '',
@@ -87,6 +87,7 @@ class SubletModel {
   }
 
   SubletModel copyWith({
+    int? id,
     String? userId,
     String? roomDescription,
     String? roommateDescription,
@@ -101,7 +102,7 @@ class SubletModel {
     bool? isAvailable,
   }) {
     return SubletModel(
-      id: id,
+      id: id ?? this.id,
       userId: userId ?? this.userId,
       roomDescription: roomDescription ?? this.roomDescription,
       roommateDescription: roommateDescription ?? this.roommateDescription,

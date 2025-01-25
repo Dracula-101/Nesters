@@ -152,16 +152,17 @@ class _UserListPageState extends State<UserListPage> {
               ],
             ),
             actions: [
-              IconButton(
-                icon: const Icon(
-                  // Logout icon
-                  FontAwesomeIcons.rightFromBracket,
-                  size: 20,
-                ),
-                onPressed: () {
-                  context.read<AuthBloc>().add(const AuthEvent.authSignOut());
-                },
-              ),
+              // Removed as settings as logout
+              // IconButton(
+              //   icon: const Icon(
+              //     // Logout icon
+              //     FontAwesomeIcons.rightFromBracket,
+              //     size: 20,
+              //   ),
+              //   onPressed: () {
+              //     context.read<AuthBloc>().add(const AuthEvent.authSignOut());
+              //   },
+              // ),
               IconButton(
                 icon: const Icon(
                   FontAwesomeIcons.gear,

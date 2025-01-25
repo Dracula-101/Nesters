@@ -48,8 +48,9 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       for (final imagePath in imagePaths) {
         final file = File(imagePath);
         final fileName = file.path.split('/').last;
+        final date = DateTime.now().toString();
         String supabasePath =
-            '$basePathName/image_$index.${fileName.split('.').last}';
+            '$basePathName/image_$date.${fileName.split('.').last}';
         await _supabaseClient.storage
             .from('marketplaces')
             .upload(supabasePath, file);
@@ -59,11 +60,28 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
         urls.add(url);
         yield MarketplaceImageUploadTask(
           urls: urls,
-          progress: index++ / imagePaths.length,
+          progress: (index++ / imagePaths.length).clamp(0.1, 1.0),
         );
       }
     } catch (e) {
       throw Exception('Failed to upload images: $e');
+    }
+  }
+
+  @override
+  Future<bool> updateMarketplace({
+    required String userId,
+    required MarketplaceModel item,
+  }) async {
+    try {
+      await _supabaseClient
+          .from('marketplaces')
+          .update({...item.toJson(), 'user_id': userId})
+          .eq('id', item.id)
+          .eq('user_id', userId);
+      return true;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -107,6 +125,21 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } catch (e) {
       throw Exception('Failed to get Marketplaces: $e');
+    }
+  }
+
+  @override
+  Future<List<MarketplaceModel>> getUserMarketplaces({required String userId}) {
+    try {
+      return _supabaseClient
+          .from('marketplaces')
+          .select()
+          .eq('user_id', userId)
+          .order('created_at', ascending: false)
+          .then((response) =>
+              response.map((e) => MarketplaceModel.fromJson(e)).toList());
+    } catch (e) {
+      throw Exception('Failed to get User Marketplaces: $e');
     }
   }
 }

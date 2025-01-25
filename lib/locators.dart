@@ -52,6 +52,7 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   RecipientUserRepository firebaseRecipientQuickUserRepository =
       FirebaseRecipientUserRepository();
   UserRepository userRepository = UserRepository(
+    authRepository: authRepository,
     databaseRepository: databaseRepository,
     storageRepository: localStorageRepository,
     logger: appLoggerService,

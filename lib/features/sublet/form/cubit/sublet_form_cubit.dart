@@ -1,6 +1,10 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/sublet/amenities.dart';
@@ -13,12 +17,27 @@ import 'package:nesters/utils/logger/logger.dart';
 part 'sublet_form_state.dart';
 
 class SubletFormCubit extends Cubit<SubletFormState> {
-  SubletFormCubit() : super(SubletFormState());
+  SubletFormCubit({
+    SubletModel? sublet,
+  }) : super(const SubletFormState()) {
+    if (sublet != null) {
+      preFillSublet(sublet);
+    }
+  }
 
   final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
   final AppLogger _logger = GetIt.I<AppLogger>();
   int subletId = DateTime.now().millisecondsSinceEpoch;
+
+  void preFillSublet(SubletModel sublet) {
+    emit(state.copyWith(
+      sublet: sublet,
+      isPreFilled: true,
+      hasSecondPageAccess: true,
+      hasThirdPageAccess: true,
+    ));
+  }
 
   void validatePage() {
     emit(state.copyWith(isValidating: false));
@@ -47,8 +66,8 @@ class SubletFormCubit extends Cubit<SubletFormState> {
     required int beds,
     required int baths,
   }) {
-    SubletModel? model = SubletModel(
-      id: subletId,
+    SubletModel? model = state.sublet?.copyWith(
+      id: state.sublet?.id ?? subletId,
       location: Location(address: address),
       leasePeriod: LeasePeriod(startDate: startDate, endDate: endDate),
       rent: rentPrice,
@@ -94,9 +113,7 @@ class SubletFormCubit extends Cubit<SubletFormState> {
     emit(state.copyWith(sublet: model));
   }
 
-  Future<void> createSublet(
-    List<String> imagesPath,
-  ) async {
+  Future<void> createSublet() async {
     emit(state.copyWith(isSubmitting: true));
     try {
       String? userId = _authRepository.currentUser?.id;
@@ -104,11 +121,15 @@ class SubletFormCubit extends Cubit<SubletFormState> {
         emit(state.copyWith(submitError: Exception('User ID is null')));
         return;
       }
+      if (state.pickedImages.isEmpty) {
+        emit(state.copyWith(submitError: Exception('No images selected')));
+        return;
+      }
       Stream<SubletImageUploadTask> uploadImageStream =
           _subletRepository.uploadImages(
         userId: userId,
         subletId: subletId.toString(),
-        imagePaths: imagesPath,
+        imagePaths: state.pickedImages.map((e) => e.path).toList(),
       );
       List<String> uploadedImagesUrl = [];
       await for (SubletImageUploadTask value in uploadImageStream) {
@@ -134,8 +155,73 @@ class SubletFormCubit extends Cubit<SubletFormState> {
         isSubmitComplete: true,
       ));
     } on Exception catch (e) {
-      _logger.log('Error creating sublet: $e');
-      emit(state.copyWith(submitError: e));
+      _logger.error('Error creating sublet: $e');
+      emit(state.copyWith(
+          submitError: e,
+          isSubmitting: false,
+          isSubmitComplete: false,
+          imageUploadTask: null));
     }
+  }
+
+  Future<void> updateSublet() async {
+    emit(state.copyWith(isSubmitting: true));
+    try {
+      String? userId = _authRepository.currentUser?.id;
+      if (userId == null) {
+        emit(state.copyWith(submitError: Exception('User ID is null')));
+        return;
+      }
+      List<String> uploadedImagesUrl = [];
+      if (state.pickedImages.isNotEmpty) {
+        Stream<SubletImageUploadTask> uploadImageStream =
+            _subletRepository.uploadImages(
+          userId: userId,
+          subletId: state.sublet?.id.toString() ?? '',
+          imagePaths: state.pickedImages.map((e) => e.path).toList(),
+        );
+        await for (SubletImageUploadTask value in uploadImageStream) {
+          emit(state.copyWith(imageUploadTask: value));
+          uploadedImagesUrl
+            ..clear()
+            ..addAll(value.urls?.toList() ?? []);
+          _logger.info('Uploading: ${value.progress}');
+        }
+      }
+      final List<String> finalImages;
+      if (state.sublet?.photos != null) {
+        finalImages = [...state.sublet!.photos!, ...uploadedImagesUrl];
+      } else {
+        finalImages = uploadedImagesUrl;
+      }
+      SubletModel? model = state.sublet?.copyWith(photos: finalImages);
+      await _subletRepository.updateSublet(
+        userId: userId,
+        subletId: state.sublet?.id ?? 0,
+        sublet: model!,
+      );
+      emit(state.copyWith(
+        submitError: null,
+        imageUploadTask: null,
+        isSubmitting: false,
+        isSubmitComplete: true,
+      ));
+    } on Exception catch (e) {
+      _logger.error('Error updating sublet: $e');
+      emit(state.copyWith(
+          submitError: e,
+          isSubmitting: false,
+          isSubmitComplete: false,
+          imageUploadTask: null));
+    }
+  }
+
+  void addImages(List<XFile> images) {
+    List<XFile> pickedImages = [...state.pickedImages, ...images];
+    emit(state.copyWith(pickedImages: pickedImages));
+  }
+
+  void removeImage(XFile image) {
+    emit(state.copyWith(pickedImages: state.pickedImages..remove(image)));
   }
 }

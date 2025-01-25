@@ -1,7 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
+import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
@@ -9,7 +12,8 @@ import 'package:nesters/utils/widgets/widgets.dart';
 
 class SubletDetailsForm extends StatefulWidget {
   final TabController? controller;
-  const SubletDetailsForm({super.key, this.controller});
+  final SubletModel? sublet;
+  const SubletDetailsForm({super.key, this.controller, this.sublet});
 
   @override
   State<SubletDetailsForm> createState() => _SubletDetailsFormState();
@@ -28,12 +32,42 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.sublet != null) {
+      _addressController.text = widget.sublet!.location?.address ?? '';
+      _rentPriceController.text = widget.sublet!.rent.toString();
+      _roomTypeContoller.text = widget.sublet!.roomType?.toUI() ?? '';
+      _roomateGenderController.text = widget.sublet?.roommateGenderPref ?? '';
+      startDate = widget.sublet!.leasePeriod?.startDate;
+      endDate = widget.sublet!.leasePeriod?.endDate;
+      baths = widget.sublet!.apartmentSize?.baths ?? 0;
+      beds = widget.sublet!.apartmentSize?.beds ?? 0;
+    }
+    widget.controller!.addListener(() => addData());
+  }
+
+  @override
   void dispose() {
     _addressController.dispose();
     _rentPriceController.dispose();
     _roomTypeContoller.dispose();
     _roomateGenderController.dispose();
+    widget.controller!.removeListener(() => addData());
     super.dispose();
+  }
+
+  void addData() {
+    context.read<SubletFormCubit>().addFirstPageData(
+          address: _addressController.text.trim(),
+          startDate: startDate!,
+          endDate: endDate!,
+          rentPrice: double.parse(_rentPriceController.text.trim()),
+          roomType: UserRoomType.fromString(_roomTypeContoller.text.capitalize),
+          roomateGender: _roomateGenderController.text.trim(),
+          beds: beds,
+          baths: baths,
+        );
   }
 
   bool validateAllFields() {
@@ -81,51 +115,42 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocListener<SubletFormCubit, SubletFormState>(
+    return BlocConsumer<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
         if (state.isValidating) {
-          if (validateAllFields()) {
+          if (validateAllFields() || state.hasSecondPageAccess) {
             context.read<SubletFormCubit>().onPageChange(1);
             context.read<SubletFormCubit>().showPageValid(1);
-            context.read<SubletFormCubit>().addFirstPageData(
-                  address: _addressController.text.trim(),
-                  startDate: startDate!,
-                  endDate: endDate!,
-                  rentPrice: double.parse(_rentPriceController.text.trim()),
-                  roomType: UserRoomType.fromString(
-                      _roomTypeContoller.text.capitalize),
-                  roomateGender: _roomateGenderController.text.trim(),
-                  beds: beds,
-                  baths: baths,
-                );
             widget.controller!.animateTo(1);
           }
         }
       },
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildAddressField(),
-              _buildSpacing(),
-              _buildStartEndDate(),
-              _buildSpacing(),
-              _buildPriceField(),
-              _buildSpacing(),
-              _buildRoomTypeDropdown(),
-              _buildSpacing(),
-              _buildRoomateGenderDropdown(),
-              _buildSpacing(height: 24),
-              _buildSubSectionTitle('Your Apartment Size'),
-              _buildSpacing(),
-              _buildApartmentSize(),
-            ],
+      builder: (context, state) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildAddressField(),
+                _buildSpacing(),
+                _buildStartEndDate(),
+                _buildSpacing(),
+                _buildPriceField(),
+                _buildSpacing(),
+                _buildRoomTypeDropdown(),
+                _buildSpacing(),
+                _buildRoomateGenderDropdown(),
+                _buildSpacing(height: 24),
+                _buildSubSectionTitle('Your Apartment Size'),
+                _buildSpacing(),
+                _buildApartmentSize(),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

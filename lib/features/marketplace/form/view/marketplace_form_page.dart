@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/form/cubit/marketplace_form_cubit.dart';
 import 'package:nesters/features/marketplace/form/view/marketplace_detail_form_page.dart';
 import 'package:nesters/features/marketplace/form/view/marketplace_photo_form_page.dart';
@@ -9,12 +10,13 @@ import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarketplaceFormPage extends StatelessWidget {
-  const MarketplaceFormPage({super.key});
+  final MarketplaceModel? marketplace;
+  const MarketplaceFormPage({super.key, this.marketplace});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => MarketplaceFormCubit(),
+      create: (context) => MarketplaceFormCubit(marketplaceModel: marketplace),
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(
@@ -24,7 +26,7 @@ class MarketplaceFormPage extends StatelessWidget {
           title: const Text('Issue a Marketplace'),
         ),
         bottomNavigationBar: const CustomBottomNavigationBar(),
-        body: const SafeArea(child: MarketplaceFormView()),
+        body: SafeArea(child: MarketplaceFormView(model: marketplace)),
       ),
     );
   }
@@ -73,7 +75,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: DynamicProgressIndicator(
-              currentValue: state.imageUploadTask?.progress ?? 1.0,
+              currentValue: (state.isSubmitComplete ?? false)
+                  ? 1.0
+                  : state.imageUploadTask?.progress ?? 1.0,
               totalValue: 1.0,
               height: 60,
               width: double.infinity,
@@ -81,7 +85,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
               progressColor: AppTheme.primaryShades.shade600,
               child: Text(
                 state.isSubmitComplete ?? false
-                    ? 'Submitted'
+                    ? state.isPreFilled ?? false
+                        ? 'Updated'
+                        : 'Submitted'
                     : state.imageUploadTask != null
                         ? 'Uploading ${((state.imageUploadTask?.progress ?? 0.01) * 100).toInt()}%'
                         : 'Next',
@@ -98,7 +104,8 @@ class CustomBottomNavigationBar extends StatelessWidget {
 }
 
 class MarketplaceFormView extends StatefulWidget {
-  const MarketplaceFormView({super.key});
+  final MarketplaceModel? model;
+  const MarketplaceFormView({super.key, this.model});
 
   @override
   State<MarketplaceFormView> createState() => _MarketplaceFormViewState();
@@ -196,9 +203,11 @@ class _MarketplaceFormViewState extends State<MarketplaceFormView>
             children: [
               MarketplaceDetailsForm(
                 controller: _tabController,
+                marketplaceModel: widget.model,
               ),
               MarketplacePhotoForm(
                 controller: _tabController,
+                marketplaceModel: widget.model,
               ),
             ],
           );
