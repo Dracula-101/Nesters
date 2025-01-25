@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:rxdart/rxdart.dart';
 
 class UserChatPage extends StatelessWidget {
@@ -449,19 +450,8 @@ class _ChatViewState extends State<ChatView> {
                               media.url,
                               () {
                                 Navigator.of(dialogContext).pop();
-                                ScaffoldMessenger.of(
-                                  dialogContext,
-                                ).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'File downloaded successfully',
-                                      style: AppTheme.bodyMedium.copyWith(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    backgroundColor: AppTheme.primary,
-                                  ),
-                                );
+                                dialogContext.showSuccessSnackBar(
+                                    'File downloaded successfully');
                               },
                             ),
                           );

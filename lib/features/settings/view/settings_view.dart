@@ -2,13 +2,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/settings/bloc/settings_bloc.dart';
+import 'package:nesters/features/user/posts/cubit/user_post_state.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -76,7 +79,21 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         _buildProfile(),
         _buildProfileSettings(isSwitched),
+        _buildUserPostSettings(),
+        _buildAppInfoSettings(),
+        _buildDeleteAccount(),
+        _buildLogout(),
+        _buildSpacing(),
       ],
+    );
+  }
+
+  Widget _buildSpacing() {
+    return const SliverPadding(
+      padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
+      sliver: SliverToBoxAdapter(
+        child: SizedBox(height: 40),
+      ),
     );
   }
 
@@ -155,15 +172,202 @@ class _SettingsViewState extends State<SettingsView> {
       ),
     );
   }
+
+  Widget _buildUserPostSettings() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
+      sliver: SliverToBoxAdapter(
+        child: CustomCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  "Your Posts",
+                  style: AppTheme.titleLarge,
+                ),
+              ),
+              const Divider(thickness: 1, height: 1),
+              SettingsTile(
+                title: 'Sublets',
+                subtitle: 'View and edit your sublet posts',
+                icon: Icons.bed,
+                onTap: () {
+                  GoRouter.of(context).go(
+                      "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.userPosts}/${PostView.sublet}");
+                },
+              ),
+              const Divider(thickness: 1, height: 1),
+              SettingsTile(
+                title: 'Marketplace',
+                subtitle: 'View and edit your marketplace posts',
+                icon: Icons.shopping_bag,
+                onTap: () {
+                  GoRouter.of(context).go(
+                      "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.userPosts}/${PostView.marketplace}");
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppInfoSettings() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
+      sliver: SliverToBoxAdapter(
+        child: CustomCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  "General",
+                  style: AppTheme.titleLarge,
+                ),
+              ),
+              const Divider(thickness: 1, height: 1),
+              SettingsTile(
+                title: 'Terms of Service',
+                subtitle: 'View our terms of service',
+                icon: FontAwesomeIcons.handshake,
+                iconSize: 18,
+                onTap: () {
+                  const url =
+                      "https://nesters-org.github.io/terms-and-conditions/";
+                  try {
+                    launchUrlString(url);
+                  } catch (e) {
+                    // ignore: avoid_print
+                  }
+                },
+              ),
+              const Divider(thickness: 1, height: 1),
+              SettingsTile(
+                title: 'Privacy Policy',
+                subtitle: 'View our privacy policy',
+                icon: FontAwesomeIcons.userShield,
+                iconSize: 18,
+                onTap: () {
+                  const url = "https://nesters-org.github.io/privacy-policy/";
+                  try {
+                    launchUrlString(url);
+                  } catch (e) {
+                    // ignore: avoid_print
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeleteAccount() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
+      sliver: SliverToBoxAdapter(
+        child: CustomCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SettingsTile(
+                title: 'Delete Account',
+                subtitle: 'Delete your account permanently',
+                icon: Icons.delete,
+                color: AppTheme.error,
+                onTap: () {},
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogout() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
+      sliver: SliverToBoxAdapter(
+        child: CustomCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SettingsTile(
+                title: 'Logout',
+                titleStyle: AppTheme.bodyMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                subtitle: 'Logout from your account',
+                icon: Icons.logout,
+                color: AppTheme.onSurface,
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) {
+                      return AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        title: const Text('Logout'),
+                        content: const Text(
+                            'Are you sure you want to logout from your account?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                            },
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(ctx).pop();
+                              context
+                                  .read<AuthBloc>()
+                                  .add(const AuthEvent.authSignOut());
+                            },
+                            child: const Text('Logout'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class SettingsTile extends StatelessWidget {
   final String title;
+  final TextStyle? titleStyle;
   final String? subtitle;
   final IconData? icon;
+  final double iconSize;
   final VoidCallback? onTap;
+  final Color? color;
   const SettingsTile(
-      {super.key, required this.title, this.subtitle, this.icon, this.onTap});
+      {super.key,
+      required this.title,
+      this.titleStyle,
+      this.subtitle,
+      this.icon,
+      this.onTap,
+      this.iconSize = 24,
+      this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +380,8 @@ class SettingsTile extends StatelessWidget {
             icon != null
                 ? Icon(
                     icon,
-                    color: AppTheme.primary,
+                    color: color ?? AppTheme.primary,
+                    size: iconSize,
                   )
                 : Container(),
             const SizedBox(width: 10),
@@ -186,8 +391,8 @@ class SettingsTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppTheme.bodyMedium.copyWith(
-                      color: AppTheme.primary,
+                    style: (titleStyle ?? AppTheme.bodyMedium).copyWith(
+                      color: color ?? AppTheme.primary,
                     ),
                   ),
                   subtitle != null
@@ -202,7 +407,7 @@ class SettingsTile extends StatelessWidget {
             Icon(
               Icons.arrow_forward_ios,
               size: 20,
-              color: AppTheme.primary.withOpacity(0.5),
+              color: (color ?? AppTheme.primary).withOpacity(0.5),
             ),
           ],
         ),

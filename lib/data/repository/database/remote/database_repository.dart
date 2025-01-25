@@ -1,7 +1,8 @@
 abstract class DatabaseRepository {
   Future<List<Map<String, dynamic>>> getData(String table,
       {String? orderByColumn, bool? isDescending});
-  Future<Map<String, dynamic>?> getDataWithId(String table, String id);
+  Future<List<Map<String, dynamic>>?> getDataWithId(
+      String table, String key, String value);
   Future<List<Map<String, dynamic>?>> getDataWithPagination(
       String table, int offset, int limit,
       {String columns = '', String? removeRowId});

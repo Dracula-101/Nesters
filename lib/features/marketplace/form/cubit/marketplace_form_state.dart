@@ -11,6 +11,8 @@ class MarketplaceFormState {
   final Exception? submitError;
   final MarketplaceImageUploadTask? imageUploadTask;
   final List<MarketplaceCategoryModel> marketplaceCategories;
+  final bool? isPreFilled;
+  final List<XFile> selectedImages;
 
   const MarketplaceFormState({
     this.item,
@@ -23,6 +25,8 @@ class MarketplaceFormState {
     this.submitError,
     this.imageUploadTask,
     this.marketplaceCategories = const [],
+    this.isPreFilled,
+    this.selectedImages = const [],
   });
 
   MarketplaceFormState copyWith({
@@ -36,6 +40,8 @@ class MarketplaceFormState {
     Exception? submitError,
     MarketplaceImageUploadTask? imageUploadTask,
     List<MarketplaceCategoryModel>? marketplaceCategories,
+    bool? isPreFilled,
+    List<XFile>? selectedImages,
   }) {
     return MarketplaceFormState(
       item: item ?? this.item,
@@ -49,6 +55,8 @@ class MarketplaceFormState {
       imageUploadTask: imageUploadTask ?? this.imageUploadTask,
       marketplaceCategories:
           marketplaceCategories ?? this.marketplaceCategories,
+      isPreFilled: isPreFilled ?? this.isPreFilled,
+      selectedImages: selectedImages ?? this.selectedImages,
     );
   }
 
@@ -65,7 +73,10 @@ class MarketplaceFormState {
         other.isSubmitting == isSubmitting &&
         other.isSubmitComplete == isSubmitComplete &&
         other.submitError == submitError &&
-        other.imageUploadTask == imageUploadTask;
+        other.imageUploadTask == imageUploadTask &&
+        listEquals(other.marketplaceCategories, marketplaceCategories) &&
+        other.isPreFilled == isPreFilled &&
+        listEquals(other.selectedImages, selectedImages);
   }
 
   @override
@@ -78,5 +89,8 @@ class MarketplaceFormState {
       isSubmitting.hashCode ^
       isSubmitComplete.hashCode ^
       submitError.hashCode ^
-      imageUploadTask.hashCode;
+      imageUploadTask.hashCode ^
+      marketplaceCategories.hashCode ^
+      isPreFilled.hashCode ^
+      selectedImages.hashCode;
 }

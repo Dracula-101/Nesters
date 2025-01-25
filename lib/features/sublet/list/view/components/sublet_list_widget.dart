@@ -11,6 +11,7 @@ import 'package:nesters/utils/widgets/widgets.dart';
 class SubletModelWidget extends StatelessWidget {
   final SubletModel sublet;
   final EdgeInsets? margin;
+  final Widget? action;
   final EdgeInsets? padding;
   final VoidCallback? onPressed;
   const SubletModelWidget(
@@ -18,7 +19,8 @@ class SubletModelWidget extends StatelessWidget {
       required this.sublet,
       this.margin,
       this.padding,
-      this.onPressed});
+      this.onPressed,
+      this.action});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +57,7 @@ class SubletModelWidget extends StatelessWidget {
                     SubletPhotoCarousel(
                       photos: sublet.photos ?? [],
                     ),
-                    const HeartIcon(isFavourite: false),
+                    action ?? const HeartIcon(isFavourite: false),
                     _buildTitle(),
                     _buildDatePosted(),
                   ],

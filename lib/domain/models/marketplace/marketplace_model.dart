@@ -85,6 +85,7 @@ class MarketplaceModel {
 
   // copywith
   MarketplaceModel copyWith({
+    int? id,
     String? name,
     String? description,
     int? price,
@@ -98,7 +99,7 @@ class MarketplaceModel {
     String? userId,
   }) {
     return MarketplaceModel(
-      id: id,
+      id: id ?? this.id,
       name: name ?? this.name,
       description: description ?? this.description,
       price: price ?? this.price,

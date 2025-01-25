@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
@@ -8,6 +9,8 @@ import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/location/indian_city.dart';
 import 'package:nesters/domain/models/location/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
@@ -21,14 +24,17 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserRepository {
   UserRepository({
+    required AuthRepository authRepository,
     required DatabaseRepository databaseRepository,
     required LocalStorageRepository storageRepository,
     required AppLogger logger,
     // required FirestoreRepository firestoreRepository,
-  })  : _databaseRepository = databaseRepository,
+  })  : _authRepository = authRepository,
+        _databaseRepository = databaseRepository,
         _storageRepository = storageRepository,
         _logger = logger;
 
+  final AuthRepository _authRepository;
   final DatabaseRepository _databaseRepository;
   final LocalStorageRepository _storageRepository;
   final AppLogger _logger;
@@ -205,12 +211,14 @@ class UserRepository {
     if (query == null) {
       throw Exception('Invalid filter type');
     }
+    final userId = _authRepository.currentUser?.id;
     return await _databaseRepository
         .getFilteredData(
           userDetailCollection,
           query,
           columns:
               'id, full_name, gender, profile_image, selected_college_name, selected_course_name, city, state, work_experience',
+          removeRowId: userId,
         )
         .then((event) =>
             event.map((e) => UserQuickProfile.fromJson(e!)).toList());
@@ -290,12 +298,14 @@ class UserRepository {
         ),
       );
     }
+    final userId = _authRepository.currentUser?.id;
     return await _databaseRepository
         .getMultipleFilteredData(
       userDetailCollection,
       query,
       columns:
           'id, full_name, gender, profile_image, selected_college_name, selected_course_name, city, state, work_experience',
+      removeRowId: userId,
     )
         .then((value) {
       return value.map((e) => UserQuickProfile.fromJson(e ?? {})).toList();
@@ -305,8 +315,14 @@ class UserRepository {
   Future<UserProfile> getUserProfile(String id) async {
     try {
       UserProfile profile = await _databaseRepository
-          .getDataWithId(userDetailCollection, id)
-          .then((event) => UserProfile.fromJson(event!));
+          .getDataWithId(userDetailCollection, 'id', id)
+          .then((event) {
+        final user = event?.first;
+        if (user == null) {
+          throw Exception('User not found');
+        }
+        return UserProfile.fromJson(user);
+      });
       return profile;
     } catch (e) {
       _logger.error('Error in getting user profile: $e');

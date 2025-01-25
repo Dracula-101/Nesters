@@ -1,14 +1,18 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class SubletBackgroundInfo extends StatefulWidget {
   final TabController? controller;
-  const SubletBackgroundInfo({super.key, this.controller});
+  final SubletModel? sublet;
+  const SubletBackgroundInfo({super.key, this.controller, this.sublet});
 
   @override
   State<SubletBackgroundInfo> createState() => SubletBackgroundInfoState();
@@ -37,9 +41,58 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
   @override
   bool get wantKeepAlive => true;
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.sublet != null) {
+      _roomDescriptionController.text = widget.sublet!.roomDescription ?? '';
+      _roommateDescriptionController.text =
+          widget.sublet!.roommateDescription ?? '';
+      hasDryer = widget.sublet!.amenitiesAvailable?.hasDryer ?? false;
+      hasWashingMachine =
+          widget.sublet!.amenitiesAvailable?.hasWashingMachine ?? false;
+      hasDishwasher = widget.sublet!.amenitiesAvailable?.hasDishwasher ?? false;
+      hasParking = widget.sublet!.amenitiesAvailable?.hasParking ?? false;
+      hasGym = widget.sublet!.amenitiesAvailable?.hasGym ?? false;
+      hasPool = widget.sublet!.amenitiesAvailable?.hasPool ?? false;
+      hasBalcony = widget.sublet!.amenitiesAvailable?.hasBalcony ?? false;
+      hasPatio = widget.sublet!.amenitiesAvailable?.hasPatio ?? false;
+      hasAC = widget.sublet!.amenitiesAvailable?.hasAC ?? false;
+      hasHeater = widget.sublet!.amenitiesAvailable?.hasHeater ?? false;
+      hasFurnished = widget.sublet!.amenitiesAvailable?.hasFurnished ?? false;
+    }
+    widget.controller?.addListener(() => addData());
+  }
+
   bool validatePage() {
     bool allFieldsValid = _formKey.currentState?.validate() ?? false;
     return allFieldsValid;
+  }
+
+  void addData() {
+    context.read<SubletFormCubit>().addSecondPageData(
+          roomDescription: _roomDescriptionController.text.trim(),
+          roommateDescription: _roommateDescriptionController.text.trim(),
+          hasAC: hasAC,
+          hasBalcony: hasBalcony,
+          hasDishwasher: hasDishwasher,
+          hasDryer: hasDryer,
+          hasFurnished: hasFurnished,
+          hasGym: hasGym,
+          hasHeater: hasHeater,
+          hasParking: hasParking,
+          hasPatio: hasPatio,
+          hasPool: hasPool,
+          hasWashingMachine: hasWashingMachine,
+        );
+  }
+
+  @override
+  void dispose() {
+    _roomDescriptionController.dispose();
+    _roommateDescriptionController.dispose();
+    widget.controller?.removeListener(() => addData());
+    super.dispose();
   }
 
   @override
@@ -48,24 +101,8 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
     return BlocListener<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
         if (state.isValidating) {
-          if (validatePage()) {
+          if (validatePage() || state.hasThirdPageAccess) {
             context.read<SubletFormCubit>().showPageValid(2);
-            context.read<SubletFormCubit>().addSecondPageData(
-                  roomDescription: _roomDescriptionController.text.trim(),
-                  roommateDescription:
-                      _roommateDescriptionController.text.trim(),
-                  hasAC: hasAC,
-                  hasBalcony: hasBalcony,
-                  hasDishwasher: hasDishwasher,
-                  hasDryer: hasDryer,
-                  hasFurnished: hasFurnished,
-                  hasGym: hasGym,
-                  hasHeater: hasHeater,
-                  hasParking: hasParking,
-                  hasPatio: hasPatio,
-                  hasPool: hasPool,
-                  hasWashingMachine: hasWashingMachine,
-                );
             widget.controller?.animateTo(2);
           }
         }
@@ -141,17 +178,23 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
           color: AppTheme.greyShades.shade200,
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Row(
-          children: [
-            const Icon(
-              Icons.add,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              "Select Amenties",
-              style: AppTheme.bodyLarge,
-            ),
-          ],
+        child: BlocBuilder<SubletFormCubit, SubletFormState>(
+          builder: (context, state) {
+            return Row(
+              children: [
+                Icon(
+                  (state.isPreFilled == true)
+                      ? Icons.check_circle_outline
+                      : Icons.add_circle_outline,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  "Select${state.isPreFilled == true ? "ed" : ""} Amenties",
+                  style: AppTheme.bodyLarge,
+                )
+              ],
+            );
+          },
         ),
       ),
     );

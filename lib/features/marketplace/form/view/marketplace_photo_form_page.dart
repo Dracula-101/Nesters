@@ -4,13 +4,16 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/form/cubit/marketplace_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 
 class MarketplacePhotoForm extends StatefulWidget {
   final TabController? controller;
-  const MarketplacePhotoForm({super.key, this.controller});
+  final MarketplaceModel? marketplaceModel;
+  const MarketplacePhotoForm(
+      {super.key, this.controller, this.marketplaceModel});
 
   @override
   State<MarketplacePhotoForm> createState() => _MarketplacePhotoFormState();
@@ -18,7 +21,8 @@ class MarketplacePhotoForm extends StatefulWidget {
 
 class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
     with AutomaticKeepAliveClientMixin {
-  final List<XFile> _imageList = [];
+  late final List<String> _uploadedImages =
+      widget.marketplaceModel?.photos ?? [];
   final ImagePicker _picker = ImagePicker();
   final ValueNotifier<int> _index = ValueNotifier<int>(0);
 
@@ -32,46 +36,51 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocListener<MarketplaceFormCubit, MarketplaceFormState>(
+    return BlocConsumer<MarketplaceFormCubit, MarketplaceFormState>(
       listener: (context, state) {
         if (state.isValidating) {
-          if (_imageList.isEmpty) {
+          if (state.selectedImages.isEmpty && _uploadedImages.isEmpty) {
             showImageErrorSnackbar();
           } else {
-            context
-                .read<MarketplaceFormCubit>()
-                .createSublet(_imageList.map((e) => e.path).toList());
+            if (state.isPreFilled ?? false) {
+              context.read<MarketplaceFormCubit>().updateSublet();
+            } else {
+              context.read<MarketplaceFormCubit>().createSublet();
+            }
           }
         }
       },
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildImages(),
-            _buildSpacing(),
-            _buildSelectedImages(),
-          ],
-        ),
-      ),
+      builder: (context, state) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildImages(state),
+              _buildSpacing(),
+              _buildSelectedImages(state),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  void pickImages() async {
-    if (_imageList.length >= 5) {
+  void pickImages(List<XFile> imageList) async {
+    if (imageList.length >= 5 - _uploadedImages.length) {
       showErrorSnackBar();
       return;
     }
     final List<XFile> images = await _picker.pickMultiImage();
-    if (images.isNotEmpty) {
-      _imageList.addAll(images.length > 5 - _imageList.length
-          ? images.sublist(0, 5 - _imageList.length)
-          : images);
-      setState(() {});
-      if (images.length > 5) {
-        showMaxImagesError();
-      }
+    int remainingImages = 5 - (imageList.length + _uploadedImages.length);
+    if (images.length >= remainingImages) {
+      List<XFile> remaining = images.sublist(0, remainingImages);
+      // ignore: use_build_context_synchronously
+      context.read<MarketplaceFormCubit>().addPickedImages(remaining);
+      showMaxImagesError();
+    } else {
+      // ignore: use_build_context_synchronously
+      context.read<MarketplaceFormCubit>().addPickedImages(images);
     }
   }
 
@@ -87,8 +96,8 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
     );
   }
 
-  Widget _buildImages() {
-    if (_imageList.isEmpty) {
+  Widget _buildImages(MarketplaceFormState state) {
+    if (state.selectedImages.isEmpty && _uploadedImages.isEmpty) {
       return const SizedBox();
     } else {
       return AspectRatio(
@@ -101,13 +110,42 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
                 _index.value = index;
               },
               children: [
-                for (final image in _imageList)
+                for (final image in _uploadedImages)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      File(image.path),
+                    child: Image.network(
+                      image,
                       fit: BoxFit.cover,
                     ),
+                  ),
+                for (final image in state.selectedImages)
+                  Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            File(image.path),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            context
+                                .read<MarketplaceFormCubit>()
+                                .removePickedImage(image);
+                            _index.value = _uploadedImages.length +
+                                state.selectedImages.length;
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                    ],
                   ),
               ],
             ),
@@ -124,7 +162,11 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
                   builder: (context, value, child) {
                     return Row(
                       children: [
-                        for (int i = 0; i < _imageList.length; i++)
+                        for (int i = 0;
+                            i <
+                                state.selectedImages.length +
+                                    _uploadedImages.length;
+                            i++)
                           Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             width: 8,
@@ -152,13 +194,13 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
     return const SizedBox(height: 16);
   }
 
-  Widget _buildSelectedImages() {
+  Widget _buildSelectedImages(MarketplaceFormState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         GestureDetector(
           onTap: () {
-            pickImages();
+            pickImages(state.selectedImages);
           },
           child: DottedBorder(
             borderType: BorderType.RRect,

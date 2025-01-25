@@ -15,6 +15,7 @@ import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_cubit.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/custom_flat_button.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
@@ -100,26 +101,12 @@ class _EditProfileViewState extends State<EditProfileView> {
       listener: (context, state) {
         if (state.userEditProfile != null) {
           if (state.isSuccessful) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Profile updated successfully',
-                  style: AppTheme.bodyLarge,
-                ),
-              ),
-            );
+            context.showSuccessSnackBar('Profile updated successfully');
             if (GoRouter.of(context).canPop()) {
               GoRouter.of(context).pop();
             }
           } else if (state.isFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Could not update profile',
-                  style: AppTheme.bodyLarge,
-                ),
-              ),
-            );
+            context.showErrorSnackBar('Could not update profile');
           }
           collegeNameController.text =
               state.userEditProfile!.selectedCollegeName ?? '';
@@ -393,23 +380,13 @@ class _EditProfileViewState extends State<EditProfileView> {
                             int? workExperience =
                                 int.tryParse(workExperienceController.text);
                             if (workExperience == null) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Please enter a valid work experience',
-                                    style: AppTheme.bodyLarge,
-                                  ),
-                                ),
+                              context.showSnackBar(
+                                'Please enter a valid work experience',
                               );
                               return;
                             } else if (workExperience < 0) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Work experience cannot be negative',
-                                    style: AppTheme.bodyLarge,
-                                  ),
-                                ),
+                              context.showSnackBar(
+                                'Work experience cannot be negative',
                               );
                               return;
                             }

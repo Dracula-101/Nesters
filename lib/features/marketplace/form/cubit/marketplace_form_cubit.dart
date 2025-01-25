@@ -1,6 +1,8 @@
 import 'package:bloc/bloc.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
@@ -13,8 +15,13 @@ import 'package:nesters/utils/logger/logger.dart';
 part 'marketplace_form_state.dart';
 
 class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
-  MarketplaceFormCubit() : super(const MarketplaceFormState()) {
+  MarketplaceFormCubit({
+    MarketplaceModel? marketplaceModel,
+  }) : super(MarketplaceFormState(item: marketplaceModel)) {
     loadMarketplaceCategories();
+    if (marketplaceModel != null) {
+      emit(state.copyWith(hasSecondPageAccess: true, isPreFilled: true));
+    }
   }
 
   final MarketplaceRepository _marketplaceRepository =
@@ -41,15 +48,15 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
   void addFirstPageData({
     required String name,
     required String address,
-    required DateTime startDate,
+    required DateTime? startDate,
     required DateTime? endDate,
     required String description,
     required double itemPrice,
-    required MarketplaceCategoryModel category,
+    required MarketplaceCategoryModel? category,
     required MarketplaceLinkModel? link,
   }) {
-    MarketplaceModel model = MarketplaceModel(
-      id: itemId,
+    MarketplaceModel? model = state.item?.copyWith(
+      id: state.item?.id ?? itemId,
       name: name,
       location: Location(address: address),
       period: MarketplacePeriodModel(
@@ -66,9 +73,7 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
     emit(state.copyWith(item: model));
   }
 
-  Future<void> createSublet(
-    List<String> imagesPath,
-  ) async {
+  Future<void> createSublet() async {
     emit(state.copyWith(isSubmitting: true));
     try {
       String? userId = _authRepository.currentUser?.id;
@@ -79,23 +84,73 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
       Stream<MarketplaceImageUploadTask> uploadImageStream =
           _marketplaceRepository.uploadImages(
         userId: userId,
-        itemId: itemId.toString(),
-        imagePaths: imagesPath,
+        itemId: (state.item?.id ?? itemId).toString(),
+        imagePaths: state.selectedImages.map((e) => e.path).toList(),
       );
       List<String> uploadedImagesUrl = [];
-      await for (MarketplaceImageUploadTask value in uploadImageStream) {
-        emit(state.copyWith(imageUploadTask: value));
-        uploadedImagesUrl
-          ..clear()
-          ..addAll(value.urls?.toList() ?? []);
-        _logger.info('Uploading: ${value.progress}');
-      }
-      if (uploadedImagesUrl.isEmpty) {
-        emit(state.copyWith(submitError: Exception('No images uploaded')));
-        return;
+      if (!(state.isPreFilled ?? true)) {
+        await for (MarketplaceImageUploadTask value in uploadImageStream) {
+          emit(state.copyWith(imageUploadTask: value));
+          uploadedImagesUrl
+            ..clear()
+            ..addAll(value.urls?.toList() ?? []);
+          _logger.info('Uploading: ${value.progress}');
+        }
       }
       MarketplaceModel? model = state.item?.copyWith(photos: uploadedImagesUrl);
       await _marketplaceRepository.createMarketplace(
+        userId: userId,
+        item: model!,
+      );
+      emit(state.copyWith(
+        submitError: null,
+        imageUploadTask: null,
+        isSubmitting: false,
+        isSubmitComplete: true,
+      ));
+    } on Exception catch (e) {
+      _logger.log('Error creating sublet: $e');
+      emit(state.copyWith(
+        submitError: e,
+        isSubmitting: false,
+        isSubmitComplete: false,
+        imageUploadTask: null,
+      ));
+    }
+  }
+
+  Future<void> updateSublet() async {
+    emit(state.copyWith(isSubmitting: true));
+    try {
+      String? userId = _authRepository.currentUser?.id;
+      if (userId == null) {
+        emit(state.copyWith(submitError: Exception('User ID is null')));
+        return;
+      }
+      List<String> uploadedImagesUrl = [];
+      if (state.selectedImages.isNotEmpty) {
+        Stream<MarketplaceImageUploadTask> uploadImageStream =
+            _marketplaceRepository.uploadImages(
+          userId: userId,
+          itemId: (state.item?.id ?? itemId).toString(),
+          imagePaths: state.selectedImages.map((e) => e.path).toList(),
+        );
+        await for (MarketplaceImageUploadTask value in uploadImageStream) {
+          emit(state.copyWith(imageUploadTask: value));
+          uploadedImagesUrl
+            ..clear()
+            ..addAll(value.urls?.toList() ?? []);
+          _logger.info('Uploading: ${value.progress}');
+        }
+      }
+      final List<String> finalImages;
+      if (state.item?.photos != null) {
+        finalImages = [...state.item!.photos!, ...uploadedImagesUrl];
+      } else {
+        finalImages = uploadedImagesUrl;
+      }
+      MarketplaceModel? model = state.item?.copyWith(photos: finalImages);
+      await _marketplaceRepository.updateMarketplace(
         userId: userId,
         item: model!,
       );
@@ -123,5 +178,16 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
   void loadMarketplaceCategories() {
     getCategories()
         .then((value) => emit(state.copyWith(marketplaceCategories: value)));
+  }
+
+  void addPickedImages(List<XFile> pickedImages) {
+    List<XFile> images = [...state.selectedImages, ...pickedImages];
+    emit(state.copyWith(selectedImages: images));
+  }
+
+  void removePickedImage(XFile image) {
+    List<XFile> images = state.selectedImages;
+    images.remove(image);
+    emit(state.copyWith(selectedImages: images));
   }
 }

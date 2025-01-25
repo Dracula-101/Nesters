@@ -1,3 +1,7 @@
+add liked posts, for both sublets and marketplace
+
+
+
 error new user my gmail Pratik sen chat error,
 
 makle gender selction compulsory in the form.
@@ -5,6 +9,8 @@ makle gender selction compulsory in the form.
 in home page, user branch filter takes more time to load.
 make gender field compulsory in thg form.
 subletting,
+
+images while editing for sublet and marketplace we are not deleting the previous ones.
 ==========
 1]if sublet occupied ask and then close part functionality,
 2]map view,

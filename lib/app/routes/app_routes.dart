@@ -20,6 +20,8 @@ import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/features/user/chat/view/user_chat_view.dart';
 import 'package:nesters/features/user/detail/view/profile.dart';
 import 'package:nesters/features/user/edit-profile/edit_profile.dart';
+import 'package:nesters/features/user/posts/cubit/user_post_state.dart';
+import 'package:nesters/features/user/posts/view/user_post_view.dart';
 import 'package:nesters/features/user/profile-forms/forms/view/advance_form_view.dart';
 import 'package:nesters/features/user/profile-forms/forms/view/basic_form_view.dart';
 import 'package:nesters/features/user/request/request.dart';
@@ -42,6 +44,7 @@ class AppRouterService {
   static const String userRequest = 'request';
   static const String settings = 'settings';
   static const String editProfile = 'edit_profile';
+  static const String userPosts = 'user_posts';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -132,6 +135,30 @@ class AppRouterService {
                   AppRoute(
                     editProfile,
                     (_) => const EditProfileScreen(),
+                  ),
+                  AppRoute(
+                    "$userPosts/:view",
+                    (params) {
+                      final view = PostView.values.firstWhere((element) =>
+                          element.toString() == params.pathParameters['view']);
+                      return UserPostScreen(view: view);
+                    },
+                    routes: [
+                      AppRoute(
+                        sublettingForm,
+                        (params) {
+                          final sublet = params.extra as SubletModel?;
+                          return SubletFormPage(sublet: sublet);
+                        },
+                      ),
+                      AppRoute(
+                        marketplaceForm,
+                        (params) {
+                          final marketplace = params.extra as MarketplaceModel?;
+                          return MarketplaceFormPage(marketplace: marketplace);
+                        },
+                      ),
+                    ],
                   ),
                 ],
               )

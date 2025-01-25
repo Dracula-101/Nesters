@@ -1,24 +1,24 @@
 import 'dart:ui';
 
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_carousel.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarketplaceModelWidget extends StatelessWidget {
   final MarketplaceModel marketplace;
   final EdgeInsets? margin;
   final EdgeInsets? padding;
+  final Widget? action;
   final VoidCallback? onPressed;
   const MarketplaceModelWidget(
       {super.key,
       required this.marketplace,
       this.margin,
       this.padding,
-      this.onPressed});
+      this.onPressed,
+      this.action});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +55,7 @@ class MarketplaceModelWidget extends StatelessWidget {
                     MarketplacePhotoCarousel(
                       photos: marketplace.photos ?? [],
                     ),
-                    const HeartIcon(isFavourite: false),
+                    action ?? const HeartIcon(isFavourite: false),
                     _buildTitle(),
                     _buildDatePosted(),
                   ],
@@ -70,21 +70,6 @@ class MarketplaceModelWidget extends StatelessWidget {
                 _buildMarketplacePrice(),
               ],
             ),
-            // Padding(
-            //   padding: const EdgeInsets.symmetric(horizontal: 10),
-            //   child: DottedLine(
-            //     width: double.infinity,
-            //     color: AppTheme.greyShades.shade400,
-            //     dashWidth: 7,
-            //     spaceWidth: 2,
-            //     height: 2,
-            //   ),
-            // ),
-            // Padding(
-            //   padding: const EdgeInsets.only(top: 8, left: 10, right: 10),
-            //   child: _buildLocation(),
-            // ),
-            // const SizedBox(height: 8),
           ],
         ),
       ),

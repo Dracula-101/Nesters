@@ -4,13 +4,15 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 
 class SubletPhotoForm extends StatefulWidget {
   final TabController? controller;
-  const SubletPhotoForm({super.key, this.controller});
+  final SubletModel? sublet;
+  const SubletPhotoForm({super.key, this.controller, this.sublet});
 
   @override
   State<SubletPhotoForm> createState() => _SubletPhotoFormState();
@@ -18,12 +20,19 @@ class SubletPhotoForm extends StatefulWidget {
 
 class _SubletPhotoFormState extends State<SubletPhotoForm>
     with AutomaticKeepAliveClientMixin {
-  final List<XFile> _imageList = [];
+  final List<String> _uploadedImages = [];
   final ImagePicker _picker = ImagePicker();
   final ValueNotifier<int> _index = ValueNotifier<int>(0);
-
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.sublet != null) {
+      _uploadedImages.addAll(widget.sublet!.photos ?? []);
+    }
+  }
 
   void showImageErrorSnackbar() {
     context.showErrorSnackBar('Atleast one image is required to proceed');
@@ -32,46 +41,49 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    return BlocListener<SubletFormCubit, SubletFormState>(
+    return BlocConsumer<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
         if (state.isValidating) {
-          if (_imageList.isEmpty) {
+          if (state.pickedImages.isEmpty && state.isPreFilled == false) {
             showImageErrorSnackbar();
+          } else if (state.isPreFilled ?? false) {
+            context.read<SubletFormCubit>().updateSublet();
           } else {
-            context
-                .read<SubletFormCubit>()
-                .createSublet(_imageList.map((e) => e.path).toList());
+            context.read<SubletFormCubit>().createSublet();
           }
         }
       },
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildImages(),
-            _buildSpacing(),
-            _buildSelectedImages(),
-          ],
-        ),
-      ),
+      builder: (context, state) {
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildImages(state),
+              _buildSpacing(),
+              _buildSelectedImages(state),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  void pickImages() async {
-    if (_imageList.length >= 5) {
+  void pickImages(List<XFile> pickedImages) async {
+    if ((pickedImages.length + _uploadedImages.length) >= 5) {
       showErrorSnackBar();
       return;
     }
     final List<XFile> images = await _picker.pickMultiImage();
-    if (images.isNotEmpty) {
-      _imageList.addAll(images.length > 5 - _imageList.length
-          ? images.sublist(0, 5 - _imageList.length)
-          : images);
-      setState(() {});
-      if (images.length > 5) {
-        showMaxImagesError();
-      }
+    int remainingImages = 5 - (pickedImages.length + _uploadedImages.length);
+    if (images.length > remainingImages) {
+      List<XFile> imagesToPick = images.sublist(0, remainingImages);
+      showMaxImagesError();
+      // ignore: use_build_context_synchronously
+      context.read<SubletFormCubit>().addImages(imagesToPick);
+    } else {
+      // ignore: use_build_context_synchronously
+      context.read<SubletFormCubit>().addImages(images);
     }
   }
 
@@ -87,8 +99,9 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
     );
   }
 
-  Widget _buildImages() {
-    if (_imageList.isEmpty) {
+  Widget _buildImages(SubletFormState state) {
+    if (state.pickedImages.isEmpty &&
+        (widget.sublet?.photos?.isEmpty ?? true)) {
       return const SizedBox();
     } else {
       return AspectRatio(
@@ -101,13 +114,40 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
                 _index.value = index;
               },
               children: [
-                for (final image in _imageList)
+                for (final image in _uploadedImages)
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12),
-                    child: Image.file(
-                      File(image.path),
+                    child: Image.network(
+                      image,
                       fit: BoxFit.cover,
                     ),
+                  ),
+                for (final image in state.pickedImages)
+                  Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            File(image.path),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            context.read<SubletFormCubit>().removeImage(image);
+                            _index.value = _uploadedImages.length +
+                                state.pickedImages.length;
+                            setState(() {});
+                          },
+                        ),
+                      ),
+                    ],
                   ),
               ],
             ),
@@ -124,7 +164,11 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
                   builder: (context, value, child) {
                     return Row(
                       children: [
-                        for (int i = 0; i < _imageList.length; i++)
+                        for (int i = 0;
+                            i <
+                                state.pickedImages.length +
+                                    _uploadedImages.length;
+                            i++)
                           Container(
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             width: 8,
@@ -152,13 +196,13 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
     return const SizedBox(height: 16);
   }
 
-  Widget _buildSelectedImages() {
+  Widget _buildSelectedImages(SubletFormState state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         GestureDetector(
           onTap: () {
-            pickImages();
+            pickImages(state.pickedImages);
           },
           child: DottedBorder(
             borderType: BorderType.RRect,
