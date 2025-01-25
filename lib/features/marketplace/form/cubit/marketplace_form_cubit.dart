@@ -55,7 +55,7 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
     required MarketplaceCategoryModel? category,
     required MarketplaceLinkModel? link,
   }) {
-    MarketplaceModel? model = state.item?.copyWith(
+    MarketplaceModel? model = MarketplaceModel(
       id: state.item?.id ?? itemId,
       name: name,
       location: Location(address: address),
@@ -69,6 +69,8 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
       reference: link,
       description: description,
       price: itemPrice.toInt(),
+      photos: state.item?.photos,
+      userId: _authRepository.currentUser?.id,
     );
     emit(state.copyWith(item: model));
   }
