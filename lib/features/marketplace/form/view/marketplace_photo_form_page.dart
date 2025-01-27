@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/form/cubit/marketplace_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
@@ -23,9 +25,9 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
     with AutomaticKeepAliveClientMixin {
   late final List<String> _uploadedImages =
       widget.marketplaceModel?.photos ?? [];
-  final ImagePicker _picker = ImagePicker();
+  final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
   final ValueNotifier<int> _index = ValueNotifier<int>(0);
-
+  bool isLoadingPhotos = false;
   @override
   bool get wantKeepAlive => true;
 
@@ -56,7 +58,7 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildImages(state),
+              _buildImages(state, isLoadingPhotos),
               _buildSpacing(),
               _buildSelectedImages(state),
             ],
@@ -66,15 +68,17 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
     );
   }
 
-  void pickImages(List<XFile> imageList) async {
+  void pickImages(List<File> imageList) async {
     if (imageList.length >= 5 - _uploadedImages.length) {
       showErrorSnackBar();
       return;
     }
-    final List<XFile> images = await _picker.pickMultiImage();
+    setState(() => isLoadingPhotos = true);
+    final List<File> images = await _mediaRepository.getMultiImageFromGallery();
+    setState(() => isLoadingPhotos = false);
     int remainingImages = 5 - (imageList.length + _uploadedImages.length);
     if (images.length >= remainingImages) {
-      List<XFile> remaining = images.sublist(0, remainingImages);
+      List<File> remaining = images.sublist(0, remainingImages);
       // ignore: use_build_context_synchronously
       context.read<MarketplaceFormCubit>().addPickedImages(remaining);
       showMaxImagesError();
@@ -96,8 +100,28 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
     );
   }
 
-  Widget _buildImages(MarketplaceFormState state) {
-    if (state.selectedImages.isEmpty && _uploadedImages.isEmpty) {
+  Widget _buildImages(MarketplaceFormState state, bool isLoadingPhotos) {
+    if (isLoadingPhotos) {
+      return Container(
+        decoration: BoxDecoration(
+          color: AppTheme.greyShades.shade200,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppTheme.greyShades.shade400,
+          ),
+        ),
+        height: 200,
+        width: double.infinity,
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 8),
+            Text('Processsing photos...'),
+          ],
+        ),
+      );
+    } else if (state.selectedImages.isEmpty && _uploadedImages.isEmpty) {
       return const SizedBox();
     } else {
       return AspectRatio(

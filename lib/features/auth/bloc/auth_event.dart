@@ -6,11 +6,13 @@ abstract class AuthEvent {
   const factory AuthEvent.googleSignIn() = _AuthGoogleSiginInEvent;
   const factory AuthEvent.authSignOut() = _AuthSignOutEvent;
   const factory AuthEvent.authUserChanged(User? user) = _AuthUserChangedEvent;
+  const factory AuthEvent.deleteAccount() = _DeleteAccountEvent;
 
   R when<R>({
     required R Function() authGoogleSignIn,
     required R Function() authSignOut,
     required R Function(User? user) authUserChanged,
+    required R Function() deleteAccount,
   }) {
     if (this is _AuthGoogleSiginInEvent) {
       return authGoogleSignIn();
@@ -18,6 +20,8 @@ abstract class AuthEvent {
       return authSignOut();
     } else if (this is _AuthUserChangedEvent) {
       return authUserChanged((this as _AuthUserChangedEvent).user);
+    } else if (this is _DeleteAccountEvent) {
+      return deleteAccount();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -27,6 +31,7 @@ abstract class AuthEvent {
     R Function()? authGoogleSignIn,
     R Function()? authSignOut,
     R Function(User? user)? authUserChanged,
+    R Function()? deleteAccount,
     required R Function() orElse,
   }) {
     if (this is _AuthGoogleSiginInEvent) {
@@ -37,6 +42,8 @@ abstract class AuthEvent {
       return authUserChanged != null
           ? authUserChanged((this as _AuthUserChangedEvent).user)
           : orElse();
+    } else if (this is _DeleteAccountEvent) {
+      return deleteAccount != null ? deleteAccount() : orElse();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -46,6 +53,7 @@ abstract class AuthEvent {
     required R Function() authGoogleSignIn,
     required R Function() authSignOut,
     required R Function(User? user) authUserChanged,
+    required R Function() deleteAccount,
   }) {
     if (this is _AuthGoogleSiginInEvent) {
       return authGoogleSignIn();
@@ -53,6 +61,8 @@ abstract class AuthEvent {
       return authSignOut();
     } else if (this is _AuthUserChangedEvent) {
       return authUserChanged((this as _AuthUserChangedEvent).user);
+    } else if (this is _DeleteAccountEvent) {
+      return deleteAccount();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -62,6 +72,7 @@ abstract class AuthEvent {
     R Function()? authGoogleSignIn,
     R Function()? authSignOut,
     R Function(User? user)? authUserChanged,
+    R Function()? deleteAccount,
     required R Function() orElse,
   }) {
     if (this is _AuthGoogleSiginInEvent) {
@@ -72,6 +83,8 @@ abstract class AuthEvent {
       return authUserChanged != null
           ? authUserChanged((this as _AuthUserChangedEvent).user)
           : orElse();
+    } else if (this is _DeleteAccountEvent) {
+      return deleteAccount != null ? deleteAccount() : orElse();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -89,4 +102,8 @@ class _AuthSignOutEvent extends AuthEvent {
 class _AuthUserChangedEvent extends AuthEvent {
   final User? user;
   const _AuthUserChangedEvent(this.user);
+}
+
+class _DeleteAccountEvent extends AuthEvent {
+  const _DeleteAccountEvent();
 }

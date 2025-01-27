@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_carousel.dart';
@@ -14,13 +13,17 @@ class SubletModelWidget extends StatelessWidget {
   final Widget? action;
   final EdgeInsets? padding;
   final VoidCallback? onPressed;
+  final Widget? bottom;
+  final Future<void> Function(bool favouriteState)? actionOnFavourite;
   const SubletModelWidget(
       {super.key,
       required this.sublet,
       this.margin,
       this.padding,
       this.onPressed,
-      this.action});
+      this.action,
+      this.actionOnFavourite,
+      this.bottom});
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +60,11 @@ class SubletModelWidget extends StatelessWidget {
                     SubletPhotoCarousel(
                       photos: sublet.photos ?? [],
                     ),
-                    action ?? const HeartIcon(isFavourite: false),
+                    action ??
+                        HeartIcon(
+                          isFavourite: sublet.isFavouriteByUser ?? false,
+                          onPressed: actionOnFavourite,
+                        ),
                     _buildTitle(),
                     _buildDatePosted(),
                   ],
@@ -87,6 +94,7 @@ class SubletModelWidget extends StatelessWidget {
               child: _buildLocation(),
             ),
             const SizedBox(height: 8),
+            bottom ?? const SizedBox(),
           ],
         ),
       ),
@@ -244,46 +252,6 @@ class SubletModelWidget extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class HeartIcon extends StatefulWidget {
-  final Future<void> Function()? onPressed;
-  final bool isFavourite;
-  const HeartIcon({super.key, this.onPressed, required this.isFavourite});
-
-  @override
-  State<HeartIcon> createState() => _HeartIconState();
-}
-
-class _HeartIconState extends State<HeartIcon> {
-  bool isFavourite = false;
-
-  @override
-  void initState() {
-    super.initState();
-    isFavourite = widget.isFavourite;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      top: -4,
-      right: -2,
-      child: IconButton(
-        icon: Icon(
-          isFavourite ? Icons.favorite : Icons.favorite_border,
-          color: AppTheme.primary,
-          size: 30,
-        ),
-        onPressed: () {
-          setState(() {
-            isFavourite = !isFavourite;
-          });
-          widget.onPressed?.call();
-        },
       ),
     );
   }

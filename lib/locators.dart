@@ -4,6 +4,7 @@ import 'package:nesters/data/repository/crash_services/crash_services_repository
 import 'package:nesters/data/repository/database/remote/supadatabase_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository_impl.dart';
+import 'package:nesters/data/repository/media/media_compressor.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository_impl.dart';
 import 'package:nesters/data/repository/user/firebase_user_repository.dart';
@@ -37,13 +38,14 @@ import 'package:nesters/data/repository/user/user_repository.dart';
 Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   GetIt locator = GetIt.instance;
   // Initalize All repositories
-  LocalStorageRepository localStorageRepository = GetStorageRepository();
   AppLogger appLoggerService = AppLogger();
+  LocalStorageRepository localStorageRepository = GetStorageRepository();
+  MediaCompressor mediaCompressor = MediaCompressor();
   MediaRepository mediaRepository = MediaRepository();
   NetworkCheckerRepository networkCheckerRepository =
       NetworkCheckerRepositoryImpl()..init();
   DeviceInfoRepository deviceInfoRepository = DeviceInfoRepositoryImpl();
-  await deviceInfoRepository.intializeAppCheck();
+  deviceInfoRepository.intializeAppCheck();
   AppRouterService appRouterService = AppRouterService();
   AuthRepository authRepository =
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
@@ -67,14 +69,17 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
     appRouterService: appRouterService,
   )..listenToNotification();
   ObxStorageRepository objectbox = ObjectBoxStorageRepository();
-  SubletRepository subletRepository = SubletRepositoryImpl();
-  MarketplaceRepository marketplaceRepository = MarketplaceRepositoryImpl();
+  SubletRepository subletRepository =
+      SubletRepositoryImpl(logger: appLoggerService);
+  MarketplaceRepository marketplaceRepository =
+      MarketplaceRepositoryImpl(logger: appLoggerService);
   CrashServiceRepository crashServiceRepository = CrashServiceRepository();
 
   // Register all repositories
   locator.registerSingleton(appSecretsRepository);
-  locator.registerSingleton(localStorageRepository);
   locator.registerSingleton(appLoggerService);
+  locator.registerSingleton(mediaCompressor);
+  locator.registerSingleton(localStorageRepository);
   locator.registerSingleton(appRouterService);
   locator.registerSingleton(deviceInfoRepository);
   locator.registerSingleton(networkCheckerRepository);

@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/sublet/amenities.dart';
@@ -58,6 +59,7 @@ class _SubletListViewState extends State<SubletListView> {
   final PagingController<int, SubletModel> _pagingController =
       PagingController(firstPageKey: 0);
   final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
+  final AuthRepository _authRepository = GetIt.I<AuthRepository>();
   final AppLogger _logger = GetIt.I<AppLogger>();
   final int _pageSize = 10;
 
@@ -65,6 +67,7 @@ class _SubletListViewState extends State<SubletListView> {
     try {
       _logger.info('Loading sublets for page $pageKey');
       final List<SubletModel> sublets = await _subletRepository.getSublets(
+        userId: _authRepository.currentUser!.id,
         paginationKey: pageKey,
       );
 
@@ -154,6 +157,13 @@ class _SubletListViewState extends State<SubletListView> {
               extra: sublets[index],
             );
           },
+          actionOnFavourite: (isFavourite) {
+            return _subletRepository.updateLikeStatus(
+              userId: _authRepository.currentUser!.id,
+              subletId: sublets[index].id,
+              isLiked: isFavourite,
+            );
+          },
           sublet: sublets[index],
         );
       },
@@ -174,6 +184,13 @@ class _SubletListViewState extends State<SubletListView> {
               GoRouter.of(context).go(
                 '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
                 extra: sublet,
+              );
+            },
+            actionOnFavourite: (isFavourite) {
+              return _subletRepository.updateLikeStatus(
+                userId: _authRepository.currentUser!.id,
+                subletId: sublet.id,
+                isLiked: isFavourite,
               );
             },
             sublet: sublet,

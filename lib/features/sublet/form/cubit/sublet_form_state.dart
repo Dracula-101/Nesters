@@ -12,7 +12,7 @@ class SubletFormState extends Equatable {
   final bool? isSubmitComplete;
   final Exception? submitError;
   final SubletImageUploadTask? imageUploadTask;
-  final List<XFile> pickedImages;
+  final List<File> pickedImages;
 
   const SubletFormState({
     this.sublet,
@@ -41,7 +41,7 @@ class SubletFormState extends Equatable {
     bool? isSubmitComplete,
     Exception? submitError,
     SubletImageUploadTask? imageUploadTask,
-    List<XFile>? pickedImages,
+    List<File>? pickedImages,
   }) {
     return SubletFormState(
       sublet: sublet ?? this.sublet,

@@ -57,6 +57,8 @@ class UserProfileBasicFormView extends StatefulWidget {
 }
 
 class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
+  final UserRepository _userRepository = GetIt.I<UserRepository>();
+
   final _formKey = GlobalKey<FormState>();
   final _imagePicker = ImagePicker();
   //image variable
@@ -156,11 +158,23 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       state: _stateController.text,
       country: _countryController.text,
     );
-
-    GetIt.I<UserRepository>().setBasicUserProfileData(userBasicProfile);
-    setState(() {
-      isLoading = false;
-    });
+    try {
+      final isProfileSet = await GetIt.I<UserRepository>()
+          .setBasicUserProfileData(userBasicProfile);
+      if (isProfileSet) {
+        // ignore: use_build_context_synchronously
+        context.showSuccessSnackBar('Profile created successfully');
+        // ignore: use_build_context_synchronously
+        GoRouter.of(context).go(AppRouterService.homeScreen);
+      } else {
+        // ignore: use_build_context_synchronously
+        context.showErrorSnackBar('Error while creating user profile');
+      }
+    } catch (e) {
+      if (mounted) {
+        context.showErrorSnackBar('Error while creating user profile');
+      }
+    }
   }
 
   @override
@@ -556,31 +570,32 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
             return;
           }
           if (_formKey.currentState!.validate()) {
-            try {
-              setBasicUserProfile();
-              context.go(AppRouterService.homeScreen);
-            } catch (e) {
-              context.showErrorSnackBar("Error setting basic user profile");
-            }
+            setBasicUserProfile();
           }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor:
               AppTheme.primary, // Set background color to primary theme color
         ),
-        child: !isLoading
-            ? Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: !isLoading
+              ? Text(
                   'Submit',
                   style: AppTheme.titleSmall.copyWith(
                     color: AppTheme
                         .onPrimary, // Set text color to onPrimary theme color
                     fontSize: 20,
                   ),
+                )
+              : SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: AppTheme.onPrimary,
+                  ),
                 ),
-              )
-            : const CircularProgressIndicator(),
+        ),
       ),
     );
   }

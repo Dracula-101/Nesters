@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
@@ -47,6 +48,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
       PagingController(firstPageKey: 0);
   final MarketplaceRepository _marketplaceRepository =
       GetIt.I<MarketplaceRepository>();
+  final AuthRepository _authRepository = GetIt.I<AuthRepository>();
   final AppLogger _logger = GetIt.I<AppLogger>();
   final int _pageSize = 10;
 
@@ -55,6 +57,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
       _logger.info('Loading marketplaces for page $pageKey');
       final List<MarketplaceModel> marketplaces =
           await _marketplaceRepository.getMarketplaces(
+        userId: _authRepository.currentUser?.id ?? '',
         paginationKey: pageKey,
       );
 
@@ -149,6 +152,13 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                 '${AppRouterService.homeScreen}/${AppRouterService.marketplaceDetail}',
                 extra: marketplace,
               );
+            },
+            onFavourite: (isFavourite) {
+              final userId = _authRepository.currentUser?.id;
+              return _marketplaceRepository.updateLikeStatus(
+                  userId: userId!,
+                  itemId: marketplace.id,
+                  isLiked: isFavourite);
             },
             marketplace: marketplace,
           );

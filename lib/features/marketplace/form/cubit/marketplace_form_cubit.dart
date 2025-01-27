@@ -1,8 +1,9 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
@@ -17,7 +18,10 @@ part 'marketplace_form_state.dart';
 class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
   MarketplaceFormCubit({
     MarketplaceModel? marketplaceModel,
-  }) : super(MarketplaceFormState(item: marketplaceModel)) {
+  }) : super(MarketplaceFormState(
+          item: marketplaceModel,
+          hasSecondPageAccess: kDebugMode,
+        )) {
     loadMarketplaceCategories();
     if (marketplaceModel != null) {
       emit(state.copyWith(hasSecondPageAccess: true, isPreFilled: true));
@@ -181,13 +185,13 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
         .then((value) => emit(state.copyWith(marketplaceCategories: value)));
   }
 
-  void addPickedImages(List<XFile> pickedImages) {
-    List<XFile> images = [...state.selectedImages, ...pickedImages];
+  void addPickedImages(List<File> pickedImages) {
+    List<File> images = [...state.selectedImages, ...pickedImages];
     emit(state.copyWith(selectedImages: images));
   }
 
-  void removePickedImage(XFile image) {
-    List<XFile> images = state.selectedImages;
+  void removePickedImage(File image) {
+    List<File> images = state.selectedImages;
     images.remove(image);
     emit(state.copyWith(selectedImages: images));
   }

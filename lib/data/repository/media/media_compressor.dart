@@ -6,7 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 class MediaCompressor {
-  Future<File?> compressFile(File file, {int quality = 50}) async {
+  Future<File> compressFile(File file, {int quality = 50}) async {
     int fileSize = file.lengthSync();
     quality = _alterQuality(fileSize);
     final imageBytes = file.readAsBytesSync();
@@ -17,17 +17,34 @@ class MediaCompressor {
     File compressedFile = File(file.path);
     await compressedFile.writeAsBytes(result);
     GetIt.I<AppLogger>().debug(
-        'Actual Size: $fileSize, Compressed file size: ${compressedFile.lengthSync()}');
+        'Actual Size: ${bytesToReadable(fileSize)}, Compressed file size: ${bytesToReadable(compressedFile.lengthSync())}');
     return compressedFile;
   }
 
   int _alterQuality(int fileSize) {
-    if (fileSize < 1024 * 1024) {
+    double mb = fileSize / (1024 * 1024);
+    if (mb < 1) {
+      return 90;
+    } else if (mb < 5) {
       return 70;
-    } else if (fileSize < 5 * 1024 * 1024) {
-      return 55;
+    } else if (mb < 10) {
+      return 60;
+    } else if (mb < 20) {
+      return 40;
     } else {
-      return 45;
+      return 30;
+    }
+  }
+
+  String bytesToReadable(int bytes) {
+    if (bytes < 1024) {
+      return '$bytes B';
+    } else if (bytes < 1024 * 1024) {
+      return '${(bytes / 1024).toStringAsFixed(2)} KB';
+    } else if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
+    } else {
+      return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
     }
   }
 }

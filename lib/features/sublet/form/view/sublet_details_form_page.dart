@@ -60,9 +60,9 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
   void addData() {
     context.read<SubletFormCubit>().addFirstPageData(
           address: _addressController.text.trim(),
-          startDate: startDate!,
-          endDate: endDate!,
-          rentPrice: double.parse(_rentPriceController.text.trim()),
+          startDate: startDate,
+          endDate: endDate,
+          rentPrice: double.tryParse(_rentPriceController.text.trim()) ?? 0,
           roomType: UserRoomType.fromString(_roomTypeContoller.text.capitalize),
           roomateGender: _roomateGenderController.text.trim(),
           beds: beds,

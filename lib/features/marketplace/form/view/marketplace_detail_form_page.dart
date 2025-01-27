@@ -122,7 +122,7 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
           name: _nameContoller.text,
           address: _addressController.text,
           description: _descriptionController.text,
-          itemPrice: double.parse(_itemPriceController.text),
+          itemPrice: double.tryParse(_itemPriceController.text) ?? 0,
           startDate: widget.marketplaceModel?.period?.periodFrom ?? startDate,
           endDate: endDate,
           category: widget.marketplaceModel?.category ?? selectedCategory,

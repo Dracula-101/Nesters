@@ -4,7 +4,6 @@ import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/auth/error/auth_error.dart';
 import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -20,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
   final CrashServiceRepository _crashServiceRepository =
       GetIt.I<CrashServiceRepository>();
+  final UserRepository _userRepository = GetIt.I<UserRepository>();
   final AppLogger _loggerService = GetIt.I<AppLogger>();
 
   Future<void> _onEvent(
@@ -32,6 +32,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       },
       authGoogleSignIn: () async => await _onGoogleSignIn(emit),
       authSignOut: () async => await _onSignOut(emit),
+      deleteAccount: () async => await _onDeleteAccount(),
     );
   }
 
@@ -82,6 +83,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     _authRepository.user.listen((user) {
       add(AuthEvent.authUserChanged(user));
     });
+  }
+
+  Future<void> _onDeleteAccount() async {
+    final userId = _authRepository.currentUser?.id;
+    if (userId == null) {
+      _loggerService.error("User id is null");
+    }
+    try {
+      _userRepository.softDeleteAccount();
+      add(const AuthEvent.authSignOut());
+    } catch (error) {
+      _loggerService.error(error);
+    }
   }
 }
 

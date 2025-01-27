@@ -20,6 +20,7 @@ import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/features/user/chat/view/user_chat_view.dart';
 import 'package:nesters/features/user/detail/view/profile.dart';
 import 'package:nesters/features/user/edit-profile/edit_profile.dart';
+import 'package:nesters/features/user/favourite_posts/user_favourite_post.dart';
 import 'package:nesters/features/user/posts/cubit/user_post_state.dart';
 import 'package:nesters/features/user/posts/view/user_post_view.dart';
 import 'package:nesters/features/user/profile-forms/forms/view/advance_form_view.dart';
@@ -45,6 +46,7 @@ class AppRouterService {
   static const String settings = 'settings';
   static const String editProfile = 'edit_profile';
   static const String userPosts = 'user_posts';
+  static const String favouritePosts = 'favourite_posts';
 
   // Navigator key
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -160,6 +162,10 @@ class AppRouterService {
                       ),
                     ],
                   ),
+                  AppRoute(
+                    favouritePosts,
+                    (_) => const UserFavouritePostPage(),
+                  )
                 ],
               )
             ],

@@ -20,7 +20,11 @@ abstract class SubletRepository {
     required String subletId,
   });
 
-  Future<List<SubletModel>> getSublets({int range = 10, int paginationKey = 0});
+  Future<List<SubletModel>> getSublets({
+    required String userId,
+    int range = 10,
+    int paginationKey = 0,
+  });
 
   Future<List<SubletModel>> singleFilterSublet({
     required SingleSubletFilter filter,
@@ -30,7 +34,26 @@ abstract class SubletRepository {
     required SubletFilter filter,
   });
 
-  Future<List<SubletModel>> getSubletsByUserId({required String userId});
+  Future<List<SubletModel>> getUserSublets({required String userId});
+
+  Future<void> updateLikeStatus({
+    required String userId,
+    required int subletId,
+    required bool isLiked,
+  });
+
+  Future<List<SubletModel>> getUserLikedSublets({required String userId});
+
+  Future<void> changeSubletAvailabilityStatus({
+    required String userId,
+    required String subletId,
+    required bool isAvailable,
+  });
+
+  Future<void> deleteUserSublet({
+    required String userId,
+    required String subletId,
+  });
 }
 
 class SubletImageUploadTask {
