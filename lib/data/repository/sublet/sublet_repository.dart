@@ -31,6 +31,12 @@ abstract class SubletRepository {
   });
 
   Future<List<SubletModel>> getSubletsByUserId({required String userId});
+
+  Future<void> updateLikeStatus({
+    required String userId,
+    required int subletId,
+    required bool isLiked,
+  });
 }
 
 class SubletImageUploadTask {

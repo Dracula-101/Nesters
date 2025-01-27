@@ -59,15 +59,19 @@ class UserRepository {
   }
 
   Future<List<University?>> getAllUniversities() async {
-    return await _databaseRepository
-        .getData("universities", orderByColumn: 'title')
-        .then((event) => event.map((e) => University.fromJson(e)).toList());
+    return await _databaseRepository.getData(
+      "universities",
+      orderBy: [OrderByKey(key: 'title', isDescending: false)],
+    ).then((event) => event.map((e) => University.fromJson(e)).toList());
   }
 
   Future<List<Degree?>> getAllDegrees() async {
     try {
       return await _databaseRepository
-          .searchDataFromFuture(masterDegreeCollection, 'title', '')
+          .searchDataFromFuture(
+            masterDegreeCollection,
+            FieldValue(key: 'title', value: ''),
+          )
           .then((event) => event.map((e) => Degree.fromJson(e)).toList());
     } catch (e) {
       return List.empty();
@@ -82,10 +86,16 @@ class UserRepository {
     try {
       return await _databaseRepository.checkExistsData(
         userDetailCollection,
-        FieldValue(
-          key: 'id',
-          value: userId,
-        ),
+        [
+          FieldValue(
+            key: 'id',
+            value: userId,
+          ),
+          FieldValue(
+            key: 'user_deleted',
+            value: false,
+          ),
+        ],
       );
     } catch (e) {
       return false;
@@ -96,7 +106,9 @@ class UserRepository {
     try {
       return await _databaseRepository
           .searchDataFromFuture(
-              universityCollection, 'title', searchString ?? '')
+            universityCollection,
+            FieldValue(key: 'title', value: searchString ?? ''),
+          )
           .then((event) => event.map((e) => University.fromJson(e)).toList());
     } catch (e) {
       return null;
@@ -107,30 +119,60 @@ class UserRepository {
     try {
       return await _databaseRepository
           .searchDataFromFuture(
-              masterDegreeCollection, 'title', searchString ?? '')
+            masterDegreeCollection,
+            FieldValue(key: 'title', value: searchString ?? ''),
+          )
           .then((event) => event.map((e) => Degree.fromJson(e)).toList());
     } catch (e) {
       return null;
     }
   }
 
-  Future<void> setBasicUserProfileData(UserBasicProfile userProfile) async {
+  Future<bool> setBasicUserProfileData(UserBasicProfile userProfile) async {
     try {
-      return await _databaseRepository.setData(
+      bool isUserDeleted = userProfile.email == null
+          ? false
+          : await hasUserDeletedAccount(email: userProfile.email!);
+      await _databaseRepository.setData(
         userDetailCollection,
         SetData(
-          fields: userProfile.toFieldValues(),
+          fields:
+              userProfile.toFieldValues(includeUserDeleteUpdate: isUserDeleted),
         ),
       );
+      return true;
     } catch (e) {
-      rethrow;
+      return false;
+    }
+  }
+
+  Future<bool> hasUserDeletedAccount({required String email}) {
+    try {
+      return _databaseRepository.checkExistsData(
+        userDetailCollection,
+        [
+          FieldValue(
+            key: 'email',
+            value: email,
+          ),
+          FieldValue(
+            key: 'user_deleted',
+            value: true,
+          ),
+        ],
+      );
+    } catch (e) {
+      return Future.value(false);
     }
   }
 
   Stream<List<City>> getCites(String searchQuery) {
     try {
       return _databaseRepository
-          .searchDataFromFuture(indianCitiesCollection, 'name', searchQuery)
+          .searchDataFromFuture(
+            indianCitiesCollection,
+            FieldValue(key: 'name', value: searchQuery),
+          )
           .asStream()
           .map((event) => event.map((e) => City.fromJson(e)).toList());
     } catch (e) {
@@ -143,7 +185,9 @@ class UserRepository {
     try {
       return await _databaseRepository
           .searchDataFromFuture(
-              indianStatesCollection, 'name', searchQuery ?? '')
+            indianStatesCollection,
+            FieldValue(key: 'name', value: searchQuery ?? ''),
+          )
           .then((event) => event.map((e) => IndianState.fromJson(e)).toList());
     } catch (e) {
       _logger.error('Error in getting states: $e');
@@ -155,7 +199,9 @@ class UserRepository {
     try {
       return await _databaseRepository
           .searchDataFromFuture(
-              indianLanguagesCollection, 'name', searchQuery ?? '')
+            indianLanguagesCollection,
+            FieldValue(key: 'name', value: searchQuery ?? ''),
+          )
           .then((event) => event.map((e) => Language.fromJson(e)).toList());
     } catch (e) {
       _logger.error('Error in getting languages: $e');
@@ -166,13 +212,33 @@ class UserRepository {
   Future<List<UserQuickProfile>> getUserQuickProfiles(
       int offset, int limit, String userId) async {
     try {
-      return await _databaseRepository
-          .getDataWithPagination(userDetailCollection, offset, limit,
-              columns:
-                  'id, full_name, profile_image, selected_college_name, selected_course_name, city, state, work_experience',
-              removeRowId: userId)
-          .then((event) =>
-              event.map((e) => UserQuickProfile.fromJson(e!)).toList());
+      return await _databaseRepository.getDataWithPagination(
+        userDetailCollection,
+        offset,
+        limit,
+        orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
+        columns: [
+          DbKey(key: 'id'),
+          DbKey(key: 'full_name'),
+          DbKey(key: 'profile_image'),
+          DbKey(key: 'selected_college_name'),
+          DbKey(key: 'selected_course_name'),
+          DbKey(key: 'city'),
+          DbKey(key: 'state'),
+          DbKey(key: 'work_experience'),
+        ],
+        whereNotFields: [
+          FieldValue(
+            key: 'id',
+            value: userId,
+          ),
+          FieldValue(
+            key: 'user_deleted',
+            value: true,
+          ),
+        ],
+      ).then(
+          (event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
     } catch (e, stackTrace) {
       _logger.error('Error in getting user quick profiles: $e',
           stackTrace: stackTrace);
@@ -212,16 +278,29 @@ class UserRepository {
       throw Exception('Invalid filter type');
     }
     final userId = _authRepository.currentUser?.id;
-    return await _databaseRepository
-        .getFilteredData(
-          userDetailCollection,
-          query,
-          columns:
-              'id, full_name, gender, profile_image, selected_college_name, selected_course_name, city, state, work_experience',
-          removeRowId: userId,
-        )
-        .then((event) =>
-            event.map((e) => UserQuickProfile.fromJson(e!)).toList());
+    return await _databaseRepository.getFilteredData(
+        userDetailCollection, query, orderBy: [
+      OrderByKey(key: 'created_at', isDescending: true)
+    ], columns: [
+      DbKey(key: 'id'),
+      DbKey(key: 'full_name'),
+      DbKey(key: 'profile_image'),
+      DbKey(key: 'selected_college_name'),
+      DbKey(key: 'selected_course_name'),
+      DbKey(key: 'city'),
+      DbKey(key: 'state'),
+      DbKey(key: 'work_experience'),
+    ], whereNotFields: [
+      FieldValue(
+        key: 'id',
+        value: userId,
+      ),
+      FieldValue(
+        key: 'user_deleted',
+        value: false,
+      ),
+    ]).then(
+        (event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
   }
 
   Future<List<UserQuickProfile>> getMultipleFilteredQuickProfiles(
@@ -300,14 +379,27 @@ class UserRepository {
     }
     final userId = _authRepository.currentUser?.id;
     return await _databaseRepository
-        .getMultipleFilteredData(
-      userDetailCollection,
-      query,
-      columns:
-          'id, full_name, gender, profile_image, selected_college_name, selected_course_name, city, state, work_experience',
-      removeRowId: userId,
-    )
-        .then((value) {
+        .getMultipleFilteredData(userDetailCollection, query, orderBy: [
+      OrderByKey(key: 'created_at', isDescending: true)
+    ], columns: [
+      DbKey(key: 'id'),
+      DbKey(key: 'full_name'),
+      DbKey(key: 'profile_image'),
+      DbKey(key: 'selected_college_name'),
+      DbKey(key: 'selected_course_name'),
+      DbKey(key: 'city'),
+      DbKey(key: 'state'),
+      DbKey(key: 'work_experience'),
+    ], whereNotFields: [
+      FieldValue(
+        key: 'id',
+        value: userId,
+      ),
+      FieldValue(
+        key: 'user_deleted',
+        value: false,
+      ),
+    ]).then((value) {
       return value.map((e) => UserQuickProfile.fromJson(e ?? {})).toList();
     });
   }
@@ -315,7 +407,10 @@ class UserRepository {
   Future<UserProfile> getUserProfile(String id) async {
     try {
       UserProfile profile = await _databaseRepository
-          .getDataWithId(userDetailCollection, 'id', id)
+          .getDataWithId(
+        userDetailCollection,
+        FieldValue(key: 'id', value: id),
+      )
           .then((event) {
         final user = event?.first;
         if (user == null) {
@@ -399,6 +494,31 @@ class UserRepository {
       return imageUrl;
     } catch (e) {
       _logger.error('Error in updating user profile image: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> softDeleteAccount() {
+    try {
+      final userId = _authRepository.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User not found');
+      }
+      return _databaseRepository.updateData(
+        userDetailCollection,
+        UpdateData(
+          columnId: "id",
+          columnValue: userId,
+          fields: [
+            UpdateFieldValue(fieldName: "user_deleted", newValue: true),
+            UpdateFieldValue(
+                fieldName: "user_deleted_date",
+                newValue: DateTime.now().toIso8601String()),
+          ],
+        ),
+      );
+    } catch (e) {
+      _logger.error('Error in deleting user account: $e');
       rethrow;
     }
   }

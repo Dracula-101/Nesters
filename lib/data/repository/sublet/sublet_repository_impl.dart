@@ -74,7 +74,7 @@ class SubletRepositoryImpl implements SubletRepository {
     try {
       final response = await _supabaseClient
           .from('sublets')
-          .select()
+          .select("*, sublet_likes!sublet_likes_sublet_id_fkey!left(*)")
           .range(paginationKey, paginationKey + range);
       return response.map((e) => SubletModel.fromMap(e)).toList();
     } catch (e) {
@@ -271,6 +271,23 @@ class SubletRepositoryImpl implements SubletRepository {
       return sublets;
     } catch (e) {
       throw Exception('Failed to update sublet: $e');
+    }
+  }
+
+  @override
+  Future<void> updateLikeStatus({
+    required String userId,
+    required int subletId,
+    required bool isLiked,
+  }) async {
+    try {
+      await _supabaseClient.from('sublet_likes').upsert({
+        'user_id': userId,
+        'sublet_id': subletId,
+        'is_liked': isLiked,
+      }, onConflict: 'sublet_id');
+    } catch (e) {
+      throw Exception('Failed to like sublet: $e');
     }
   }
 }

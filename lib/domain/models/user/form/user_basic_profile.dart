@@ -54,7 +54,7 @@ class UserBasicProfile extends Equatable {
         country,
       ];
 
-  List<FieldValue> toFieldValues() {
+  List<FieldValue> toFieldValues({bool includeUserDeleteUpdate = false}) {
     return [
       FieldValue(key: 'id', value: userId),
       FieldValue(
@@ -71,6 +71,10 @@ class UserBasicProfile extends Equatable {
       FieldValue(key: 'gender', value: gender),
       FieldValue(key: 'state', value: state),
       FieldValue(key: 'country', value: country),
+      if (includeUserDeleteUpdate)
+        FieldValue(key: 'user_deleted', value: false),
+      if (includeUserDeleteUpdate)
+        FieldValue(key: 'user_deleted_date', value: null),
     ];
   }
 

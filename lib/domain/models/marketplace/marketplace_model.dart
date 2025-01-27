@@ -28,6 +28,7 @@ class MarketplaceModel {
   bool? isAvailable;
   DateTime? createdAt;
   String? userId;
+  bool? isFavouriteByUser;
 
   MarketplaceModel({
     required this.id,
@@ -42,6 +43,7 @@ class MarketplaceModel {
     this.isAvailable,
     this.createdAt,
     this.userId,
+    this.isFavouriteByUser,
   });
 
   factory MarketplaceModel.fromJson(Map<String, dynamic> json) {
@@ -59,6 +61,9 @@ class MarketplaceModel {
         isAvailable: json['is_available'] ?? false,
         createdAt: DateTime.fromMillisecondsSinceEpoch(json['created_at']),
         userId: json['user_id'],
+        isFavouriteByUser: (json['marketplaces_likes'] != null
+            ? json['marketplaces_likes']['is_liked']
+            : false),
       );
     } catch (e, stacktrace) {
       print('Error: $e, Stacktrace: $stacktrace');

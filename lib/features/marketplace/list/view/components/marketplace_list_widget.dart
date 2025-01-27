@@ -3,8 +3,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_carousel.dart';
+import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarketplaceModelWidget extends StatelessWidget {
   final MarketplaceModel marketplace;
@@ -12,13 +14,16 @@ class MarketplaceModelWidget extends StatelessWidget {
   final EdgeInsets? padding;
   final Widget? action;
   final VoidCallback? onPressed;
-  const MarketplaceModelWidget(
-      {super.key,
-      required this.marketplace,
-      this.margin,
-      this.padding,
-      this.onPressed,
-      this.action});
+  final Future<void> Function(bool favouriteState)? onFavourite;
+  const MarketplaceModelWidget({
+    super.key,
+    required this.marketplace,
+    this.margin,
+    this.padding,
+    this.onPressed,
+    this.action,
+    this.onFavourite,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +60,11 @@ class MarketplaceModelWidget extends StatelessWidget {
                     MarketplacePhotoCarousel(
                       photos: marketplace.photos ?? [],
                     ),
-                    action ?? const HeartIcon(isFavourite: false),
+                    action ??
+                        HeartIcon(
+                          isFavourite: marketplace.isFavouriteByUser ?? false,
+                          onPressed: onFavourite,
+                        ),
                     _buildTitle(),
                     _buildDatePosted(),
                   ],
@@ -224,46 +233,6 @@ class MarketplaceModelWidget extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-      ),
-    );
-  }
-}
-
-class HeartIcon extends StatefulWidget {
-  final Future<void> Function()? onPressed;
-  final bool isFavourite;
-  const HeartIcon({super.key, this.onPressed, required this.isFavourite});
-
-  @override
-  State<HeartIcon> createState() => _HeartIconState();
-}
-
-class _HeartIconState extends State<HeartIcon> {
-  bool isFavourite = false;
-
-  @override
-  void initState() {
-    super.initState();
-    isFavourite = widget.isFavourite;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      top: -4,
-      right: -2,
-      child: IconButton(
-        icon: Icon(
-          isFavourite ? Icons.favorite : Icons.favorite_border,
-          color: AppTheme.primary,
-          size: 30,
-        ),
-        onPressed: () {
-          setState(() {
-            isFavourite = !isFavourite;
-          });
-          widget.onPressed?.call();
-        },
       ),
     );
   }

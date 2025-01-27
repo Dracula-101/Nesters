@@ -1,30 +1,115 @@
 abstract class DatabaseRepository {
-  Future<List<Map<String, dynamic>>> getData(String table,
-      {String? orderByColumn, bool? isDescending});
+  Future<List<Map<String, dynamic>>> getData(
+    String table, {
+    bool? isDescending,
+    List<DbKey> columns,
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  });
+
   Future<List<Map<String, dynamic>>?> getDataWithId(
-      String table, String key, String value);
+    String table,
+    FieldValue field, {
+    List<DbKey> columns,
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  });
+
   Future<List<Map<String, dynamic>?>> getDataWithPagination(
-      String table, int offset, int limit,
-      {String columns = '', String? removeRowId});
+    String table,
+    int offset,
+    int limit, {
+    List<DbKey> columns,
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  });
+
   Future<List<Map<String, dynamic>?>> getFilteredData(
-      String table, QueryData queryData,
-      {String columns = '', String? removeRowId});
+    String table,
+    QueryData queryData, {
+    List<DbKey> columns,
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  });
+
   Future<List<Map<String, dynamic>?>> getMultipleFilteredData(
     String table,
     List<QueryData> queryDataList, {
-    String columns = '',
-    String? removeRowId,
+    List<DbKey> columns,
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
   });
-  Future<bool> checkExistsData(String table, FieldValue field);
-  Future<void> setData(String table, SetData setData);
+
+  Future<bool> checkExistsData(
+    String table,
+    List<FieldValue> fields,
+  );
+
+  Future<void> setData(
+    String table,
+    SetData setData, {
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  });
+
   Future<List<Map<String, dynamic>>> queryData(
-      String table, QueryData queryData);
-  Future<void> updateData(String table, UpdateData newData);
-  Future<void> deleteData(String table, DeleteData deleteData);
+    String table,
+    QueryData queryData, {
+    List<DbKey> columns,
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  });
+
+  Future<void> updateData(
+    String table,
+    UpdateData newData, {
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  });
+
+  Future<void> deleteData(
+    String table,
+    DeleteData deleteData, {
+    List<FieldValue>? whereNotFields,
+  });
+
   Stream<List<Map<String, dynamic>>> searchData(
-      String table, String field, String value);
+    String table,
+    FieldValue field, {
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  });
+
   Future<List<Map<String, dynamic>>> searchDataFromFuture(
-      String table, String field, String value);
+    String table,
+    FieldValue field, {
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  });
+}
+
+class DbKey {
+  final String key;
+
+  DbKey({
+    required this.key,
+  });
+}
+
+class OrderByKey {
+  final String key;
+  final bool isDescending;
+
+  OrderByKey({
+    required this.key,
+    required this.isDescending,
+  });
 }
 
 class FieldValue {
@@ -35,6 +120,12 @@ class FieldValue {
     required this.key,
     required this.value,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      key: value,
+    };
+  }
 }
 
 class SetData {

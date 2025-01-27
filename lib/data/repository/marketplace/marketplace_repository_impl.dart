@@ -91,8 +91,10 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
     try {
       final response = await _supabaseClient
           .from('marketplaces')
-          .select()
+          .select(
+              "*, marketplaces_likes!marketplace_likes_marketplace_id_fkey!left(*)")
           .range(paginationKey, paginationKey + range);
+      log("Response: ${response.firstOrNull}");
       return response.map((e) => MarketplaceModel.fromJson(e)).toList();
     } catch (e) {
       throw Exception('Failed to get Marketplaces: $e');
@@ -140,6 +142,21 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } catch (e) {
       throw Exception('Failed to get User Marketplaces: $e');
+    }
+  }
+
+  @override
+  Future<void> updateLikeStatus({
+    required String userId,
+    required int itemId,
+    required bool isLiked,
+  }) async {
+    try {
+      await _supabaseClient.from('marketplaces_likes').upsert(
+          {'user_id': userId, 'marketplace_id': itemId, 'is_liked': isLiked},
+          onConflict: 'marketplace_id');
+    } catch (e) {
+      throw Exception('Failed to update like status: $e');
     }
   }
 }

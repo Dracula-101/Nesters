@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/sublet/amenities.dart';
 import 'package:nesters/domain/models/sublet/apartment_size.dart';
@@ -29,6 +31,7 @@ class SubletModel {
   UserRoomType? roomType;
   Location? location;
   bool? isAvailable;
+  bool? isFavouriteByUser;
 
   SubletModel({
     required this.id,
@@ -44,6 +47,7 @@ class SubletModel {
     this.roomType,
     this.location,
     this.isAvailable = true,
+    this.isFavouriteByUser = false,
   });
 
   bool isSubletActive() {
@@ -83,6 +87,9 @@ class SubletModel {
       roomType: UserRoomType.fromString(map['room_type'] ?? ''),
       location: Location.fromJson(map['location'] ?? {}),
       isAvailable: map['is_available'] ?? true,
+      isFavouriteByUser: map['sublet_likes'] == null
+          ? false
+          : (map['sublet_likes']['is_liked'] ?? false),
     );
   }
 

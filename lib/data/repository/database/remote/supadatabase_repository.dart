@@ -7,15 +7,36 @@ class SupaDatabaseRepository extends DatabaseRepository {
   final SupabaseClient _supabaseClient = Supabase.instance.client;
 
   @override
-  Future<List<Map<String, dynamic>>> getData(String table,
-      {String? orderByColumn, bool? isDescending}) async {
+  Future<List<Map<String, dynamic>>> getData(
+    String table, {
+    bool? isDescending,
+    List<DbKey> columns = const [],
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  }) async {
     try {
-      // Execute the query to retrieve the first 30 rows from the table
-      final response = await _supabaseClient
-          .from(table)
-          .select()
-          .order(orderByColumn ?? 'id', ascending: isDescending ?? true);
-      return response;
+      final PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+          _supabaseClient.from(table).select();
+      if (columns.isNotEmpty) {
+        response.select(columns.map((e) => e.key).toList().join(','));
+      }
+      if (orderBy != null) {
+        for (var order in orderBy) {
+          response.order(order.key, ascending: !order.isDescending);
+        }
+      }
+      if (whereFields != null) {
+        for (var field in whereFields) {
+          response.eq(field.key, field.value);
+        }
+      }
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
+      return response.then((value) => value);
     } catch (e) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');
@@ -25,15 +46,35 @@ class SupaDatabaseRepository extends DatabaseRepository {
   @override
   Future<List<Map<String, dynamic>>?> getDataWithId(
     String table,
-    String key,
-    String value,
-  ) async {
+    FieldValue field, {
+    List<DbKey> columns = const [],
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  }) async {
     try {
-      // Execute the query to retrieve the first 30 rows from the table
-      final response =
-          await _supabaseClient.from(table).select().eq(key, value);
-      // Return the response
-      return response;
+      final PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+          _supabaseClient.from(table).select();
+      if (columns.isNotEmpty) {
+        response.select(columns.map((e) => e.key).toList().join(','));
+      }
+      if (orderBy != null) {
+        for (var order in orderBy) {
+          response.order(order.key, ascending: !order.isDescending);
+        }
+      }
+      response.eq(field.key, field.value);
+      if (whereFields != null) {
+        for (var field in whereFields) {
+          response.eq(field.key, field.value);
+        }
+      }
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
+      return await response;
     } catch (e) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');
@@ -42,31 +83,62 @@ class SupaDatabaseRepository extends DatabaseRepository {
 
   @override
   Future<List<Map<String, dynamic>?>> getDataWithPagination(
-      String table, int offset, int limit,
-      {String columns = '', String? removeRowId}) async {
+    String table,
+    int offset,
+    int limit, {
+    List<DbKey> columns = const [],
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  }) async {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
-          _supabaseClient.from(table).select(columns);
-      if (removeRowId != null) {
-        response = response.not('id', 'eq', removeRowId);
+          _supabaseClient.from(table).select();
+      if (columns.isNotEmpty) {
+        response.select(columns.map((e) => e.key).toList().join(','));
       }
-      PostgrestTransformBuilder<List<Map<String, dynamic>>> finalResponse =
-          response.range(offset, offset + limit);
-      return await finalResponse;
+      if (orderBy != null) {
+        for (var order in orderBy) {
+          response.order(order.key, ascending: !order.isDescending);
+        }
+      }
+      response.range(offset, limit);
+      if (whereFields != null) {
+        for (var field in whereFields) {
+          response.eq(field.key, field.value);
+        }
+      }
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
+      return response.then((value) => value);
     } catch (e) {
+      // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');
     }
   }
 
   @override
   Future<List<Map<String, dynamic>?>> getFilteredData(
-      String table, QueryData queryData,
-      {String columns = '', String? removeRowId}) {
+    String table,
+    QueryData queryData, {
+    List<DbKey> columns = const [],
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  }) {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
-          _supabaseClient.from(table).select(columns);
-      if (removeRowId != null) {
-        response = response.not('id', 'eq', removeRowId);
+          _supabaseClient.from(table).select();
+      if (columns.isNotEmpty) {
+        response.select(columns.map((e) => e.key).toList().join(','));
+      }
+      if (orderBy != null) {
+        for (var order in orderBy) {
+          response.order(order.key, ascending: !order.isDescending);
+        }
       }
       if (queryData.equalTo != null) {
         response =
@@ -92,6 +164,16 @@ class SupaDatabaseRepository extends DatabaseRepository {
         response = response.lte(queryData.lessThanOrEqualTo!.key,
             queryData.lessThanOrEqualTo!.value);
       }
+      if (whereFields != null) {
+        for (var field in whereFields) {
+          response.eq(field.key, field.value);
+        }
+      }
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
       return response.order(queryData.fieldName).then((value) => value);
     } catch (e) {
       throw Exception('Failed to get data: $e');
@@ -102,16 +184,22 @@ class SupaDatabaseRepository extends DatabaseRepository {
   Future<List<Map<String, dynamic>?>> getMultipleFilteredData(
     String table,
     List<QueryData> queryDataList, {
-    String columns = '',
-    String? removeRowId,
+    List<DbKey> columns = const [],
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
   }) async {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
-          _supabaseClient.from(table).select(columns);
-      if (removeRowId != null) {
-        response = response.not('id', 'eq', removeRowId);
+          _supabaseClient.from(table).select();
+      if (columns.isNotEmpty) {
+        response.select(columns.map((e) => e.key).toList().join(','));
       }
-
+      if (orderBy != null) {
+        for (var order in orderBy) {
+          response.order(order.key, ascending: !order.isDescending);
+        }
+      }
       for (var queryData in queryDataList) {
         if (queryData.equalTo != null) {
           log("Key: ${queryData.equalTo!.key} Value: ${queryData.equalTo!.value}");
@@ -138,7 +226,16 @@ class SupaDatabaseRepository extends DatabaseRepository {
               queryData.lessThanOrEqualTo!.value);
         }
       }
-
+      if (whereFields != null) {
+        for (var field in whereFields) {
+          response.eq(field.key, field.value);
+        }
+      }
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
       return response.then((value) => value);
     } catch (e) {
       throw Exception('Failed to get data: $e');
@@ -146,24 +243,29 @@ class SupaDatabaseRepository extends DatabaseRepository {
   }
 
   @override
-  Future<bool> checkExistsData(String table, FieldValue field) async {
+  Future<bool> checkExistsData(String table, List<FieldValue> fields) async {
     try {
-      final response =
-          await _supabaseClient.from(table).select().eq(field.key, field.value);
-      if (response.isNotEmpty) {
-        return true;
-      } else {
-        return false;
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+          _supabaseClient.from(table).select();
+      for (var field in fields) {
+        response = response.eq(field.key, field.value);
       }
+      final List<Map<String, dynamic>> data = await response;
+      return data.isNotEmpty;
     } catch (e) {
-      // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');
     }
   }
 
   @override
   Future<List<Map<String, dynamic>>> queryData(
-      String table, QueryData queryData) {
+    String table,
+    QueryData queryData, {
+    List<DbKey> columns = const [],
+    List<OrderByKey>? orderBy,
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  }) {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
           _supabaseClient.from(table).select();
@@ -198,10 +300,26 @@ class SupaDatabaseRepository extends DatabaseRepository {
   }
 
   @override
-  Future<void> setData(String table, SetData setData) {
+  Future<void> setData(
+    String table,
+    SetData setData, {
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  }) {
     try {
-      // Execute the insert query using the Supabase client
-      return _supabaseClient.from(table).insert(setData.toMap());
+      final PostgrestFilterBuilder response =
+          _supabaseClient.from(table).upsert(setData.toMap());
+      if (whereFields != null) {
+        for (var field in whereFields) {
+          response.eq(field.key, field.value);
+        }
+      }
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
+      return response.then((value) => value);
     } catch (error) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to set data: $error');
@@ -209,15 +327,33 @@ class SupaDatabaseRepository extends DatabaseRepository {
   }
 
   @override
-  Future<void> updateData(String table, UpdateData newData) async {
+  Future<void> updateData(
+    String table,
+    UpdateData newData, {
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  }) async {
     try {
-      // Execute the update query using the Supabase client
-      await _supabaseClient
+      final PostgrestFilterBuilder response = _supabaseClient
           .from(table)
           .update(
             newData.toMap(),
           )
-          .eq(newData.columnId, newData.columnValue);
+          .eq(
+            newData.columnId,
+            newData.columnValue,
+          );
+      if (whereFields != null) {
+        for (var field in whereFields) {
+          response.eq(field.key, field.value);
+        }
+      }
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
+      return response.then((value) => value);
     } catch (error) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to update data: $error');
@@ -225,13 +361,21 @@ class SupaDatabaseRepository extends DatabaseRepository {
   }
 
   @override
-  Future<void> deleteData(String table, DeleteData deleteData) {
+  Future<void> deleteData(
+    String table,
+    DeleteData deleteData, {
+    List<FieldValue>? whereNotFields,
+  }) {
     try {
-      // Execute the delete query using the Supabase client
-      return _supabaseClient
-          .from(table)
-          .delete()
-          .eq(deleteData.fieldName, deleteData.value);
+      final PostgrestFilterBuilder response =
+          _supabaseClient.from(table).delete();
+      response.eq(deleteData.fieldName, deleteData.value);
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
+      return response.then((value) => value);
     } catch (error) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to delete data: $error');
@@ -240,18 +384,29 @@ class SupaDatabaseRepository extends DatabaseRepository {
 
   @override
   Stream<List<Map<String, dynamic>>> searchData(
-      String table, String field, String value) {
+    String table,
+    FieldValue field, {
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  }) {
     try {
-      // Execute the query to retrieve the first 30 rows from the table
-      return _supabaseClient
-          .from(table)
-          .select()
-          .like(
-            field,
-            '%$value%',
-          )
-          .order(field)
-          .asStream();
+      final PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+          _supabaseClient.from(table).select();
+      response.like(
+        field.key,
+        '%${field.value}%',
+      );
+      if (whereFields != null) {
+        for (var field in whereFields) {
+          response.eq(field.key, field.value);
+        }
+      }
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
+      return response.asStream();
     } catch (e) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');
@@ -260,13 +415,29 @@ class SupaDatabaseRepository extends DatabaseRepository {
 
   @override
   Future<List<Map<String, dynamic>>> searchDataFromFuture(
-      String table, String field, String value) async {
+    String table,
+    FieldValue field, {
+    List<FieldValue>? whereFields,
+    List<FieldValue>? whereNotFields,
+  }) async {
     try {
-      // Execute the query to retrieve the first 30 rows from the table
-      return await _supabaseClient.from(table).select().like(
-            field,
-            '%$value%',
-          );
+      final PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+          _supabaseClient.from(table).select();
+      response.like(
+        field.key,
+        '%${field.value}%',
+      );
+      if (whereFields != null) {
+        for (var field in whereFields) {
+          response.eq(field.key, field.value);
+        }
+      }
+      if (whereNotFields != null) {
+        for (var field in whereNotFields) {
+          response.not(field.key, 'eq', field.value);
+        }
+      }
+      return response.then((value) => value);
     } catch (e) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');

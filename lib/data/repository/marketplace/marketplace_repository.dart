@@ -28,6 +28,12 @@ abstract class MarketplaceRepository {
       MarketplaceSingleFilter filter);
 
   Future<List<MarketplaceModel>> getUserMarketplaces({required String userId});
+
+  Future<void> updateLikeStatus({
+    required String userId,
+    required int itemId,
+    required bool isLiked,
+  });
 }
 
 class MarketplaceImageUploadTask {

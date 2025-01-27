@@ -284,7 +284,58 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: 'Delete your account permanently',
                 icon: Icons.delete,
                 color: AppTheme.error,
-                onTap: () {},
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) {
+                      return AlertDialog(
+                        title: const Text('Delete Account'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                                'Are you sure you want to delete your account?'),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Icon(Icons.warning, color: AppTheme.error),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'This action cannot be undone.',
+                                  style: TextStyle(
+                                    color: AppTheme.error,
+                                  ),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(_).pop();
+                            },
+                            child: Text('Cancel', style: AppTheme.bodyLarge),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(_).pop();
+                              context
+                                  .read<AuthBloc>()
+                                  .add(const AuthEvent.deleteAccount());
+                            },
+                            child: Text(
+                              'Delete',
+                              style: AppTheme.bodyLarge
+                                  .copyWith(color: AppTheme.error),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
             ],
           ),
@@ -371,7 +422,7 @@ class SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
