@@ -12,7 +12,7 @@ class MarketplaceFormState {
   final MarketplaceImageUploadTask? imageUploadTask;
   final List<MarketplaceCategoryModel> marketplaceCategories;
   final bool? isPreFilled;
-  final List<XFile> selectedImages;
+  final List<File> selectedImages;
 
   const MarketplaceFormState({
     this.item,
@@ -41,7 +41,7 @@ class MarketplaceFormState {
     MarketplaceImageUploadTask? imageUploadTask,
     List<MarketplaceCategoryModel>? marketplaceCategories,
     bool? isPreFilled,
-    List<XFile>? selectedImages,
+    List<File>? selectedImages,
   }) {
     return MarketplaceFormState(
       item: item ?? this.item,

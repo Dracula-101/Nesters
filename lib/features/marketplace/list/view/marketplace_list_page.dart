@@ -57,6 +57,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
       _logger.info('Loading marketplaces for page $pageKey');
       final List<MarketplaceModel> marketplaces =
           await _marketplaceRepository.getMarketplaces(
+        userId: _authRepository.currentUser?.id ?? '',
         paginationKey: pageKey,
       );
 

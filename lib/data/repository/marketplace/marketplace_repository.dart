@@ -19,8 +19,11 @@ abstract class MarketplaceRepository {
     required MarketplaceModel item,
   });
 
-  Future<List<MarketplaceModel>> getMarketplaces(
-      {int range = 10, int paginationKey = 0});
+  Future<List<MarketplaceModel>> getMarketplaces({
+    required String userId,
+    int range = 10,
+    int paginationKey = 0,
+  });
 
   Future<List<MarketplaceCategoryModel>> getMarketplaceCategories();
 
@@ -34,6 +37,9 @@ abstract class MarketplaceRepository {
     required int itemId,
     required bool isLiked,
   });
+
+  Future<List<MarketplaceModel>> getUserLikedMarketplaces(
+      {required String userId});
 }
 
 class MarketplaceImageUploadTask {

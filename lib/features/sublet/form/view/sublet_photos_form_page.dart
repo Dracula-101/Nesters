@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
@@ -21,8 +23,10 @@ class SubletPhotoForm extends StatefulWidget {
 class _SubletPhotoFormState extends State<SubletPhotoForm>
     with AutomaticKeepAliveClientMixin {
   final List<String> _uploadedImages = [];
-  final ImagePicker _picker = ImagePicker();
+  final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
   final ValueNotifier<int> _index = ValueNotifier<int>(0);
+  bool isLoadingPhotos = false;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -59,7 +63,7 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildImages(state),
+              _buildImages(state, isLoadingPhotos),
               _buildSpacing(),
               _buildSelectedImages(state),
             ],
@@ -69,15 +73,17 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
     );
   }
 
-  void pickImages(List<XFile> pickedImages) async {
+  void pickImages(List<File> pickedImages) async {
     if ((pickedImages.length + _uploadedImages.length) >= 5) {
       showErrorSnackBar();
       return;
     }
-    final List<XFile> images = await _picker.pickMultiImage();
+    setState(() => isLoadingPhotos = true);
+    final List<File> images = await _mediaRepository.getMultiImageFromGallery();
+    setState(() => isLoadingPhotos = false);
     int remainingImages = 5 - (pickedImages.length + _uploadedImages.length);
     if (images.length > remainingImages) {
-      List<XFile> imagesToPick = images.sublist(0, remainingImages);
+      List<File> imagesToPick = images.sublist(0, remainingImages);
       showMaxImagesError();
       // ignore: use_build_context_synchronously
       context.read<SubletFormCubit>().addImages(imagesToPick);
@@ -99,8 +105,28 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
     );
   }
 
-  Widget _buildImages(SubletFormState state) {
-    if (state.pickedImages.isEmpty &&
+  Widget _buildImages(SubletFormState state, bool isLoadingPhotos) {
+    if (isLoadingPhotos) {
+      return Container(
+        decoration: BoxDecoration(
+          color: AppTheme.greyShades.shade200,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: AppTheme.greyShades.shade400,
+          ),
+        ),
+        height: 200,
+        width: double.infinity,
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 8),
+            Text('Processsing photos...'),
+          ],
+        ),
+      );
+    } else if (state.pickedImages.isEmpty &&
         (widget.sublet?.photos?.isEmpty ?? true)) {
       return const SizedBox();
     } else {

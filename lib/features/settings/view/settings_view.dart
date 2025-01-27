@@ -209,6 +209,16 @@ class _SettingsViewState extends State<SettingsView> {
                       "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.userPosts}/${PostView.marketplace}");
                 },
               ),
+              const Divider(thickness: 1, height: 1),
+              SettingsTile(
+                title: 'Liked Posts',
+                subtitle: 'View your liked posts for sublet and marketplace',
+                icon: Icons.favorite,
+                onTap: () {
+                  GoRouter.of(context).go(
+                      "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.favouritePosts}");
+                },
+              ),
             ],
           ),
         ),

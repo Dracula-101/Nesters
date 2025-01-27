@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/src/painting/image_decoder.dart' as image_decoder;
 import 'package:image_picker/image_picker.dart';
 import 'package:nesters/data/repository/media/media_compressor.dart';
 
@@ -29,6 +28,16 @@ class MediaRepository {
     }
     File file = File(image.path);
     return await _mediaCompressor.compressFile(file);
+  }
+
+  Future<List<File>> getMultiImageFromGallery() async {
+    final List<XFile> images = await _imagePicker.pickMultiImage();
+    List<File> files = [];
+    for (XFile image in images) {
+      File file = File(image.path);
+      files.add(await _mediaCompressor.compressFile(file));
+    }
+    return files;
   }
 
   Future<String> base64encodedImage(String url) async {

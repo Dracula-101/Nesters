@@ -1,16 +1,26 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
+import 'package:nesters/data/repository/media/media_compressor.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/sublet/sublet_filter.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
+import 'package:nesters/utils/logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SubletRepositoryImpl implements SubletRepository {
+  SubletRepositoryImpl({
+    required AppLogger logger,
+  }) : _logger = logger;
+
   final supabase.SupabaseClient _supabaseClient =
       supabase.Supabase.instance.client;
+
+  final AppLogger _logger;
 
   @override
   Future<String> createSublet({
@@ -21,6 +31,7 @@ class SubletRepositoryImpl implements SubletRepository {
       await _supabaseClient
           .from('sublets')
           .upsert(sublet.copyWith(userId: userId).toMap());
+      _logger.info('Sublet created successfully with id: ${sublet.id}');
       return sublet.id.toString();
     } catch (e) {
       throw Exception('Failed to create sublet: $e');
@@ -69,12 +80,17 @@ class SubletRepositoryImpl implements SubletRepository {
   }
 
   @override
-  Future<List<SubletModel>> getSublets(
-      {int range = 10, int paginationKey = 0}) async {
+  Future<List<SubletModel>> getSublets({
+    required String userId,
+    int range = 10,
+    int paginationKey = 0,
+  }) async {
     try {
       final response = await _supabaseClient
           .from('sublets')
           .select("*, sublet_likes!sublet_likes_sublet_id_fkey!left(*)")
+          .neq("user_id", userId)
+          .order("created_at", ascending: false)
           .range(paginationKey, paginationKey + range);
       return response.map((e) => SubletModel.fromMap(e)).toList();
     } catch (e) {
@@ -129,20 +145,6 @@ class SubletRepositoryImpl implements SubletRepository {
           _supabaseClient.from("sublets").select();
       if (filter.amenitiesAvailable != null &&
           filter.amenitiesAvailable!.hasAmenities()) {
-        // {
-        //   "has_AC": false,
-        //   "has_gym": false,
-        //   "has_pool": true,
-        //   "has_dryer": true,
-        //   "has_patio": false,
-        //   "has_heater": true,
-        //   "has_balcony": false,
-        //   "has_parking": false,
-        //   "has_furnished": false,
-        //   "has_dishwasher": true,
-        //   "extra_amenities": [],
-        //   "has_washing_machine": true
-        // }
         if (filter.amenitiesAvailable!.hasAC != null &&
             filter.amenitiesAvailable!.hasAC == true) {
           queryBuilder = queryBuilder.eq("amenities_available->>has_AC",
@@ -268,6 +270,7 @@ class SubletRepositoryImpl implements SubletRepository {
           .update({...sublet.toMap(), 'user_id': userId})
           .eq('id', subletId)
           .eq('user_id', userId);
+      _logger.info('Sublet updated successfully with id: $subletId');
       return sublets;
     } catch (e) {
       throw Exception('Failed to update sublet: $e');
@@ -286,8 +289,26 @@ class SubletRepositoryImpl implements SubletRepository {
         'sublet_id': subletId,
         'is_liked': isLiked,
       }, onConflict: 'sublet_id');
+      _logger.info(
+          'Like status updated successfully for sublet: $subletId -> ${isLiked ? '❤️' : '💔'}');
     } catch (e) {
       throw Exception('Failed to like sublet: $e');
+    }
+  }
+
+  @override
+  Future<List<SubletModel>> getUserLikedSublets(
+      {required String userId}) async {
+    try {
+      final likedSublets = await _supabaseClient
+          .from('sublets')
+          .select('*, sublet_likes!sublet_likes_sublet_id_fkey!inner(*)')
+          .eq('sublet_likes.user_id', userId)
+          .eq('sublet_likes.is_liked', true)
+          .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
+      return likedSublets;
+    } catch (e) {
+      throw Exception('Failed to get liked sublets: $e');
     }
   }
 }

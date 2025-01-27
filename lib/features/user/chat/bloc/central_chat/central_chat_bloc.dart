@@ -260,6 +260,15 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
     return chatControllers;
   }
 
+  ChatInfo? checkChatExists(String receiverUserId) {
+    for (ChatController chatController in _chatControllers.values) {
+      if (chatController.receiverId == receiverUserId) {
+        return chatController.toChatInfo();
+      }
+    }
+    return null;
+  }
+
   @override
   Future<void> close() {
     _recipientUserStreamSubscription?.cancel();

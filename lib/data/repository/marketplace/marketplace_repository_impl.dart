@@ -1,15 +1,23 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
+import 'package:nesters/utils/logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 class MarketplaceRepositoryImpl implements MarketplaceRepository {
+  MarketplaceRepositoryImpl({
+    required AppLogger logger,
+  }) : _logger = logger;
+
   final supabase.SupabaseClient _supabaseClient =
       supabase.Supabase.instance.client;
+  final AppLogger _logger;
 
   @override
   Future<String> createMarketplace(
@@ -18,6 +26,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       await _supabaseClient
           .from('marketplaces')
           .upsert(item.copyWith(userId: userId).toJson());
+      _logger.info('Marketplace created successfully with id: ${item.id}');
       return item.id.toString();
     } catch (e) {
       throw Exception('Failed to create Marketplace: $e');
@@ -79,6 +88,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .update({...item.toJson(), 'user_id': userId})
           .eq('id', item.id)
           .eq('user_id', userId);
+      _logger.info('Marketplace updated successfully with id: ${item.id}');
       return true;
     } catch (e) {
       return false;
@@ -86,15 +96,19 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   }
 
   @override
-  Future<List<MarketplaceModel>> getMarketplaces(
-      {int range = 10, int paginationKey = 0}) async {
+  Future<List<MarketplaceModel>> getMarketplaces({
+    required String userId,
+    int range = 10,
+    int paginationKey = 0,
+  }) async {
     try {
       final response = await _supabaseClient
           .from('marketplaces')
           .select(
               "*, marketplaces_likes!marketplace_likes_marketplace_id_fkey!left(*)")
+          .neq('user_id', userId)
+          .order('created_at', ascending: false)
           .range(paginationKey, paginationKey + range);
-      log("Response: ${response.firstOrNull}");
       return response.map((e) => MarketplaceModel.fromJson(e)).toList();
     } catch (e) {
       throw Exception('Failed to get Marketplaces: $e');
@@ -155,8 +169,28 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       await _supabaseClient.from('marketplaces_likes').upsert(
           {'user_id': userId, 'marketplace_id': itemId, 'is_liked': isLiked},
           onConflict: 'marketplace_id');
+      _logger.log(
+          'Like status updated successfully for sublet: $itemId -> ${isLiked ? '❤️' : '💔'}');
     } catch (e) {
       throw Exception('Failed to update like status: $e');
+    }
+  }
+
+  @override
+  Future<List<MarketplaceModel>> getUserLikedMarketplaces({
+    required String userId,
+  }) {
+    try {
+      return _supabaseClient
+          .from('marketplaces')
+          .select(
+              "*, marketplaces_likes!marketplace_likes_marketplace_id_fkey!inner(*)")
+          .eq('marketplaces_likes.user_id', userId)
+          .eq('marketplaces_likes.is_liked', true)
+          .then((response) =>
+              response.map((e) => MarketplaceModel.fromJson(e)).toList());
+    } catch (e) {
+      throw Exception('Failed to get Liked Marketplaces: $e');
     }
   }
 }

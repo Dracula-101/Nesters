@@ -67,6 +67,7 @@ class _SubletListViewState extends State<SubletListView> {
     try {
       _logger.info('Loading sublets for page $pageKey');
       final List<SubletModel> sublets = await _subletRepository.getSublets(
+        userId: _authRepository.currentUser!.id,
         paginationKey: pageKey,
       );
 

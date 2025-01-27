@@ -2,9 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/domain/models/sublet/amenities.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/detail/cubit/sublet_detail_cubit.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
+import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
@@ -18,7 +22,10 @@ class SubletDetailPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => SubletDetailCubit(),
       child: Scaffold(
-        bottomNavigationBar: SubletContactButton(),
+        bottomNavigationBar: SubletContactButton(
+          subletId: sublet.id.toString(),
+          ownerId: sublet.userId ?? '',
+        ),
         body: Stack(
           children: [
             SubletDetailView(sublet: sublet),
@@ -56,7 +63,10 @@ class SubletDetailPage extends StatelessWidget {
 }
 
 class SubletContactButton extends StatelessWidget {
-  const SubletContactButton({super.key});
+  final String subletId;
+  final String ownerId;
+  const SubletContactButton(
+      {super.key, required this.subletId, required this.ownerId});
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +77,46 @@ class SubletContactButton extends StatelessWidget {
         color: AppTheme.surface,
       ),
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          ChatInfo? chatInfo =
+              context.read<CentralChatBloc>().checkChatExists(ownerId);
+          if (chatInfo != null) {
+            GoRouter.of(context).go(
+              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatInfo.chatId}",
+              extra: chatInfo.recipientUser.toUser(),
+            );
+          } else {
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: Text('Contact Owner', style: AppTheme.titleLarge),
+                content: Text(
+                  'First, send a connection request to the owner. Would you like to proceed?',
+                  style: AppTheme.bodyMediumLightVariant,
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      context.read<RequestBloc>().add(
+                            RequestEvent.sendRequest(ownerId),
+                          );
+                      Navigator.of(ctx).pop();
+                      context.showSuccessSnackBar(
+                          "Request sent successfully to the owner");
+                    },
+                    child: const Text('Send'),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
         child: Text(
           'Contact Owner',
           style: AppTheme.titleLarge.copyWith(color: AppTheme.surface),

@@ -1,7 +1,8 @@
-import 'dart:developer';
+import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,7 +20,10 @@ part 'sublet_form_state.dart';
 class SubletFormCubit extends Cubit<SubletFormState> {
   SubletFormCubit({
     SubletModel? sublet,
-  }) : super(const SubletFormState()) {
+  }) : super(const SubletFormState(
+          hasSecondPageAccess: kDebugMode,
+          hasThirdPageAccess: kDebugMode,
+        )) {
     if (sublet != null) {
       preFillSublet(sublet);
     }
@@ -58,8 +62,8 @@ class SubletFormCubit extends Cubit<SubletFormState> {
 
   void addFirstPageData({
     required String address,
-    required DateTime startDate,
-    required DateTime endDate,
+    required DateTime? startDate,
+    required DateTime? endDate,
     required double rentPrice,
     required roomType,
     required String roomateGender,
@@ -224,12 +228,12 @@ class SubletFormCubit extends Cubit<SubletFormState> {
     }
   }
 
-  void addImages(List<XFile> images) {
-    List<XFile> pickedImages = [...state.pickedImages, ...images];
+  void addImages(List<File> images) {
+    List<File> pickedImages = [...state.pickedImages, ...images];
     emit(state.copyWith(pickedImages: pickedImages));
   }
 
-  void removeImage(XFile image) {
+  void removeImage(File image) {
     emit(state.copyWith(pickedImages: state.pickedImages..remove(image)));
   }
 }
