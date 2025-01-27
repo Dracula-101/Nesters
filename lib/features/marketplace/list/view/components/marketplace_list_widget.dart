@@ -14,6 +14,7 @@ class MarketplaceModelWidget extends StatelessWidget {
   final EdgeInsets? padding;
   final Widget? action;
   final VoidCallback? onPressed;
+  final Widget? bottom;
   final Future<void> Function(bool favouriteState)? onFavourite;
   const MarketplaceModelWidget({
     super.key,
@@ -23,6 +24,7 @@ class MarketplaceModelWidget extends StatelessWidget {
     this.onPressed,
     this.action,
     this.onFavourite,
+    this.bottom,
   });
 
   @override
@@ -79,6 +81,7 @@ class MarketplaceModelWidget extends StatelessWidget {
                 _buildMarketplacePrice(),
               ],
             ),
+            if (bottom != null) bottom!,
           ],
         ),
       ),

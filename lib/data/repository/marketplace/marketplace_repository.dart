@@ -38,8 +38,20 @@ abstract class MarketplaceRepository {
     required bool isLiked,
   });
 
-  Future<List<MarketplaceModel>> getUserLikedMarketplaces(
-      {required String userId});
+  Future<List<MarketplaceModel>> getUserLikedMarketplaces({
+    required String userId,
+  });
+
+  Future<void> changeAvailabilityStatus({
+    required String userId,
+    required int itemId,
+    required bool isAvailable,
+  });
+
+  Future<void> deleteUserMarketplace({
+    required String userId,
+    required int itemId,
+  });
 }
 
 class MarketplaceImageUploadTask {

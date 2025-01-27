@@ -193,4 +193,40 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       throw Exception('Failed to get Liked Marketplaces: $e');
     }
   }
+
+  @override
+  Future<void> changeAvailabilityStatus({
+    required String userId,
+    required int itemId,
+    required bool isAvailable,
+  }) async {
+    try {
+      await _supabaseClient
+          .from('marketplaces')
+          .update({'is_available': isAvailable})
+          .eq('id', itemId)
+          .eq('user_id', userId);
+      _logger.log(
+          'Availability status updated successfully for sublet: $itemId -> ${isAvailable ? 'Available' : 'Not Available'}');
+    } catch (e) {
+      throw Exception('Failed to update availability status: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteUserMarketplace({
+    required String userId,
+    required int itemId,
+  }) async {
+    try {
+      await _supabaseClient
+          .from('marketplaces')
+          .delete()
+          .eq('id', itemId)
+          .eq('user_id', userId);
+      _logger.log('Marketplace deleted successfully with id: $itemId');
+    } catch (e) {
+      throw Exception('Failed to delete Marketplace: $e');
+    }
+  }
 }

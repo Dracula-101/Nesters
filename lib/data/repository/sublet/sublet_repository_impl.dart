@@ -90,6 +90,7 @@ class SubletRepositoryImpl implements SubletRepository {
           .from('sublets')
           .select("*, sublet_likes!sublet_likes_sublet_id_fkey!left(*)")
           .neq("user_id", userId)
+          .eq("is_available", true)
           .order("created_at", ascending: false)
           .range(paginationKey, paginationKey + range);
       return response.map((e) => SubletModel.fromMap(e)).toList();
@@ -106,6 +107,7 @@ class SubletRepositoryImpl implements SubletRepository {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
           _supabaseClient.from("sublets").select();
+      queryBuilder = queryBuilder.eq("is_available", true);
       if (filter is GenderPreferenceFilter) {
         queryBuilder = queryBuilder.eq(
             "roommate_gender_pref", filter.preferredGender.toString());
@@ -143,6 +145,7 @@ class SubletRepositoryImpl implements SubletRepository {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
           _supabaseClient.from("sublets").select();
+      queryBuilder = queryBuilder.eq("is_available", true);
       if (filter.amenitiesAvailable != null &&
           filter.amenitiesAvailable!.hasAmenities()) {
         if (filter.amenitiesAvailable!.hasAC != null &&
@@ -246,7 +249,7 @@ class SubletRepositoryImpl implements SubletRepository {
   }
 
   @override
-  Future<List<SubletModel>> getSubletsByUserId({required String userId}) async {
+  Future<List<SubletModel>> getUserSublets({required String userId}) async {
     try {
       final sublets = await _supabaseClient
           .from('sublets')
@@ -309,6 +312,44 @@ class SubletRepositoryImpl implements SubletRepository {
       return likedSublets;
     } catch (e) {
       throw Exception('Failed to get liked sublets: $e');
+    }
+  }
+
+  @override
+  Future<void> changeSubletAvailabilityStatus({
+    required String userId,
+    required String subletId,
+    required bool isAvailable,
+  }) async {
+    try {
+      await _supabaseClient
+          .from('sublets')
+          .update({
+            'is_available': isAvailable,
+          })
+          .eq('id', subletId)
+          .eq('user_id', userId);
+      _logger.info(
+          'Sublet ${isAvailable ? 'Shown' : 'Hidden'} successfully with id: $subletId');
+    } catch (e) {
+      throw Exception('Failed to hide sublet: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteUserSublet({
+    required String userId,
+    required String subletId,
+  }) async {
+    try {
+      await _supabaseClient
+          .from('sublets')
+          .delete()
+          .eq('id', subletId)
+          .eq('user_id', userId);
+      _logger.info('Sublet deleted successfully with id: $subletId');
+    } catch (e) {
+      throw Exception('Failed to delete sublet: $e');
     }
   }
 }

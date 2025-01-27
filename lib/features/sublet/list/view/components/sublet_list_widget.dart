@@ -13,6 +13,7 @@ class SubletModelWidget extends StatelessWidget {
   final Widget? action;
   final EdgeInsets? padding;
   final VoidCallback? onPressed;
+  final Widget? bottom;
   final Future<void> Function(bool favouriteState)? actionOnFavourite;
   const SubletModelWidget(
       {super.key,
@@ -21,7 +22,8 @@ class SubletModelWidget extends StatelessWidget {
       this.padding,
       this.onPressed,
       this.action,
-      this.actionOnFavourite});
+      this.actionOnFavourite,
+      this.bottom});
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +94,7 @@ class SubletModelWidget extends StatelessWidget {
               child: _buildLocation(),
             ),
             const SizedBox(height: 8),
+            bottom ?? const SizedBox(),
           ],
         ),
       ),

@@ -34,7 +34,7 @@ abstract class SubletRepository {
     required SubletFilter filter,
   });
 
-  Future<List<SubletModel>> getSubletsByUserId({required String userId});
+  Future<List<SubletModel>> getUserSublets({required String userId});
 
   Future<void> updateLikeStatus({
     required String userId,
@@ -43,6 +43,17 @@ abstract class SubletRepository {
   });
 
   Future<List<SubletModel>> getUserLikedSublets({required String userId});
+
+  Future<void> changeSubletAvailabilityStatus({
+    required String userId,
+    required String subletId,
+    required bool isAvailable,
+  });
+
+  Future<void> deleteUserSublet({
+    required String userId,
+    required String subletId,
+  });
 }
 
 class SubletImageUploadTask {
