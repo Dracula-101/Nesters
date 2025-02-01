@@ -89,7 +89,7 @@ class MarketplaceContactButton extends StatelessWidget {
           } else {
             showDialog(
               context: context,
-              builder: (ctx) => AlertDialog(
+              builder: (ctx) => AlertDialog.adaptive(
                 title: Text('Contact Owner', style: AppTheme.titleLarge),
                 content: Text(
                   'First, send a connection request to the owner. Would you like to proceed?',

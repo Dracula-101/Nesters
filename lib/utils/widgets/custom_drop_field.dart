@@ -611,7 +611,7 @@ class _CustomDynamicSearchableDropDropFieldState
                   _filteredItems = null;
                 });
               },
-              child: AlertDialog(
+              child: AlertDialog.adaptive(
                 content: SingleChildScrollView(
                   child: Column(
                     children: [
