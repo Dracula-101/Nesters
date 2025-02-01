@@ -279,28 +279,30 @@ class UserRepository {
     }
     final userId = _authRepository.currentUser?.id;
     return await _databaseRepository.getFilteredData(
-        userDetailCollection, query, orderBy: [
-      OrderByKey(key: 'created_at', isDescending: true)
-    ], columns: [
-      DbKey(key: 'id'),
-      DbKey(key: 'full_name'),
-      DbKey(key: 'profile_image'),
-      DbKey(key: 'selected_college_name'),
-      DbKey(key: 'selected_course_name'),
-      DbKey(key: 'city'),
-      DbKey(key: 'state'),
-      DbKey(key: 'work_experience'),
-    ], whereNotFields: [
-      FieldValue(
-        key: 'id',
-        value: userId,
-      ),
-      FieldValue(
-        key: 'user_deleted',
-        value: false,
-      ),
-    ]).then(
-        (event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
+      userDetailCollection,
+      query,
+      orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
+      columns: [
+        DbKey(key: 'id'),
+        DbKey(key: 'full_name'),
+        DbKey(key: 'profile_image'),
+        DbKey(key: 'selected_college_name'),
+        DbKey(key: 'selected_course_name'),
+        DbKey(key: 'city'),
+        DbKey(key: 'state'),
+        DbKey(key: 'work_experience'),
+      ],
+      whereNotFields: [
+        FieldValue(
+          key: 'id',
+          value: userId,
+        ),
+        FieldValue(
+          key: 'user_deleted',
+          value: true,
+        ),
+      ],
+    ).then((event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
   }
 
   Future<List<UserQuickProfile>> getMultipleFilteredQuickProfiles(
@@ -378,28 +380,32 @@ class UserRepository {
       );
     }
     final userId = _authRepository.currentUser?.id;
-    return await _databaseRepository
-        .getMultipleFilteredData(userDetailCollection, query, orderBy: [
-      OrderByKey(key: 'created_at', isDescending: true)
-    ], columns: [
-      DbKey(key: 'id'),
-      DbKey(key: 'full_name'),
-      DbKey(key: 'profile_image'),
-      DbKey(key: 'selected_college_name'),
-      DbKey(key: 'selected_course_name'),
-      DbKey(key: 'city'),
-      DbKey(key: 'state'),
-      DbKey(key: 'work_experience'),
-    ], whereNotFields: [
-      FieldValue(
-        key: 'id',
-        value: userId,
-      ),
-      FieldValue(
-        key: 'user_deleted',
-        value: false,
-      ),
-    ]).then((value) {
+    return await _databaseRepository.getMultipleFilteredData(
+      userDetailCollection,
+      query,
+      orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
+      columns: [
+        DbKey(key: 'id'),
+        DbKey(key: 'full_name'),
+        DbKey(key: 'profile_image'),
+        DbKey(key: 'selected_college_name'),
+        DbKey(key: 'selected_course_name'),
+        DbKey(key: 'city'),
+        DbKey(key: 'state'),
+        DbKey(key: 'gender'),
+        DbKey(key: 'work_experience'),
+      ],
+      whereNotFields: [
+        FieldValue(
+          key: 'id',
+          value: userId,
+        ),
+        FieldValue(
+          key: 'user_deleted',
+          value: true,
+        ),
+      ],
+    ).then((value) {
       return value.map((e) => UserQuickProfile.fromJson(e ?? {})).toList();
     });
   }
@@ -416,6 +422,7 @@ class UserRepository {
         if (user == null) {
           throw Exception('User not found');
         }
+        log("id: ${id}, User: ${user}");
         return UserProfile.fromJson(user);
       });
       return profile;

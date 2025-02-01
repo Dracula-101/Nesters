@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -60,6 +62,7 @@ class _UserListPageState extends State<UserListPage> {
             authenticated: (user) => user.id,
             orElse: () => throw Exception('User not authenticated'),
           );
+      log("Fetching page $pageKey, page size $_pageSize");
       final newItems =
           await userRepository.getUserQuickProfiles(pageKey, _pageSize, userId);
       final isLastPage = newItems.length < _pageSize;
