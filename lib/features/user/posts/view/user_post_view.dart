@@ -87,7 +87,7 @@ class _UserPostViewState extends State<UserPostView> {
                               showDialog(
                                 context: context,
                                 builder: (ctx) {
-                                  return AlertDialog(
+                                  return AlertDialog.adaptive(
                                     title: Text(
                                       post.isAvailable ?? true
                                           ? "Hide Sublet"
@@ -139,7 +139,7 @@ class _UserPostViewState extends State<UserPostView> {
                               showDialog(
                                 context: context,
                                 builder: (ctx) {
-                                  return AlertDialog(
+                                  return AlertDialog.adaptive(
                                     title: Text(
                                       "Delete Sublet",
                                       style: AppTheme.titleLarge,
@@ -217,7 +217,7 @@ class _UserPostViewState extends State<UserPostView> {
                               showDialog(
                                 context: context,
                                 builder: (ctx) {
-                                  return AlertDialog(
+                                  return AlertDialog.adaptive(
                                     title: Text(
                                       post.isAvailable ?? true
                                           ? "Hide Item"
@@ -269,7 +269,7 @@ class _UserPostViewState extends State<UserPostView> {
                               showDialog(
                                 context: context,
                                 builder: (ctx) {
-                                  return AlertDialog(
+                                  return AlertDialog.adaptive(
                                     title: Text(
                                       "Delete Item",
                                       style: AppTheme.titleLarge,

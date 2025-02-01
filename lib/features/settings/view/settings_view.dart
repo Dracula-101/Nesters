@@ -298,7 +298,7 @@ class _SettingsViewState extends State<SettingsView> {
                   showDialog(
                     context: context,
                     builder: (_) {
-                      return AlertDialog(
+                      return AlertDialog.adaptive(
                         title: const Text('Delete Account'),
                         content: Column(
                           mainAxisSize: MainAxisSize.min,
@@ -375,7 +375,7 @@ class _SettingsViewState extends State<SettingsView> {
                   showDialog(
                     context: context,
                     builder: (ctx) {
-                      return AlertDialog(
+                      return AlertDialog.adaptive(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),

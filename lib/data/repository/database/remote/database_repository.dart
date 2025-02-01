@@ -126,6 +126,11 @@ class FieldValue {
       key: value,
     };
   }
+
+  @override
+  String toString() {
+    return 'key: $key, value: $value';
+  }
 }
 
 class SetData {
@@ -162,6 +167,19 @@ class QueryData {
     this.lessThanOrEqualTo,
     this.greaterThanOrEqualTo,
   });
+
+  Map<String, dynamic> toMap() {
+    return {
+      fieldName: {
+        'equalTo': equalTo,
+        'notEqualTo': notEqualTo,
+        'lessThan': lessThan,
+        'greaterThan': greaterThan,
+        'lessThanOrEqualTo': lessThanOrEqualTo,
+        'greaterThanOrEqualTo': greaterThanOrEqualTo,
+      },
+    };
+  }
 }
 
 class UpdateFieldValue {
