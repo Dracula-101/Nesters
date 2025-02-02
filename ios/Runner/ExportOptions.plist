@@ -8,6 +8,11 @@
         <string>PVA47334J2</string>
         <key>signingStyle</key>
         <string>manual</string>
+        <key>provisioningProfiles</key>
+        <dict>
+            <key>XC com app nesters ios (com.app.nesters.ios)</key>
+            <string>App Distribution Profile</string>
+        </dict>
         <key>compileBitcode</key>
         <false/>
         <key>thinning</key>

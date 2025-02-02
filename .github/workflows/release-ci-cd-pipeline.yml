@@ -44,6 +44,7 @@ jobs:
   #       with:
   #         flutter-version: "3.16.0"
   #         channel: "stable"
+  #         cache: true
 
   #     - name: Install dependencies
   #       run: flutter pub get
@@ -108,6 +109,7 @@ jobs:
         with:
           flutter-version: "3.16.0"
           channel: "stable"
+          cache: true
 
       - name: Install dependencies
         run: flutter pub get
@@ -120,14 +122,17 @@ jobs:
           echo ${{ secrets.BASE64_ENCODED_ENV }} | base64 -d > .env
           echo ${{ secrets.BASE64_GOOGLE_SERVICE_PLIST }} | base64 -d > ios/Runner/GoogleService-Info.plist
 
-      - name: Build IPA
-        run: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
+      - name: Find all provisioning profiles
+        run: find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision"
 
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Nesters_v${{ needs.setup.outputs.version }}.ipa
-          path: build/ios/ipa/*.ipa
+      # - name: Build IPA
+      #   run: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
+
+      # - name: Upload IPA Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: Nesters_v${{ needs.setup.outputs.version }}.ipa
+      #     path: build/ios/ipa/*.ipa
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}
