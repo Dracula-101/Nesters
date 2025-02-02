@@ -27,7 +27,7 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "version_code=$version_code" >> $GITHUB_OUTPUT
 
-  android-setup:
+  android-build:
     needs: setup
     runs-on: ubuntu-latest
     steps:
@@ -56,33 +56,30 @@ jobs:
           echo ${{ secrets.BASE64_ENCODE_GOOGLE_SERVICES }} | base64 -d > android/app/google-services.json
           echo ${{ secrets.BASE64_ENCODED_KEY_PROPERTIES }} | base64 -d > android/key.properties
           echo ${{ secrets.BASE64_ENCODED_KEYSTORE }} | base64 -d > keystores/release-keystore.jks
-          echo ${{ secrets.ENCODED_ENV }} | base64 -d > .env
+          echo ${{ secrets.ENCODED_ENV }} | base64 -d > secrets.ENCODED_ENV
 
-  android-build:
-      needs: android-setup
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-        - name: Build Nesters Release
-          run: |
-            echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
-            flutter build apk --release
+      - name: Build Nesters Release
+        run: |
+          echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
+          flutter build apk --release
 
-        - name: Upload APK Artifact
-          uses: actions/upload-artifact@v4
-          with:
-            name: Nesters_v${{ needs.setup.outputs.version }}.apk
-            path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nesters_v${{ needs.setup.outputs.version }}.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
 
-        - name: Cleanup Keystore
-          if: ${{ always() }}
-          run: |
-            rm -f android/app/google-services.json
-            rm -f android/key.properties
-            rm -f keystores/release-keystore.jks
-  ios-setup:
+      - name: Cleanup Keystore
+        if: ${{ always() }}
+        run: |
+          rm -f android/app/google-services.json
+          rm -f android/key.properties
+          rm -f keystores/release-keystore.jks
+
+  ios-build:
     needs: setup
     runs-on: macos-latest
     steps:
@@ -125,11 +122,7 @@ jobs:
         run: |
           echo ${{ secrets.BASE64_GOOGLE_SERVICE_PLIST }} | base64 -d > ios/Runner/GoogleService-Info.plist
           echo ${{ secrets.ENCODED_ENV }} | base64 -d > .env
-  
-  ios-build:
-    needs: ios-setup
-    runs-on: macos-latest
-    steps:
+
       - name: Build IPA
         run: flutter build ipa --release --export-method=ad-hoc --export-options-plist=ios/Runner/ExportOptions.plist
 
