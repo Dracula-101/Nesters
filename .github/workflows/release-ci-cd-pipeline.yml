@@ -112,7 +112,11 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          flutter pub get
+          cd ios
+          pod install
+          cd ..
 
       - name: Build Object Box
         run: flutter pub run build_runner build --delete-conflicting-outputs
