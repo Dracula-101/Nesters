@@ -164,17 +164,6 @@ class _ChatViewState extends State<ChatView> {
               )
             ],
           ),
-          Spacer(),
-          IconButton(
-            icon: const Icon(
-              Icons.call,
-            ),
-            onPressed: () {
-              FirebaseDatabase.instance.ref('user_status').once().then((event) {
-                log('Data: ${event.snapshot}');
-              });
-            },
-          ),
         ],
       ),
     );

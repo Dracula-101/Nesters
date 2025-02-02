@@ -4,18 +4,22 @@ abstract class AuthEvent {
   const AuthEvent();
 
   const factory AuthEvent.googleSignIn() = _AuthGoogleSiginInEvent;
+  const factory AuthEvent.appleSignIn() = _AuthAppleSiginInEvent;
   const factory AuthEvent.authSignOut() = _AuthSignOutEvent;
   const factory AuthEvent.authUserChanged(User? user) = _AuthUserChangedEvent;
   const factory AuthEvent.deleteAccount() = _DeleteAccountEvent;
 
   R when<R>({
     required R Function() authGoogleSignIn,
+    required R Function() authAppleSignIn,
     required R Function() authSignOut,
     required R Function(User? user) authUserChanged,
     required R Function() deleteAccount,
   }) {
     if (this is _AuthGoogleSiginInEvent) {
       return authGoogleSignIn();
+    } else if (this is _AuthAppleSiginInEvent) {
+      return authAppleSignIn();
     } else if (this is _AuthSignOutEvent) {
       return authSignOut();
     } else if (this is _AuthUserChangedEvent) {
@@ -29,6 +33,7 @@ abstract class AuthEvent {
 
   R maybeWhen<R>({
     R Function()? authGoogleSignIn,
+    R Function()? authAppleSignIn,
     R Function()? authSignOut,
     R Function(User? user)? authUserChanged,
     R Function()? deleteAccount,
@@ -36,6 +41,8 @@ abstract class AuthEvent {
   }) {
     if (this is _AuthGoogleSiginInEvent) {
       return authGoogleSignIn != null ? authGoogleSignIn() : orElse();
+    } else if (this is _AuthAppleSiginInEvent) {
+      return authAppleSignIn != null ? authAppleSignIn() : orElse();
     } else if (this is _AuthSignOutEvent) {
       return authSignOut != null ? authSignOut() : orElse();
     } else if (this is _AuthUserChangedEvent) {
@@ -51,12 +58,15 @@ abstract class AuthEvent {
 
   R map<R>({
     required R Function() authGoogleSignIn,
+    required R Function() authAppleSignIn,
     required R Function() authSignOut,
     required R Function(User? user) authUserChanged,
     required R Function() deleteAccount,
   }) {
     if (this is _AuthGoogleSiginInEvent) {
       return authGoogleSignIn();
+    } else if (this is _AuthAppleSiginInEvent) {
+      return authAppleSignIn();
     } else if (this is _AuthSignOutEvent) {
       return authSignOut();
     } else if (this is _AuthUserChangedEvent) {
@@ -70,6 +80,7 @@ abstract class AuthEvent {
 
   R maybeMap<R>({
     R Function()? authGoogleSignIn,
+    R Function()? authAppleSignIn,
     R Function()? authSignOut,
     R Function(User? user)? authUserChanged,
     R Function()? deleteAccount,
@@ -77,6 +88,8 @@ abstract class AuthEvent {
   }) {
     if (this is _AuthGoogleSiginInEvent) {
       return authGoogleSignIn != null ? authGoogleSignIn() : orElse();
+    } else if (this is _AuthAppleSiginInEvent) {
+      return authAppleSignIn != null ? authAppleSignIn() : orElse();
     } else if (this is _AuthSignOutEvent) {
       return authSignOut != null ? authSignOut() : orElse();
     } else if (this is _AuthUserChangedEvent) {
@@ -93,6 +106,10 @@ abstract class AuthEvent {
 
 class _AuthGoogleSiginInEvent extends AuthEvent {
   const _AuthGoogleSiginInEvent();
+}
+
+class _AuthAppleSiginInEvent extends AuthEvent {
+  const _AuthAppleSiginInEvent();
 }
 
 class _AuthSignOutEvent extends AuthEvent {
