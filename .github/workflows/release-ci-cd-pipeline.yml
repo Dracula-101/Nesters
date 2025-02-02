@@ -125,14 +125,14 @@ jobs:
       - name: Find all provisioning profiles
         run: find ~/Library/MobileDevice/Provisioning\ Profiles -name "*.mobileprovision"
 
-      # - name: Build IPA
-      #   run: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
+      - name: Build IPA
+        run: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
 
-      # - name: Upload IPA Artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: Nesters_v${{ needs.setup.outputs.version }}.ipa
-      #     path: build/ios/ipa/*.ipa
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nesters_v${{ needs.setup.outputs.version }}.ipa
+          path: build/ios/ipa/*.ipa
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}
