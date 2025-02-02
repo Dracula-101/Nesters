@@ -9,7 +9,8 @@ abstract class AuthRepository {
 
   // Sign in with providers (Google, Apple)
   Future<void> signInWithGoogle();
-  //Future<void> signInWithApple();
+
+  Future<void> signInWithApple();
 
   // Sign out
   Future<void> signOut();

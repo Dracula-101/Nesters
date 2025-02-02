@@ -30,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       authUserChanged: (user) async {
         _onUserChanged(user, emit);
       },
+      authAppleSignIn: () async => await _onAppleSignIn(emit),
       authGoogleSignIn: () async => await _onGoogleSignIn(emit),
       authSignOut: () async => await _onSignOut(emit),
       deleteAccount: () async => await _onDeleteAccount(),
@@ -40,11 +41,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
-      emit(const AuthState.loading());
+      emit(const AuthState.googleSignInLoading());
       await _authRepository.signInWithGoogle();
     } on Exception catch (error, stackTrace) {
       _loggerService.error(error);
       if (error is GoogleSignInFailedException) {
+        emit(AuthState.error(error.localizedMessage));
+      } else {
+        _crashServiceRepository.recordError(error, stackTrace: stackTrace);
+        if (error is AuthSignInError) {
+          emit(AuthState.error(error.message));
+        } else {
+          emit(AuthState.error(error.toString()));
+        }
+      }
+    }
+  }
+
+  Future<void> _onAppleSignIn(
+    Emitter<AuthState> emit,
+  ) async {
+    try {
+      emit(const AuthState.appleSignInLoading());
+      await _authRepository.signInWithApple();
+    } on Exception catch (error, stackTrace) {
+      _loggerService.error(error);
+      if (error is AppleSignInFailedException) {
         emit(AuthState.error(error.localizedMessage));
       } else {
         _crashServiceRepository.recordError(error, stackTrace: stackTrace);

@@ -211,7 +211,6 @@ exports.sendAcceptNotification = functions.https.onRequest(async (req, res) => {
         },
       };
     }
-    const notificationResponse = await admin.messaging().send(message);
     console.log("notificationResponse", notificationResponse);
     // create a new chat document
     const chatCollection = admin.firestore().collection("chats");
@@ -221,6 +220,7 @@ exports.sendAcceptNotification = functions.https.onRequest(async (req, res) => {
       id: chatId,
     };
     await chatCollection.doc(chatId).set(chatData);
+    const notificationResponse = await admin.messaging().send(message);
     res.send("Notification sent successfully");
   } catch (e) {
     console.log(e);

@@ -172,9 +172,8 @@ class FirebaseChatRepository extends RemoteChatRepository {
         .child(
           '${DateTime.now().toIso8601String()}${path_provider.extension(file.path)}',
         );
-    UploadTask uploadTask = fileRef.putFile(
-      file,
-    );
+
+    UploadTask uploadTask = fileRef.putFile(file);
     return uploadTask.snapshotEvents.asyncMap(
       (event) async {
         if (event.state == TaskState.success) {
