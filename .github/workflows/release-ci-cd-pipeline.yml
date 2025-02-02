@@ -57,6 +57,10 @@ jobs:
           echo ${{ secrets.BASE64_ENCODED_KEY_PROPERTIES }} | base64 -d > android/key.properties
           echo ${{ secrets.BASE64_ENCODED_KEYSTORE }} | base64 -d > keystores/release-keystore.jks
           echo ${{ secrets.ENCODED_ENV }} | base64 -d > secrets.ENCODED_ENV
+      
+      - name: Setup Google GoogleService
+        run: |
+          echo ${{ secrets.BASE64_ENCODE_GOOGLE_SERVICES }} | base64 -d > android/app/google-services.json
 
       - name: Checkout code
         uses: actions/checkout@v3
@@ -124,7 +128,7 @@ jobs:
           echo ${{ secrets.ENCODED_ENV }} | base64 -d > .env
 
       - name: Build IPA
-        run: flutter build ipa --release --export-method=ad-hoc --export-options-plist=ios/Runner/ExportOptions.plist
+        run: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
@@ -137,3 +141,5 @@ jobs:
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
           rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
+          rm -f $RUNNER_TEMP/build_certificate.p12
+          rm -f ios/Runner/GoogleService-Info.plist
