@@ -88,48 +88,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Install the Apple certificate and provisioning profile
-        env:
-          DEV_BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_DEV_CERTIFICATE_BASE64 }}
-          ADHOC_BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_ADHOC_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.IOS_BUILD_CERTIFICATE_PASSWORD }}
-          ADHOC_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_ADHOC_PROFILE_BASE64 }}
-          DEV_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_DEV_PROFILE_BASE64 }}
-          KEYCHAIN_PASSWORD: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
-        run: |
-          DEV_CERTIFICATE_PATH=$RUNNER_TEMP/build_dev_certificate.p12
-          ADHOC_CERTIFICATE_PATH=$RUNNER_TEMP/build_adhoc_certificate.p12
-          DEV_PP_PATH=$RUNNER_TEMP/build_dev_pp.mobileprovision
-          ADHOC_PP_PATH=$RUNNER_TEMP/build_adhoc_pp.mobileprovision
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-
-          echo $DEV_BUILD_CERTIFICATE_BASE64 | base64 -d > $DEV_CERTIFICATE_PATH
-          echo $ADHOC_BUILD_CERTIFICATE_BASE64 | base64 -d > $ADHOC_CERTIFICATE_PATH
-          echo $DEV_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $DEV_PP_PATH
-          echo $ADHOC_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $ADHOC_PP_PATH
-          
-          echo "Adding dev certificate to keychain"
-          security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-          security import $DEV_CERTIFICATE_PATH -k $KEYCHAIN_PATH -P $P12_PASSWORD -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-          security set-keychain-settings -lut 7200 $KEYCHAIN_PATH
-          security list-keychains -s $KEYCHAIN_PATH
-          security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-
-          echo "Adding dev provisioning profile to keychain"
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $DEV_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/build_dev_pp.mobileprovision
-
-          echo "Adding adhoc certificate to keychain"
-          security import $ADHOC_CERTIFICATE_PATH -k $KEYCHAIN_PATH -P $P12_PASSWORD -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-          security set-keychain-settings -lut 7200 $KEYCHAIN_PATH
-          security list-keychains -s $KEYCHAIN_PATH
-          security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-
-          echo "Adding adhoc provisioning profile to keychain"
-          cp $ADHOC_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/build_adhoc_pp.mobileprovision
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -137,15 +95,19 @@ jobs:
           channel: "stable"
           cache: true
 
-      - uses: actions/cache@v2
-        id: cocoapods-cache
+      - uses: actions/cache@v3
+        id: pods-cache
         with:
-          path: ios/Pods
+          path: ./ios/Pods
           key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
 
-      - name: Get dependencies
+      - name: Get Flutter dependencies
         run: |
-          flutter pub get
+          flutter pub Get
+
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Install Pod dependencies
+        run: |
           cd ios
           pod install
           cd ..
@@ -158,8 +120,57 @@ jobs:
           echo ${{ secrets.BASE64_GOOGLE_SERVICE_PLIST }} | base64 -d > ios/Runner/GoogleService-Info.plist
           echo ${{ secrets.ENCODED_ENV }} | base64 -d > .env
 
-      - name: Build IPA
-        run: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
+      # - name: Install the Apple certificate and provisioning profile
+      #   env:
+      #     DEV_BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_DEV_CERTIFICATE_BASE64 }}
+      #     ADHOC_BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_ADHOC_CERTIFICATE_BASE64 }}
+      #     P12_PASSWORD: ${{ secrets.IOS_BUILD_CERTIFICATE_PASSWORD }}
+      #     ADHOC_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_ADHOC_PROFILE_BASE64 }}
+      #     DEV_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_DEV_PROFILE_BASE64 }}
+      #     KEYCHAIN_PASSWORD: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
+      #   run: |
+      #     DEV_CERTIFICATE_PATH=$RUNNER_TEMP/build_dev_certificate.p12
+      #     ADHOC_CERTIFICATE_PATH=$RUNNER_TEMP/build_adhoc_certificate.p12
+      #     DEV_PP_PATH=$RUNNER_TEMP/build_dev_pp.mobileprovision
+      #     ADHOC_PP_PATH=$RUNNER_TEMP/build_adhoc_pp.mobileprovision
+      #     KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+      #     echo $DEV_BUILD_CERTIFICATE_BASE64 | base64 -d > $DEV_CERTIFICATE_PATH
+      #     echo $ADHOC_BUILD_CERTIFICATE_BASE64 | base64 -d > $ADHOC_CERTIFICATE_PATH
+      #     echo $DEV_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $DEV_PP_PATH
+      #     echo $ADHOC_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $ADHOC_PP_PATH
+          
+      #     echo "Adding dev certificate to keychain"
+      #     security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+      #     security import $DEV_CERTIFICATE_PATH -k $KEYCHAIN_PATH -P $P12_PASSWORD -T /usr/bin/codesign
+      #     security set-key-partition-list -S apple-tool:,apple: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+      #     security set-keychain-settings -lut 7200 $KEYCHAIN_PATH
+      #     security list-keychains -s $KEYCHAIN_PATH
+      #     security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+
+      #     echo "Adding dev provisioning profile to keychain"
+      #     mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+      #     cp $DEV_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/build_dev_pp.mobileprovision
+
+      #     echo "Adding adhoc certificate to keychain"
+      #     security import $ADHOC_CERTIFICATE_PATH -k $KEYCHAIN_PATH -P $P12_PASSWORD -T /usr/bin/codesign
+      #     security set-key-partition-list -S apple-tool:,apple: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+      #     security set-keychain-settings -lut 7200 $KEYCHAIN_PATH
+      #     security list-keychains -s $KEYCHAIN_PATH
+      #     security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+
+      #     echo "Adding adhoc provisioning profile to keychain"
+      #     cp $ADHOC_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/build_adhoc_pp.mobileprovision
+
+      # - name: Build IPA
+      #   run: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
+      - uses: cedvdb/action-flutter-build-ios@v1
+        with:
+          build-cmd: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
+          certificate-base64: ${{ secrets.IOS_BUILD_ADHOC_CERTIFICATE_BASE64 }}
+          certificate-password: ${{ secrets.IOS_BUILD_CERTIFICATE_PASSWORD }}
+          provisioning-profile-base64: ${{ secrets.IOS_MOBILE_PROVISIONING_ADHOC_PROFILE_BASE64 }}
+          keychain-password: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
@@ -171,6 +182,7 @@ jobs:
         if: ${{ always() }}
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
-          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
+          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_dev_pp.mobileprovision
+          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/build_adhoc_pp.mobileprovision
           rm -f ios/Runner/GoogleService-Info.plist
           rm -f .env
