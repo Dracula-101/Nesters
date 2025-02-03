@@ -167,7 +167,7 @@ jobs:
       - uses: cedvdb/action-flutter-build-ios@v1
         with:
           build-cmd: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
-          certificate-base64: ${{ secrets.IOS_BUILD_DEV_CERTIFICATE_BASE64 }}
+          certificate-base64: ${{ secrets.IOS_BUILD_ADHOC_CERTIFICATE_BASE64 }}
           certificate-password: ${{ secrets.IOS_BUILD_CERTIFICATE_PASSWORD }}
           provisioning-profile-base64: ${{ secrets.IOS_MOBILE_PROVISIONING_ADHOC_PROFILE_BASE64 }}
           keychain-password: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
