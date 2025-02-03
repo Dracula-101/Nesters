@@ -122,31 +122,22 @@ jobs:
           security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision > /dev/null
           security find-identity -v -p codesigning $KEYCHAIN_PATH
 
-          # add provisioning profile to xcode
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.16.0"
+          channel: "stable"
+          cache: true
+
+      - name: Install dependencies
+        run: |
+          flutter pub get
           cd ios
-          echo "Provisioning profile added to keychain"
-          xcodebuild unlock-keychain -p "$RUNNER_KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-          echo "Unlock keychain"
-          xcodebuild -resolvePackageDependencies -allowNetworkAccess -allowProvisioningUpdates -allowProvisioningDeviceRegistration
-          xcodebuild -showBuildSettings
+          pod install
           cd ..
 
-      # - name: Setup Flutter
-      #   uses: subosito/flutter-action@v2
-      #   with:
-      #     flutter-version: "3.16.0"
-      #     channel: "stable"
-      #     cache: true
-
-      # - name: Install dependencies
-      #   run: |
-      #     flutter pub get
-      #     cd ios
-      #     pod install
-      #     cd ..
-
-      # - name: Build Object Box
-      #   run: flutter pub run build_runner build --delete-conflicting-outputs
+      - name: Build Object Box
+        run: flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Setup Config
         run: |
