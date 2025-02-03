@@ -97,6 +97,9 @@ jobs:
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
 
+          pip install codemagic-cli-tools
+          keychain initialize
+
           # import certificate and provisioning profile from secrets
           echo -n "$IOS_CERTIFICATE_P12_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           echo -n "$IOS_ADHOC_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
@@ -114,6 +117,9 @@ jobs:
           # apply provisioning profile
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/LIBRARY/MOBILEDEVICE/PROVISIONING\ PROFILES
+          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/build_pp.mobileprovision
+          # add provisioning profile to xcode
+          xcode-project use-profiles
 
       # - name: Setup Flutter
       #   uses: subosito/flutter-action@v2
@@ -136,10 +142,6 @@ jobs:
         run: |
           echo ${{ secrets.BASE64_ENCODED_ENV }} | base64 -d > .env
           echo ${{ secrets.BASE64_GOOGLE_SERVICE_PLIST }} | base64 -d > ios/Runner/GoogleService-Info.plist
-          pip install codemagic-cli-tools
-          keychain initialize
-          keychain add-certificates -p $RUNNER_TEMP/build_certificate.p12 --certificate-password ${{ secrets.IOS_BUILD_CERTIFICATE_PASSWORD }}
-          xcode-project use-profiles
 
       - name: Build IPA
         run: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
