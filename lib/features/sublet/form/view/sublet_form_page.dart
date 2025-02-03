@@ -28,8 +28,6 @@ class SubletFormPage extends StatelessWidget {
             sublet != null ? 'Edit your Sublet' : 'Issue a Sublet',
           ),
         ),
-        bottomNavigationBar:
-            CustomBottomNavigationBar(editPage: sublet != null),
         body: SafeArea(child: SubletFormView(sublet: sublet)),
       ),
     );
@@ -42,6 +40,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     return BlocConsumer<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
         if (state.submitError != null) {
@@ -79,6 +78,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
+              border: isKeyboardOpen
+                  ? Border(
+                      top: BorderSide(
+                        color: AppTheme.greyShades.shade400,
+                        width: 1,
+                      ),
+                    )
+                  : null,
             ),
             child: DynamicProgressIndicator(
               currentValue: state.isSubmitComplete ?? false
@@ -98,7 +105,9 @@ class CustomBottomNavigationBar extends StatelessWidget {
                         ? 'Uploading ${((state.imageUploadTask?.progress ?? 0.01) * 100).toInt()}%'
                         : editPage
                             ? 'Update'
-                            : 'Next',
+                            : state.pageNumber == 2
+                                ? 'Submit'
+                                : 'Next',
                 style: AppTheme.titleLarge.copyWith(
                   color: AppTheme.surface,
                 ),
@@ -131,8 +140,12 @@ class _SubletFormViewState extends State<SubletFormView>
       length: 3,
       vsync: this,
     );
-    _tabIndexNotifier.addListener(() {
+    _tabController?.addListener(() {
       context.read<SubletFormCubit>().onPageChange(_tabIndexNotifier.value);
+      _tabIndexNotifier.value = _tabController?.index ?? 0;
+      if (mounted) {
+        FocusScope.of(context).unfocus();
+      }
     });
   }
 
@@ -149,6 +162,7 @@ class _SubletFormViewState extends State<SubletFormView>
       children: [
         _buildTabBar(),
         _buildTabContent(),
+        _buildForwardButton(),
       ],
     );
   }
@@ -246,6 +260,12 @@ class _SubletFormViewState extends State<SubletFormView>
           );
         },
       ),
+    );
+  }
+
+  Widget _buildForwardButton() {
+    return CustomBottomNavigationBar(
+      editPage: widget.sublet != null,
     );
   }
 }
