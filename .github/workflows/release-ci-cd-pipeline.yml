@@ -115,22 +115,22 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/LIBRARY/MOBILEDEVICE/PROVISIONING\ PROFILES
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.16.0"
-          channel: "stable"
-          cache: true
+      # - name: Setup Flutter
+      #   uses: subosito/flutter-action@v2
+      #   with:
+      #     flutter-version: "3.16.0"
+      #     channel: "stable"
+      #     cache: true
 
-      - name: Install dependencies
-        run: |
-          flutter pub get
-          cd ios
-          pod install
-          cd ..
+      # - name: Install dependencies
+      #   run: |
+      #     flutter pub get
+      #     cd ios
+      #     pod install
+      #     cd ..
 
-      - name: Build Object Box
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+      # - name: Build Object Box
+      #   run: flutter pub run build_runner build --delete-conflicting-outputs
 
       - name: Setup Config
         run: |
@@ -138,7 +138,7 @@ jobs:
           echo ${{ secrets.BASE64_GOOGLE_SERVICE_PLIST }} | base64 -d > ios/Runner/GoogleService-Info.plist
           pip install codemagic-cli-tools
           keychain initialize
-          keychain add-certificates --certificate $CERTIFICATE_PATH --certificate-password $IOS_P12_PASSWORD
+          keychain add-certificates -c $CERTIFICATE_PATH -p $IOS_P12_PASSWORD
           xcode-project use-profiles
 
       - name: Build IPA
