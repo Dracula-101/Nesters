@@ -99,7 +99,7 @@ jobs:
         id: pods-cache
         with:
           path: ./ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
 
       - name: Get Flutter dependencies
         run: |
@@ -169,7 +169,7 @@ jobs:
           build-cmd: flutter build ipa --release --export-options-plist=ios/Runner/ExportOptions.plist
           certificate-base64: ${{ secrets.IOS_BUILD_DEV_CERTIFICATE_BASE64 }}
           certificate-password: ${{ secrets.IOS_BUILD_CERTIFICATE_PASSWORD }}
-          provisioning-profile-base64: ${{ secrets.IOS_MOBILE_PROVISIONING_DEV_PROFILE_BASE64 }}
+          provisioning-profile-base64: ${{ secrets.IOS_MOBILE_PROVISIONING_ADHOC_PROFILE_BASE64 }}
           keychain-password: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
 
       - name: Upload IPA Artifact
@@ -182,6 +182,6 @@ jobs:
         if: ${{ always() }}
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
-          rmdir ~/Library/MobileDevice/Provisioning\ Profiles
+          rmdir -rf ~/Library/MobileDevice/Provisioning\ Profiles
           rm -f ios/Runner/GoogleService-Info.plist
           rm -f .env
