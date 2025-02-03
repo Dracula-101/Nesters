@@ -138,7 +138,7 @@ jobs:
           echo ${{ secrets.BASE64_GOOGLE_SERVICE_PLIST }} | base64 -d > ios/Runner/GoogleService-Info.plist
           pip install codemagic-cli-tools
           keychain initialize
-          keychain add-certificates -c $RUNNER_TEMP/build_certificate.p12 -p $IOS_P12_PASSWORD
+          keychain add-certificates -p $RUNNER_TEMP/build_certificate.p12 -p $IOS_P12_PASSWORD
           xcode-project use-profiles
 
       - name: Build IPA
