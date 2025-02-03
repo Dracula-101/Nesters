@@ -167,12 +167,22 @@ jobs:
           cd ios
           
           echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
-          xcodebuild -workspace Runner.xcworkspace -scheme Runner -archivePath $RUNNER_TEMP/Runner.xcarchive -sdk iphoneos -configuration Release -destination generic/platform=iOS clean archive
+          xcodebuild -workspace Runner.xcworkspace \
+          -scheme Runner \
+          -archivePath $RUNNER_TEMP/Runner.xcarchive \
+          -sdk iphoneos \
+          -configuration Release \
+          -destination generic/platform=iOS \
+          clean archive > /dev/null 2>&1
 
           mkdir -p ../build/ios/ipa
 
           echo "Exporting IPA"
-          xcodebuild -exportArchive -archivePath $RUNNER_TEMP/Runner.xcarchive -exportOptionsPlist exportOptions.plist -exportPath ../build/ios/ipa
+          xcodebuild -exportArchive \
+          -archivePath $RUNNER_TEMP/Runner.xcarchive \
+          -exportOptionsPlist Runner/ExportOptions.plist \
+          -exportPath ../build/ios/ipa > /dev/null 2>&1
+
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
