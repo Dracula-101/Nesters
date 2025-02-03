@@ -95,11 +95,11 @@ jobs:
           channel: "stable"
           cache: true
 
-      - uses: actions/cache@v3
+      - uses: actions/cache@v4
         id: pods-cache
         with:
           path: ./ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('**/Podfile.lock') }}
+          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
 
       - name: Get Flutter dependencies
         run: |
@@ -181,8 +181,13 @@ jobs:
           xcodebuild -exportArchive \
           -archivePath $RUNNER_TEMP/Runner.xcarchive \
           -exportOptionsPlist Runner/ExportOptions.plist \
-          -exportPath ../build/ios/ipa > /dev/null 2>&1
+          -exportPath ../build/ios/ipa > export.log
 
+      - name: Export Error Log
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: export-log
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
