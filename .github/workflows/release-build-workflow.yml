@@ -93,9 +93,6 @@ jobs:
           echo ${{ secrets.BASE64_ENCODED_KEYSTORE }} | base64 -d > keystores/release-keystore.jks
           echo ${{ secrets.ENCODED_ENV }} | base64 -d > .env
 
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Build Nesters Release
         run: |
           echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
