@@ -239,7 +239,7 @@ jobs:
           rm -f .env
 
   release-distribute:
-    needs: [android-build, ios-build]
+    needs: [setup, android-build, ios-build]
     runs-on: ubuntu-latest
     env:
       version: ${{ needs.setup.outputs.version }}
