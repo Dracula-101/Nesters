@@ -256,6 +256,11 @@ jobs:
           name: Nesters_v${{env.version}}.apk
           path: .
 
+      - name: Unzip APK Artifact
+        run: |
+          ls
+          unzip "*.zip"
+
       # - name: Download IPA Artifact
       #   uses: actions/download-artifact@v4
       #   with:
@@ -266,7 +271,7 @@ jobs:
         run: |
           echo "Verifying APK and IPA artifacts"
           ls -l Nesters_v${{ env.version }}.apk
-          ls -l Nesters_v${{ env.version }}.ipa
+          # ls -l Nesters_v${{ env.version }}.ipa
 
       - if: ${{ env.is_released == 'false' }}
         name: Create Release
