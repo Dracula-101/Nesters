@@ -162,38 +162,38 @@ jobs:
           echo "Adding adhoc provisioning profile to keychain"
           cp $ADHOC_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/build_adhoc_pp.mobileprovision
 
-      - name: Build IPA
-        run: |
-          cd ios
+      # - name: Build IPA
+      #   run: |
+      #     cd ios
           
-          echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
-          xcodebuild -workspace Runner.xcworkspace \
-          -scheme Runner \
-          -archivePath $RUNNER_TEMP/Runner.xcarchive \
-          -sdk iphoneos \
-          -configuration Release \
-          -destination generic/platform=iOS \
-          clean archive > /dev/null 2>&1
+      #     echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
+      #     xcodebuild -workspace Runner.xcworkspace \
+      #     -scheme Runner \
+      #     -archivePath $RUNNER_TEMP/Runner.xcarchive \
+      #     -sdk iphoneos \
+      #     -configuration Release \
+      #     -destination generic/platform=iOS \
+      #     clean archive > /dev/null 2>&1
 
-          mkdir -p ../build/ios/ipa
+      #     mkdir -p ../build/ios/ipa
 
-          echo "Exporting IPA"
-          xcodebuild -exportArchive \
-          -archivePath $RUNNER_TEMP/Runner.xcarchive \
-          -exportOptionsPlist Runner/ExportOptions.plist \
-          -exportPath ../build/ios/ipa > export.log
+      #     echo "Exporting IPA"
+      #     xcodebuild -exportArchive \
+      #     -archivePath $RUNNER_TEMP/Runner.xcarchive \
+      #     -exportOptionsPlist Runner/ExportOptions.plist \
+      #     -exportPath ../build/ios/ipa > export.log
 
-      - name: Export Error Log
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: export-log
+      # - name: Export Error Log
+      #   uses: actions/upload-artifact@v4
+      #   if: failure()
+      #   with:
+      #     name: export-log
 
-      - name: Upload IPA Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Nesters_v${{ needs.setup.outputs.version }}.ipa
-          path: build/ios/ipa/nesters.ipa
+      # - name: Upload IPA Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: Nesters_v${{ needs.setup.outputs.version }}.ipa
+      #     path: build/ios/ipa/nesters.ipa
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}
