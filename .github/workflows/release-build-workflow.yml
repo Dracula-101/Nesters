@@ -275,7 +275,7 @@ jobs:
         uses: actions/create-release@v1
         continue-on-error: true
         with:
-          tag_name: v${{ env.version }}-test
+          tag_name: v${{ env.version }}
           release_name: Nesters v${{ env.version }}
           body: "Release version ${{ env.version }} of Nesters."
           draft: false
