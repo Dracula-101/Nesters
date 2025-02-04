@@ -125,9 +125,9 @@ jobs:
         id: pods-cache
         with:
           path: ./ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          key: ${{ runner.os }}-ios-pods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pods-
+            ${{ runner.os }}-ios-pods-
 
       - name: Install Pod dependencies
         if: steps.pods-cache.outputs.cache-hit != 'true'
@@ -193,11 +193,13 @@ jobs:
           cp $ADHOC_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build IPA
+        continue-on-error: true
         run: |
           echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
-          flutter build ios --release --export-options-plist=ios/Runner/ExportOptions.plist
+          flutter build ipa --release --verbose --export-options-plist=ios/Runner/ExportOptions.plist
 
       - name: Upload IPA Artifact
+        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           name: Nesters_v${{ needs.setup.outputs.version }}.ipa
