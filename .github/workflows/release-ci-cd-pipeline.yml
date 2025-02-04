@@ -5,7 +5,7 @@ on:
   #   branches:
   #     - prod
   workflow_dispatch:
-      
+
 permissions:
   contents: write
 
@@ -27,6 +27,16 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "version_code=$version_code" >> $GITHUB_OUTPUT
 
+      - name: Check if release version exists
+        id: check_release
+        run: |
+          version=${{ steps.store_version.outputs.version }}
+          git fetch --tags
+          if git rev-parse "v$version" >/dev/null 2>&1; then
+            echo "Release version v$version already exists"
+            exit 1
+          fi
+
   # android-build:
   #   needs: setup
   #   runs-on: ubuntu-latest
@@ -34,11 +44,21 @@ jobs:
   #     - name: Checkout code
   #       uses: actions/checkout@v3
 
+  #     - name: Cache Gradle dependencies
+  #       uses: actions/cache@v4
+  #       with:
+  #         path: |
+  #           ~/.gradle/caches
+  #           ~/.gradle/wrapper
+  #         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-gradle-
+
   #     - name: Setup JAVA 17
   #       uses: actions/setup-java@v3
   #       with:
-  #         distribution: 'temurin'
-  #         java-version: '17'
+  #         distribution: "temurin"
+  #         java-version: "17"
 
   #     - uses: subosito/flutter-action@v2
   #       with:
@@ -46,8 +66,19 @@ jobs:
   #         channel: "stable"
   #         cache: true
 
-  #     - name: Install dependencies
-  #       run: flutter pub get
+  #     - name: Cache Flutter dependencies
+  #       uses: actions/cache@v4
+  #       id: flutter-cache
+  #       with:
+  #         path: .pub-cache
+  #         key: ${{ runner.os }}-deps-flutter-${{ hashFiles('**/pubspec.lock') }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-deps-flutter-
+
+  #     - if: steps.flutter-cache.outputs.cache-hit != 'true'
+  #       name: Get Flutter dependencies
+  #       run: |
+  #         flutter pub get
 
   #     - name: Build Object Box
   #       run: flutter pub run build_runner build --delete-conflicting-outputs
@@ -85,7 +116,7 @@ jobs:
     needs: setup
     runs-on: macos-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Setup Flutter
@@ -95,17 +126,30 @@ jobs:
           channel: "stable"
           cache: true
 
-      - uses: actions/cache@v4
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v4
+        id: flutter-cache
+        with:
+          path: .pub-cache
+          key: ${{ runner.os }}-deps-flutter-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-flutter-
+
+      - if: steps.flutter-cache.outputs.cache-hit != 'true'
+        name: Get Flutter dependencies
+        run: |
+          flutter pub get
+
+      - name: Cache Pods
+        uses: actions/cache@v4
         id: pods-cache
         with:
           path: ./ios/Pods
           key: ${{ runner.os }}-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
 
-      - name: Get Flutter dependencies
-        run: |
-          flutter pub get
-
-      - if: steps.cache.outputs.cache-hit != 'true'
+      - if: steps.pods-cache.outputs.cache-hit != 'true'
         name: Install Pod dependencies
         run: |
           cd ios
@@ -139,55 +183,36 @@ jobs:
           echo $ADHOC_BUILD_CERTIFICATE_BASE64 | base64 -d > $ADHOC_CERTIFICATE_PATH
           echo $DEV_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $DEV_PP_PATH
           echo $ADHOC_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $ADHOC_PP_PATH
-          
-          echo "Adding dev certificate to keychain"
-          security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-          security import $DEV_CERTIFICATE_PATH -k $KEYCHAIN_PATH -P $P12_PASSWORD -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-          security set-keychain-settings -lut 7200 $KEYCHAIN_PATH
-          security list-keychains -s $KEYCHAIN_PATH
-          security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
 
-          echo "Adding dev provisioning profile to keychain"
+          # Creating temp keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Importing certificates to keychain
+          security import $DEV_CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security import $ADHOC_CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+          echo "List current keychains"
+          security list-keychains -s $KEYCHAIN_PATH
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+
+          # Copying provisioning profile to Xcode
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $DEV_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/build_dev_pp.mobileprovision
-
-          echo "Adding adhoc certificate to keychain"
-          security import $ADHOC_CERTIFICATE_PATH -k $KEYCHAIN_PATH -P $P12_PASSWORD -T /usr/bin/codesign
-          security set-key-partition-list -S apple-tool:,apple: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-          security set-keychain-settings -lut 7200 $KEYCHAIN_PATH
-          security list-keychains -s $KEYCHAIN_PATH
-          security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
-
-          echo "Adding adhoc provisioning profile to keychain"
-          cp $ADHOC_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/build_adhoc_pp.mobileprovision
+          cp $DEV_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp $ADHOC_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build IPA
         run: |
-          cd ios
-          
-          echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
-          xcodebuild -workspace Runner.xcworkspace \
-          -scheme Runner \
-          -archivePath $RUNNER_TEMP/Runner.xcarchive \
-          -sdk iphoneos \
-          -configuration Release \
-          -destination generic/platform=iOS \
-          clean archive > /dev/null 2>&1
-
-          mkdir -p ../build/ios/ipa
-
-          echo "Exporting IPA"
-          xcodebuild -exportArchive \
-          -archivePath $RUNNER_TEMP/Runner.xcarchive \
-          -exportOptionsPlist Runner/ExportOptions.plist \
-          -exportPath ../build/ios/ipa > export.log
+          echo "Building Nesters iOS release - Version: ${{ needs.setup.outputs.version }}"
+          flutter build ios --release --export-options-plist=ios/Runner/ExportOptions.plist > error-export.log
 
       - name: Export Error Log
         uses: actions/upload-artifact@v4
-        if: failure()
+        if: ${{ failure() }}
         with:
-          name: export-log
+          name: Error Export Log
+          path: error-export.log
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
@@ -199,6 +224,8 @@ jobs:
         if: ${{ always() }}
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
-          rmdir -rf ~/Library/MobileDevice/Provisioning\ Profiles
+          rm -f $RUNNER_TEMP/*.p12
+          rm -f $RUNNER_TEMP/*.mobileprovision
+          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/*
           rm -f ios/Runner/GoogleService-Info.plist
           rm -f .env
