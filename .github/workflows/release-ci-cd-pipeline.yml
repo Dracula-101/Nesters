@@ -204,15 +204,8 @@ jobs:
 
       - name: Build IPA
         run: |
-          echo "Building Nesters iOS release - Version: ${{ needs.setup.outputs.version }}"
-          flutter build ios --release --export-options-plist=ios/Runner/ExportOptions.plist > error-export.log
-
-      - name: Export Error Log
-        uses: actions/upload-artifact@v4
-        if: ${{ failure() }}
-        with:
-          name: Error Export Log
-          path: error-export.log
+          echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
+          flutter build ios --release --export-options-plist=ios/Runner/ExportOptions.plist
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
