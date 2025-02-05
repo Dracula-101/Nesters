@@ -218,9 +218,8 @@ class LocalNotificationRepository {
     String chatId = payload['chatId'];
     log("Received Notification -> Current Path: $currentPath, Chat Id: $chatId");
     if (!currentPath.contains(chatId)) {
-      NotificationDetails platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-      );
+      NotificationDetails platformChannelSpecifics =
+          NotificationDetails(android: androidPlatformChannelSpecifics);
       await flutterLocalNotificationsPlugin.show(
         messageId,
         title,
