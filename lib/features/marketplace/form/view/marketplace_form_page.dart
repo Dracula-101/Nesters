@@ -25,7 +25,6 @@ class MarketplaceFormPage extends StatelessWidget {
           ),
           title: const Text('Issue a Marketplace'),
         ),
-        bottomNavigationBar: const CustomBottomNavigationBar(),
         body: SafeArea(child: MarketplaceFormView(model: marketplace)),
       ),
     );
@@ -123,10 +122,12 @@ class _MarketplaceFormViewState extends State<MarketplaceFormView>
       length: 2,
       vsync: this,
     );
-    _tabIndexNotifier.addListener(() {
+    _tabController?.addListener(() {
+      _tabIndexNotifier.value = _tabController?.index ?? 0;
       context
           .read<MarketplaceFormCubit>()
           .onPageChange(_tabIndexNotifier.value);
+      FocusScope.of(context).unfocus();
     });
   }
 
@@ -143,6 +144,7 @@ class _MarketplaceFormViewState extends State<MarketplaceFormView>
       children: [
         _buildTabBar(),
         _buildTabContent(),
+        _buildForwardButton(),
       ],
     );
   }
@@ -214,5 +216,9 @@ class _MarketplaceFormViewState extends State<MarketplaceFormView>
         },
       ),
     );
+  }
+
+  Widget _buildForwardButton() {
+    return const CustomBottomNavigationBar();
   }
 }

@@ -1,9 +1,13 @@
+import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import 'auth_repository.dart';
@@ -35,7 +39,7 @@ class SupabaseAuthRepository extends AuthRepository {
       return User(
         id: user.id,
         email: user.email ?? "",
-        fullName: user.userMetadata?['fullName'] ?? '',
+        fullName: _userProfile?.fullName ?? user.userMetadata?['name'] ?? '',
         photoUrl: _userProfile?.profileImage ??
             user.userMetadata?['avatar_url'] ??
             '',
@@ -71,6 +75,34 @@ class SupabaseAuthRepository extends AuthRepository {
   }
 
   @override
+  Future<void> signInWithApple() async {
+    final rawNonce = _supabaseClient.auth.generateRawNonce();
+    final hashedNonce = sha256.convert(utf8.encode(rawNonce)).toString();
+
+    final credential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+      nonce: hashedNonce,
+    );
+
+    final idToken = credential.identityToken;
+    if (idToken == null) {
+      throw AppleSignInFailedException('Couldn\'t sign in with Apple');
+    }
+    try {
+      await _supabaseClient.auth.signInWithIdToken(
+        provider: supabase.OAuthProvider.apple,
+        idToken: idToken,
+        nonce: rawNonce,
+      );
+    } catch (error) {
+      throw AuthSignInError(error.toString());
+    }
+  }
+
+  @override
   Future<void> signOut() {
     return Future.wait([
       _googleSignIn.signOut(),
@@ -90,12 +122,14 @@ class SupabaseAuthRepository extends AuthRepository {
               .single()
               .then((value) => UserProfile.fromJson(value));
         } catch (error) {
-          return null;
+          // ignore: avoid_print
         }
         return User(
           id: event.session!.user.id,
           email: event.session!.user.email ?? "",
-          fullName: event.session!.user.userMetadata?['name'] ?? '',
+          fullName: _userProfile?.fullName ??
+              event.session!.user.userMetadata?['name'] ??
+              '',
           photoUrl: _userProfile?.profileImage ??
               event.session!.user.userMetadata?['avatar_url'] ??
               '',

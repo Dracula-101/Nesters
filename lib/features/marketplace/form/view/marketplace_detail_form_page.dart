@@ -208,7 +208,7 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
       ),
       controller: _categoryController,
       asyncStaticItems: context.read<MarketplaceFormCubit>().getCategories(),
-      itemAsString: (item) => item.name,
+      itemAsString: (item) => (item as MarketplaceCategoryModel?)?.name ?? "",
     );
   }
 

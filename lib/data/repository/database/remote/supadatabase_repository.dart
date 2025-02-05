@@ -16,7 +16,7 @@ class SupaDatabaseRepository extends DatabaseRepository {
     List<FieldValue>? whereNotFields,
   }) async {
     try {
-      final PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
           _supabaseClient.from(table).select();
       if (columns.isNotEmpty) {
         response.select(columns.map((e) => e.key).toList().join(','));
@@ -28,12 +28,12 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       if (whereFields != null) {
         for (var field in whereFields) {
-          response.eq(field.key, field.value);
+          response = response.eq(field.key, field.value);
         }
       }
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response = response.neq(field.key, field.value);
         }
       }
       return response.then((value) => value);
@@ -53,25 +53,17 @@ class SupaDatabaseRepository extends DatabaseRepository {
     List<FieldValue>? whereNotFields,
   }) async {
     try {
-      final PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
+      PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
           _supabaseClient.from(table).select();
-      if (columns.isNotEmpty) {
-        response.select(columns.map((e) => e.key).toList().join(','));
-      }
-      if (orderBy != null) {
-        for (var order in orderBy) {
-          response.order(order.key, ascending: !order.isDescending);
-        }
-      }
-      response.eq(field.key, field.value);
+      response = response.eq(field.key, field.value);
       if (whereFields != null) {
         for (var field in whereFields) {
-          response.eq(field.key, field.value);
+          response = response.eq(field.key, field.value);
         }
       }
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response = response.neq(field.key, field.value);
         }
       }
       return await response;
@@ -93,27 +85,28 @@ class SupaDatabaseRepository extends DatabaseRepository {
   }) async {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
-          _supabaseClient.from(table).select();
-      if (columns.isNotEmpty) {
-        response.select(columns.map((e) => e.key).toList().join(','));
-      }
-      if (orderBy != null) {
-        for (var order in orderBy) {
-          response.order(order.key, ascending: !order.isDescending);
-        }
-      }
-      response.range(offset, limit);
+          _supabaseClient
+              .from(table)
+              .select(columns.map((e) => e.key).toList().join(','));
       if (whereFields != null) {
         for (var field in whereFields) {
-          response.eq(field.key, field.value);
+          response = response.eq(field.key, field.value);
         }
       }
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response = response.neq(field.key, field.value);
         }
       }
-      return response.then((value) => value);
+      PostgrestTransformBuilder transformBuilder =
+          response.limit(limit).range(offset, offset + limit);
+      if (orderBy != null) {
+        for (var order in orderBy) {
+          transformBuilder =
+              transformBuilder.order(order.key, ascending: !order.isDescending);
+        }
+      }
+      return transformBuilder.then((value) => value);
     } catch (e) {
       // Throw an exception with a descriptive error message
       throw Exception('Failed to get data: $e');
@@ -131,15 +124,9 @@ class SupaDatabaseRepository extends DatabaseRepository {
   }) {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
-          _supabaseClient.from(table).select();
-      if (columns.isNotEmpty) {
-        response.select(columns.map((e) => e.key).toList().join(','));
-      }
-      if (orderBy != null) {
-        for (var order in orderBy) {
-          response.order(order.key, ascending: !order.isDescending);
-        }
-      }
+          _supabaseClient
+              .from(table)
+              .select(columns.map((e) => e.key).toList().join(','));
       if (queryData.equalTo != null) {
         response =
             response.eq(queryData.equalTo!.key, queryData.equalTo!.value);
@@ -166,15 +153,22 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       if (whereFields != null) {
         for (var field in whereFields) {
-          response.eq(field.key, field.value);
+          response = response.eq(field.key, field.value);
         }
       }
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response = response.neq(field.key, field.value);
         }
       }
-      return response.order(queryData.fieldName).then((value) => value);
+      PostgrestTransformBuilder transformBuilder = response;
+      if (orderBy != null) {
+        for (var order in orderBy) {
+          transformBuilder =
+              transformBuilder.order(order.key, ascending: !order.isDescending);
+        }
+      }
+      return transformBuilder.then((value) => value);
     } catch (e) {
       throw Exception('Failed to get data: $e');
     }
@@ -191,18 +185,12 @@ class SupaDatabaseRepository extends DatabaseRepository {
   }) async {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> response =
-          _supabaseClient.from(table).select();
-      if (columns.isNotEmpty) {
-        response.select(columns.map((e) => e.key).toList().join(','));
-      }
-      if (orderBy != null) {
-        for (var order in orderBy) {
-          response.order(order.key, ascending: !order.isDescending);
-        }
-      }
+          _supabaseClient
+              .from(table)
+              .select(columns.map((e) => e.key).toList().join(','));
       for (var queryData in queryDataList) {
+        log("QueryData: ${queryData.toMap()}");
         if (queryData.equalTo != null) {
-          log("Key: ${queryData.equalTo!.key} Value: ${queryData.equalTo!.value}");
           response =
               response.eq(queryData.equalTo!.key, queryData.equalTo!.value);
         }
@@ -228,15 +216,22 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       if (whereFields != null) {
         for (var field in whereFields) {
-          response.eq(field.key, field.value);
+          response = response.eq(field.key, field.value);
         }
       }
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response = response.neq(field.key, field.value);
         }
       }
-      return response.then((value) => value);
+      PostgrestTransformBuilder transformBuilder = response;
+      if (orderBy != null) {
+        for (var order in orderBy) {
+          transformBuilder =
+              transformBuilder.order(order.key, ascending: !order.isDescending);
+        }
+      }
+      return transformBuilder.then((value) => value);
     } catch (e) {
       throw Exception('Failed to get data: $e');
     }
@@ -316,7 +311,7 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response.neq(field.key, field.value);
         }
       }
       return response.then((value) => value);
@@ -350,7 +345,7 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response.neq(field.key, field.value);
         }
       }
       return response.then((value) => value);
@@ -372,7 +367,7 @@ class SupaDatabaseRepository extends DatabaseRepository {
       response.eq(deleteData.fieldName, deleteData.value);
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response.neq(field.key, field.value);
         }
       }
       return response.then((value) => value);
@@ -403,7 +398,7 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response.neq(field.key, field.value);
         }
       }
       return response.asStream();
@@ -434,7 +429,7 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       if (whereNotFields != null) {
         for (var field in whereNotFields) {
-          response.not(field.key, 'eq', field.value);
+          response.neq(field.key, field.value);
         }
       }
       return response.then((value) => value);

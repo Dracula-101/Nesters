@@ -78,4 +78,11 @@ class FirebaseAuthRepository extends AuthRepository {
   Future<String?> getAccessToken() async {
     return _firebaseAuth.currentUser?.getIdToken();
   }
+
+  @override
+  Future<void> signInWithApple() {
+    return _firebaseAuth.signInWithProvider(
+      firebase_auth.OAuthProvider('apple.com'),
+    );
+  }
 }

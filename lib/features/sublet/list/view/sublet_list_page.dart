@@ -70,7 +70,6 @@ class _SubletListViewState extends State<SubletListView> {
         userId: _authRepository.currentUser!.id,
         paginationKey: pageKey,
       );
-
       final isLastPage = sublets.length < _pageSize;
       if (isLastPage) {
         _pagingController.appendLastPage(sublets);

@@ -206,7 +206,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       asyncSearchItems: (searchQuery) {
         return getCities(searchQuery);
       },
-      itemAsString: (city) => city.name as String,
+      itemAsString: (city) => (city as City?)?.name ?? "",
       validator: (value) {
         if (value == null) {
           return 'Please select a city';

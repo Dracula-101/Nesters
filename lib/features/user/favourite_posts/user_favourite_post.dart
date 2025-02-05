@@ -114,7 +114,7 @@ class _UserFavouritePostPageState extends State<UserFavouritePostPage> {
                             onTap: () async {
                               showDialog(
                                 context: context,
-                                builder: (ctx) => AlertDialog(
+                                builder: (ctx) => AlertDialog.adaptive(
                                   title: const Text("Are you sure?"),
                                   content: const Text(
                                       "Do you want to remove this post from your liked posts?"),
@@ -182,7 +182,7 @@ class _UserFavouritePostPageState extends State<UserFavouritePostPage> {
                             onTap: () async {
                               showDialog(
                                 context: context,
-                                builder: (ctx) => AlertDialog(
+                                builder: (ctx) => AlertDialog.adaptive(
                                   title: const Text("Are you sure?"),
                                   content: const Text(
                                       "Do you want to remove this post from your liked posts?"),

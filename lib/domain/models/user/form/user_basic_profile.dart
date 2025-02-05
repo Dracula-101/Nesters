@@ -10,6 +10,7 @@ class UserBasicProfile extends Equatable {
   final String? selectedCollegeName;
   final String? selectedCourseName;
   final String? gender;
+  final String city;
   final String? state;
   final String? country;
 
@@ -22,6 +23,7 @@ class UserBasicProfile extends Equatable {
     required this.selectedCollegeName,
     required this.selectedCourseName,
     required this.gender,
+    required this.city,
     required this.state,
     required this.country,
   });
@@ -36,6 +38,7 @@ class UserBasicProfile extends Equatable {
       'birth_date': birthDate,
       'selected_college_name': selectedCollegeName,
       'selected_course_name': selectedCourseName,
+      'city': city,
       'state': state,
       'country': country,
     };
@@ -50,6 +53,7 @@ class UserBasicProfile extends Equatable {
         selectedCollegeName,
         selectedCourseName,
         gender,
+        city,
         state,
         country,
       ];
@@ -69,6 +73,7 @@ class UserBasicProfile extends Equatable {
       FieldValue(key: 'selected_college_name', value: selectedCollegeName),
       FieldValue(key: 'selected_course_name', value: selectedCourseName),
       FieldValue(key: 'gender', value: gender),
+      FieldValue(key: 'city', value: city),
       FieldValue(key: 'state', value: state),
       FieldValue(key: 'country', value: country),
       if (includeUserDeleteUpdate)
@@ -98,6 +103,7 @@ class UserBasicProfile extends Equatable {
           .value,
       gender:
           fieldValues.firstWhere((element) => element.key == 'gender').value,
+      city: fieldValues.firstWhere((element) => element.key == 'city').value,
       state: fieldValues.firstWhere((element) => element.key == 'state').value,
       country:
           fieldValues.firstWhere((element) => element.key == 'country').value,

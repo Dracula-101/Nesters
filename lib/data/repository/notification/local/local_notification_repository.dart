@@ -9,10 +9,14 @@ import 'package:nesters/domain/models/user/user.dart';
 
 @pragma('vm:entry-point')
 void onDidReceiveBackgroundNotification(NotificationResponse details) {
-  log('onDidReceiveBackgroundNotification: ${details.payload}');
+  GetIt.I<LocalNotificationRepository>()
+      .onDidReceiveNotificationResponse(details);
 }
 
 class LocalNotificationRepository {
+  LocalNotificationRepository({required this.appRouterService});
+
+  final AppRouterService appRouterService;
   final AndroidInitializationSettings initializationSettingsAndroid =
       const AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -25,7 +29,8 @@ class LocalNotificationRepository {
       FlutterLocalNotificationsPlugin();
 
   Future<void> onDidReceiveNotificationResponse(
-      NotificationResponse details) async {
+    NotificationResponse details,
+  ) async {
     log('Recieved Notification -> navigating to chat screen: ${details.payload}');
     if (details.payload != null) {
       final Map<String, dynamic> message = json.decode(details.payload!);
@@ -39,16 +44,19 @@ class LocalNotificationRepository {
           email: '',
           accessToken: '',
         );
-        GetIt.I<AppRouterService>().appRouter.push(
-              '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
-              extra: userProfile,
-            );
+        // get current route path
+        final currentRoute =
+            appRouterService.appRouter.routeInformationProvider.value.uri.path;
+        // check if the current route is not the chat screen
+        if (!currentRoute.contains(chatId)) {
+          appRouterService.appRouter.push(
+            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+            extra: userProfile,
+          );
+        }
       }
     }
   }
-
-  AppRouterService appRouterService;
-  LocalNotificationRepository({required this.appRouterService});
 
   Future<void> init() async {
     final InitializationSettings initializationSettings =
@@ -80,6 +88,16 @@ class LocalNotificationRepository {
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>()!
           .createNotificationChannel(channel);
+    }
+    if (Platform.isIOS) {
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin>()!
+          .requestPermissions(
+            alert: true,
+            badge: true,
+            sound: true,
+          );
     }
   }
 
@@ -200,9 +218,8 @@ class LocalNotificationRepository {
     String chatId = payload['chatId'];
     log("Received Notification -> Current Path: $currentPath, Chat Id: $chatId");
     if (!currentPath.contains(chatId)) {
-      NotificationDetails platformChannelSpecifics = NotificationDetails(
-        android: androidPlatformChannelSpecifics,
-      );
+      NotificationDetails platformChannelSpecifics =
+          NotificationDetails(android: androidPlatformChannelSpecifics);
       await flutterLocalNotificationsPlugin.show(
         messageId,
         title,
