@@ -179,18 +179,19 @@ class _UserListPageState extends State<UserListPage> {
                               '${AppRouterService.homeScreen}/${AppRouterService.userRequest}');
                         },
                       ),
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Container(
-                          height: 10,
-                          width: 10,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppTheme.primary,
+                      if (count > 0)
+                        Positioned(
+                          top: 10,
+                          right: 6,
+                          child: Container(
+                            height: 10,
+                            width: 10,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppTheme.primary,
+                            ),
                           ),
                         ),
-                      ),
                     ],
                   );
                 },
@@ -270,12 +271,13 @@ class _UserListPageState extends State<UserListPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 12, bottom: 16),
-                                        child: Text(
-                                          "Universities",
-                                          style: AppTheme.titleLarge,
-                                        )),
+                                      padding: const EdgeInsets.only(
+                                          left: 12, bottom: 16),
+                                      child: Text(
+                                        "Universities",
+                                        style: AppTheme.titleLarge,
+                                      ),
+                                    ),
                                     if (userState.universities.isEmpty)
                                       const Center(
                                         child: CircularProgressIndicator(),

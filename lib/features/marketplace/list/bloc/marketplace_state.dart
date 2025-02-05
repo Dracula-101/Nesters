@@ -5,12 +5,14 @@ class MarketplaceState {
   final List<MarketplaceModel>? marketplaceListFiltered;
   final Exception? error;
   final MarketplaceSingleFilter? singleFilter;
+  final MarketplaceAdvancedFilter? advancedFilter;
 
   const MarketplaceState({
     this.marketplaceList,
     this.marketplaceListFiltered,
     this.error,
     this.singleFilter,
+    this.advancedFilter,
   });
 
   MarketplaceState copyWith({
@@ -18,6 +20,7 @@ class MarketplaceState {
     List<MarketplaceModel>? marketplaceListFiltered,
     Exception? error,
     MarketplaceSingleFilter? filter,
+    MarketplaceAdvancedFilter? advancedFilter,
   }) {
     return MarketplaceState(
       marketplaceList: marketplaceList ?? this.marketplaceList,
@@ -25,6 +28,7 @@ class MarketplaceState {
           marketplaceListFiltered ?? this.marketplaceListFiltered,
       error: error ?? this.error,
       singleFilter: filter,
+      advancedFilter: advancedFilter,
     );
   }
 
@@ -36,9 +40,20 @@ class MarketplaceState {
         listEquals(other.marketplaceList, marketplaceList) &&
         listEquals(other.marketplaceListFiltered, marketplaceListFiltered) &&
         other.error == error &&
-        other.singleFilter == singleFilter;
+        other.singleFilter == singleFilter &&
+        other.advancedFilter == advancedFilter;
   }
 
   @override
   int get hashCode => marketplaceList.hashCode ^ error.hashCode;
+}
+
+enum MarketplaceFilterTypes {
+  price,
+  category;
+
+  @override
+  String toString() {
+    return this == MarketplaceFilterTypes.price ? 'Price' : 'Category';
+  }
 }

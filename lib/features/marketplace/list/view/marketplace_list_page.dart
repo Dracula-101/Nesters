@@ -6,13 +6,16 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
+import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarketplacePage extends StatelessWidget {
   const MarketplacePage({super.key});
@@ -97,7 +100,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
           child: CustomScrollView(
             slivers: [
               _buildFilterBar(),
-              state.singleFilter != null
+              state.singleFilter != null || state.advancedFilter != null
                   ? state.marketplaceListFiltered?.isEmpty == true
                       ? _buildMarketplacePlaceholder()
                       : _buildFilteredMarketplaceList(
@@ -209,8 +212,10 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                       TopActionButton(
                         icon: Icons.filter,
                         title: 'Filter',
-                        onPressed: () {},
-                        isActive: false,
+                        onPressed: () {
+                          showMultipleFilterDialog(marketplaceState);
+                        },
+                        isActive: marketplaceState.advancedFilter != null,
                       ),
                       if (marketplaceState.singleFilter == null ||
                           marketplaceState.singleFilter
@@ -307,5 +312,445 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
             },
           ),
         ));
+  }
+
+  void showMultipleFilterDialog(MarketplaceState state) {
+    MarketplaceFilterTypes selectedFilterType = MarketplaceFilterTypes.price;
+    double? minPrice = state.advancedFilter?.minPrice ?? 0,
+        maxPrice = state.advancedFilter?.maxPrice;
+    MarketplaceCategoryModel? selectedCategory = state.advancedFilter?.category;
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            return BlocProvider.value(
+              value: context.read<UserBloc>(),
+              child: BlocBuilder<UserBloc, UserState>(
+                builder: (ctx, userState) {
+                  return BlocProvider.value(
+                    value: context.read<MarketplaceBloc>(),
+                    child: BlocBuilder<MarketplaceBloc, MarketplaceState>(
+                      builder: (context, marketplaceState) {
+                        return SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height,
+                          child: Material(
+                            color: AppTheme.surface,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 4, left: 16, right: 16),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Filters',
+                                        style: AppTheme.titleLarge.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.close),
+                                        iconSize: 20,
+                                        onPressed: () {
+                                          Navigator.of(ctx).pop();
+                                        },
+                                      )
+                                    ],
+                                  ),
+                                ),
+                                const Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.topCenter,
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.35,
+                                          child: ListView(
+                                            shrinkWrap: true,
+                                            children: [
+                                              ...MarketplaceFilterTypes.values
+                                                  .map(
+                                                (e) => FilterTab(
+                                                  title: e.toString(),
+                                                  isSelected:
+                                                      e == selectedFilterType,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedFilterType = e;
+                                                    });
+                                                  },
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.65,
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              border: Border(
+                                                left: BorderSide(
+                                                  color: AppTheme
+                                                      .greyShades.shade300,
+                                                ),
+                                              ),
+                                            ),
+                                            child: Container(
+                                              child: switch (
+                                                  selectedFilterType) {
+                                                MarketplaceFilterTypes.price =>
+                                                  Column(
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 16,
+                                                                vertical: 4),
+                                                        child: Row(
+                                                          children: [
+                                                            Text(
+                                                              "Min Price",
+                                                              style: AppTheme
+                                                                  .titleSmall,
+                                                            ),
+                                                            const Spacer(),
+                                                            GestureDetector(
+                                                              onTap: () {
+                                                                showDialog(
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (ctx) {
+                                                                      return CustomValuePicker(
+                                                                        // 0 to 15000 with 50 increment
+                                                                        values: List.generate(
+                                                                            300,
+                                                                            (index) =>
+                                                                                (index * 50).toString()),
+                                                                        title:
+                                                                            "Select min price",
+                                                                      );
+                                                                    }).then((value) {
+                                                                  if (value !=
+                                                                      null) {
+                                                                    setState(
+                                                                        () {
+                                                                      minPrice =
+                                                                          double.parse(
+                                                                              value);
+                                                                    });
+                                                                  }
+                                                                });
+                                                              },
+                                                              child: Container(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(8),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  border: Border
+                                                                      .all(
+                                                                    color: AppTheme
+                                                                        .greyShades
+                                                                        .shade300,
+                                                                  ),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8),
+                                                                ),
+                                                                child: Text(
+                                                                  (minPrice ==
+                                                                          null)
+                                                                      ? "Select"
+                                                                      : "\$$minPrice",
+                                                                  style: AppTheme
+                                                                      .bodySmall,
+                                                                ),
+                                                              ),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      ),
+                                                      const SizedBox(height: 8),
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal: 16,
+                                                                vertical: 4),
+                                                        child: Row(
+                                                          children: [
+                                                            Text(
+                                                              "Max Price",
+                                                              style: AppTheme
+                                                                  .titleSmall
+                                                                  .copyWith(
+                                                                color: minPrice ==
+                                                                        null
+                                                                    ? AppTheme
+                                                                        .greyShades
+                                                                        .shade400
+                                                                    : AppTheme
+                                                                        .onSurface,
+                                                              ),
+                                                            ),
+                                                            const Spacer(),
+                                                            GestureDetector(
+                                                              onTap: () {
+                                                                if (minPrice ==
+                                                                    null) {
+                                                                  return;
+                                                                }
+                                                                showDialog(
+                                                                    context:
+                                                                        context,
+                                                                    builder:
+                                                                        (ctx) {
+                                                                      return CustomValuePicker(
+                                                                        // 100 to 10000 with 50 increment
+                                                                        values: List.generate(
+                                                                            200,
+                                                                            (index) =>
+                                                                                ((index + 1) * 50).toString()),
+                                                                        title:
+                                                                            "Select max price",
+                                                                      );
+                                                                    }).then((value) {
+                                                                  if (value !=
+                                                                      null) {
+                                                                    setState(
+                                                                        () {
+                                                                      maxPrice =
+                                                                          double.parse(
+                                                                              value);
+                                                                    });
+                                                                  }
+                                                                });
+                                                              },
+                                                              child: Container(
+                                                                padding:
+                                                                    const EdgeInsets
+                                                                        .all(8),
+                                                                decoration:
+                                                                    BoxDecoration(
+                                                                  border: Border
+                                                                      .all(
+                                                                    color: AppTheme
+                                                                        .greyShades
+                                                                        .shade300,
+                                                                  ),
+                                                                  borderRadius:
+                                                                      BorderRadius
+                                                                          .circular(
+                                                                              8),
+                                                                ),
+                                                                child: Text(
+                                                                  (maxPrice !=
+                                                                          null)
+                                                                      ? "\$$maxPrice"
+                                                                      : "Select",
+                                                                  style: AppTheme
+                                                                      .bodySmall
+                                                                      .copyWith(
+                                                                    color: minPrice ==
+                                                                            null
+                                                                        ? AppTheme
+                                                                            .greyShades
+                                                                            .shade400
+                                                                        : AppTheme
+                                                                            .onSurface,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            )
+                                                          ],
+                                                        ),
+                                                      )
+                                                    ],
+                                                  ),
+                                                MarketplaceFilterTypes
+                                                      .category =>
+                                                  (userState.marketplaceCategory
+                                                          .isEmpty
+                                                      ? const Center(
+                                                          child:
+                                                              CircularProgressIndicator(),
+                                                        )
+                                                      : ListView.builder(
+                                                          itemCount: userState
+                                                              .marketplaceCategory
+                                                              .length,
+                                                          itemBuilder:
+                                                              (ctx, index) {
+                                                            final category =
+                                                                userState
+                                                                        .marketplaceCategory[
+                                                                    index];
+                                                            return MarketplaceCategoryFilterTab(
+                                                              category:
+                                                                  category,
+                                                              isSelected:
+                                                                  category ==
+                                                                      selectedCategory,
+                                                              onTap: () {
+                                                                setState(() {
+                                                                  selectedCategory =
+                                                                      category;
+                                                                });
+                                                              },
+                                                            );
+                                                          },
+                                                        ))
+                                              },
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                const Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                ),
+                                Container(
+                                  width: MediaQuery.of(context).size.width,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          context.read<MarketplaceBloc>().add(
+                                              const MarketplaceEvent
+                                                  .removeMultipleFilter());
+                                          Navigator.of(ctx).pop();
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppTheme.error,
+                                        ),
+                                        child: Text(
+                                          'Reset',
+                                          style: AppTheme.bodyMedium.copyWith(
+                                            color: AppTheme.onError,
+                                          ),
+                                        ),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          MarketplaceAdvancedFilter filter =
+                                              MarketplaceAdvancedFilter(
+                                                  minPrice: minPrice,
+                                                  maxPrice: maxPrice,
+                                                  category: selectedCategory);
+                                          context.read<MarketplaceBloc>().add(
+                                              MarketplaceEvent
+                                                  .addMultipleFilter(filter));
+                                          Navigator.of(ctx).pop();
+                                        },
+                                        child: Text(
+                                          'Apply',
+                                          style: AppTheme.bodyMedium.copyWith(
+                                            color: AppColor.white,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class MarketplaceCategoryFilterTab extends StatelessWidget {
+  final MarketplaceCategoryModel category;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const MarketplaceCategoryFilterTab(
+      {super.key,
+      required this.category,
+      required this.isSelected,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color:
+              isSelected ? AppTheme.primary.withOpacity(0.1) : AppTheme.surface,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Text(
+                      category.name ?? '',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: isSelected
+                            ? AppTheme.primary
+                            : AppTheme.bodyMedium.color,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (isSelected)
+                    const Icon(
+                      Icons.check,
+                    )
+                ],
+              ),
+            ),
+            const Divider(
+              height: 1,
+              thickness: 1,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

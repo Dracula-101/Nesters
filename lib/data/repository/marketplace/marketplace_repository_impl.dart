@@ -125,7 +125,9 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
 
   @override
   Future<List<MarketplaceModel>> getSingleFilteredMarketplaces(
-      MarketplaceSingleFilter filter) {
+    MarketplaceSingleFilter filter,
+    String userId,
+  ) {
     try {
       supabase.PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
           _supabaseClient.from("marketplaces").select();
@@ -133,10 +135,53 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
         queryBuilder =
             queryBuilder.eq('category->>id', filter.category.id ?? 0);
       }
-      return queryBuilder.order("created_at", ascending: false).select().then(
-          (response) =>
+      return queryBuilder
+          .neq(
+            "user_id",
+            userId,
+          )
+          .order("created_at", ascending: false)
+          .select()
+          .then((response) =>
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } catch (e) {
+      throw Exception('Failed to get Marketplaces: $e');
+    }
+  }
+
+  @override
+  Future<List<MarketplaceModel>> getMultipleFilteredMarketplaces(
+    MarketplaceAdvancedFilter filter,
+    String userId,
+  ) async {
+    try {
+      supabase.PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
+          _supabaseClient.from("marketplaces").select();
+      if (filter.minPrice != null) {
+        queryBuilder = queryBuilder.gte('price', filter.minPrice!.toInt());
+      }
+      if (filter.maxPrice != null) {
+        queryBuilder = queryBuilder.lte('price', filter.maxPrice!.toInt());
+      }
+      if (filter.category != null) {
+        queryBuilder =
+            queryBuilder.eq('category->>name', filter.category!.name ?? '');
+      }
+      if (filter.keyword != null) {
+        queryBuilder = queryBuilder.contains('title', filter.keyword!);
+      }
+      return queryBuilder
+          .neq("user_id", userId)
+          .order(
+            "created_at",
+            ascending: false,
+          )
+          .select()
+          .then(
+            (response) =>
+                response.map((e) => MarketplaceModel.fromJson(e)).toList(),
+          );
+    } on Exception catch (e) {
       throw Exception('Failed to get Marketplaces: $e');
     }
   }

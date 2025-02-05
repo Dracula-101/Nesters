@@ -28,7 +28,14 @@ abstract class MarketplaceRepository {
   Future<List<MarketplaceCategoryModel>> getMarketplaceCategories();
 
   Future<List<MarketplaceModel>> getSingleFilteredMarketplaces(
-      MarketplaceSingleFilter filter);
+    MarketplaceSingleFilter filter,
+    String userId,
+  );
+
+  Future<List<MarketplaceModel>> getMultipleFilteredMarketplaces(
+    MarketplaceAdvancedFilter filter,
+    String userId,
+  );
 
   Future<List<MarketplaceModel>> getUserMarketplaces({required String userId});
 

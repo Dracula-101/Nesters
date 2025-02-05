@@ -9,12 +9,17 @@ abstract class MarketplaceEvent {
   const factory MarketplaceEvent.applySingleFilter(
       MarketplaceSingleFilter filter) = _ApplySingleFilter;
   const factory MarketplaceEvent.removeSingleFilter() = _RemoveSingleFilter;
+  const factory MarketplaceEvent.addMultipleFilter(
+      MarketplaceAdvancedFilter filter) = _AddMultipleFilter;
+  const factory MarketplaceEvent.removeMultipleFilter() = _RemoveMultipleFilter;
 
   R when<R>({
     required R Function() initial,
     required R Function(List<MarketplaceModel> marketplaces) saveMarketplaces,
     required R Function(MarketplaceSingleFilter filter) applySingleFilter,
     required R Function() removeSingleFilter,
+    required R Function(MarketplaceAdvancedFilter) addMultipleFilter,
+    required R Function() removeMultipleFilter,
   }) {
     if (this is _Initial) {
       return initial();
@@ -24,6 +29,10 @@ abstract class MarketplaceEvent {
       return applySingleFilter((this as _ApplySingleFilter).filter);
     } else if (this is _RemoveSingleFilter) {
       return removeSingleFilter();
+    } else if (this is _AddMultipleFilter) {
+      return addMultipleFilter((this as _AddMultipleFilter).filter);
+    } else if (this is _RemoveMultipleFilter) {
+      return removeMultipleFilter();
     } else {
       throw StateError('Unknown type $this');
     }
@@ -34,6 +43,8 @@ abstract class MarketplaceEvent {
     R Function(List<MarketplaceModel> marketplaces)? saveMarketplaces,
     R Function(MarketplaceSingleFilter filter)? applySingleFilter,
     R Function()? removeSingleFilter,
+    R Function(MarketplaceAdvancedFilter)? addMultipleFilter,
+    R Function()? removeMultipleFilter,
     required R Function() orElse,
   }) {
     if (this is _Initial) {
@@ -48,6 +59,12 @@ abstract class MarketplaceEvent {
           : orElse();
     } else if (this is _RemoveSingleFilter) {
       return removeSingleFilter != null ? removeSingleFilter() : orElse();
+    } else if (this is _AddMultipleFilter) {
+      return addMultipleFilter != null
+          ? addMultipleFilter((this as _AddMultipleFilter).filter)
+          : orElse();
+    } else if (this is _RemoveMultipleFilter) {
+      return removeMultipleFilter != null ? removeMultipleFilter() : orElse();
     } else {
       return orElse();
     }
@@ -58,6 +75,8 @@ abstract class MarketplaceEvent {
     required R Function(List<MarketplaceModel> marketPlace) saveMarketplaces,
     required R Function(MarketplaceSingleFilter filter) applySingleFilter,
     required R Function() removeSingleFilter,
+    required R Function(MarketplaceAdvancedFilter) addMultipleFilter,
+    required R Function() removeMultipleFilter,
   }) {
     if (this is _Initial) {
       return initial();
@@ -67,6 +86,10 @@ abstract class MarketplaceEvent {
       return applySingleFilter((this as _ApplySingleFilter).filter);
     } else if (this is _RemoveSingleFilter) {
       return removeSingleFilter();
+    } else if (this is _AddMultipleFilter) {
+      return addMultipleFilter((this as _AddMultipleFilter).filter);
+    } else if (this is _RemoveMultipleFilter) {
+      return removeMultipleFilter();
     } else {
       throw StateError('Unknown type $this');
     }
@@ -77,6 +100,8 @@ abstract class MarketplaceEvent {
     R Function(List<MarketplaceModel> marketplaces)? saveMarketplaces,
     R Function(MarketplaceSingleFilter filter)? applySingleFilter,
     R Function()? removeSingleFilter,
+    R Function(MarketplaceAdvancedFilter)? addMultipleFilter,
+    R Function()? removeMultipleFilter,
     required R Function() orElse,
   }) {
     if (this is _Initial) {
@@ -91,6 +116,12 @@ abstract class MarketplaceEvent {
           : orElse();
     } else if (this is _RemoveSingleFilter) {
       return removeSingleFilter != null ? removeSingleFilter() : orElse();
+    } else if (this is _AddMultipleFilter) {
+      return addMultipleFilter != null
+          ? addMultipleFilter((this as _AddMultipleFilter).filter)
+          : orElse();
+    } else if (this is _RemoveMultipleFilter) {
+      return removeMultipleFilter != null ? removeMultipleFilter() : orElse();
     } else {
       return orElse();
     }
@@ -123,4 +154,28 @@ class _ApplySingleFilter extends MarketplaceEvent {
 
 class _RemoveSingleFilter extends MarketplaceEvent {
   const _RemoveSingleFilter();
+}
+
+class _AddMultipleFilter extends MarketplaceEvent {
+  final MarketplaceAdvancedFilter filter;
+
+  const _AddMultipleFilter(this.filter);
+}
+
+class _RemoveMultipleFilter extends MarketplaceEvent {
+  const _RemoveMultipleFilter();
+}
+
+class MarketplaceAdvancedFilter {
+  final double? minPrice;
+  final double? maxPrice;
+  final String? keyword;
+  final MarketplaceCategoryModel? category;
+
+  MarketplaceAdvancedFilter({
+    this.minPrice,
+    this.maxPrice,
+    this.keyword,
+    this.category,
+  });
 }
