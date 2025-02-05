@@ -50,16 +50,20 @@ class UserQuickProfileWidget extends StatelessWidget {
                 flex: 3,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: CachedNetworkImage(
-                    imageUrl: userQuickProfile.profileImage ?? '',
-                    errorWidget: (context, url, error) => Center(
-                      child: Icon(
-                        Icons.person,
-                        color: AppTheme.greyShades.shade300,
-                        size: 60,
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: CachedNetworkImage(
+                      imageUrl: userQuickProfile.profileImage ?? '',
+                      errorWidget: (context, url, error) => Center(
+                        child: Icon(
+                          Icons.person,
+                          color: AppTheme.greyShades.shade300,
+                          size: 60,
+                        ),
                       ),
+                      fit: BoxFit.cover,
+                      fadeInDuration: 150.ms,
                     ),
-                    fadeInDuration: 150.ms,
                   ),
                 ),
               ),

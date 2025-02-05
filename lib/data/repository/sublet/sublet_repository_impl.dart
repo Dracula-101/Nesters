@@ -88,11 +88,11 @@ class SubletRepositoryImpl implements SubletRepository {
     try {
       final response = await _supabaseClient
           .from('sublets')
-          .select("*, sublet_likes!sublet_likes_sublet_id_fkey!left(*)")
+          .select("* sublet_likes!sublet_likes_sublet_id_fkey!left(*)")
           .neq("user_id", userId)
           .eq("is_available", true)
-          .order("created_at", ascending: false)
-          .range(paginationKey, paginationKey + range);
+          .range(paginationKey, paginationKey + range)
+          .order("id", ascending: false);
       return response.map((e) => SubletModel.fromMap(e)).toList();
     } catch (e) {
       throw Exception('Failed to get sublets: $e');
@@ -132,7 +132,7 @@ class SubletRepositoryImpl implements SubletRepository {
             .order("baths", ascending: true);
       }
       return response
-          .order("created_at", ascending: false)
+          .order("id", ascending: false)
           .select()
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } catch (e) {
@@ -241,7 +241,7 @@ class SubletRepositoryImpl implements SubletRepository {
             filter.leasePeriod!.startDate!.millisecondsSinceEpoch);
       }
       return queryBuilder
-          .order("created_at")
+          .order("id")
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } catch (e) {
       throw Exception('Failed to get sublets: $e');

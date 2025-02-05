@@ -39,8 +39,7 @@ class SupabaseAuthRepository extends AuthRepository {
       return User(
         id: user.id,
         email: user.email ?? "",
-        fullName:
-            _userProfile?.profileImage ?? user.userMetadata?['fullName'] ?? '',
+        fullName: _userProfile?.fullName ?? user.userMetadata?['name'] ?? '',
         photoUrl: _userProfile?.profileImage ??
             user.userMetadata?['avatar_url'] ??
             '',

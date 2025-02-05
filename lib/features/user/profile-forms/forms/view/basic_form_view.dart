@@ -11,6 +11,7 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/location/city_info.dart';
 import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
@@ -64,6 +65,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   //image variable
   File? _image;
   String? photoUrl;
+  CityInfo? userCityInfo;
 
   // Full Name, Email, profile image, college name, course name, gender, birthdate
   final TextEditingController _fullNameController = TextEditingController();
@@ -72,8 +74,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final TextEditingController _genderController =
       TextEditingController(text: "Not Selected");
   final TextEditingController _birthdateController = TextEditingController();
-  final TextEditingController _stateController = TextEditingController();
-  final TextEditingController _countryController = TextEditingController();
+  final TextEditingController _locationContoller = TextEditingController();
   DateTime selectedDate = DateTime.now();
   bool isLoading = false;
 
@@ -90,6 +91,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     _courseNameController.dispose();
     _genderController.dispose();
     _birthdateController.dispose();
+    _locationContoller.dispose();
     super.dispose();
   }
 
@@ -155,8 +157,9 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       selectedCollegeName: _collegeNameController.text,
       selectedCourseName: _courseNameController.text,
       gender: _genderController.text,
-      state: _stateController.text,
-      country: _countryController.text,
+      city: userCityInfo?.cityName ?? "",
+      state: userCityInfo?.stateName,
+      country: userCityInfo?.countryName,
     );
     try {
       final isProfileSet = await GetIt.I<UserRepository>()
@@ -202,9 +205,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
                 _buildSpacing(20),
                 _buildDegreeNameField(),
                 _buildSpacing(20),
-                _buildStateField(),
-                _buildSpacing(20),
-                _buildCountryField(),
+                _buildLocationField(),
                 _buildSpacing(20),
                 _buildSubmitButton(),
               ],
@@ -510,46 +511,36 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     );
   }
 
-  Widget _buildStateField() {
-    return CustomTextField(
-      controller: _stateController,
+  Widget _buildLocationField() {
+    return CustomDynamicSearchableDropDropField(
+      controller: _locationContoller,
+      labelText: 'City',
+      prefixIcon: Icon(
+        Icons.location_on,
+        color: AppTheme.primary,
+      ),
+      asyncSearchItems: (value) => Stream.fromFuture(
+        GetIt.I<UserRepository>()
+            .searchCities(searchQuery: value.isEmpty ? "Aa" : value),
+      ),
+      searchText: "Search City",
+      hintText: 'Search for your city',
       validator: (value) {
-        if (value.isEmpty) {
-          return 'Please enter your state';
+        if (value == null) {
+          return 'Please select your city';
         }
         return null;
       },
-      labelText: 'State',
-      keyboardType: TextInputType.name,
-      isCapitalized: true,
-      prefixIcon: Icon(
-        FontAwesomeIcons.city,
-        color: AppTheme.primary,
-        size: 18,
-      ),
-    );
-  }
-
-  Widget _buildCountryField() {
-    return CustomSearchableDropDownField(
-      controller: _countryController,
-      validator: (value) {
-        if (value.isEmpty) {
-          return 'Please enter your country';
-        }
-        return null;
+      onItemClick: (value) {
+        userCityInfo = value;
       },
-      asyncItems: (query) {
-        return Future.value(GetIt.I<UserRepository>().getCountries());
+      itemBuilder: (context, value) {
+        return ListTile(
+          title: Text(value.cityName ?? ''),
+          subtitle: Text("${value.stateName}, ${value.countryName}"),
+        );
       },
-      filterFn: (item, query) {
-        return item.toLowerCase().contains(query.toLowerCase());
-      },
-      labelText: 'Country',
-      prefixIcon: Icon(
-        Icons.location_city,
-        color: AppTheme.primary,
-      ),
+      itemAsString: (value) => "${value.cityName}, ${value.countryName}",
     );
   }
 
@@ -559,14 +550,6 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         onPressed: () {
           if (_genderController.text == "Not Selected") {
             context.showErrorSnackBar('Please select your gender');
-            return;
-          }
-          if (_stateController.text.isEmpty) {
-            context.showErrorSnackBar('Please enter your state');
-            return;
-          }
-          if (_countryController.text.isEmpty) {
-            context.showErrorSnackBar('Please enter your country');
             return;
           }
           if (_formKey.currentState!.validate()) {

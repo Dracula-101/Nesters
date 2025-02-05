@@ -1,11 +1,15 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/location/city_info.dart';
+import 'package:nesters/domain/models/location/city_info_response.dart';
 import 'package:nesters/domain/models/location/indian_city.dart';
 import 'package:nesters/domain/models/location/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
@@ -73,6 +77,19 @@ class UserRepository {
             FieldValue(key: 'title', value: ''),
           )
           .then((event) => event.map((e) => Degree.fromJson(e)).toList());
+    } catch (e) {
+      return List.empty();
+    }
+  }
+
+  Future<List<CityInfo>> searchCities({required String searchQuery}) async {
+    String baseUrl =
+        "https://api.thecompaniesapi.com/v2/locations/cities?search=$searchQuery";
+    try {
+      http.Response response = await http.get(Uri.parse(baseUrl));
+      CityInfoResponse cityInfoResponse =
+          CityInfoResponse.fromJson(jsonDecode(response.body));
+      return CityInfo.fromResponse(cityInfoResponse);
     } catch (e) {
       return List.empty();
     }
