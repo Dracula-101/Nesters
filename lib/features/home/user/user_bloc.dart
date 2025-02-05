@@ -29,6 +29,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     add(UserEvent.loadUser(user: user));
     add(const UserEvent.loadUniversities());
     add(const UserEvent.loadDegrees());
+    add(const UserEvent.loadMarketplaceCategories());
   }
 
   final UserRepository _userRepository = GetIt.I<UserRepository>();

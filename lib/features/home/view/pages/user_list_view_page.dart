@@ -23,6 +23,7 @@ import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
+import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/custom_flat_button.dart';
@@ -155,17 +156,46 @@ class _UserListPageState extends State<UserListPage> {
               ],
             ),
             actions: [
-              // Removed as settings as logout
-              // IconButton(
-              //   icon: const Icon(
-              //     // Logout icon
-              //     FontAwesomeIcons.rightFromBracket,
-              //     size: 20,
-              //   ),
-              //   onPressed: () {
-              //     context.read<AuthBloc>().add(const AuthEvent.authSignOut());
-              //   },
-              // ),
+              BlocBuilder<RequestBloc, RequestState>(
+                builder: (context, state) {
+                  int count = state.requestReceivedUsers?.fold(0,
+                          (previousValue, element) {
+                        if (!element.isAccepted && !element.isBanned) {
+                          return (previousValue ?? 0) + 1;
+                        } else {
+                          return previousValue;
+                        }
+                      }) ??
+                      0;
+                  return Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.notifications,
+                        ),
+                        onPressed: () {
+                          GoRouter.of(context).go(
+                              '${AppRouterService.homeScreen}/${AppRouterService.userRequest}');
+                        },
+                      ),
+                      if (count > 0)
+                        Positioned(
+                          top: 10,
+                          right: 6,
+                          child: Container(
+                            height: 10,
+                            width: 10,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppTheme.primary,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
               IconButton(
                 icon: const Icon(
                   FontAwesomeIcons.gear,
@@ -241,12 +271,13 @@ class _UserListPageState extends State<UserListPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 12, bottom: 16),
-                                        child: Text(
-                                          "Universities",
-                                          style: AppTheme.titleLarge,
-                                        )),
+                                      padding: const EdgeInsets.only(
+                                          left: 12, bottom: 16),
+                                      child: Text(
+                                        "Universities",
+                                        style: AppTheme.titleLarge,
+                                      ),
+                                    ),
                                     if (userState.universities.isEmpty)
                                       const Center(
                                         child: CircularProgressIndicator(),

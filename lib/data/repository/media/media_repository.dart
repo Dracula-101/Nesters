@@ -7,7 +7,7 @@ import 'package:nesters/data/repository/media/media_compressor.dart';
 
 class MediaRepository {
   final ImagePicker _imagePicker = ImagePicker();
-  final MediaCompressor _mediaCompressor = MediaCompressor();
+  final MediaCompressor compressor = MediaCompressor();
 
   Future<File?> getImageFromGallery() async {
     final XFile? image =
@@ -16,7 +16,7 @@ class MediaRepository {
       return null;
     }
     File file = File(image.path);
-    return await _mediaCompressor.compressFile(file);
+    return await compressor.compressFile(file);
   }
 
   //get image from camera
@@ -27,7 +27,7 @@ class MediaRepository {
       return null;
     }
     File file = File(image.path);
-    return await _mediaCompressor.compressFile(file);
+    return await compressor.compressFile(file);
   }
 
   Future<List<File>> getMultiImageFromGallery() async {
@@ -35,7 +35,7 @@ class MediaRepository {
     List<File> files = [];
     for (XFile image in images) {
       File file = File(image.path);
-      files.add(await _mediaCompressor.compressFile(file));
+      files.add(await compressor.compressFile(file));
     }
     return files;
   }

@@ -57,3 +57,14 @@ class AuthSignInError implements Exception {
     return message;
   }
 }
+
+class AppleSignInFailedException implements Exception {
+  final String localizedMessage;
+  AppleSignInFailedException(
+      [this.localizedMessage = 'An unknown error occurred.']);
+
+  @override
+  String toString() {
+    return localizedMessage;
+  }
+}

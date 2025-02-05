@@ -185,13 +185,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             sentAt: Timestamp.now(),
             epochTime: DateTime.now(),
           );
-          _sendMessage(message, emit, attachmentMessage: true);
-          emit(state.copyWith(uploadTask: null));
-          return;
-        } else if (task.progress > 0) {
+          await _sendMessage(message, emit, attachmentMessage: true);
+          break;
+        } else if (task.progress > 0 && !task.isComplete) {
           emit(state.copyWith(uploadTask: {source: task}));
         }
       }
+      emit(state.copyWith(uploadTask: null));
     } on Exception catch (e) {
       emit(state.copyWith(error: e));
     }
