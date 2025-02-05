@@ -1,8 +1,5 @@
-import 'dart:developer';
 import 'dart:io';
 
-import 'package:get_it/get_it.dart';
-import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
@@ -169,7 +166,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       await _supabaseClient.from('marketplaces_likes').upsert(
           {'user_id': userId, 'marketplace_id': itemId, 'is_liked': isLiked},
           onConflict: 'marketplace_id');
-      _logger.log(
+      _logger.info(
           'Like status updated successfully for sublet: $itemId -> ${isLiked ? '❤️' : '💔'}');
     } catch (e) {
       throw Exception('Failed to update like status: $e');
@@ -206,7 +203,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .update({'is_available': isAvailable})
           .eq('id', itemId)
           .eq('user_id', userId);
-      _logger.log(
+      _logger.info(
           'Availability status updated successfully for sublet: $itemId -> ${isAvailable ? 'Available' : 'Not Available'}');
     } catch (e) {
       throw Exception('Failed to update availability status: $e');
@@ -224,7 +221,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .delete()
           .eq('id', itemId)
           .eq('user_id', userId);
-      _logger.log('Marketplace deleted successfully with id: $itemId');
+      _logger.info('Marketplace deleted successfully with id: $itemId');
     } catch (e) {
       throw Exception('Failed to delete Marketplace: $e');
     }

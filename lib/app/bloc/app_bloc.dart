@@ -152,7 +152,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       bool isLoggedIn, bool isOnboardingComplete, bool isUserProfileCreated) {
     //used for initial routing when the app is loaded
     String? route;
-    if (!isOnboardingComplete && !isUserProfileCreated && !isLoggedIn) {
+    if (!isOnboardingComplete && !isUserProfileCreated) {
       route = AppRouterService.onboardingScreen;
     } else if (!isLoggedIn) {
       route = AppRouterService.loginScreen;
