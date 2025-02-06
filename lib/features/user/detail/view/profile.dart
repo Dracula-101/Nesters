@@ -387,17 +387,14 @@ class _ProfileViewState extends State<ProfileView> {
                   FontAwesomeIcons.bowlFood,
                 )
               : const SizedBox(),
-          (userProfile.drinkingHabit != UserHabit.UNKNOWN ||
-                  userProfile.smokingHabit != UserHabit.UNKNOWN)
-              ? _buildCard(
-                  'Smoke & Sip',
-                  _getSmokingDrinkingSubtitle(
-                    userProfile.drinkingHabit,
-                    userProfile.smokingHabit,
-                  ),
-                  FontAwesomeIcons.wineGlass,
-                )
-              : const SizedBox(),
+          _buildCard(
+            'Smoke & Sip',
+            _getSmokingDrinkingSubtitle(
+              userProfile.drinkingHabit,
+              userProfile.smokingHabit,
+            ),
+            FontAwesomeIcons.wineGlass,
+          ),
           userProfile.personType != null &&
                   userProfile.personType != PersonType.UNKNOWN
               ? _buildCard(
@@ -511,6 +508,9 @@ class _ProfileViewState extends State<ProfileView> {
 
   String _getSmokingDrinkingSubtitle(
       UserHabit? smokingHabit, UserHabit? drinkingHabit) {
+    if (smokingHabit == UserHabit.NEVER && drinkingHabit == UserHabit.NEVER) {
+      return 'I\'m Not A Smoker or A Drinker';
+    }
     if (smokingHabit != UserHabit.UNKNOWN &&
         drinkingHabit != UserHabit.UNKNOWN) {
       return 'I\'m ${(smokingHabit ?? UserHabit.UNKNOWN).toSmokingHabitText()} and ${(drinkingHabit ?? UserHabit.UNKNOWN).toDrinkingHabitText()}'
@@ -524,7 +524,7 @@ class _ProfileViewState extends State<ProfileView> {
       return 'I\'m ${(drinkingHabit ?? UserHabit.UNKNOWN).toDrinkingHabitText()}'
           .capitalizeEachWord;
     }
-    return '';
+    return 'I\'m Not A Smoker or A Drinker';
   }
 
   String _getSubtitleTextPersonTypeAndCleanlinessHabit(PersonType? personType) {

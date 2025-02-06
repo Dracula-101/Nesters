@@ -222,7 +222,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
             ),
           ),
           TextSpan(
-            text: ' / month',
+            text: ' / Month',
             style: AppTheme.titleLarge,
           ),
         ],
@@ -372,7 +372,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.sublet.location?.address ?? '',
+              widget.sublet.location?.address.capitalizeEachWord ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],
@@ -416,7 +416,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
           ),
           const SizedBox(height: 8),
           Text(
-            widget.sublet.roomDescription ?? '',
+            widget.sublet.roomDescription.capitalize,
             style: AppTheme.bodyMediumLightVariant,
           ),
           const SizedBox(height: 8),
@@ -443,7 +443,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  widget.sublet.roommateDescription ?? '',
+                  widget.sublet.roommateDescription.capitalize,
                   style: AppTheme.bodyMediumLightVariant,
                 ),
                 const SizedBox(height: 8),
