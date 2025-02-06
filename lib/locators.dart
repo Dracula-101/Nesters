@@ -62,7 +62,8 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   UserChatRepository userChatRepository = FirebaseChatUserRepository();
   UserStatusRepository userStatusRepository = FirebaseUserStatusRepository();
   LocalNotificationRepository notificationRepository =
-      LocalNotificationRepository(appRouterService: appRouterService);
+      LocalNotificationRepository(
+          appRouterService: appRouterService, mediaRepository: mediaRepository);
   RemoteNotificationRepository remoteNotificationRepository =
       FirebaseNotificationRepository(
     notificationRepository: notificationRepository,

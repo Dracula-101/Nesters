@@ -4,6 +4,10 @@ import 'dart:typed_data';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/utils/logger/logger.dart';
+// ignore: depend_on_referenced_packages
+import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'dart:ui' as ui;
 
 class MediaCompressor {
   Future<File> compressFile(File file, {int quality = 50}) async {
@@ -46,5 +50,50 @@ class MediaCompressor {
     } else {
       return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
     }
+  }
+
+  Future<Uint8List> clipImageToCircle(Uint8List bytes) async {
+    // Load the image from bytes
+    final image = await _loadImageFromBytes(bytes);
+
+    // Create a circular image from the loaded image
+    final circularImage = await _createCircularImage(image);
+
+    // Convert the circular image to bytes
+    final byteData =
+        await circularImage.toByteData(format: ui.ImageByteFormat.png);
+    return byteData!.buffer.asUint8List();
+  }
+
+// Load an image from bytes
+  Future<ui.Image> _loadImageFromBytes(Uint8List bytes) async {
+    final codec = await ui.instantiateImageCodec(bytes);
+    final frame = await codec.getNextFrame();
+    return frame.image;
+  }
+
+// Create a circular image using a `Canvas`
+  Future<ui.Image> _createCircularImage(ui.Image image) async {
+    final size = image.width < image.height ? image.width : image.height;
+
+    // Create a circular mask
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(
+        recorder,
+        Rect.fromPoints(
+            const Offset(0, 0), Offset(size.toDouble(), size.toDouble())));
+
+    // Clip the canvas to a circle
+    final paint = Paint()..isAntiAlias = true;
+    canvas.clipPath(Path()
+      ..addOval(Rect.fromCircle(
+          center: Offset(size / 2, size / 2), radius: size / 2)));
+
+    // Draw the image into the circular area
+    canvas.drawImage(image, const Offset(0, 0), paint);
+
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(size, size);
+    return img;
   }
 }

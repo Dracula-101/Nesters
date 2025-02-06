@@ -1,8 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/domain/models/location/indian_city.dart';
-import 'package:nesters/domain/models/location/indian_state.dart';
+import 'package:nesters/domain/models/location/location_city.dart';
+import 'package:nesters/domain/models/location/location_country.dart';
+import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 
 class UserQuickProfile extends Equatable {
   final String? id;
@@ -10,8 +12,9 @@ class UserQuickProfile extends Equatable {
   final String? profileImage;
   final String? selectedCourseName;
   final String? selectedCollegeName;
-  final City? city;
-  final IndianState? state;
+  final LocationCity? city;
+  final LocationState? state;
+  final LocationCountry? country;
   final int? workExperience;
 
   const UserQuickProfile({
@@ -22,6 +25,7 @@ class UserQuickProfile extends Equatable {
     required this.selectedCollegeName,
     required this.city,
     required this.state,
+    required this.country,
     required this.workExperience,
   });
 
@@ -34,6 +38,7 @@ class UserQuickProfile extends Equatable {
         selectedCollegeName,
         city,
         state,
+        country,
         workExperience,
       ];
 
@@ -46,6 +51,7 @@ class UserQuickProfile extends Equatable {
       FieldValue(key: 'selected_college_name', value: selectedCollegeName),
       FieldValue(key: 'city', value: city),
       FieldValue(key: 'state', value: state),
+      FieldValue(key: 'country', value: country),
       FieldValue(key: 'work_experience', value: workExperience),
     ];
   }
@@ -59,6 +65,7 @@ class UserQuickProfile extends Equatable {
       'selected_college_name': selectedCollegeName,
       'city': city,
       'state': state,
+      'country': country,
       'work_experience': workExperience,
     };
   }
@@ -72,8 +79,12 @@ class UserQuickProfile extends Equatable {
         profileImage: json['profile_image'] ?? '',
         selectedCourseName: json['selected_course_name'] ?? '',
         selectedCollegeName: json['selected_college_name'] ?? '',
-        city: json['city'] != null ? City(name: json['city']) : null,
-        state: json['state'] != null ? IndianState(name: json['state']) : null,
+        city: json['city'] != null ? LocationCity(name: json['city']) : null,
+        state:
+            json['state'] != null ? LocationState(name: json['state']) : null,
+        country: json['country'] != null
+            ? LocationCountry(name: json['country'])
+            : null,
         workExperience: json['work_experience'] ?? 0,
       );
     } catch (e) {
@@ -88,5 +99,22 @@ class UserQuickProfile extends Equatable {
       photoUrl: profileImage!,
       email: '',
     );
+  }
+
+  String toUserLocation() {
+    String location = '';
+    if (city?.name != null && city?.name.isEmpty == false) {
+      location = '${city?.name.capitalizeEachWord}, ';
+    }
+    if (state?.name != null && state?.name.isEmpty == false) {
+      location += state?.name.capitalizeEachWord ?? '';
+    }
+    if (country?.name != null && country?.name.isEmpty == false) {
+      location += ', ${country?.name.capitalizeEachWord}';
+    }
+    if (location.isEmpty) {
+      location = 'Location Not Available';
+    }
+    return location;
   }
 }

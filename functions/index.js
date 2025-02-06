@@ -104,6 +104,26 @@ exports.sendNotification = functions.firestore
           senderName: senderName,
           senderId: senderId,
         },
+        apns: {
+          headers: {
+            "apns-priority": "5",
+          },
+          payload: {
+            aps: {
+              category: "NEW_MESSAGE_CATEGORY",
+            },
+          },
+        },
+        android: {
+          collapse_key: chatId,
+          priority: "high",
+          notification: {
+            channel_id: "nester_notification_channel",
+            notification_priority: "PRIORITY_HIGH",
+            default_sound: true,
+            tag: chatId,
+          },
+        },
       };
       const notificationResponse = await admin.messaging().send(message);
       console.log("Notifcation sent successfully", notificationResponse);

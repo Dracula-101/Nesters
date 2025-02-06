@@ -1,20 +1,23 @@
 import 'package:equatable/equatable.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/domain/models/location/indian_city.dart';
-import 'package:nesters/domain/models/location/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
+import 'package:nesters/domain/models/location/location_city.dart';
+import 'package:nesters/domain/models/location/location_country.dart';
+import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 
 class UserProfile extends Equatable {
   final String? id;
   final String? fullName;
   final String? profileImage; //changeable
-  final City? city;
-  final IndianState? state;
+  final LocationCity? city;
+  final LocationState? state;
+  final LocationCountry? country;
   final String? selectedCollegeName; //changeable
   final String? selectedCourseName; //changeable
   final String? gender;
@@ -40,6 +43,7 @@ class UserProfile extends Equatable {
     required this.profileImage,
     required this.city,
     required this.state,
+    required this.country,
     required this.selectedCollegeName,
     required this.selectedCourseName,
     required this.gender,
@@ -149,8 +153,9 @@ class UserProfile extends Equatable {
         id: json['id'] ?? '',
         fullName: json['full_name'] ?? '',
         profileImage: json['profile_image'] ?? '',
-        city: City(name: json['city'] ?? ''),
-        state: IndianState(name: json['state'] ?? ''),
+        city: LocationCity(name: json['city'] ?? ''),
+        state: LocationState(name: json['state'] ?? ''),
+        country: LocationCountry(name: json['country'] ?? ''),
         selectedCourseName: json['selected_course_name'] ?? '',
         selectedCollegeName: json['selected_college_name'] ?? '',
         gender: json['gender'] ?? '',
@@ -201,6 +206,7 @@ class UserProfile extends Equatable {
       fullName: fullName,
       city: city,
       state: state,
+      country: country,
       selectedCollegeName: selectedCollegeName,
       selectedCourseName: selectedCourseName,
       profileImage: profileImage,
@@ -218,5 +224,22 @@ class UserProfile extends Equatable {
       isProfileCompleted: true,
       isProfileCreated: true,
     );
+  }
+
+  String toUserLocation() {
+    String location = '';
+    if (city?.name != null && city?.name.isEmpty == false) {
+      location = '${city?.name.capitalizeEachWord}, ';
+    }
+    if (state?.name != null && state?.name.isEmpty == false) {
+      location += state?.name.capitalizeEachWord ?? '';
+    }
+    if (country?.name != null && country?.name.isEmpty == false) {
+      location += ', ${country?.name.capitalizeEachWord}';
+    }
+    if (location.isEmpty) {
+      location = 'Location Not Available';
+    }
+    return location;
   }
 }

@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -26,7 +25,6 @@ import 'package:nesters/features/home/view/shimmer_home_view.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:nesters/utils/widgets/custom_flat_button.dart';
 
 class UserListPage extends StatefulWidget {
   const UserListPage({super.key});
@@ -147,7 +145,7 @@ class _UserListPageState extends State<UserListPage> {
                       style: AppTheme.bodyLarge,
                     ),
                     Text(
-                      state.user.fullName,
+                      state.user.fullName.capitalizeEachWord,
                       style: AppTheme.bodySmallLightVariant,
                     ),
                   ],

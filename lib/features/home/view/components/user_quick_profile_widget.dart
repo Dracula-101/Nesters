@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
@@ -85,14 +87,14 @@ class UserQuickProfileWidget extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
-                                userQuickProfile.fullName ?? "",
+                                userQuickProfile.fullName?.capitalize ?? "",
                                 maxLines: 1,
                                 style: AppTheme.bodyLarge,
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                '${userQuickProfile.city}, ${userQuickProfile.state}',
+                                userQuickProfile.toUserLocation(),
                                 style: AppTheme.labelMedium.copyWith(
                                     color: AppTheme.greyShades.shade700),
                                 maxLines: 1,

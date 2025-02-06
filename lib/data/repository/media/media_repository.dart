@@ -40,9 +40,14 @@ class MediaRepository {
     return files;
   }
 
-  Future<String> base64encodedImage(String url) async {
-    final http.Response response = await http.get(Uri.parse(url));
-    final String base64Data = base64Encode(response.bodyBytes);
-    return base64Data;
+  Future<String> base64ClippedImage(String url) async {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final bytes = response.bodyBytes;
+      final clippedImage = await compressor.clipImageToCircle(bytes);
+      return base64Encode(clippedImage);
+    } else {
+      throw Exception('Failed to load image');
+    }
   }
 }

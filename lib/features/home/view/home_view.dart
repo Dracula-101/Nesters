@@ -64,7 +64,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
                       height: 10,
                     ),
                     Text(
-                      'Check your internet connection and try again',
+                      'Check Your Internet Connection and Try Again.',
                       style: AppTheme.bodyMediumLightVariant,
                       textAlign: TextAlign.center,
                     ),
@@ -84,7 +84,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     if (mounted) {
       String userId = context.read<AuthBloc>().state.maybeWhen(
             authenticated: (user) => user.id,
-            orElse: () => throw Exception('User not authenticated'),
+            orElse: () => throw Exception('User Not Authenticated'),
           );
       context
           .read<CentralChatBloc>()
@@ -107,7 +107,7 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           create: (context) => UserBloc(
             context.read<AuthBloc>().state.maybeWhen(
                   authenticated: (user) => user,
-                  orElse: () => throw Exception('User not authenticated'),
+                  orElse: () => throw Exception('User Not Authenticated'),
                 ),
           ),
         ),

@@ -86,9 +86,14 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
 
   @override
   void listenToNotification() async {
-    _onMessageReceived = FirebaseMessaging.onMessage.listen(null);
-    _onNotificationOpenedApp =
-        FirebaseMessaging.onMessageOpenedApp.listen(null);
+    _onMessageReceived = FirebaseMessaging.onMessage
+        .distinct((a, b) => a.notification?.body == b.notification?.body)
+        .listen(null);
+    _onNotificationOpenedApp = FirebaseMessaging.onMessageOpenedApp
+        .distinct((a, b) => a.notification?.body == b.notification?.body)
+        .listen(null);
+
+    // App is in the background when notification is received
     _onMessageReceived?.onData(
       (message) {
         notificationRepository.showNotification(
@@ -101,6 +106,7 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
       },
     );
 
+    // App is opened from notification when user is using the app
     _onNotificationOpenedApp?.onData(
       (message) {
         log("Notification Received in onNotificationOpenedApp: $message");

@@ -12,6 +12,7 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
@@ -308,6 +309,19 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
+  String _buildUserLanguage(Language? primaryLang, Language? otherLang) {
+    String language = "";
+    if (primaryLang != null && otherLang != null) {
+      language =
+          '${primaryLang.toString()} But I Also Speak ${otherLang.toString()}';
+    } else if (primaryLang != null) {
+      language = 'I Can Speak ${primaryLang.toString()}';
+    } else if (otherLang != null) {
+      language = 'I Can Speak ${otherLang.toString()}';
+    }
+    return language;
+  }
+
   SliverList _buildSliverList(UserProfile userProfile) {
     return SliverList(
       delegate: SliverChildListDelegate(
@@ -315,7 +329,7 @@ class _ProfileViewState extends State<ProfileView> {
           _buildSizedBox(91),
           Center(
             child: Text(
-              userProfile.fullName ?? '',
+              userProfile.fullName.capitalizeEachWord,
               style: AppTheme.headlineSmall.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -324,7 +338,7 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           Center(
             child: Text(
-              '${userProfile.city}, ${userProfile.state}',
+              userProfile.toUserLocation(),
               style: AppTheme.bodyLargeLightVariant.copyWith(
                 fontWeight: FontWeight.w500,
               ),
@@ -345,67 +359,91 @@ class _ProfileViewState extends State<ProfileView> {
             '@${userProfile.selectedCollegeName}',
             Icons.school,
           ),
-          _buildCard(
-            'About Me',
-            userProfile.bio,
-            FontAwesomeIcons.solidUser,
-          ),
-          _buildCard(
-            'Mother Tongue',
-            '${userProfile.primaryLang.toString()} but I also speak ${userProfile.otherLang.toString()}',
-            FontAwesomeIcons.language,
-          ),
-          _buildCard(
-            'I am',
-            getSubtitleText(
-              userProfile.foodHabit,
-              userProfile.cookingSkill,
-            ),
-            FontAwesomeIcons.bowlFood,
-          ),
-          _buildCard(
-            'Smoke & Sip',
-            getSmokingDrinkingSubtitle(
-              userProfile.drinkingHabit,
-              userProfile.smokingHabit,
-            ),
-            FontAwesomeIcons.wineGlass,
-          ),
-          _buildCard(
-            'In terms of personality',
-            getSubtitleTextPersonTypeAndCleanlinessHabit(
-              userProfile.personType,
-            ),
-            FontAwesomeIcons.cloudBolt,
-          ),
-          _buildCard(
-            'When it comes to cleanliness',
-            getSubtitleTextCleanlinessHabit(
-              userProfile.cleanlinessHabit,
-            ),
-            FontAwesomeIcons.broom,
-          ),
-          _buildCard(
-            'College & Career Snapshot',
-            getSubtitleTextCollegeAndWorkExp(
-              userProfile.undergradCollegeName,
-              userProfile.workExperience,
-            ),
-            FontAwesomeIcons.graduationCap,
-          ),
+          userProfile.bio != ""
+              ? _buildCard(
+                  'About Me',
+                  userProfile.bio,
+                  FontAwesomeIcons.solidUser,
+                )
+              : const SizedBox(),
+          userProfile.primaryLang != null || userProfile.otherLang != null
+              ? _buildCard(
+                  'Mother Tongue',
+                  _buildUserLanguage(
+                    userProfile.primaryLang,
+                    userProfile.otherLang,
+                  ),
+                  FontAwesomeIcons.language,
+                )
+              : const SizedBox(),
+          (userProfile.foodHabit != UserFoodHabit.UNKNOWN ||
+                  userProfile.cookingSkill != UserCookingSkill.UNKNOWN)
+              ? _buildCard(
+                  'I Am',
+                  _getSubtitleTextFoodAndCooking(
+                    userProfile.foodHabit,
+                    userProfile.cookingSkill,
+                  ),
+                  FontAwesomeIcons.bowlFood,
+                )
+              : const SizedBox(),
+          (userProfile.drinkingHabit != UserHabit.UNKNOWN ||
+                  userProfile.smokingHabit != UserHabit.UNKNOWN)
+              ? _buildCard(
+                  'Smoke & Sip',
+                  _getSmokingDrinkingSubtitle(
+                    userProfile.drinkingHabit,
+                    userProfile.smokingHabit,
+                  ),
+                  FontAwesomeIcons.wineGlass,
+                )
+              : const SizedBox(),
+          userProfile.personType != null &&
+                  userProfile.personType != PersonType.UNKNOWN
+              ? _buildCard(
+                  'In Terms of Personality',
+                  _getSubtitleTextPersonTypeAndCleanlinessHabit(
+                    userProfile.personType,
+                  ),
+                  FontAwesomeIcons.cloudBolt,
+                )
+              : const SizedBox(),
+          userProfile.cleanlinessHabit != UserCleanlinessHabit.UNKNOWN
+              ? _buildCard(
+                  'When It Comes To Cleanliness',
+                  _getSubtitleTextCleanlinessHabit(
+                    userProfile.cleanlinessHabit,
+                  ),
+                  FontAwesomeIcons.broom,
+                )
+              : const SizedBox(),
+          userProfile.workExperience != 0 ||
+                  (userProfile.undergradCollegeName != null &&
+                      userProfile.undergradCollegeName != "")
+              ? _buildCard(
+                  'College & Career Snapshot',
+                  _getSubtitleTextCollegeAndWorkExp(
+                    userProfile.undergradCollegeName,
+                    userProfile.workExperience,
+                  ),
+                  FontAwesomeIcons.graduationCap,
+                )
+              : const SizedBox(),
           _buildCard(
             'Living Arrangements',
-            getRoomSubtitle(
+            _getRoomSubtitle(
               userProfile.flatmatesGenderPrefs,
               userProfile.roomType.toString(),
             ),
             FontAwesomeIcons.house,
           ),
-          _buildCard(
-            'Hobbies',
-            userProfile.hobbies,
-            FontAwesomeIcons.heartPulse,
-          ),
+          userProfile.hobbies != ""
+              ? _buildCard(
+                  'Hobbies',
+                  userProfile.hobbies,
+                  FontAwesomeIcons.heartPulse,
+                )
+              : const SizedBox(),
         ],
       ),
     );
@@ -455,67 +493,103 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
-  String getSubtitleText(
+  String _getSubtitleTextFoodAndCooking(
       UserFoodHabit? foodHabit, UserCookingSkill? cookingSkill) {
-    return '${foodHabit?.toUserFriendlyString().capitalize ?? UserFoodHabit.UNKNOWN.toUserFriendlyString()} and ${cookingSkill?.toUserFriendlyString() ?? UserCookingSkill.UNKNOWN.toUserFriendlyString()}';
+    if (foodHabit != UserFoodHabit.UNKNOWN &&
+        cookingSkill != UserCookingSkill.UNKNOWN) {
+      return '${foodHabit?.toUserFriendlyString().capitalize ?? UserFoodHabit.UNKNOWN.toUserFriendlyString()} and ${cookingSkill?.toUserFriendlyString() ?? UserCookingSkill.UNKNOWN.toUserFriendlyString()}';
+    }
+
+    if (foodHabit != UserFoodHabit.UNKNOWN) {
+      return '${foodHabit?.toUserFriendlyString().capitalize ?? UserFoodHabit.UNKNOWN.toUserFriendlyString()}';
+    }
+    if (cookingSkill != UserCookingSkill.UNKNOWN) {
+      return '${cookingSkill?.toUserFriendlyString() ?? UserCookingSkill.UNKNOWN.toUserFriendlyString()}';
+    }
+    return '';
   }
 
-  String getSmokingDrinkingSubtitle(
+  String _getSmokingDrinkingSubtitle(
       UserHabit? smokingHabit, UserHabit? drinkingHabit) {
-    return 'I\'m ${(drinkingHabit ?? UserHabit.UNKNOWN).toDrinkingHabitText()} and ${(smokingHabit ?? UserHabit.UNKNOWN).toSmokingHabitText()}';
+    if (smokingHabit != UserHabit.UNKNOWN &&
+        drinkingHabit != UserHabit.UNKNOWN) {
+      return 'I\'m ${(smokingHabit ?? UserHabit.UNKNOWN).toSmokingHabitText()} and ${(drinkingHabit ?? UserHabit.UNKNOWN).toDrinkingHabitText()}'
+          .capitalizeEachWord;
+    }
+    if (smokingHabit != UserHabit.UNKNOWN) {
+      return 'I\'m ${(smokingHabit ?? UserHabit.UNKNOWN).toSmokingHabitText()}'
+          .capitalizeEachWord;
+    }
+    if (drinkingHabit != UserHabit.UNKNOWN) {
+      return 'I\'m ${(drinkingHabit ?? UserHabit.UNKNOWN).toDrinkingHabitText()}'
+          .capitalizeEachWord;
+    }
+    return '';
   }
 
-  String getSubtitleTextPersonTypeAndCleanlinessHabit(PersonType? personType) {
+  String _getSubtitleTextPersonTypeAndCleanlinessHabit(PersonType? personType) {
     return 'I\'m all about ${(personType ?? PersonType.UNKNOWN).toPersonTypeText()}.';
   }
 
-  String getSubtitleTextCleanlinessHabit(
+  String _getSubtitleTextCleanlinessHabit(
       UserCleanlinessHabit? cleanlinessHabit) {
-    return 'I\'m all about ${(cleanlinessHabit ?? UserCleanlinessHabit.UNKNOWN).toUserFriendlyString()}.';
+    return 'I\'m All About ${(cleanlinessHabit ?? UserCleanlinessHabit.UNKNOWN).toUserFriendlyString().capitalizeEachWord}';
   }
 
-  String getSubtitleTextCollegeAndWorkExp(
+  String _getSubtitleTextCollegeAndWorkExp(
       String? undergradCollegeName, int? workExperience) {
-    String capitalize(String str) {
-      return str != '' ? str[0].toUpperCase() + str.substring(1) : '';
+    String collegeText = "";
+    String workExperienceText = "";
+    if (undergradCollegeName != null && undergradCollegeName != "") {
+      collegeText = 'I graduated from ${undergradCollegeName.capitalize}';
     }
-
-    String collegeText = undergradCollegeName
-            ?.split(' ')
-            .map((word) => capitalize(word))
-            .join(' ') ??
-        '(Unknown)';
-    String experienceText = workExperience == 0
-        ? 'fresher'
-        : 'with $workExperience years of experience';
-
-    return 'I graduated from $collegeText $experienceText!';
+    if (workExperience != null && workExperience != 0) {
+      workExperienceText = 'I have $workExperience years of work experience';
+    }
+    if (collegeText != "" && workExperienceText != "") {
+      return '${collegeText.capitalizeEachWord} and ${workExperienceText.capitalizeEachWord}';
+    } else if (collegeText != "") {
+      return collegeText.capitalizeEachWord;
+    } else if (workExperienceText != "") {
+      return workExperienceText.capitalizeEachWord;
+    } else {
+      return '';
+    }
   }
 
-  String getRoomSubtitle(String flatmatesGenderPrefs, String roomType) {
+  String _getRoomSubtitle(String flatmatesGenderPrefs, String roomType) {
     roomType = roomType[0].toUpperCase() + roomType.substring(1).toLowerCase();
-
+    String roomSubtitle = '';
     if (flatmatesGenderPrefs == 'Male' && roomType == 'Private') {
-      return 'I\'m looking for a private room and prefer male flatmates!';
+      roomSubtitle =
+          'I\'m Looking for a private room and prefer male flatmates!';
     } else if (flatmatesGenderPrefs == 'Male' && roomType == 'Shared') {
-      return 'I\'m looking for a shared room and okay with male flatmates!';
+      roomSubtitle =
+          'I\'m looking for a shared room and okay with male flatmates!';
     } else if (flatmatesGenderPrefs == 'Male' && roomType == 'Anything') {
-      return 'I\'m open to any room type and male flatmates!';
+      roomSubtitle = 'I\'m open to any room type and male flatmates!';
     } else if (flatmatesGenderPrefs == 'Female' && roomType == 'Private') {
-      return 'I\'m looking for a private room and prefer female flatmates!';
+      roomSubtitle =
+          'I\'m looking for a private room and prefer female flatmates!';
     } else if (flatmatesGenderPrefs == 'Female' && roomType == 'Shared') {
-      return 'I\'m looking for a shared room and okay with female flatmates!';
+      roomSubtitle =
+          'I\'m looking for a shared room and okay with female flatmates!';
     } else if (flatmatesGenderPrefs == 'Female' && roomType == 'Anything') {
-      return 'I\'m open to any room type and female flatmates!';
+      roomSubtitle = 'I\'m open to any room type and female flatmates!';
     } else if (flatmatesGenderPrefs == 'Mix' && roomType == 'Private') {
-      return 'I\'m looking for a private room and okay with mix gender flatmates!';
+      roomSubtitle =
+          'I\'m looking for a private room and okay with mix gender flatmates!';
     } else if (flatmatesGenderPrefs == 'Mix' && roomType == 'Shared') {
-      return 'I\'m looking for a shared room and okay with mix gender flatmates!';
+      roomSubtitle =
+          'I\'m looking for a shared room and okay with mix gender flatmates!';
     } else if (flatmatesGenderPrefs == 'Mix' && roomType == 'Anything') {
-      return 'I\'m open to any room type and okay with mix gender flatmates!';
+      roomSubtitle =
+          'I\'m open to any room type and okay with mix gender flatmates!';
     } else {
-      return 'Hmm, my flatmates gender preferences and room type are quite unique!';
+      roomSubtitle =
+          'Hmm, my flatmates gender preferences and room type are quite simple!';
     }
+    return roomSubtitle.capitalizeEachWord;
   }
 
   Stack _buildProfileBanner(String photoUrl) {

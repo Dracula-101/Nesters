@@ -1,13 +1,12 @@
-class City {
+class LocationCity {
   final String name;
-  final String country = "India";
 
-  City({
+  LocationCity({
     required this.name,
   });
 
-  static City fromJson(Map<String, dynamic> e) {
-    return City(name: e['name']);
+  static LocationCity fromJson(Map<String, dynamic> e) {
+    return LocationCity(name: e['name']);
   }
 
   Map<String, dynamic> toJson() {

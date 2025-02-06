@@ -19,7 +19,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:rxdart/rxdart.dart';
 
 class UserChatPage extends StatelessWidget {
   final String chatId;
@@ -60,14 +59,14 @@ class _ChatViewState extends State<ChatView> {
     currentUser = GetIt.I<AuthRepository>().currentUser!;
     _currentChatUser = ChatUser(
       id: currentUser.id,
-      firstName: currentUser.fullName.split(' ').first,
-      lastName: currentUser.fullName.split(' ').last,
+      firstName: currentUser.fullName.split(' ').first.capitalize,
+      lastName: currentUser.fullName.split(' ').last.capitalize,
       profileImage: currentUser.photoUrl,
     );
     _otherChatUser = ChatUser(
       id: widget.receiverProf.id,
-      firstName: widget.receiverProf.fullName.split(' ').first,
-      lastName: widget.receiverProf.fullName.split(' ').last,
+      firstName: widget.receiverProf.fullName.split(' ').first.capitalize,
+      lastName: widget.receiverProf.fullName.split(' ').last.capitalize,
       profileImage: widget.receiverProf.photoUrl,
     );
     // log('chatId from UserChatPage: ${state.chatId}');
@@ -146,7 +145,8 @@ class _ChatViewState extends State<ChatView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.receiverProf.fullName, style: AppTheme.labelLarge),
+              Text(widget.receiverProf.fullName.capitalizeEachWord,
+                  style: AppTheme.labelLarge),
               StreamBuilder<UserStatus?>(
                 stream: context.read<ChatBloc>().userStatus,
                 builder: (context, snapshot) {
@@ -154,7 +154,7 @@ class _ChatViewState extends State<ChatView> {
                     snapshot.data?.status == Status.ONLINE
                         ? (snapshot.data?.status.toString() ?? '')
                         : snapshot.data?.lastSeen != null
-                            ? 'Last seen ${DateFormat('hh:mm a').format(snapshot.data!.lastSeen!)}'
+                            ? 'Last Seen ${DateFormat('hh:mm a').format(snapshot.data!.lastSeen!)}'
                             : 'Offline',
                     style: AppTheme.bodySmall.copyWith(
                       color: AppTheme.greyShades.shade400,

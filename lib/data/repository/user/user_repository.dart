@@ -10,9 +10,9 @@ import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/location/city_info.dart';
 import 'package:nesters/domain/models/location/city_info_response.dart';
-import 'package:nesters/domain/models/location/indian_city.dart';
-import 'package:nesters/domain/models/location/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
+import 'package:nesters/domain/models/location/location_city.dart';
+import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
@@ -183,7 +183,7 @@ class UserRepository {
     }
   }
 
-  Stream<List<City>> getCites(String searchQuery) {
+  Stream<List<LocationCity>> getCites(String searchQuery) {
     try {
       return _databaseRepository
           .searchDataFromFuture(
@@ -191,21 +191,22 @@ class UserRepository {
             FieldValue(key: 'name', value: searchQuery),
           )
           .asStream()
-          .map((event) => event.map((e) => City.fromJson(e)).toList());
+          .map((event) => event.map((e) => LocationCity.fromJson(e)).toList());
     } catch (e) {
       _logger.error('Error in getting cities: $e');
       return Stream.value([]);
     }
   }
 
-  Future<List<IndianState>> getIndianStates(String? searchQuery) async {
+  Future<List<LocationState>> getIndianStates(String? searchQuery) async {
     try {
       return await _databaseRepository
           .searchDataFromFuture(
             indianStatesCollection,
             FieldValue(key: 'name', value: searchQuery ?? ''),
           )
-          .then((event) => event.map((e) => IndianState.fromJson(e)).toList());
+          .then(
+              (event) => event.map((e) => LocationState.fromJson(e)).toList());
     } catch (e) {
       _logger.error('Error in getting states: $e');
       rethrow;
