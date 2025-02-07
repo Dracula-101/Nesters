@@ -1,9 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/apartment/apartment_repository.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
-import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/user/posts/cubit/user_post_state.dart';
@@ -14,6 +15,8 @@ class UserPostCubit extends Cubit<UserPostState> {
   }) : super(UserPostState(postView: postView)) {
     if (state.postView == PostView.sublet) {
       fetchSubletUserPosts();
+    } else if (state.postView == PostView.apartment) {
+      fetchApartmentUserPosts();
     } else {
       fetchMarketplaceUserPosts();
     }
@@ -22,6 +25,8 @@ class UserPostCubit extends Cubit<UserPostState> {
   final MarketplaceRepository _marketplaceRepository =
       GetIt.I<MarketplaceRepository>();
   final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
+  final ApartmentRepository _apartmentRepository =
+      GetIt.I<ApartmentRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
 
   Future<void> fetchSubletUserPosts() async {
@@ -30,6 +35,18 @@ class UserPostCubit extends Cubit<UserPostState> {
       final userId = _authRepository.currentUser!.id;
       final posts = await _subletRepository.getUserSublets(userId: userId);
       emit(state.copyWith(sublets: posts, isLoading: false));
+    } on Exception catch (e) {
+      emit(state.copyWith(error: e, isLoading: false));
+    }
+  }
+
+  Future<void> fetchApartmentUserPosts() async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final userId = _authRepository.currentUser!.id;
+      final posts =
+          await _apartmentRepository.getUserApartments(userId: userId);
+      emit(state.copyWith(apartments: posts, isLoading: false));
     } on Exception catch (e) {
       emit(state.copyWith(error: e, isLoading: false));
     }
@@ -70,6 +87,29 @@ class UserPostCubit extends Cubit<UserPostState> {
     }
   }
 
+  Future<void> changeApartmentVisibility({
+    required String apartmentId,
+    required bool isVisible,
+  }) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final userId = _authRepository.currentUser!.id;
+      await _apartmentRepository.changeApartmentAvailabilityStatus(
+          apartmentId: apartmentId, userId: userId, isAvailable: isVisible);
+      final updatedApartments = List<ApartmentModel>.empty(growable: true);
+      for (var apartment in state.apartments) {
+        if (apartment.id == int.tryParse(apartmentId)) {
+          updatedApartments.add(apartment.copyWith(isAvailable: isVisible));
+        } else {
+          updatedApartments.add(apartment);
+        }
+      }
+      emit(state.copyWith(apartments: updatedApartments, isLoading: false));
+    } on Exception catch (e) {
+      emit(state.copyWith(error: e, isLoading: false));
+    }
+  }
+
   Future<void> changeMarketplaceVisibility({
     required int itemId,
     required bool isVisible,
@@ -104,6 +144,21 @@ class UserPostCubit extends Cubit<UserPostState> {
           .where((sublet) => sublet.id != int.tryParse(subletId))
           .toList();
       emit(state.copyWith(sublets: updatedSublets, isLoading: false));
+    } on Exception catch (e) {
+      emit(state.copyWith(error: e, isLoading: false));
+    }
+  }
+
+  Future<void> deleteApartment({required String apartmentId}) async {
+    emit(state.copyWith(isLoading: true));
+    try {
+      final userId = _authRepository.currentUser!.id;
+      await _apartmentRepository.deleteUserApartment(
+          apartmentId: apartmentId, userId: userId);
+      final updatedApartments = state.apartments
+          .where((apartment) => apartment.id != int.tryParse(apartmentId))
+          .toList();
+      emit(state.copyWith(apartments: updatedApartments, isLoading: false));
     } on Exception catch (e) {
       emit(state.copyWith(error: e, isLoading: false));
     }

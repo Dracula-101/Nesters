@@ -221,17 +221,6 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         queryBuilder = queryBuilder.lte("rent", filter.endRent!.toInt());
       }
 
-      if (filter.roommateGenderPref != null &&
-          filter.roommateGenderPref != "") {
-        queryBuilder =
-            queryBuilder.eq("roommate_gender_pref", filter.roommateGenderPref!);
-      }
-      if (filter.roomType != null) {
-        queryBuilder = queryBuilder.eq(
-          "room_type",
-          filter.roomType.toString(),
-        );
-      }
       if (filter.leasePeriod != null && filter.leasePeriod?.startDate != null) {
         queryBuilder = queryBuilder.gte("start_date",
             filter.leasePeriod!.startDate!.millisecondsSinceEpoch);
@@ -265,6 +254,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       required int apartmentId,
       required ApartmentModel apartment}) async {
     try {
+      log(apartment.toMap().toString());
       final apartments = await _supabaseClient
           .from('apartments')
           .update({...apartment.toMap(), 'user_id': userId})

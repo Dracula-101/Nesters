@@ -174,6 +174,13 @@ class AppRouterService {
                         },
                       ),
                       AppRoute(
+                        apartmentForm,
+                        (params) {
+                          final apartment = params.extra as ApartmentModel?;
+                          return ApartmentFormPage(apartment: apartment);
+                        },
+                      ),
+                      AppRoute(
                         marketplaceForm,
                         (params) {
                           final marketplace = params.extra as MarketplaceModel?;

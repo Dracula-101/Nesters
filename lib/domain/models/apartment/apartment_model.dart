@@ -1,4 +1,3 @@
-import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/apartment/lease_period.dart';
@@ -7,15 +6,15 @@ import 'package:nesters/domain/models/user/location.dart';
 class ApartmentModel {
   // 1]address -String
   // 2]google map - GmapObject
-  // 3]room description - String
+  // 3]apartment description - String
   // 4]rent - Fixed number
   // 5]photos - List of String
   // 6]start - Object
   // 7]amenities available - Object (dryer, washing machine, extra options)
-  // 8]room size beds and baths - Object ( bed,  bath )
+  // 8]apartment size beds and baths - Object ( bed,  bath )
   int id;
   String? userId;
-  String? roomDescription;
+  String? apartmentDescription;
   double? rent;
   List<String>? photos;
   LeasePeriod? leasePeriod;
@@ -28,7 +27,7 @@ class ApartmentModel {
   ApartmentModel({
     required this.id,
     this.userId,
-    this.roomDescription,
+    this.apartmentDescription,
     this.rent,
     this.photos,
     this.leasePeriod,
@@ -47,7 +46,7 @@ class ApartmentModel {
     return {
       'id': id,
       'user_id': userId ?? '',
-      'room_description': roomDescription ?? '',
+      'apartment_description': apartmentDescription ?? '',
       'rent': rent ?? 0.0,
       'photos': photos ?? [],
       'amenities_available': amenitiesAvailable?.toMap() ?? {},
@@ -62,7 +61,7 @@ class ApartmentModel {
     return ApartmentModel(
       id: map['id'] ?? 0,
       userId: map['user_id'] ?? '',
-      roomDescription: map['room_description'] ?? '',
+      apartmentDescription: map['apartment_description'] ?? '',
       rent: double.tryParse(map['rent'].toString()),
       photos: List<String>.from(map['photos'] ?? []),
       leasePeriod: LeasePeriod.fromMap(map),
@@ -79,22 +78,19 @@ class ApartmentModel {
   ApartmentModel copyWith({
     int? id,
     String? userId,
-    String? roomDescription,
-    String? roommateDescription,
-    String? roommateGenderPref,
+    String? apartmentDescription,
     double? rent,
     List<String>? photos,
     LeasePeriod? leasePeriod,
     Amenities? amenitiesAvailable,
     ApartmentSize? apartmentSize,
-    UserRoomType? roomType,
     Location? location,
     bool? isAvailable,
   }) {
     return ApartmentModel(
       id: id ?? this.id,
       userId: userId ?? this.userId,
-      roomDescription: roomDescription ?? this.roomDescription,
+      apartmentDescription: apartmentDescription ?? this.apartmentDescription,
       rent: rent ?? this.rent,
       photos: photos ?? this.photos,
       leasePeriod: leasePeriod ?? this.leasePeriod,

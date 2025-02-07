@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
@@ -192,7 +191,7 @@ class _SettingsViewState extends State<SettingsView> {
               const Divider(thickness: 1, height: 1),
               SettingsTile(
                 title: 'Sublets',
-                subtitle: 'View and edit your sublet posts',
+                subtitle: 'Manage Your Sublet Listings',
                 icon: Icons.bed,
                 onTap: () {
                   GoRouter.of(context).go(
@@ -201,8 +200,18 @@ class _SettingsViewState extends State<SettingsView> {
               ),
               const Divider(thickness: 1, height: 1),
               SettingsTile(
+                title: 'Apartments',
+                subtitle: 'Manage Your Apartment Listings',
+                icon: Icons.bed,
+                onTap: () {
+                  GoRouter.of(context).go(
+                      "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.userPosts}/${PostView.apartment}");
+                },
+              ),
+              const Divider(thickness: 1, height: 1),
+              SettingsTile(
                 title: 'Marketplace',
-                subtitle: 'View and edit your marketplace posts',
+                subtitle: 'Manage Your Marketplace Listings',
                 icon: Icons.shopping_bag,
                 onTap: () {
                   GoRouter.of(context).go(
@@ -212,7 +221,7 @@ class _SettingsViewState extends State<SettingsView> {
               const Divider(thickness: 1, height: 1),
               SettingsTile(
                 title: 'Liked Posts',
-                subtitle: 'View your liked posts for sublet and marketplace',
+                subtitle: 'For Sublets, Apartments and Marketplaces',
                 icon: Icons.favorite,
                 onTap: () {
                   GoRouter.of(context).go(
