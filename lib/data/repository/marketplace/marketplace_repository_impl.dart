@@ -212,7 +212,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           {'user_id': userId, 'marketplace_id': itemId, 'is_liked': isLiked},
           onConflict: 'marketplace_id');
       _logger.info(
-          'Like status updated successfully for sublet: $itemId -> ${isLiked ? '❤️' : '💔'}');
+          'Like status updated successfully for apartment: $itemId -> ${isLiked ? '❤️' : '💔'}');
     } catch (e) {
       throw Exception('Failed to update like status: $e');
     }
@@ -249,7 +249,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .eq('id', itemId)
           .eq('user_id', userId);
       _logger.info(
-          'Availability status updated successfully for sublet: $itemId -> ${isAvailable ? 'Available' : 'Not Available'}');
+          'Availability status updated successfully for apartment: $itemId -> ${isAvailable ? 'Available' : 'Not Available'}');
     } catch (e) {
       throw Exception('Failed to update availability status: $e');
     }

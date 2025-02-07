@@ -22,6 +22,7 @@ import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
@@ -118,40 +119,47 @@ class _UserListPageState extends State<UserListPage> {
             scrolledUnderElevation: 8,
             shadowColor: AppTheme.greyShades.shade100,
             leadingWidth: 0,
-            title: Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor: AppColor.white,
-                  backgroundImage: const AssetImage(
-                    'assets/images/user/user_placeholder.png',
+            title: GestureDetector(
+              onTap: () {
+                GoRouter.of(context).go(
+                  '${AppRouterService.homeScreen}/${AppRouterService.settings}',
+                );
+              },
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: AppColor.white,
+                    backgroundImage: const AssetImage(
+                      'assets/images/user/user_placeholder.png',
+                    ),
+                    foregroundImage: NetworkImage(state.user.photoUrl),
+                    child: state.user.photoUrl.isEmpty
+                        ? const Icon(
+                            Icons.person,
+                            size: 20,
+                          )
+                        : null,
                   ),
-                  foregroundImage: NetworkImage(state.user.photoUrl),
-                  child: state.user.photoUrl.isEmpty
-                      ? const Icon(
-                          Icons.person,
-                          size: 20,
-                        )
-                      : null,
-                ),
-                const SizedBox(
-                  width: 8,
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome,',
-                      style: AppTheme.bodyLarge,
-                    ),
-                    Text(
-                      state.user.fullName.capitalizeEachWord,
-                      style: AppTheme.bodySmallLightVariant,
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 8),
-              ],
+                  const SizedBox(
+                    width: 8,
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Welcome,',
+                        style: AppTheme.bodyLarge,
+                      ),
+                      Text(
+                        state.user.fullName.capitalizeEachWord,
+                        style: AppTheme.bodySmallLightVariant,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
             ),
             actions: [
               BlocBuilder<RequestBloc, RequestState>(
@@ -171,6 +179,7 @@ class _UserListPageState extends State<UserListPage> {
                       IconButton(
                         icon: const Icon(
                           Icons.notifications,
+                          size: 30,
                         ),
                         onPressed: () {
                           GoRouter.of(context).go(
@@ -194,16 +203,40 @@ class _UserListPageState extends State<UserListPage> {
                   );
                 },
               ),
-              IconButton(
-                icon: const Icon(
-                  FontAwesomeIcons.gear,
-                  size: 20,
-                ),
-                onPressed: () {
-                  GoRouter.of(context).go(
-                    '${AppRouterService.homeScreen}/${AppRouterService.settings}',
+              const SizedBox(
+                width: 10,
+              ),
+              StreamBuilder(
+                stream: context
+                    .read<CentralChatBloc>()
+                    .showMessageNotificationStream(),
+                builder: (context, snapshot) {
+                  return GestureDetector(
+                    onTap: () {
+                      GoRouter.of(context).go(
+                          '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}');
+                    },
+                    child: Badge.count(
+                      count: snapshot.data ?? 0,
+                      isLabelVisible:
+                          snapshot.data != 0 && snapshot.data != null,
+                      textStyle: AppTheme.labelSmall,
+                      offset: const Offset(10, -4),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 4.0),
+                        child: Icon(
+                          FontAwesomeIcons.solidMessage,
+                          // weight: 10,
+                          size: 25,
+                        ),
+                      ),
+                    ),
                   );
                 },
+              ),
+              //add some space to its right
+              const SizedBox(
+                width: 35,
               ),
             ],
             bottom: PreferredSize(

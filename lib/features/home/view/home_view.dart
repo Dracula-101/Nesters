@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
+import 'package:nesters/features/apartment/list/bloc/apartment_bloc.dart';
+import 'package:nesters/features/apartment/list/view/apartment_list_page.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
@@ -115,6 +117,9 @@ class _HomeScaffoldState extends State<HomeScaffold> {
           create: (context) => SubletBloc(),
         ),
         BlocProvider(
+          create: (context) => ApartmentBloc(),
+        ),
+        BlocProvider(
           create: (context) => MarketplaceBloc(),
         )
       ],
@@ -160,11 +165,11 @@ class _HomeViewState extends State<HomeView> {
           return NavigationBar(
             destinations: [
               NavigationDestination(
-                label: 'Home',
+                label: 'Network',
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Icon(
-                    FontAwesomeIcons.house,
+                    FontAwesomeIcons.userGroup,
                     color: AppTheme.primary,
                   ),
                 ),
@@ -180,6 +185,16 @@ class _HomeViewState extends State<HomeView> {
                 ),
               ),
               NavigationDestination(
+                label: 'Apartments',
+                icon: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Icon(
+                    FontAwesomeIcons.house,
+                    color: AppTheme.primary,
+                  ),
+                ),
+              ),
+              NavigationDestination(
                 label: 'Marketplace',
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -187,30 +202,6 @@ class _HomeViewState extends State<HomeView> {
                     FontAwesomeIcons.store,
                     color: AppTheme.primary,
                   ),
-                ),
-              ),
-              NavigationDestination(
-                label: 'Chat',
-                icon: StreamBuilder(
-                  stream: context
-                      .read<CentralChatBloc>()
-                      .showMessageNotificationStream(),
-                  builder: (context, snapshot) {
-                    return Badge.count(
-                      count: snapshot.data ?? 0,
-                      isLabelVisible:
-                          snapshot.data != 0 && snapshot.data != null,
-                      textStyle: AppTheme.labelSmall,
-                      offset: const Offset(10, -4),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Icon(
-                          FontAwesomeIcons.solidMessage,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                    );
-                  },
                 ),
               ),
             ],
@@ -242,8 +233,8 @@ class _HomeViewState extends State<HomeView> {
                       children: const [
                         UserListPage(),
                         SubletListPage(),
+                        ApartmentListPage(),
                         MarketplacePage(),
-                        ChatHomePage(),
                       ],
                     );
                   },
