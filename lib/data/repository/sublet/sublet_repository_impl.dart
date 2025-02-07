@@ -100,8 +100,10 @@ class SubletRepositoryImpl implements SubletRepository {
   }
 
   @override
-  Future<List<SubletModel>> singleFilterSublet(
-      {required SingleSubletFilter filter}) {
+  Future<List<SubletModel>> singleFilterSublet({
+    required SingleSubletFilter filter,
+    required String userId,
+  }) {
     // singlesublet filter
     // - GenderPreferenceFilter, RentFilter, ApartmentTypeFilter, ApartmentSizeFilter
     try {
@@ -124,6 +126,7 @@ class SubletRepositoryImpl implements SubletRepository {
             .gte("beds", filter.apartmentSize.beds ?? 0)
             .gte("baths", filter.apartmentSize.baths ?? 0);
       }
+      queryBuilder = queryBuilder.neq("user_id", userId);
       PostgrestTransformBuilder<List<Map<String, dynamic>>> response =
           queryBuilder;
       if (filter is ApartmentSizeFilter) {
@@ -141,7 +144,10 @@ class SubletRepositoryImpl implements SubletRepository {
   }
 
   @override
-  Future<List<SubletModel>> multiFilterSublet({required SubletFilter filter}) {
+  Future<List<SubletModel>> multiFilterSublet({
+    required SubletFilter filter,
+    required String userId,
+  }) {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
           _supabaseClient.from("sublets").select();
@@ -240,6 +246,7 @@ class SubletRepositoryImpl implements SubletRepository {
         queryBuilder = queryBuilder.gte("start_date",
             filter.leasePeriod!.startDate!.millisecondsSinceEpoch);
       }
+      queryBuilder = queryBuilder.neq("user_id", userId);
       return queryBuilder
           .order("id")
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());

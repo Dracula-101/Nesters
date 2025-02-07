@@ -3,14 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:nesters/app/bloc/app_bloc.dart';
+import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
-import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_cubit.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
@@ -60,7 +59,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     context.read<EditProfileCubit>().getUserProfile();
   }
 
-  final ImagePicker _picker = ImagePicker();
+  final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
   final TextEditingController collegeNameController = TextEditingController();
   final TextEditingController degreeNameController = TextEditingController();
   final TextEditingController personTypeController = TextEditingController();
@@ -468,8 +467,8 @@ class _EditProfileViewState extends State<EditProfileView> {
                             'Gallery',
                             () {
                               Navigator.pop(context);
-                              _picker
-                                  .pickImage(source: ImageSource.gallery)
+                              _mediaRepository
+                                  .getImageFromGallery()
                                   .then((value) {
                                 if (value != null) {
                                   setState(() {
@@ -486,8 +485,8 @@ class _EditProfileViewState extends State<EditProfileView> {
                             'Camera',
                             () {
                               Navigator.pop(context);
-                              _picker
-                                  .pickImage(source: ImageSource.camera)
+                              _mediaRepository
+                                  .getImageFromGallery()
                                   .then((value) {
                                 if (value != null) {
                                   context

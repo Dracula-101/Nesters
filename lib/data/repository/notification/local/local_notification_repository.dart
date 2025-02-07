@@ -84,6 +84,7 @@ class LocalNotificationRepository {
         description: _channelDescription,
         importance: Importance.max,
         enableVibration: true,
+        sound: RawResourceAndroidNotificationSound('message_notification'),
         showBadge: true,
         playSound: true,
       );
@@ -110,7 +111,7 @@ class LocalNotificationRepository {
     required String payload,
   }) async {
     Map<String, dynamic> message = json.decode(payload);
-    String notificationType = message['notificationType'];
+    String notificationType = message['notificationType'] ?? '';
     NotificationType type = notificationType == 'chat'
         ? NotificationType.chat
         : NotificationType.request;
@@ -159,6 +160,7 @@ class LocalNotificationRepository {
       number: (messagingStyle?.messages?.length ?? 0) + 1,
       icon: '@mipmap/ic_launcher',
       enableVibration: true,
+      sound: const RawResourceAndroidNotificationSound('message_notification'),
       playSound: true,
       styleInformation: MessagingStyleInformation(
         Person(
@@ -200,6 +202,7 @@ class LocalNotificationRepository {
       importance: Importance.max,
       priority: Priority.max,
       icon: '@mipmap/ic_launcher',
+      sound: RawResourceAndroidNotificationSound('message_notification'),
       styleInformation: DefaultStyleInformation(true, true),
       category: AndroidNotificationCategory.event,
     );

@@ -226,7 +226,7 @@ class _ChatViewState extends State<ChatView> {
       children: [
         BlocBuilder<ChatBloc, ChatState>(
           builder: (context, state) {
-            return state.uploadTask != null
+            return state.isLoadingMedia
                 ? const CircularProgressIndicator(
                     strokeWidth: 1.5,
                   )

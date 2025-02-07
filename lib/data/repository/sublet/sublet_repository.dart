@@ -28,10 +28,12 @@ abstract class SubletRepository {
 
   Future<List<SubletModel>> singleFilterSublet({
     required SingleSubletFilter filter,
+    required String userId,
   });
 
   Future<List<SubletModel>> multiFilterSublet({
     required SubletFilter filter,
+    required String userId,
   });
 
   Future<List<SubletModel>> getUserSublets({required String userId});

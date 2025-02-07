@@ -28,10 +28,12 @@ abstract class ApartmentRepository {
 
   Future<List<ApartmentModel>> singleFilterApartment({
     required SingleApartmentFilter filter,
+    required String userId,
   });
 
   Future<List<ApartmentModel>> multiFilterApartment({
     required ApartmentFilter filter,
+    required String userId,
   });
 
   Future<List<ApartmentModel>> getUserApartments({required String userId});

@@ -97,8 +97,10 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   }
 
   @override
-  Future<List<ApartmentModel>> singleFilterApartment(
-      {required SingleApartmentFilter filter}) {
+  Future<List<ApartmentModel>> singleFilterApartment({
+    required SingleApartmentFilter filter,
+    required String userId,
+  }) {
     // singleapartment filter
     // - GenderPreferenceFilter, RentFilter, ApartmentTypeFilter, ApartmentSizeFilter
     try {
@@ -121,6 +123,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
             .gte("beds", filter.apartmentSize.beds ?? 0)
             .gte("baths", filter.apartmentSize.baths ?? 0);
       }
+      queryBuilder = queryBuilder.neq("user_id", userId);
       PostgrestTransformBuilder<List<Map<String, dynamic>>> response =
           queryBuilder;
       if (filter is ApartmentSizeFilter) {
@@ -136,8 +139,10 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   }
 
   @override
-  Future<List<ApartmentModel>> multiFilterApartment(
-      {required ApartmentFilter filter}) {
+  Future<List<ApartmentModel>> multiFilterApartment({
+    required ApartmentFilter filter,
+    required String userId,
+  }) {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
           _supabaseClient.from("apartments").select();
@@ -225,6 +230,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         queryBuilder = queryBuilder.gte("start_date",
             filter.leasePeriod!.startDate!.millisecondsSinceEpoch);
       }
+      queryBuilder = queryBuilder.neq("user_id", userId);
       return queryBuilder.order("id").then(
           (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
     } catch (e) {
