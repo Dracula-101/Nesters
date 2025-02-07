@@ -253,6 +253,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           },
         );
       }
+      _rNotificationRepository.listenToTokenChanges(user.id);
     }
   }
 

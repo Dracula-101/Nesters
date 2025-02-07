@@ -4,12 +4,9 @@ import 'dart:io';
 
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
-import 'package:nesters/data/repository/config/app_secrets_repository.dart';
-import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
@@ -165,6 +162,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   Future<void> _sendDocument(
       DocumentSource source, String senderId, Emitter<ChatState> emit) async {
     try {
+      emit(state.copyWith(isLoadingMedia: true));
       File? file = await (source == DocumentSource.CAMERA
           ? _mediaRepository.getImageFromCamera()
           : _mediaRepository.getImageFromGallery());
@@ -186,6 +184,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             epochTime: DateTime.now(),
           );
           await _sendMessage(message, emit, attachmentMessage: true);
+          emit(state.copyWith(isLoadingMedia: false));
           break;
         } else if (task.progress > 0 && !task.isComplete) {
           emit(state.copyWith(uploadTask: {source: task}));

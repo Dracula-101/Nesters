@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
@@ -8,7 +6,6 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
-import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/apartment/lease_period.dart';

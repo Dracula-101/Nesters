@@ -362,7 +362,8 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
                     }).toList(),
                   );
                 },
-              ).then((value) => setState(() => beds = int.parse(value)));
+              ).then((value) =>
+                  setState(() => beds = int.tryParse(value.toString()) ?? 0));
             },
             child: Container(
               decoration: BoxDecoration(
@@ -413,7 +414,8 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
                     }).toList(),
                   );
                 },
-              ).then((value) => setState(() => baths = int.parse(value)));
+              ).then((value) =>
+                  setState(() => baths = int.tryParse(value.toString()) ?? 0));
             },
             child: Container(
               decoration: BoxDecoration(

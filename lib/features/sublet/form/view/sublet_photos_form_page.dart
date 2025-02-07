@@ -4,7 +4,6 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';

@@ -29,13 +29,13 @@ class MarketplaceBloc extends Bloc<MarketplaceEvent, MarketplaceState> {
 
   FutureOr<void> _marketplaceEventHandler(
       MarketplaceEvent event, Emitter<MarketplaceState> emit) async {
+    final userId = _authRepository.currentUser!.id;
     await event.when(
       initial: () {},
       saveMarketplaces: (marketplaces) {
         saveMarketplaces(marketplaces, emit);
       },
       applySingleFilter: (filter) async {
-        final userId = _authRepository.currentUser!.id;
         final filteredMarketplaces = await _marketplaceRepository
             .getSingleFilteredMarketplaces(filter, userId);
         emit(state.copyWith(
@@ -45,7 +45,6 @@ class MarketplaceBloc extends Bloc<MarketplaceEvent, MarketplaceState> {
         emit(state.copyWith(filter: null, marketplaceListFiltered: null));
       },
       addMultipleFilter: (filter) async {
-        final userId = _authRepository.currentUser!.id;
         final filteredMarketplaces = await _marketplaceRepository
             .getMultipleFilteredMarketplaces(filter, userId);
         _logger.log("Filtered Marketplaces: ${filteredMarketplaces.length}");

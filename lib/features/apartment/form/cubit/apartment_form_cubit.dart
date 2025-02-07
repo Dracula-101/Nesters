@@ -67,6 +67,7 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
     required String apartmentDescription,
     required Amenities amenitiesAvailable,
   }) {
+    final userId = _authRepository.currentUser?.id;
     ApartmentModel model = ApartmentModel(
       id: state.apartment?.id ?? apartmentId,
       location: Location(
@@ -81,10 +82,10 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
         baths: baths,
       ),
       photos: state.apartment?.photos,
-      amenitiesAvailable: state.apartment?.amenitiesAvailable,
-      apartmentDescription: state.apartment?.apartmentDescription,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentDescription: apartmentDescription,
       isAvailable: state.apartment?.isAvailable,
-      userId: state.apartment?.userId,
+      userId: state.apartment?.userId ?? userId,
     );
     emit(
       state.copyWith(
