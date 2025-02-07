@@ -21,7 +21,7 @@ class _ApartmentDetailsFormState extends State<ApartmentDetailsForm>
     with AutomaticKeepAliveClientMixin {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _rentPriceController = TextEditingController();
-  final TextEditingController _roomDescriptionController =
+  final TextEditingController _apartmentDescriptionController =
       TextEditingController();
   bool hasDryer = false,
       hasWashingMachine = false,
@@ -52,7 +52,8 @@ class _ApartmentDetailsFormState extends State<ApartmentDetailsForm>
       baths = widget.apartment!.apartmentSize?.baths ?? 0;
       beds = widget.apartment!.apartmentSize?.beds ?? 0;
 
-      _roomDescriptionController.text = widget.apartment!.roomDescription ?? '';
+      _apartmentDescriptionController.text =
+          widget.apartment!.apartmentDescription ?? '';
       hasDryer = widget.apartment!.amenitiesAvailable?.hasDryer ?? false;
       hasWashingMachine =
           widget.apartment!.amenitiesAvailable?.hasWashingMachine ?? false;
@@ -78,7 +79,7 @@ class _ApartmentDetailsFormState extends State<ApartmentDetailsForm>
           rentPrice: double.tryParse(_rentPriceController.text.trim()) ?? 0,
           beds: beds,
           baths: baths,
-          roomDescription: _roomDescriptionController.text.trim(),
+          apartmentDescription: _apartmentDescriptionController.text.trim(),
           amenitiesAvailable: Amenities(
             hasDryer: hasDryer,
             hasWashingMachine: hasWashingMachine,
@@ -124,7 +125,7 @@ class _ApartmentDetailsFormState extends State<ApartmentDetailsForm>
   void dispose() {
     _addressController.dispose();
     _rentPriceController.dispose();
-    _roomDescriptionController.dispose();
+    _apartmentDescriptionController.dispose();
     widget.controller!.removeListener(() => addData());
     super.dispose();
   }
@@ -400,15 +401,15 @@ class _ApartmentDetailsFormState extends State<ApartmentDetailsForm>
 
   Widget _buildRoomDescription() {
     return CustomTextField(
-      controller: _roomDescriptionController,
-      labelText: 'Room Description',
+      controller: _apartmentDescriptionController,
+      labelText: 'Apartment Description',
       hintText:
-          'Ex. This spacious room is bright and cheerful with natural light 🌞 streaming through a large window 🪟. It features a luxurious king-size bed 🛏️, stylish furniture 🪑 with ample storage, cozy reading corner 🌿, and modern decor accented with tasteful artwork 🖼️.',
+          'Ex. This spacious apartment is bright and cheerful with natural light 🌞 streaming through a large window 🪟. It features a luxurious king-size bed 🛏️, stylish furniture 🪑 with ample storage, cozy reading corner 🌿, and modern decor accented with tasteful artwork 🖼️.',
       alignLabelWithHint: true,
       maxLines: 5,
       validator: (value) {
         if (value.isEmpty) {
-          return 'Please enter a room description';
+          return 'Please enter a apartment description';
         }
         return null;
       },

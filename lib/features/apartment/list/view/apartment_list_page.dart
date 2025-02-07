@@ -466,200 +466,6 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                           isActive: apartmentState.singleApartmentFilter
                               is ApartmentSizeFilter,
                         ),
-                      if (apartmentState.singleApartmentFilter == null ||
-                          apartmentState.singleApartmentFilter
-                              is ApartmentTypeFilter)
-                        TopActionButton(
-                          icon: Icons.apartment,
-                          title: apartmentState.singleApartmentFilter
-                                  is ApartmentTypeFilter
-                              ? (apartmentState.singleApartmentFilter
-                                      as ApartmentTypeFilter)
-                                  .apartmentType
-                                  .toUI()
-                              : "Type",
-                          onPressed: () async {
-                            if (apartmentState.singleApartmentFilter
-                                is ApartmentTypeFilter) {
-                              context.read<ApartmentBloc>().add(
-                                  const ApartmentEvent.removeSingleFilter());
-                            } else {
-                              // open a modal bottom sheet
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                enableDrag: true,
-                                isDismissible: true,
-                                scrollControlDisabledMaxHeightRatio: 0.5,
-                                useSafeArea: true,
-                                builder: (ctx) {
-                                  return DraggableScrollableSheet(
-                                    expand: false,
-                                    initialChildSize: 0.35,
-                                    maxChildSize: 0.35,
-                                    builder: (ctx, scrollController) {
-                                      return StatefulBuilder(
-                                          builder: (ctx, setState) {
-                                        return SingleChildScrollView(
-                                          controller: scrollController,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "Apartment Type",
-                                                  style: AppTheme.titleLarge,
-                                                ),
-                                                const SizedBox(height: 16),
-                                                ListTile(
-                                                  title: const Text('Private'),
-                                                  onTap: () {
-                                                    context
-                                                        .read<ApartmentBloc>()
-                                                        .add(ApartmentEvent
-                                                            .addSingleFilter(
-                                                                ApartmentTypeFilter(
-                                                                    UserRoomType
-                                                                        .PRIVATE)));
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                ),
-                                                ListTile(
-                                                  title: const Text('Shared'),
-                                                  onTap: () {
-                                                    context
-                                                        .read<ApartmentBloc>()
-                                                        .add(ApartmentEvent
-                                                            .addSingleFilter(
-                                                                ApartmentTypeFilter(
-                                                                    UserRoomType
-                                                                        .SHARED)));
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                ),
-                                                ListTile(
-                                                  title: const Text('Flex'),
-                                                  onTap: () {
-                                                    context
-                                                        .read<ApartmentBloc>()
-                                                        .add(ApartmentEvent
-                                                            .addSingleFilter(
-                                                                ApartmentTypeFilter(
-                                                                    UserRoomType
-                                                                        .FLEX)));
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        );
-                                      });
-                                    },
-                                  );
-                                },
-                              );
-                            }
-                          },
-                          isActive: apartmentState.singleApartmentFilter
-                              is ApartmentTypeFilter,
-                        ),
-                      if (apartmentState.singleApartmentFilter == null ||
-                          apartmentState.singleApartmentFilter
-                              is GenderPreferenceFilter)
-                        TopActionButton(
-                          icon: Icons.person,
-                          title: apartmentState.singleApartmentFilter
-                                  is GenderPreferenceFilter
-                              ? (apartmentState.singleApartmentFilter
-                                      as GenderPreferenceFilter)
-                                  .preferredGender
-                              : "Gender Pref",
-                          isActive: apartmentState.singleApartmentFilter
-                              is GenderPreferenceFilter,
-                          onPressed: () async {
-                            if (apartmentState.singleApartmentFilter
-                                is GenderPreferenceFilter) {
-                              context.read<ApartmentBloc>().add(
-                                  const ApartmentEvent.removeSingleFilter());
-                            } else {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                enableDrag: true,
-                                isDismissible: true,
-                                useSafeArea: true,
-                                builder: (context) {
-                                  return DraggableScrollableSheet(
-                                    expand: false,
-                                    initialChildSize: 0.25,
-                                    maxChildSize: 0.25,
-                                    minChildSize: 0.25,
-                                    builder: (context, scrollController) {
-                                      return SingleChildScrollView(
-                                        controller: scrollController,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 12, bottom: 16),
-                                              child: Text(
-                                                "Gender Preference for Apartment",
-                                                style: AppTheme.titleLarge,
-                                              ),
-                                            ),
-                                            // male
-                                            ListTile(
-                                              title: const Text('Male'),
-                                              leading: Icon(
-                                                Icons.male,
-                                                color: AppTheme
-                                                    .greyShades.shade800,
-                                              ),
-                                              onTap: () {
-                                                Navigator.of(context)
-                                                    .pop('Male');
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('Female'),
-                                              onTap: () {
-                                                Navigator.of(context)
-                                                    .pop('Female');
-                                              },
-                                              leading: Icon(
-                                                Icons.female,
-                                                color: AppTheme
-                                                    .greyShades.shade800,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ).then((value) {
-                                if (value != null && value is String) {
-                                  context.read<ApartmentBloc>().add(
-                                      ApartmentEvent.addSingleFilter(
-                                          GenderPreferenceFilter(value)));
-                                }
-                              });
-                            }
-                          },
-                        ),
                     ],
                   );
                 },
@@ -671,15 +477,13 @@ class _ApartmentListViewState extends State<ApartmentListView> {
 
   void showFilterDialog(BuildContext context, ApartmentState state) {
     ApartmentFilterTypes apartmentFilterTypeSelected =
-        ApartmentFilterTypes.RoomateGenderPref;
-    String? selectedGender = state.apartmentFilter?.roommateGenderPref ?? '';
+        ApartmentFilterTypes.Rent;
     double? rentStart = state.apartmentFilter?.startRent?.toDouble();
     double? rentEnd = state.apartmentFilter?.endRent?.toDouble();
     LeasePeriod? selectedLeasePeriod = state.apartmentFilter?.leasePeriod;
     Map<AmenitiesType, bool> selectedAmenities =
         state.apartmentFilter?.amenitiesAvailable?.toMapAmenitiesTypes() ?? {};
     ApartmentSize? selectedApartmentSize = state.apartmentFilter?.apartmentSize;
-    UserRoomType? selectedRoomType = state.apartmentFilter?.roomType;
 
     showDialog(
       context: context,
@@ -773,36 +577,6 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                                           child: Container(
                                             child: switch (
                                                 apartmentFilterTypeSelected) {
-                                              ApartmentFilterTypes
-                                                    .RoomateGenderPref =>
-                                                ListView(
-                                                  children: [
-                                                    FilterTile(
-                                                      title: "Male",
-                                                      isSelected:
-                                                          selectedGender ==
-                                                              'Male',
-                                                      onTap: () {
-                                                        setState(() {
-                                                          selectedGender =
-                                                              "Male";
-                                                        });
-                                                      },
-                                                    ),
-                                                    FilterTile(
-                                                      title: "Female",
-                                                      isSelected:
-                                                          selectedGender ==
-                                                              'Female',
-                                                      onTap: () {
-                                                        setState(() {
-                                                          selectedGender =
-                                                              "Female";
-                                                        });
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
                                               ApartmentFilterTypes.Rent =>
                                                 Column(
                                                   children: [
@@ -1050,26 +824,6 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                                                     )
                                                   ],
                                                 ),
-                                              ApartmentFilterTypes.RoomType =>
-                                                ListView(
-                                                  children: [
-                                                    ...UserRoomType.toList()
-                                                        .map(
-                                                      (e) => FilterTile(
-                                                        title: e.toUI(),
-                                                        isSelected:
-                                                            selectedRoomType ==
-                                                                e,
-                                                        onTap: () {
-                                                          setState(() {
-                                                            selectedRoomType =
-                                                                e;
-                                                          });
-                                                        },
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
                                               ApartmentFilterTypes
                                                     .LeasePeriods =>
                                                 ListView(
@@ -1313,12 +1067,10 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                                     ElevatedButton(
                                       onPressed: () {
                                         final apartmentFilter = ApartmentFilter(
-                                          roommateGenderPref: selectedGender,
                                           startRent: rentStart,
                                           endRent: rentEnd,
                                           leasePeriod: selectedLeasePeriod,
                                           apartmentSize: selectedApartmentSize,
-                                          roomType: selectedRoomType,
                                           amenitiesAvailable:
                                               Amenities.fromAmenitiesTypes(
                                                   selectedAmenities.keys
@@ -1354,18 +1106,14 @@ class _ApartmentListViewState extends State<ApartmentListView> {
 }
 
 enum ApartmentFilterTypes {
-  RoomateGenderPref,
   Rent,
   LeasePeriods,
   Ameneties,
-  ApartmentSize,
-  RoomType;
+  ApartmentSize;
 
   @override
   String toString() {
     switch (this) {
-      case RoomateGenderPref:
-        return "Roomate Gender";
       case Rent:
         return "Rent";
       case LeasePeriods:
@@ -1374,8 +1122,6 @@ enum ApartmentFilterTypes {
         return "Ameneties";
       case ApartmentSize:
         return "Apartment Size";
-      case RoomType:
-        return "Room Type";
     }
   }
 }

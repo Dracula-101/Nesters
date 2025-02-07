@@ -1,10 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
+import 'package:nesters/features/apartment/list/view/components/apartment_list_widget.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
 import 'package:nesters/features/user/posts/cubit/user_post_cubit.dart';
@@ -26,6 +27,7 @@ class UserPostScreen extends StatelessWidget {
             switch (view) {
               PostView.sublet => "Sublets",
               PostView.marketplace => "Marketplace",
+              PostView.apartment => "Apartments",
             },
             style: AppTheme.titleLarge,
           ),
@@ -55,22 +57,47 @@ class _UserPostViewState extends State<UserPostView> {
           loading: () => const Center(
             child: CircularProgressIndicator(),
           ),
-          data: (sublets, marketplace, view) => (sublets.isEmpty &&
-                  marketplace.isEmpty)
+          data: (sublets, marketplace, apartments, view) => (sublets.isEmpty &&
+                  marketplace.isEmpty &&
+                  apartments.isEmpty)
               ? Center(
                   child: Text(
-                    "No ${view == PostView.sublet ? "sublets" : "marketplace"} posts found",
+                    "No ${(() {
+                      switch (view) {
+                        case PostView.sublet:
+                          return "Sublet";
+                        case PostView.marketplace:
+                          return "Marketplace";
+                        case PostView.apartment:
+                          return "Apartment";
+                        default:
+                          return "";
+                      }
+                    })()} Posts Found",
                     style: AppTheme.titleMedium,
                   ),
                 )
               : ListView.builder(
-                  itemCount: view == PostView.sublet
-                      ? sublets.length
-                      : marketplace.length,
+                  itemCount: (view) {
+                    switch (view) {
+                      case PostView.sublet:
+                        return sublets.length;
+                      case PostView.marketplace:
+                        return marketplace.length;
+                      case PostView.apartment:
+                        return apartments.length;
+                      default:
+                        return 0;
+                    }
+                  }(view),
                   itemBuilder: (context, index) {
-                    final post = view == PostView.sublet
-                        ? sublets[index]
-                        : marketplace[index];
+                    final post = switch (view) {
+                      PostView.sublet => sublets[index],
+                      PostView.marketplace => marketplace[index],
+                      PostView.apartment => apartments[index],
+                      _ => throw Exception("Invalid PostView"),
+                    };
+
                     return switch (view) {
                       PostView.sublet => SubletModelWidget(
                           sublet: post as SubletModel,
@@ -192,6 +219,136 @@ class _UserPostViewState extends State<UserPostView> {
                                           "Delete",
                                           style: AppTheme.bodyMedium.copyWith(
                                               color: AppTheme.primary),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      PostView.apartment => ApartmentModelWidget(
+                          apartment: post as ApartmentModel,
+                          action: const SizedBox(),
+                          bottom: ActionBar(
+                            onEdit: () {
+                              GoRouter.of(context).pushReplacement(
+                                "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.userPosts}/${PostView.apartment}/${AppRouterService.apartmentForm}",
+                                extra: post,
+                              );
+                            },
+                            isHidden: !(post.isAvailable ?? true),
+                            onHideChange: () {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) {
+                                  return AlertDialog.adaptive(
+                                    title: Text(
+                                      post.isAvailable ?? true
+                                          ? "Hide Apartment"
+                                          : "Show Apartment",
+                                      style: AppTheme.titleLarge,
+                                    ),
+                                    content: Text(
+                                      post.isAvailable ?? true
+                                          ? "Are you sure you want to hide this apartment?"
+                                          : "Are you sure you want to show this apartment?",
+                                      style: AppTheme.bodyMedium,
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(ctx).pop();
+                                        },
+                                        child: Text(
+                                          "Cancel",
+                                          style: AppTheme.bodyMedium.copyWith(
+                                              color: AppTheme.primary),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          context
+                                              .read<UserPostCubit>()
+                                              .changeApartmentVisibility(
+                                                isVisible:
+                                                    !(post.isAvailable ?? true),
+                                                apartmentId: post.id.toString(),
+                                              );
+                                          Navigator.of(ctx).pop();
+                                        },
+                                        child: Text(
+                                          post.isAvailable ?? true
+                                              ? "Hide"
+                                              : "Show",
+                                          style: AppTheme.bodyMedium.copyWith(
+                                              color: AppTheme.primary),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            onDelete: () {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) {
+                                  return AlertDialog.adaptive(
+                                    title: Text(
+                                      "Delete Apartment",
+                                      style: AppTheme.titleLarge,
+                                    ),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                            'Are you sure you want to delete this post?'),
+                                        const SizedBox(height: 20),
+                                        Row(
+                                          children: [
+                                            Icon(Icons.warning,
+                                                color: AppTheme.error),
+                                            const SizedBox(width: 10),
+                                            Text(
+                                              'This action cannot be undone.',
+                                              style:
+                                                  AppTheme.bodyMedium.copyWith(
+                                                color: AppTheme.error,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(ctx).pop();
+                                        },
+                                        child: Text(
+                                          "Cancel",
+                                          style: AppTheme.bodyMedium.copyWith(
+                                              color: AppTheme.primary),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          context
+                                              .read<UserPostCubit>()
+                                              .deleteApartment(
+                                                apartmentId: post.id.toString(),
+                                              );
+                                          Navigator.of(ctx).pop();
+                                        },
+                                        child: Text(
+                                          "Delete",
+                                          style: AppTheme.bodyMedium.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
                                         ),
                                       ),
                                     ],

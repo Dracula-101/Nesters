@@ -194,8 +194,8 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
           _buildSpacing(height: 12),
           _buildAmeneties(),
           _buildSpacing(height: 12),
-          widget.apartment.roomDescription != ""
-              ? _buildRoomDescription()
+          widget.apartment.apartmentDescription != ""
+              ? _buildApartmentDescription()
               : const SizedBox(),
           _buildSpacing(height: 120),
         ],
@@ -366,20 +366,20 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
     );
   }
 
-  Widget _buildRoomDescription() {
+  Widget _buildApartmentDescription() {
     return CustomCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Room Description',
+            'Apartment Description',
             style: AppTheme.bodyLarge.copyWith(
               color: AppTheme.primary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            widget.apartment.roomDescription.capitalize,
+            widget.apartment.apartmentDescription.capitalize,
             style: AppTheme.bodyMediumLightVariant,
           ),
           const SizedBox(height: 8),

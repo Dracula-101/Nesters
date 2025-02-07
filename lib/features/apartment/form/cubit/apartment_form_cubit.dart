@@ -1,4 +1,6 @@
+import 'dart:developer';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
@@ -62,7 +64,7 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
     required double rentPrice,
     required int beds,
     required int baths,
-    required String roomDescription,
+    required String apartmentDescription,
     required Amenities amenitiesAvailable,
   }) {
     ApartmentModel model = ApartmentModel(
@@ -80,7 +82,7 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
       ),
       photos: state.apartment?.photos,
       amenitiesAvailable: state.apartment?.amenitiesAvailable,
-      roomDescription: state.apartment?.roomDescription,
+      apartmentDescription: state.apartment?.apartmentDescription,
       isAvailable: state.apartment?.isAvailable,
       userId: state.apartment?.userId,
     );
@@ -181,19 +183,24 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
         apartmentId: state.apartment?.id ?? 0,
         apartment: model!,
       );
-      emit(state.copyWith(
-        submitError: null,
-        imageUploadTask: null,
-        isSubmitting: false,
-        isSubmitComplete: true,
-      ));
+      emit(
+        state.copyWith(
+          submitError: null,
+          imageUploadTask: null,
+          isSubmitting: false,
+          isSubmitComplete: true,
+        ),
+      );
     } on Exception catch (e) {
       _logger.error('Error updating apartment: $e');
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           submitError: e,
           isSubmitting: false,
           isSubmitComplete: false,
-          imageUploadTask: null));
+          imageUploadTask: null,
+        ),
+      );
     }
   }
 

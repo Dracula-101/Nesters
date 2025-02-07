@@ -1,6 +1,11 @@
-add gas as an amenity everywhere, and also add gas as a filter in the search
+add gas as an amenity everywhere, and also add gas, semi furnished as a filter in the search
+room description and amaneties not getting in databse issue.
+aparmnet filter giving your own apartment also, remove that.
+add rent 0 option in rent in aparment filter.
+add rent 0 option in rent in sublet filter.
 
 image compression all features.
+
 change token every login if not working
 
 error new user my gmail Pratik sen chat error,
