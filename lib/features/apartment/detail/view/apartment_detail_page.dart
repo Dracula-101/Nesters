@@ -190,11 +190,13 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
           _buildSpacing(height: 12),
           _buildAddress(),
           _buildSpacing(height: 12),
-          _buildLeasePeriod(),
+          _buildStartPeriod(),
           _buildSpacing(height: 12),
           _buildAmeneties(),
           _buildSpacing(height: 12),
-          _buildRoomDescription(),
+          widget.apartment.roomDescription != ""
+              ? _buildRoomDescription()
+              : const SizedBox(),
           _buildSpacing(height: 120),
         ],
       ),
@@ -211,7 +213,10 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
         children: [
           TextSpan(
             text: "\$ ",
-            style: AppTheme.headlineSmall,
+            style: AppTheme.headlineSmall.copyWith(
+              color: AppTheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           TextSpan(
             text: '${widget.apartment.rent}',
@@ -275,13 +280,13 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
     );
   }
 
-  Widget _buildLeasePeriod() {
+  Widget _buildStartPeriod() {
     return CustomCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Lease Period',
+            'Available From',
             style: AppTheme.bodyLarge.copyWith(
               color: AppTheme.primary,
             ),
@@ -301,25 +306,6 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
                     '',
                 style: AppTheme.bodyMediumLightVariant,
               ),
-              const Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Divider(),
-                ),
-              ),
-              Icon(
-                Icons.calendar_today_rounded,
-                color: AppTheme.primary,
-                size: 18,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                widget.apartment.leasePeriod?.endDate
-                        ?.toShortUIDate(shortenYear: true) ??
-                    '',
-                style: AppTheme.bodyMediumLightVariant,
-              ),
-              const SizedBox(width: 4),
             ],
           ),
           const SizedBox(height: 4)

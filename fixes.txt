@@ -1,3 +1,5 @@
+add gas as an amenity everywhere, and also add gas as a filter in the search
+
 image compression all features.
 change token every login if not working
 

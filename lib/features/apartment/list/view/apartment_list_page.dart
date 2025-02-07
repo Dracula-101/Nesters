@@ -39,8 +39,8 @@ class ApartmentListPage extends StatelessWidget {
             '${AppRouterService.homeScreen}/${AppRouterService.apartmentForm}',
           );
         },
-        child: const Icon(Icons.add),
         heroTag: "add_apartment",
+        child: const Icon(Icons.add),
       ),
       body: const SafeArea(
         child: ApartmentListView(),

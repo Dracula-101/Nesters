@@ -101,7 +101,7 @@ class ApartmentModelWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildLeasePeriod() {
+  Widget _buildStartPeriod() {
     return Row(
       children: [
         Icon(
@@ -111,28 +111,9 @@ class ApartmentModelWidget extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          apartment.leasePeriod?.startDate?.toShortUIDate(shortenYear: true) ??
-              '',
+          ('Available From: ${apartment.leasePeriod?.startDate!.toShortUIDate(shortenYear: true)}'),
           style: AppTheme.bodyMediumLightVariant,
         ),
-        const Expanded(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: Divider(),
-          ),
-        ),
-        Icon(
-          Icons.calendar_today_rounded,
-          color: AppTheme.primary,
-          size: 18,
-        ),
-        const SizedBox(width: 4),
-        Text(
-          apartment.leasePeriod?.endDate?.toShortUIDate(shortenYear: true) ??
-              '',
-          style: AppTheme.bodyMediumLightVariant,
-        ),
-        const SizedBox(width: 4),
       ],
     );
   }
@@ -178,7 +159,7 @@ class ApartmentModelWidget extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 2),
-            _buildLeasePeriod(),
+            _buildStartPeriod(),
           ],
         ),
       ),
