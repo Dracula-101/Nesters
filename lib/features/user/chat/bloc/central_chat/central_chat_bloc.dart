@@ -27,7 +27,6 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   }
 
   final Map<String, ChatController> _chatControllers = {};
-  final Duration _fetchTimeDurationLimit = 4.day;
   StreamSubscription<List<QuickChatUser>>? _recipientUserStreamSubscription;
   late String userId;
 

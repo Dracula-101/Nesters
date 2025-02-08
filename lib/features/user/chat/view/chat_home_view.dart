@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -175,6 +177,7 @@ class _ChatHomeViewState extends State<ChatHomeView>
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 QuickChatUser chatUser = chatStates[index].recipientUser;
+
                 return ChatUserWidget(
                   user: chatUser,
                   lastMessage: context
@@ -188,6 +191,8 @@ class _ChatHomeViewState extends State<ChatHomeView>
                   onTap: () {
                     String route =
                         '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatUser.chatId}';
+                    log("chatUser.toString()");
+                    log(chatUser.toString());
                     GoRouter.of(context).go(
                       route,
                       extra: chatUser.toUser(),

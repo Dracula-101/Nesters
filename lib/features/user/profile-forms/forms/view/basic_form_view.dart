@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dropdown_search/dropdown_search.dart';
@@ -56,8 +57,6 @@ class UserProfileBasicFormView extends StatefulWidget {
 }
 
 class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
-  final UserRepository _userRepository = GetIt.I<UserRepository>();
-
   final _formKey = GlobalKey<FormState>();
   final MediaRepository mediaRepository = GetIt.I<MediaRepository>();
   //image variable
@@ -66,6 +65,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   CityInfo? userCityInfo;
 
   // Full Name, Email, profile image, college name, course name, gender, birthdate
+  final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _collegeNameController = TextEditingController();
   final TextEditingController _courseNameController = TextEditingController();
@@ -109,15 +109,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     }
   }
 
-  void _handleImageButtonPress(context) async {
-    final image = await mediaRepository.getImageFromCamera().then((value) {
-      if (value != null) {
-        setState(() {
-          _image = File(value.path);
-        });
-      }
-      return value;
-    });
+  void _handleImageButtonPress(context, image) async {
     if (image != null) {
       final imageUrl = await GetIt.I<UserRepository>()
           .uploadProfileImage(image.path, widget.user.id)
@@ -129,6 +121,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         setState(() {
           photoUrl = imageUrl;
         });
+        log(photoUrl!);
       }
     }
   }
@@ -272,14 +265,70 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     );
   }
 
+  // _handleImageButtonPress(context)
   Widget _buildProfileImage(BuildContext context) {
     return Center(
-      child: Stack(
-        children: [
-          CircleAvatar(
-            radius: 75,
-            child: GestureDetector(
-              onTap: () => _handleImageButtonPress(context),
+      child: GestureDetector(
+        onTap: () => {
+          showModalBottomSheet(
+            context: context,
+            builder: (_) {
+              return Container(
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.all(
+                  16.0,
+                ),
+                child: Wrap(
+                  alignment: WrapAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        _buildOptionItem(
+                          Icons.photo,
+                          'Gallery',
+                          () {
+                            Navigator.pop(context);
+                            _mediaRepository
+                                .getImageFromGallery()
+                                .then((value) {
+                              if (value != null) {
+                                setState(() {
+                                  _image = File(value.path);
+                                });
+                                _handleImageButtonPress(context, value);
+                              }
+                            });
+                          },
+                        ),
+                        _buildOptionItem(
+                          Icons.camera_alt,
+                          'Camera',
+                          () {
+                            Navigator.pop(context);
+                            _mediaRepository.getImageFromCamera().then((value) {
+                              if (value != null) {
+                                setState(() {
+                                  _image = File(value.path);
+                                });
+                                _handleImageButtonPress(context, value);
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    // Add more Row widgets for additional options as needed
+                  ],
+                ),
+              );
+            },
+          )
+        },
+        child: Stack(
+          children: [
+            CircleAvatar(
+              radius: 75,
               child: ClipOval(
                 child: _image != null
                     ? Image.file(
@@ -294,27 +343,43 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
                       ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
                   Icons.camera_alt,
                   color: Colors.black,
                 ),
-                onPressed: () => _handleImageButtonPress(context),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionItem(IconData icon, String label, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: AppTheme.primary,
+            ),
+            Text(
+              label,
+            ),
+          ],
+        ),
       ),
     );
   }

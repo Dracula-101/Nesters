@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:firebase_database/firebase_database.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
@@ -52,6 +51,7 @@ class _ChatViewState extends State<ChatView> {
   final ValueNotifier<bool> _isInputMessageEmpty = ValueNotifier<bool>(true);
   ChatUser? _currentChatUser, _otherChatUser;
   bool isInputMessageEmpty = true;
+  bool isOtherChatUserDeleted = false;
 
   @override
   void initState() {
@@ -427,7 +427,8 @@ class _ChatViewState extends State<ChatView> {
                   child: IconButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
-                          AppTheme.greyShades.shade100),
+                        AppTheme.greyShades.shade100,
+                      ),
                     ),
                     icon: Icon(
                       Icons.download,
@@ -440,7 +441,8 @@ class _ChatViewState extends State<ChatView> {
                               () {
                                 Navigator.of(dialogContext).pop();
                                 dialogContext.showSuccessSnackBar(
-                                    'File downloaded successfully');
+                                  'File downloaded successfully',
+                                );
                               },
                             ),
                           );

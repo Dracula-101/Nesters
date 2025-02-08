@@ -172,16 +172,21 @@ class UserRepository {
     try {
       bool isUserDeleted = userProfile.email == null
           ? false
-          : await hasUserDeletedAccount(email: userProfile.email!);
+          : await hasUserDeletedAccount(
+              email: userProfile.email!,
+            );
       await _databaseRepository.setData(
         userDetailCollection,
         SetData(
-          fields:
-              userProfile.toFieldValues(includeUserDeleteUpdate: isUserDeleted),
+          fields: userProfile.toFieldValues(
+            includeUserDeleteUpdate: isUserDeleted,
+          ),
         ),
       );
       await _storageRepository.saveBool(
-          LocalStorageKeys.userProfileCreated, true);
+        LocalStorageKeys.userProfileCreated,
+        true,
+      );
       return true;
     } catch (e) {
       return false;

@@ -435,80 +435,83 @@ class _EditProfileViewState extends State<EditProfileView> {
     required EditProfileState state,
   }) {
     return Center(
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        CircleAvatar(
-          radius: 60,
-          backgroundImage: state.imagePath != null
-              ? Image.file(File(state.imagePath!)).image
-              : NetworkImage(imageUrl),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (_) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.all(
-                    16.0,
-                  ),
-                  child: Wrap(
-                    alignment: WrapAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          _buildOptionItem(
-                            Icons.photo,
-                            'Gallery',
-                            () {
-                              Navigator.pop(context);
-                              _mediaRepository
-                                  .getImageFromGallery()
-                                  .then((value) {
-                                if (value != null) {
-                                  setState(() {
-                                    context
-                                        .read<EditProfileCubit>()
-                                        .updateProfileImage(value.path);
-                                  });
-                                }
-                              });
-                            },
-                          ),
-                          _buildOptionItem(
-                            Icons.camera_alt,
-                            'Camera',
-                            () {
-                              Navigator.pop(context);
-                              _mediaRepository
-                                  .getImageFromGallery()
-                                  .then((value) {
-                                if (value != null) {
-                                  context
-                                      .read<EditProfileCubit>()
-                                      .updateProfileImage(value.path);
-                                }
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      // Add more Row widgets for additional options as needed
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-          child: const Text('Change Profile Image'),
-        ),
-      ],
-    ));
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircleAvatar(
+            radius: 60,
+            backgroundImage: state.imagePath != null
+                ? Image.file(File(state.imagePath!)).image
+                : NetworkImage(imageUrl),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (_) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.all(
+                      16.0,
+                    ),
+                    child: Wrap(
+                      alignment: WrapAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            _buildOptionItem(
+                              Icons.photo,
+                              'Gallery',
+                              () {
+                                Navigator.pop(context);
+                                _mediaRepository.getImageFromGallery().then(
+                                  (value) {
+                                    if (value != null) {
+                                      setState(
+                                        () {
+                                          context
+                                              .read<EditProfileCubit>()
+                                              .updateProfileImage(value.path);
+                                        },
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                            _buildOptionItem(
+                              Icons.camera_alt,
+                              'Camera',
+                              () {
+                                Navigator.pop(context);
+                                _mediaRepository.getImageFromCamera().then(
+                                  (value) {
+                                    if (value != null) {
+                                      context
+                                          .read<EditProfileCubit>()
+                                          .updateProfileImage(value.path);
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        // Add more Row widgets for additional options as needed
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+            child: const Text('Change Profile Image'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildOptionItem(IconData icon, String label, VoidCallback onTap) {
@@ -534,8 +537,11 @@ class _EditProfileViewState extends State<EditProfileView> {
 class SaveButton extends StatefulWidget {
   final VoidCallback onPressed;
   final bool isLoading;
-  const SaveButton(
-      {super.key, required this.onPressed, required this.isLoading});
+  const SaveButton({
+    super.key,
+    required this.onPressed,
+    required this.isLoading,
+  });
 
   @override
   State<SaveButton> createState() => _SaveButtonState();
@@ -549,14 +555,18 @@ class _SaveButtonState extends State<SaveButton> {
         return Container(
           width: double.infinity,
           height: 80,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(
+            16,
+          ),
           child: CustomFlatButton(
             isLoading: widget.isLoading,
             onPressed: () {
               widget.onPressed();
             },
             text: 'Save',
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(
+              16,
+            ),
           ),
         );
       },

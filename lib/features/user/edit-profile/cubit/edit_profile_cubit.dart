@@ -1,7 +1,4 @@
-import 'dart:developer';
-
 import 'package:bloc/bloc.dart';
-import 'package:cross_file/src/types/interface.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
@@ -25,29 +22,29 @@ class EditProfileCubit extends Cubit<EditProfileState> {
       emit(state.copyWith(isLoading: false));
       return;
     }
-    _userRepository
-        .getUserProfile(_authRepository.currentUser!.id)
-        .then((user) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          profileImage: user.profileImage,
-          selectedCollegeName: user.selectedCollegeName,
-          selectedCourseName: user.selectedCourseName,
-          personType: user.personType,
-          workExperience: user.workExperience,
-          smokingHabit: user.smokingHabit,
-          drinkingHabit: user.drinkingHabit,
-          foodHabit: user.foodHabit,
-          cookingSkill: user.cookingSkill,
-          cleanlinessHabit: user.cleanlinessHabit,
-          bio: user.bio,
-          hobbies: user.hobbies,
-          flatmatesGenderPrefs: user.flatmatesGenderPrefs,
-          roomType: user.roomType,
-        ),
-      );
-    });
+    _userRepository.getUserProfile(_authRepository.currentUser!.id).then(
+      (user) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            profileImage: user.profileImage,
+            selectedCollegeName: user.selectedCollegeName,
+            selectedCourseName: user.selectedCourseName,
+            personType: user.personType,
+            workExperience: user.workExperience,
+            smokingHabit: user.smokingHabit,
+            drinkingHabit: user.drinkingHabit,
+            foodHabit: user.foodHabit,
+            cookingSkill: user.cookingSkill,
+            cleanlinessHabit: user.cleanlinessHabit,
+            bio: user.bio,
+            hobbies: user.hobbies,
+            flatmatesGenderPrefs: user.flatmatesGenderPrefs,
+            roomType: user.roomType,
+          ),
+        );
+      },
+    );
   }
 
   void updateProfileImage(String imagePath) {

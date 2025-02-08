@@ -18,7 +18,6 @@ import 'package:nesters/features/marketplace/list/view/marketplace_list_page.dar
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 import 'package:nesters/features/sublet/list/view/sublet_list_page.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
-import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 

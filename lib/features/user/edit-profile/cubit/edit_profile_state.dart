@@ -1,7 +1,6 @@
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
-import 'package:nesters/domain/models/user/profile/user_profile.dart';
 
 class EditProfileState {
   final UserEditProfile? userEditProfile;
