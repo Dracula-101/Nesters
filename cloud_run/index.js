@@ -74,6 +74,7 @@ async function updateUserStatus(userId, status) {
 
 //====================== Socket Connections ============================
 async function onSocketDisconnection(socket) {
+  console.log("User disconnected: ", userId);
   const userId = checkSocketConnection(socket);
   await updateUserStatus(userId, {
     status: USER_OFFLINE,
