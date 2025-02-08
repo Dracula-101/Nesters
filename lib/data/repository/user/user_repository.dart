@@ -62,6 +62,29 @@ class UserRepository {
         false;
   }
 
+  bool checkUserTutorialComplete() {
+    return _storageRepository.getBool(LocalStorageKeys.userTutorialComplete) ??
+        false;
+  }
+
+  Future<void> markUserTutorialComplete() {
+    return _storageRepository.saveBool(
+        LocalStorageKeys.userTutorialComplete, true);
+  }
+
+  Future<List<MarketplaceModel>> getMarketplaceData() async {
+    try {
+      return await _databaseRepository.getData(
+        "marketplace",
+        orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
+      ).then(
+          (event) => event.map((e) => MarketplaceModel.fromJson(e)).toList());
+    } catch (e) {
+      _logger.error('Error in getting marketplace data: $e');
+      rethrow;
+    }
+  }
+
   Future<List<University?>> getAllUniversities() async {
     return await _databaseRepository.getData(
       "universities",
@@ -157,6 +180,8 @@ class UserRepository {
               userProfile.toFieldValues(includeUserDeleteUpdate: isUserDeleted),
         ),
       );
+      await _storageRepository.saveBool(
+          LocalStorageKeys.userProfileCreated, true);
       return true;
     } catch (e) {
       return false;
