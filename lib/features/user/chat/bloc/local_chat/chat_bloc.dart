@@ -166,7 +166,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       File? file = await (source == DocumentSource.CAMERA
           ? _mediaRepository.getImageFromCamera()
           : _mediaRepository.getImageFromGallery());
-      if (file == null) return;
+      if (file == null) {
+        emit(state.copyWith(isLoadingMedia: false));
+        return;
+      }
       Stream<DocumentUploadTask> uploadTask = _chatRepository.uploadDocument(
         file: file,
         chatID: state.chatId!,

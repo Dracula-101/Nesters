@@ -28,7 +28,14 @@ import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 
 class UserListPage extends StatefulWidget {
-  const UserListPage({super.key});
+  final GlobalKey chatIconKey;
+  final GlobalKey requestIconKey;
+  final GlobalKey settingsIconKey;
+  const UserListPage(
+      {super.key,
+      required this.chatIconKey,
+      required this.requestIconKey,
+      required this.settingsIconKey});
 
   @override
   State<UserListPage> createState() => _UserListPageState();
@@ -128,6 +135,7 @@ class _UserListPageState extends State<UserListPage> {
               child: Row(
                 children: [
                   CircleAvatar(
+                    key: widget.settingsIconKey,
                     radius: 20,
                     backgroundColor: AppColor.white,
                     backgroundImage: const AssetImage(
@@ -177,6 +185,7 @@ class _UserListPageState extends State<UserListPage> {
                     alignment: Alignment.topRight,
                     children: [
                       IconButton(
+                        key: widget.requestIconKey,
                         icon: const Icon(
                           Icons.notifications,
                           size: 30,
@@ -217,6 +226,7 @@ class _UserListPageState extends State<UserListPage> {
                           '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}');
                     },
                     child: Badge.count(
+                      key: widget.chatIconKey,
                       count: snapshot.data ?? 0,
                       isLabelVisible:
                           snapshot.data != 0 && snapshot.data != null,

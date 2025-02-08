@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
+import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/features/apartment/list/bloc/apartment_bloc.dart';
 import 'package:nesters/features/apartment/list/view/apartment_list_page.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
+import 'package:nesters/features/home/view/components/home_page_tutorial.dart';
 import 'package:nesters/features/home/view/pages/user_list_view_page.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/marketplace_list_page.dart';
@@ -16,6 +20,7 @@ import 'package:nesters/features/sublet/list/view/sublet_list_page.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
 class HomeScaffold extends StatefulWidget {
   final int initialIndex;
@@ -156,6 +161,54 @@ class HomeView extends StatefulWidget {
 class _HomeViewState extends State<HomeView> {
   late final ValueNotifier<int> _selectedIndex =
       ValueNotifier<int>(widget.initialIndex);
+
+  late TutorialCoachMark tutorialCoachMark;
+  final GlobalKey _bottomNavFirstIconKey = GlobalKey();
+  final GlobalKey _bottomNavSecondIconKey = GlobalKey();
+  final GlobalKey _bottomNavThirdIconKey = GlobalKey();
+  final GlobalKey _bottomNavFourthIconKey = GlobalKey();
+  final GlobalKey _chatIconKey = GlobalKey();
+  final GlobalKey _requestIconKey = GlobalKey();
+  final GlobalKey _settingsIconKey = GlobalKey();
+
+  final UserRepository userRepository = GetIt.I<UserRepository>();
+
+  void _initShowTutorial() {
+    if (userRepository.checkUserTutorialComplete()) {
+      return;
+    }
+    tutorialCoachMark = TutorialCoachMark(
+      targets: addTargetHomePage(
+        firstIconKey: _bottomNavFirstIconKey,
+        secondIconKey: _bottomNavSecondIconKey,
+        thirdIconKey: _bottomNavThirdIconKey,
+        fourthIconKey: _bottomNavFourthIconKey,
+        chatIconKey: _chatIconKey,
+        requestIconKey: _requestIconKey,
+        settingsIconKey: _settingsIconKey,
+      ),
+      colorShadow: AppTheme.shadowColor,
+      hideSkip: true,
+      paddingFocus: 10,
+      opacityShadow: 0.8,
+      onFinish: () {
+        userRepository.markUserTutorialComplete();
+      },
+      onSkip: () {
+        userRepository.markUserTutorialComplete();
+        return true;
+      },
+    )..show(context: context);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(const Duration(seconds: 2), () {
+      _initShowTutorial();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,42 +218,54 @@ class _HomeViewState extends State<HomeView> {
           return NavigationBar(
             destinations: [
               NavigationDestination(
+                key: _bottomNavFirstIconKey,
+                tooltip: 'Network',
                 label: 'Network',
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Icon(
                     FontAwesomeIcons.userGroup,
                     color: AppTheme.primary,
+                    size: 22,
                   ),
                 ),
               ),
               NavigationDestination(
+                key: _bottomNavSecondIconKey,
+                tooltip: 'Sublet',
                 label: 'Sublet',
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Icon(
                     FontAwesomeIcons.bed,
                     color: AppTheme.primary,
+                    size: 22,
                   ),
                 ),
               ),
               NavigationDestination(
+                key: _bottomNavThirdIconKey,
+                tooltip: 'Apartments',
                 label: 'Apartments',
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Icon(
                     FontAwesomeIcons.house,
                     color: AppTheme.primary,
+                    size: 22,
                   ),
                 ),
               ),
               NavigationDestination(
+                key: _bottomNavFourthIconKey,
+                tooltip: 'Marketplace',
                 label: 'Marketplace',
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Icon(
                     FontAwesomeIcons.store,
                     color: AppTheme.primary,
+                    size: 22,
                   ),
                 ),
               ),
@@ -230,11 +295,15 @@ class _HomeViewState extends State<HomeView> {
                   builder: (context, value, child) {
                     return IndexedStack(
                       index: value,
-                      children: const [
-                        UserListPage(),
-                        SubletListPage(),
-                        ApartmentListPage(),
-                        MarketplacePage(),
+                      children: [
+                        UserListPage(
+                          chatIconKey: _chatIconKey,
+                          requestIconKey: _requestIconKey,
+                          settingsIconKey: _settingsIconKey,
+                        ),
+                        const SubletListPage(),
+                        const ApartmentListPage(),
+                        const MarketplacePage(),
                       ],
                     );
                   },

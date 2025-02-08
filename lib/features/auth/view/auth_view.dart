@@ -67,7 +67,7 @@ class _AuthViewState extends State<AuthView> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Find Your Perfect\nRoommate Here',
+            'Simplify Your College Journey',
             textAlign: TextAlign.center,
             style: AppTheme.headlineSmall,
           ),
@@ -75,7 +75,7 @@ class _AuthViewState extends State<AuthView> {
             height: 16.0,
           ),
           Text(
-            'Explore all the most exciting job roles\nbased on your interest And study major',
+            'Make college life a breeze \nwith everything you need in one app! ',
             style: AppTheme.bodyLarge.copyWith(
               color: AppTheme.onSurface.withOpacity(
                 0.5,

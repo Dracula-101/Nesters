@@ -47,12 +47,12 @@ abstract class LocalStorageRepository {
 
 class LocalStorageKeys {
   static const userOnboardingComplete = 'userOnboardingComplete';
+  static const userTutorialComplete = 'userTutorialComplete';
   static const userToken = 'userToken';
   static const userProfileCreated = 'userProfileCreated';
   static const userDataSaved = 'userDataSaved';
   static const lastSavedRecipientUsers = 'lastSavedRecipientUsers';
   static const deviceInfoSaved = 'deviceInfoSaved';
-
   static const universityList = 'universityList';
   static const degreeList = 'degreeList';
   static const marketplaceCategoryList = 'marketplaceCategoryList';

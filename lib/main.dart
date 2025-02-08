@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -30,6 +31,9 @@ Future<void> setupSupabase(AppSecretsRepository appSecrets) {
   return Supabase.initialize(
     url: appSecrets.getSecret(AppSecretsKeys.SUPABASE_URL),
     anonKey: appSecrets.getSecret(AppSecretsKeys.SUPABASE_ANON_KEY),
+    postgrestOptions: const PostgrestClientOptions(
+      schema: kDebugMode ? 'public' : 'prod',
+    ),
     debug: false,
   );
 }
