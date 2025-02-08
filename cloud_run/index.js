@@ -2,9 +2,10 @@
 const dotenv = require("dotenv").config();
 const FIREBASE_DATABASE_URL = process.env.FIREBASE_DATABASE_URL;
 const PORT = parseInt(process.env.PORT) || 8080;
-
 //================ Firebase Admin SDK ================
-const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT);
+// read the service account from the file
+const fs = require("fs");
+const serviceAccount = JSON.parse(atob(process.env.BASE64_SERVICE_ACCOUNT));
 const firebaseAdmin = require("firebase-admin");
 const { getFirestore } = require("firebase-admin/firestore");
 
