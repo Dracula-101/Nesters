@@ -9,7 +9,6 @@ class User extends Equatable {
     this.accessToken,
     this.isProfileCreated = false,
     this.isProfileCompleted = false,
-    this.isUserDeleted = false,
   });
 
   final String id;
@@ -19,7 +18,6 @@ class User extends Equatable {
   final String? accessToken;
   final bool isProfileCreated;
   final bool isProfileCompleted;
-  final bool isUserDeleted;
 
   @override
   List<Object?> get props => [id, fullName, email, photoUrl];
@@ -31,7 +29,6 @@ class User extends Equatable {
       email: json['email'],
       photoUrl: json['photoUrl'],
       accessToken: json['accessToken'],
-      isUserDeleted: json['isUserDeleted'] ?? false,
     );
   }
 
@@ -42,7 +39,6 @@ class User extends Equatable {
       email: '',
       photoUrl: '',
       accessToken: '',
-      isUserDeleted: false,
     );
   }
 
@@ -53,7 +49,6 @@ class User extends Equatable {
       'email': email,
       'photoUrl': photoUrl,
       'accessToken': accessToken,
-      'isUserDeleted': isUserDeleted,
     };
   }
 
@@ -64,7 +59,6 @@ class User extends Equatable {
     String? photoUrl,
     bool? isProfileCreated,
     bool? isProfileCompleted,
-    bool? isUserDeleted,
   }) {
     return User(
       id: id ?? this.id,
@@ -74,7 +68,6 @@ class User extends Equatable {
       accessToken: accessToken,
       isProfileCreated: isProfileCreated ?? this.isProfileCreated,
       isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
-      isUserDeleted: isUserDeleted ?? this.isUserDeleted,
     );
   }
 }

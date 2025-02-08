@@ -13,7 +13,6 @@ import 'package:nesters/data/repository/user/recipient_user/recipient_user_repos
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/features/user/chat/bloc/controllers/chat_controller.dart';
-import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;

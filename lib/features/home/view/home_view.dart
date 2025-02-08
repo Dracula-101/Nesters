@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
-import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/features/apartment/list/bloc/apartment_bloc.dart';
 import 'package:nesters/features/apartment/list/view/apartment_list_page.dart';

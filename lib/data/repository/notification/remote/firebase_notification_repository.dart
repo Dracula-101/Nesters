@@ -66,6 +66,7 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
         'fullName': fullName,
         'photoUrl': photoUrl,
         'token': token,
+        'isDeleted': false,
       });
     } on Exception {
       rethrow;
@@ -82,23 +83,6 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
         message.data,
       ),
     );
-  }
-
-  @override
-  void listenToTokenChanges(String userId) {
-    FirebaseMessaging.instance.onTokenRefresh.listen((event) async {
-      log('Token refreshed: $event');
-      Map<String, dynamic> userData = await _store
-          .collection('users')
-          .doc(userId)
-          .get()
-          .then((value) => value.data() ?? {});
-      if (userData.isNotEmpty) {
-        await _store.collection('users').doc(userId).update({
-          'token': event,
-        });
-      }
-    });
   }
 
   @override

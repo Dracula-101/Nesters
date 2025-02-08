@@ -25,6 +25,7 @@ class FirebaseChatUserRepository implements UserChatRepository {
   final FirebaseFirestore _store = FirebaseFirestore.instance;
   final String _userCollectionName = 'users';
   final String _userIdKey = 'userId';
+  final String _userDeletedKey = 'isDeleted';
   final String _acceptedRequestKey = 'isAccepted';
   final String _bannedRequestKey = 'isBanned';
   final String _sentRequestPath = 'sentRequests';
@@ -36,6 +37,7 @@ class FirebaseChatUserRepository implements UserChatRepository {
       QuerySnapshot querySnapshot = await _store
           .collection(_userCollectionName)
           .where(_userIdKey, isEqualTo: userId)
+          .where(_userDeletedKey, isEqualTo: false)
           .get();
       if (querySnapshot.docs.isNotEmpty) {
         Map<String, dynamic>? user =

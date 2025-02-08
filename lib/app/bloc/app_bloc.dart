@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:get_it/get_it.dart';
@@ -254,7 +251,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           },
         );
       }
-      _rNotificationRepository.listenToTokenChanges(user.id);
     }
   }
 
