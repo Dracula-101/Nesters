@@ -1,16 +1,14 @@
-image compression all features.
-change token every login if not working
+chat taking too much time and space.(App Check issue)
 
-error new user my gmail Pratik sen chat error,
+galley option basic form.
 
-makle gender selction compulsory in the form.
+if user delete accounts, show chat but disable input. and show message.
+
+spring or fall admit change part.
 
 images while editing for sublet and marketplace we are not deleting the previous ones.
 ==========
-1]if sublet occupied ask and then close part functionality,
 2]map view,
-3]forms weird text description behvaiour if try to update previous text in the box only first letter gets there and the cursor moves to the end.
-4]future check storagra images sublet kitna ler raha hai, agar jyada hoga toh compress, supabase ka or apna khudka
 =============================================
 in chat i send other person request, other person send me request, then both  accepted each other scenario.,
 

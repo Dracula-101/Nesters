@@ -85,10 +85,32 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
   }
 
   @override
+  void listenToTokenChanges(String userId) {
+    FirebaseMessaging.instance.onTokenRefresh.listen((event) async {
+      log('Token refreshed: $event');
+      Map<String, dynamic> userData = await _store
+          .collection('users')
+          .doc(userId)
+          .get()
+          .then((value) => value.data() ?? {});
+      if (userData.isNotEmpty) {
+        await _store.collection('users').doc(userId).update({
+          'token': event,
+        });
+      }
+    });
+  }
+
+  @override
   void listenToNotification() async {
-    _onMessageReceived = FirebaseMessaging.onMessage.listen(null);
-    _onNotificationOpenedApp =
-        FirebaseMessaging.onMessageOpenedApp.listen(null);
+    _onMessageReceived = FirebaseMessaging.onMessage
+        .distinct((a, b) => a.notification?.body == b.notification?.body)
+        .listen(null);
+    _onNotificationOpenedApp = FirebaseMessaging.onMessageOpenedApp
+        .distinct((a, b) => a.notification?.body == b.notification?.body)
+        .listen(null);
+
+    // App is in the background when notification is received
     _onMessageReceived?.onData(
       (message) {
         notificationRepository.showNotification(
@@ -101,6 +123,7 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
       },
     );
 
+    // App is opened from notification when user is using the app
     _onNotificationOpenedApp?.onData(
       (message) {
         log("Notification Received in onNotificationOpenedApp: $message");

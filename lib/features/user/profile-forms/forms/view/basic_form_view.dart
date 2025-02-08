@@ -6,8 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
@@ -17,9 +17,7 @@ import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' as supabase_flutter;
 // import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserProfileBasicForm extends StatelessWidget {
@@ -61,7 +59,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final UserRepository _userRepository = GetIt.I<UserRepository>();
 
   final _formKey = GlobalKey<FormState>();
-  final _imagePicker = ImagePicker();
+  final MediaRepository mediaRepository = GetIt.I<MediaRepository>();
   //image variable
   File? _image;
   String? photoUrl;
@@ -112,8 +110,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   }
 
   void _handleImageButtonPress(context) async {
-    final image =
-        await _imagePicker.pickImage(source: ImageSource.gallery).then((value) {
+    final image = await mediaRepository.getImageFromCamera().then((value) {
       if (value != null) {
         setState(() {
           _image = File(value.path);

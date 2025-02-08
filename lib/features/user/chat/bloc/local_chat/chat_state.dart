@@ -22,6 +22,7 @@ class ChatState {
   final String? receiverId;
   final Map<DocumentSource, DocumentUploadTask>? uploadTask;
   final bool doesChatExist;
+  final bool isLoadingMedia;
   final Exception? error;
 
   const ChatState({
@@ -30,6 +31,7 @@ class ChatState {
     this.senderId,
     this.receiverId,
     this.uploadTask,
+    this.isLoadingMedia = false,
     this.doesChatExist = false,
     this.error,
   });
@@ -40,6 +42,7 @@ class ChatState {
     String? senderId,
     String? receiverId,
     Map<DocumentSource, DocumentUploadTask>? uploadTask,
+    bool? isLoadingMedia,
     bool? doesChatExist,
     Exception? error,
   }) {
@@ -49,6 +52,7 @@ class ChatState {
       senderId: senderId ?? this.senderId,
       receiverId: receiverId ?? this.receiverId,
       uploadTask: uploadTask ?? this.uploadTask,
+      isLoadingMedia: isLoadingMedia ?? this.isLoadingMedia,
       doesChatExist: doesChatExist ?? this.doesChatExist,
       error: error ?? this.error,
     );
@@ -64,6 +68,7 @@ class ChatState {
         other.senderId == senderId &&
         other.receiverId == receiverId &&
         mapEquals(other.uploadTask, uploadTask) &&
+        other.isLoadingMedia == isLoadingMedia &&
         other.doesChatExist == doesChatExist &&
         other.error == error;
   }
@@ -75,6 +80,7 @@ class ChatState {
         senderId.hashCode ^
         receiverId.hashCode ^
         uploadTask.hashCode ^
+        isLoadingMedia.hashCode ^
         doesChatExist.hashCode ^
         error.hashCode;
   }

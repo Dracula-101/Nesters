@@ -8,6 +8,8 @@ class Amenities {
   bool? hasBalcony;
   bool? hasPatio;
   bool? hasAC;
+  bool? hasGas;
+  bool? hasSemiFurnished;
   bool? hasHeater;
   bool? hasFurnished;
   List<String>? extraAmenities;
@@ -21,9 +23,11 @@ class Amenities {
     this.hasPool,
     this.hasBalcony,
     this.hasPatio,
+    this.hasGas,
     this.hasAC,
     this.hasHeater,
     this.hasFurnished,
+    this.hasSemiFurnished,
     this.extraAmenities,
   });
 
@@ -38,8 +42,10 @@ class Amenities {
         (hasBalcony ?? false) ||
         (hasPatio ?? false) ||
         (hasAC ?? false) ||
+        (hasGas ?? false) ||
         (hasHeater ?? false) ||
         (hasFurnished ?? false) ||
+        (hasSemiFurnished ?? false) ||
         (extraAmenities?.isNotEmpty ?? false);
   }
 
@@ -61,12 +67,16 @@ class Amenities {
         return hasBalcony ?? false;
       case AmenitiesType.Patio:
         return hasPatio ?? false;
+      case AmenitiesType.Gas:
+        return hasGas ?? false;
       case AmenitiesType.AC:
         return hasAC ?? false;
       case AmenitiesType.Heater:
         return hasHeater ?? false;
       case AmenitiesType.Furnished:
         return hasFurnished ?? false;
+      case AmenitiesType.SemiFurnished:
+        return hasSemiFurnished ?? false;
     }
   }
 
@@ -81,8 +91,10 @@ class Amenities {
       'has_balcony': hasBalcony ?? false,
       'has_patio': hasPatio ?? false,
       'has_AC': hasAC ?? false,
+      'has_gas': hasGas ?? false,
       'has_heater': hasHeater ?? false,
       'has_furnished': hasFurnished ?? false,
+      'has_semi_furnished': hasSemiFurnished ?? false,
       'extra_amenities': extraAmenities ?? [],
     };
   }
@@ -98,8 +110,10 @@ class Amenities {
       hasBalcony: map['has_balcony'] ?? false,
       hasPatio: map['has_patio'] ?? false,
       hasAC: map['has_AC'] ?? false,
+      hasGas: map['has_gas'] ?? false,
       hasHeater: map['has_heater'] ?? false,
       hasFurnished: map['has_furnished'] ?? false,
+      hasSemiFurnished: map['has_semi_furnished'] ?? false,
       extraAmenities: List<String>.from(map['extra_amenities'] ?? []),
     );
   }
@@ -114,8 +128,10 @@ class Amenities {
     bool? hasBalcony,
     bool? hasPatio,
     bool? hasAC,
+    bool? hasGas,
     bool? hasHeater,
     bool? hasFurnished,
+    bool? hasSemiFurnished,
     List<String>? extraAmenities,
   }) {
     return Amenities(
@@ -128,8 +144,10 @@ class Amenities {
       hasBalcony: hasBalcony ?? this.hasBalcony,
       hasPatio: hasPatio ?? this.hasPatio,
       hasAC: hasAC ?? this.hasAC,
+      hasGas: hasGas ?? this.hasGas,
       hasHeater: hasHeater ?? this.hasHeater,
       hasFurnished: hasFurnished ?? this.hasFurnished,
+      hasSemiFurnished: hasSemiFurnished ?? this.hasSemiFurnished,
       extraAmenities: extraAmenities ?? this.extraAmenities,
     );
   }
@@ -145,8 +163,10 @@ class Amenities {
       hasBalcony: other.hasBalcony,
       hasPatio: other.hasPatio,
       hasAC: other.hasAC,
+      hasGas: other.hasGas,
       hasHeater: other.hasHeater,
       hasFurnished: other.hasFurnished,
+      hasSemiFurnished: other.hasSemiFurnished,
       extraAmenities: other.extraAmenities,
     );
   }
@@ -171,8 +191,12 @@ class Amenities {
         return copyWith(hasPatio: !(hasPatio ?? true));
       case AmenitiesType.AC:
         return copyWith(hasAC: !(hasAC ?? true));
+      case AmenitiesType.Gas:
+        return copyWith(hasGas: !(hasGas ?? true));
       case AmenitiesType.Heater:
         return copyWith(hasHeater: !(hasHeater ?? true));
+      case AmenitiesType.SemiFurnished:
+        return copyWith(hasSemiFurnished: !(hasSemiFurnished ?? true));
       case AmenitiesType.Furnished:
         return copyWith(hasFurnished: !(hasFurnished ?? true));
     }
@@ -187,9 +211,11 @@ class Amenities {
       hasGym: types.contains(AmenitiesType.Gym),
       hasPool: types.contains(AmenitiesType.Pool),
       hasBalcony: types.contains(AmenitiesType.Balcony),
+      hasGas: types.contains(AmenitiesType.Gas),
       hasPatio: types.contains(AmenitiesType.Patio),
       hasAC: types.contains(AmenitiesType.AC),
       hasHeater: types.contains(AmenitiesType.Heater),
+      hasSemiFurnished: types.contains(AmenitiesType.SemiFurnished),
       hasFurnished: types.contains(AmenitiesType.Furnished),
     );
   }
@@ -202,10 +228,12 @@ class Amenities {
     if (hasParking ?? false) types.add(AmenitiesType.Parking);
     if (hasGym ?? false) types.add(AmenitiesType.Gym);
     if (hasPool ?? false) types.add(AmenitiesType.Pool);
+    if (hasGas ?? false) types.add(AmenitiesType.Gas);
     if (hasBalcony ?? false) types.add(AmenitiesType.Balcony);
     if (hasPatio ?? false) types.add(AmenitiesType.Patio);
     if (hasAC ?? false) types.add(AmenitiesType.AC);
     if (hasHeater ?? false) types.add(AmenitiesType.Heater);
+    if (hasSemiFurnished ?? false) types.add(AmenitiesType.SemiFurnished);
     if (hasFurnished ?? false) types.add(AmenitiesType.Furnished);
     return types;
   }
@@ -218,17 +246,19 @@ class Amenities {
       if (hasParking ?? false) AmenitiesType.Parking: true,
       if (hasGym ?? false) AmenitiesType.Gym: true,
       if (hasPool ?? false) AmenitiesType.Pool: true,
+      if (hasGas ?? false) AmenitiesType.Gas: true,
       if (hasBalcony ?? false) AmenitiesType.Balcony: true,
       if (hasPatio ?? false) AmenitiesType.Patio: true,
       if (hasAC ?? false) AmenitiesType.AC: true,
       if (hasHeater ?? false) AmenitiesType.Heater: true,
+      if (hasSemiFurnished ?? false) AmenitiesType.SemiFurnished: true,
       if (hasFurnished ?? false) AmenitiesType.Furnished: true,
     };
   }
 
   @override
   String toString() {
-    return 'Amenities(hasDryer: $hasDryer, hasWashingMachine: $hasWashingMachine, hasDishwasher: $hasDishwasher, hasParking: $hasParking, hasGym: $hasGym, hasPool: $hasPool, hasBalcony: $hasBalcony, hasPatio: $hasPatio, hasAC: $hasAC, hasHeater: $hasHeater, hasFurnished: $hasFurnished, extraAmenities: $extraAmenities)';
+    return 'Amenities(hasDryer: $hasDryer, hasWashingMachine: $hasWashingMachine, hasDishwasher: $hasDishwasher, hasParking: $hasParking, hasGym: $hasGym, hasPool: $hasPool, hasBalcony: $hasBalcony, hasPatio: $hasPatio, hasGas: $hasGas, hasAC: $hasAC, hasHeater: $hasHeater, hasFurnished: $hasFurnished, extraAmenities: $extraAmenities, hasSemiFurnished: $hasSemiFurnished)';
   }
 }
 
@@ -241,8 +271,10 @@ enum AmenitiesType {
   Pool,
   Balcony,
   Patio,
+  Gas,
   AC,
   Heater,
+  SemiFurnished,
   Furnished;
 
   String toUi() {
@@ -259,6 +291,8 @@ enum AmenitiesType {
         return 'Gym';
       case AmenitiesType.Pool:
         return 'Pool';
+      case AmenitiesType.Gas:
+        return 'Gas';
       case AmenitiesType.Balcony:
         return 'Balcony';
       case AmenitiesType.Patio:
@@ -267,6 +301,8 @@ enum AmenitiesType {
         return 'AC';
       case AmenitiesType.Heater:
         return 'Heater';
+      case AmenitiesType.SemiFurnished:
+        return 'Semi-Furnished';
       case AmenitiesType.Furnished:
         return 'Furnished';
     }

@@ -5,6 +5,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/domain/models/user/user.dart';
 
 @pragma('vm:entry-point')
@@ -14,9 +15,11 @@ void onDidReceiveBackgroundNotification(NotificationResponse details) {
 }
 
 class LocalNotificationRepository {
-  LocalNotificationRepository({required this.appRouterService});
+  LocalNotificationRepository(
+      {required this.appRouterService, required this.mediaRepository});
 
   final AppRouterService appRouterService;
+  final MediaRepository mediaRepository;
   final AndroidInitializationSettings initializationSettingsAndroid =
       const AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -81,6 +84,7 @@ class LocalNotificationRepository {
         description: _channelDescription,
         importance: Importance.max,
         enableVibration: true,
+        sound: RawResourceAndroidNotificationSound('message_notification'),
         showBadge: true,
         playSound: true,
       );
@@ -101,19 +105,13 @@ class LocalNotificationRepository {
     }
   }
 
-  Future<String> base64encodedImage(String url) async {
-    final http.Response response = await http.get(Uri.parse(url));
-    final String base64Data = base64Encode(response.bodyBytes);
-    return base64Data;
-  }
-
   Future<void> showNotification({
     required String title,
     required String body,
     required String payload,
   }) async {
     Map<String, dynamic> message = json.decode(payload);
-    String notificationType = message['notificationType'];
+    String notificationType = message['notificationType'] ?? '';
     NotificationType type = notificationType == 'chat'
         ? NotificationType.chat
         : NotificationType.request;
@@ -135,6 +133,12 @@ class LocalNotificationRepository {
     }
   }
 
+  Future<String> base64encodedImage(String url) async {
+    final http.Response response = await http.get(Uri.parse(url));
+    final String base64Data = base64Encode(response.bodyBytes);
+    return base64Data;
+  }
+
   Future<AndroidNotificationDetails> _chatNotificationChannelDetails(
     int id,
     String title,
@@ -152,27 +156,32 @@ class LocalNotificationRepository {
       channelDescription: _channelDescription,
       importance: Importance.max,
       priority: Priority.max,
+      groupKey: 'com.app.nesters.chat',
+      number: (messagingStyle?.messages?.length ?? 0) + 1,
       icon: '@mipmap/ic_launcher',
+      enableVibration: true,
+      sound: const RawResourceAndroidNotificationSound('message_notification'),
+      playSound: true,
       styleInformation: MessagingStyleInformation(
         Person(
           name: title,
           icon: ByteArrayAndroidIcon.fromBase64String(
-            await base64encodedImage(payload['photoUrl']),
+            await mediaRepository.base64ClippedImage(payload['photoUrl']),
           ),
         ),
         conversationTitle: title,
         groupConversation: false,
         messages: [
-          ...messagingStyle?.messages ?? [],
           Message(
-            title,
+            body,
             payload.containsKey('time')
                 ? DateTime.fromMillisecondsSinceEpoch(
                     int.parse(payload['time']),
                   )
                 : DateTime.now(),
             null,
-          )
+          ),
+          ...(messagingStyle?.messages ?? []).reversed,
         ],
       ),
       category: AndroidNotificationCategory.message,
@@ -193,6 +202,7 @@ class LocalNotificationRepository {
       importance: Importance.max,
       priority: Priority.max,
       icon: '@mipmap/ic_launcher',
+      sound: RawResourceAndroidNotificationSound('message_notification'),
       styleInformation: DefaultStyleInformation(true, true),
       category: AndroidNotificationCategory.event,
     );

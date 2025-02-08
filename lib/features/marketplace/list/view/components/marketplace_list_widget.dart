@@ -32,16 +32,24 @@ class MarketplaceModelWidget extends StatelessWidget {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        margin:
-            margin ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        margin: margin ??
+            const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
         decoration: BoxDecoration(
           color: AppTheme.surface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            12,
+          ),
           boxShadow: [
             BoxShadow(
               color: AppTheme.greyShades.shade300,
               blurRadius: 4,
-              offset: const Offset(0, 8),
+              offset: const Offset(
+                0,
+                8,
+              ),
             ),
           ],
           border: Border.all(
@@ -55,7 +63,9 @@ class MarketplaceModelWidget extends StatelessWidget {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(
+                  12,
+                ),
                 clipBehavior: Clip.hardEdge,
                 child: Stack(
                   children: [
@@ -101,7 +111,7 @@ class MarketplaceModelWidget extends StatelessWidget {
           ),
         ),
         child: Text(
-          '${marketplace.category?.name.toString()}',
+          '${marketplace.category?.name.capitalizeEachWord.toString()}',
         ),
       ),
     );
@@ -164,7 +174,7 @@ class MarketplaceModelWidget extends StatelessWidget {
               color: AppTheme.onSurface.withOpacity(0.6),
             ),
             child: Text(
-              'Posted ${DateTime.fromMillisecondsSinceEpoch(marketplace.id).toUIDate()}',
+              'Posted ${DateTime.fromMillisecondsSinceEpoch(marketplace.id).toUIDate().capitalizeEachWord.toString()}',
               style: AppTheme.labelMedium.copyWith(color: AppTheme.surface),
             ),
           ),
@@ -183,7 +193,7 @@ class MarketplaceModelWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${marketplace.name}',
+              marketplace.name.capitalize.toString(),
               style: AppTheme.bodyLarge,
               overflow: TextOverflow.ellipsis,
             ),
@@ -207,7 +217,7 @@ class MarketplaceModelWidget extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(
           child: Text(
-            marketplace.location?.address ?? '',
+            marketplace.location?.address.capitalizeEachWord ?? '',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),

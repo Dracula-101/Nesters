@@ -138,8 +138,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
 
   Future<User?> _checkUserProfileCreated(User? user) async {
     if (user == null) return null;
-    bool isProfileCreated =
-        await _userRepository.checkUserCreated(user.id) ?? false;
+    bool isProfileCreated = await _userRepository.checkUserCreated(user.id) ??
+        _localStorageRepository.getBool(LocalStorageKeys.userProfileCreated) ??
+        false;
     await _localStorageRepository.saveBool(
         LocalStorageKeys.userProfileCreated, isProfileCreated);
     _loggerService.info('User Profile Created: $isProfileCreated');
@@ -253,6 +254,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           },
         );
       }
+      _rNotificationRepository.listenToTokenChanges(user.id);
     }
   }
 

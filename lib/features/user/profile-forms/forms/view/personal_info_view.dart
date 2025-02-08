@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/domain/models/location/indian_city.dart';
-import 'package:nesters/domain/models/location/indian_state.dart';
 import 'package:nesters/domain/models/language.dart';
+import 'package:nesters/domain/models/location/city_info.dart';
+import 'package:nesters/domain/models/location/location_city.dart';
+import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
@@ -14,7 +15,8 @@ import 'package:nesters/utils/widgets/widgets.dart';
 
 class PersonalInformationPage extends StatefulWidget {
   final GlobalKey<FormState> formKey;
-  final Function(PersonType, String String, City, IndianState, String) onSubmit;
+  final Function(PersonType, String String, LocationCity, LocationState, String)
+      onSubmit;
   const PersonalInformationPage(
       {super.key, required this.formKey, required this.onSubmit});
 
@@ -30,10 +32,12 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   // city
   // state
   // bio
+  CityInfo? userCityInfo;
   final UserRepository userRepository = GetIt.I<UserRepository>();
   final TextEditingController personTypeController = TextEditingController();
   final TextEditingController primaryLangController = TextEditingController();
   final TextEditingController otherLangController = TextEditingController();
+  final TextEditingController locationContoller = TextEditingController();
   final TextEditingController cityController = TextEditingController();
   final TextEditingController stateController = TextEditingController();
   final TextEditingController bioController = TextEditingController();
@@ -49,6 +53,7 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     personTypeController.dispose();
     primaryLangController.dispose();
     otherLangController.dispose();
+    locationContoller.dispose();
     cityController.dispose();
     stateController.dispose();
     bioController.dispose();
@@ -56,13 +61,13 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     super.dispose();
   }
 
-  Stream<List<City>> getCities(String searchQuery) {
-    return userRepository.getCites(searchQuery);
-  }
+  // Stream<List<LocationCity>> getCities(String searchQuery) {
+  //   return userRepository.getCites(searchQuery);
+  // }
 
-  Future<List<IndianState>> getStates(String? searchQuery) async {
-    return await userRepository.getIndianStates(searchQuery);
-  }
+  // Future<List<LocationState>> getStates(String? searchQuery) async {
+  //   return await userRepository.getIndianStates(searchQuery);
+  // }
 
   Future<List<Language>> getLanguages(String? searchQuery) async {
     return await userRepository.getLanguage(searchQuery);
@@ -83,8 +88,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
             _buildOtherLangField(),
             _buildSpacing(),
             _buildCityField(),
-            _buildSpacing(),
-            _buildStateField(),
             _buildSpacing(),
             _buildBioField(),
           ],
@@ -196,94 +199,34 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
 
   Widget _buildCityField() {
     return CustomDynamicSearchableDropDropField(
-      controller: cityController,
-      hintText: 'City',
+      controller: locationContoller,
       labelText: 'City',
-      prefixIcon: const Icon(
-        Icons.location_city,
+      prefixIcon: Icon(
+        Icons.location_on,
+        color: AppTheme.primary,
       ),
-      searchText: 'Search your city',
-      asyncSearchItems: (searchQuery) {
-        return getCities(searchQuery);
-      },
-      itemAsString: (city) => (city as City?)?.name ?? "",
+      asyncSearchItems: (value) => Stream.fromFuture(
+        GetIt.I<UserRepository>()
+            .searchCities(searchQuery: value.isEmpty ? "Aa" : value),
+      ),
+      searchText: "Search City",
+      hintText: 'Search for your city',
       validator: (value) {
         if (value == null) {
-          return 'Please select a city';
+          return 'Please select your city';
         }
         return null;
       },
-      onEditingComplete: () {
-        context.read<FormCubit>().checkFirstStage(
-              personType: personTypeController.text,
-              primaryLang: primaryLangController.text,
-              secondaryLang: otherLangController.text,
-              city: cityController.text,
-              indianState: stateController.text,
-              bio: bioController.text,
-            );
+      onItemClick: (value) {
+        userCityInfo = value;
       },
-      emptyBuilder: (context) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.location_city,
-                size: 100,
-                color: AppTheme.greyShades.shade400,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Search for your city',
-                style: AppTheme.bodyMedium.copyWith(
-                  color: AppTheme.greyShades.shade400,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildStateField() {
-    return CustomSearchableDropDownField(
-      controller: stateController,
-      hintText: 'State',
-      labelText: 'State',
-      prefixIcon: const Icon(
-        Icons.map_outlined,
-      ),
-      itemAsString: (state) => state.name as String,
-      asyncItems: getStates,
-      filterFn: (state, searchQuery) {
-        return (state as IndianState)
-            .name
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase());
-      },
-      onEditingComplete: () {
-        context.read<FormCubit>().checkFirstStage(
-              personType: personTypeController.text,
-              primaryLang: primaryLangController.text,
-              secondaryLang: otherLangController.text,
-              city: cityController.text,
-              indianState: stateController.text,
-              bio: bioController.text,
-            );
-      },
-      itemBuilder: (context, state, isSelected) {
+      itemBuilder: (context, value) {
         return ListTile(
-          title: Text(state.name),
+          title: Text(value.cityName ?? ''),
+          subtitle: Text("${value.stateName}, ${value.countryName}"),
         );
       },
-      validator: (value) {
-        if (value == null) {
-          return 'Please select a state';
-        }
-        return null;
-      },
+      itemAsString: (value) => "${value.cityName}, ${value.countryName}",
     );
   }
 

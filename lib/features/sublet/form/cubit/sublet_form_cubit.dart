@@ -5,12 +5,11 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
-import 'package:nesters/domain/models/sublet/amenities.dart';
-import 'package:nesters/domain/models/sublet/apartment_size.dart';
-import 'package:nesters/domain/models/sublet/lease_period.dart';
+import 'package:nesters/domain/models/apartment/amenities.dart';
+import 'package:nesters/domain/models/apartment/apartment_size.dart';
+import 'package:nesters/domain/models/apartment/lease_period.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -91,34 +90,12 @@ class SubletFormCubit extends Cubit<SubletFormState> {
   void addSecondPageData({
     required String roomDescription,
     required String roommateDescription,
-    required bool hasAC,
-    required bool hasBalcony,
-    required bool hasDishwasher,
-    required bool hasDryer,
-    required bool hasFurnished,
-    required bool hasGym,
-    required bool hasHeater,
-    required bool hasParking,
-    required bool hasPatio,
-    required bool hasPool,
-    required bool hasWashingMachine,
+    required Amenities amenities,
   }) {
     SubletModel? model = state.sublet?.copyWith(
       roomDescription: roomDescription,
       roommateDescription: roommateDescription,
-      amenitiesAvailable: Amenities(
-        hasAC: hasAC,
-        hasBalcony: hasBalcony,
-        hasDishwasher: hasDishwasher,
-        hasDryer: hasDryer,
-        hasFurnished: hasFurnished,
-        hasGym: hasGym,
-        hasHeater: hasHeater,
-        hasParking: hasParking,
-        hasPatio: hasPatio,
-        hasPool: hasPool,
-        hasWashingMachine: hasWashingMachine,
-      ),
+      amenitiesAvailable: amenities,
     );
     emit(state.copyWith(sublet: model));
   }

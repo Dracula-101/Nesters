@@ -1,9 +1,9 @@
 import 'dart:developer';
 
+import 'package:nesters/domain/models/apartment/amenities.dart';
+import 'package:nesters/domain/models/apartment/apartment_size.dart';
+import 'package:nesters/domain/models/apartment/lease_period.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
-import 'package:nesters/domain/models/sublet/amenities.dart';
-import 'package:nesters/domain/models/sublet/apartment_size.dart';
-import 'package:nesters/domain/models/sublet/lease_period.dart';
 import 'package:nesters/domain/models/user/location.dart';
 
 class SubletModel {

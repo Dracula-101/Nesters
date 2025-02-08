@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 
 class ChatUserWidget extends StatelessWidget {
   final QuickChatUser user;
@@ -62,7 +63,7 @@ class ChatUserWidget extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          user.fullName ?? '',
+                          user.fullName.capitalizeEachWord,
                           style: AppTheme.titleMedium,
                         ),
                         StreamBuilder<Message?>(

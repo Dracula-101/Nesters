@@ -4,53 +4,138 @@ admin.initializeApp(functions.config().firebase);
 
 exports.testNotification = functions.https.onRequest(async (req, res) => {
   try {
-    let message;
-    if (req.method === "GET") {
+    if (req.method != "POST") {
       return res.status(405).send("Method Not Allowed");
-    } else if (req.method === "POST") {
-      if (!req.body.chatId) {
-        return res.status(400).send("Chat ID is required");
-      }
-      if (!req.body.senderId) {
-        return res.status(400).send("Sender ID is required");
-      }
-      const senderData = await admin
-        .firestore()
-        .collection("users")
-        .doc(req.body.senderId)
-        .get();
-      if (!senderData) {
-        return res.status(400).send("Sender data not found");
-      }
-      const senderName = senderData.data().fullName;
-      const senderPhotoUrl = senderData.data().photoUrl;
-      const senderToken = senderData.data().token;
-      if (!senderToken) {
-        return res.status(400).send("Sender token not found");
-      }
-
-      message = {
-        token: senderToken,
-        notification: {
-          title: req.body.title || "New Message",
-          body: req.body.body || "You have a new message",
-        },
-        data: {
-          photoUrl: req.body.photoUrl || "https://via.placeholder.com/150",
-          notificationType: req.body.notificationType || "chat",
-          chatId: req.body.chatId,
-          senderName: senderName || "Unknown",
-          senderId: req.body.senderId,
-        },
-      };
     }
+    if (!req.body.userId) {
+      return res.status(400).send("User ID is required");
+    }
+    const userRef = admin.firestore().collection("users").doc(req.body.userId);
+    const userSnapshot = await userRef.get();
+    if (!userSnapshot.exists) {
+      return res.status(400).send("User not found");
+    }
+    const user = userSnapshot.data();
+    const title = req.body.title || "Test Notification";
+    const body = req.body.body || "This is a test notification";
+    const imageUrl = req.body.imageUrl || null;
+    const hasImage = imageUrl && imageUrl.startsWith("https:");
+    const message = {
+      token: user.token,
+      notification: {
+        title: title,
+        body: hasImage ? "Image 📷" : body,
+        image: hasImage ? imageUrl : null,
+      },
+      apns: {
+        headers: {
+          "apns-priority": "5",
+        },
+        payload: {
+          aps: {
+            category: "NEW_MESSAGE_CATEGORY",
+          },
+        },
+      },
+      android: {
+        priority: "high",
+        notification: {
+          channel_id: "nester_notification_channel",
+          notification_priority: "PRIORITY_HIGH",
+          sound: "message_notification.mp3",
+          image: imageUrl,
+        },
+      },
+    };
     const notificationResponse = await admin.messaging().send(message);
     console.log("notificationResponse", notificationResponse);
-    res.send("Notification sent successfully");
+    res.send({
+      message: "Notification sent successfully",
+      response: notificationResponse,
+    });
   } catch (e) {
     console.log(e);
     res.status(500).send({
-      error: e,
+      error: JSON.stringify(e),
+      message: "An error occurred while sending notification",
+    });
+  }
+});
+
+
+exports.testMessageNotification = functions.https.onRequest(async (req, res) => {
+  try {
+    if (req.method != "POST") {
+      return res.status(405).send("Method Not Allowed");
+    }
+    if (!req.body.chatId) {
+      return res.status(400).send("Chat ID is required");
+    }
+    if (!req.body.senderId) {
+      return res.status(400).send("Sender ID is required");
+    }
+    const senderData = await admin
+      .firestore()
+      .collection("users")
+      .doc(req.body.senderId)
+      .get();
+    if (!senderData) {
+      return res.status(400).send("Sender data not found");
+    }
+    const chatId = req.body.chatId;
+    const senderId = req.body.senderId;
+    const senderName = senderData.data().fullName;
+    const senderPhotoUrl = senderData.data().photoUrl;
+    const senderToken = senderData.data().token;
+    if (!senderToken) {
+      return res.status(400).send("Sender token not found");
+    }
+    const isMessageImage = req.body.imageUrl.startsWith("https:");
+    const message = {
+      token: receiverFcmToken,
+      notification: {
+        title: senderName,
+        body: isMessageImage ? "Image 📷" : req.body.body,
+        image: isMessageImage ? req.body.imageUrl : null,
+      },
+      data: {
+        photoUrl: senderPhotoUrl,
+        notificationType: "chat",
+        chatId: chatId,
+        senderName: senderName,
+        senderId: senderId,
+      },
+      apns: {
+        headers: {
+          "apns-priority": "5",
+        },
+        payload: {
+          aps: {
+            category: "NEW_MESSAGE_CATEGORY",
+          },
+        },
+      },
+      android: {
+        collapse_key: chatId,
+        priority: "high",
+        notification: {
+          channel_id: "nester_notification_channel",
+          notification_priority: "PRIORITY_HIGH",
+          sound: "message_notification.mp3",
+          tag: chatId,
+        },
+      },
+    };
+    const notificationResponse = await admin.messaging().send(message);
+    console.log("notificationResponse", notificationResponse);
+    res.send({
+      "message": "Notification sent successfully",
+      "response": notificationResponse,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({
+      error: JSON.stringify(e),
       message: "An error occurred while sending notification",
     });
   }
@@ -90,12 +175,14 @@ exports.sendNotification = functions.firestore
       if (!receiverFcmToken || !senderName || !senderPhotoUrl) {
         return;
       }
-
+      // check url
+      const isMessageImage = lastMessageContent.startsWith("https:");
       const message = {
         token: receiverFcmToken,
         notification: {
           title: senderName,
-          body: lastMessageContent,
+          body: isMessageImage ? "Image 📷" : lastMessageContent,
+          image: isMessageImage ? lastMessageContent : null,
         },
         data: {
           photoUrl: senderPhotoUrl,
@@ -103,6 +190,26 @@ exports.sendNotification = functions.firestore
           chatId: chatId,
           senderName: senderName,
           senderId: senderId,
+        },
+        apns: {
+          headers: {
+            "apns-priority": "5",
+          },
+          payload: {
+            aps: {
+              category: "NEW_MESSAGE_CATEGORY",
+            },
+          },
+        },
+        android: {
+          collapse_key: chatId,
+          priority: "high",
+          notification: {
+            channel_id: "nester_notification_channel",
+            notification_priority: "PRIORITY_HIGH",
+            sound: "message_notification.mp3",
+            tag: chatId,
+          },
         },
       };
       const notificationResponse = await admin.messaging().send(message);
@@ -334,13 +441,13 @@ exports.testRequest = functions.https.onRequest(async (req, res) => {
       };
       const addRequestPromises = !makeDuplicate
         ? [
-            senderRequestRef.doc(req.body.receiverId).set(senderRequestBody),
-            receiverRequestRef.doc(req.body.senderId).set(receiverRequestBody),
-          ]
+          senderRequestRef.doc(req.body.receiverId).set(senderRequestBody),
+          receiverRequestRef.doc(req.body.senderId).set(receiverRequestBody),
+        ]
         : [
-            senderRequestRef.add(senderRequestBody),
-            receiverRequestRef.add(receiverRequestBody),
-          ];
+          senderRequestRef.add(senderRequestBody),
+          receiverRequestRef.add(receiverRequestBody),
+        ];
       await Promise.all(addRequestPromises);
       res.send("Request sent successfully");
     }

@@ -1,3 +1,5 @@
+import 'package:nesters/utils/extensions/extensions.dart';
+
 class Language {
   final String name;
   Language({required this.name});
@@ -16,7 +18,7 @@ class Language {
 
   @override
   String toString() {
-    return name;
+    return name.capitalizeEachWord;
   }
 }
 

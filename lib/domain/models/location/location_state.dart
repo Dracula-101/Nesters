@@ -1,10 +1,10 @@
-class IndianState {
+class LocationState {
   final String name;
 
-  IndianState({required this.name});
+  LocationState({required this.name});
 
-  factory IndianState.fromJson(Map<String, dynamic> json) {
-    return IndianState(
+  factory LocationState.fromJson(Map<String, dynamic> json) {
+    return LocationState(
       name: json['name'] ?? '',
     );
   }

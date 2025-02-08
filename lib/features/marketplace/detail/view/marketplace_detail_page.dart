@@ -73,7 +73,10 @@ class MarketplaceContactButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 70,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 8,
+      ),
       decoration: BoxDecoration(
         color: AppTheme.surface,
       ),
@@ -210,7 +213,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
         children: [
           TextSpan(
             text: "\$ ",
-            style: AppTheme.headlineSmall,
+            style: AppTheme.bodyLarge,
           ),
           TextSpan(
             text: '${widget.marketplace.price}',
@@ -297,7 +300,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.marketplace.location?.address ?? '',
+              widget.marketplace.location?.address.capitalizeEachWord ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],
@@ -326,7 +329,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.marketplace.name ?? '',
+                  widget.marketplace.name.capitalizeEachWord ?? '',
                   style: AppTheme.titleLarge,
                 ),
                 const SizedBox(height: 4),
@@ -394,7 +397,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
           ),
           const SizedBox(height: 8),
           Text(
-            widget.marketplace.description ?? '',
+            widget.marketplace.description.capitalize ?? '',
             style: AppTheme.bodyMediumLightVariant,
           ),
           const SizedBox(height: 8),

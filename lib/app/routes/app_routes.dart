@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/view/app_scaffold.dart';
+import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/features/apartment/detail/view/apartment_detail_page.dart';
+import 'package:nesters/features/apartment/form/view/apartment_form_page.dart';
 import 'package:nesters/features/auth/view/auth_view.dart';
 import 'package:nesters/features/home/view/home_view.dart';
 import 'package:nesters/features/marketplace/detail/view/marketplace_detail_page.dart';
@@ -38,6 +41,9 @@ class AppRouterService {
   static const String sublet = 'sublet';
   static const String subletDetail = 'sublet_detail';
   static const String sublettingForm = 'subletting_form';
+  static const String apartment = 'apartment';
+  static const String apartmentDetail = 'apartment_detail';
+  static const String apartmentForm = 'apartment_form';
   static const String userChatHome = 'chat';
   static const String userProfile = 'user_profile';
   static const String userProfileAdvanceFormScreen = '/advance_form';
@@ -89,6 +95,10 @@ class AppRouterService {
             },
             routes: [
               AppRoute(
+                userChatHome,
+                (params) => const ChatHomePage(),
+              ),
+              AppRoute(
                 '$userChatHome/:chatId',
                 (params) => UserChatPage(
                   chatId: params.pathParameters['chatId'] ?? '',
@@ -113,12 +123,22 @@ class AppRouterService {
                 ),
               ),
               AppRoute(
+                apartmentDetail,
+                (params) => ApartmentDetailPage(
+                  apartment: params.extra as ApartmentModel,
+                ),
+              ),
+              AppRoute(
                 userRequest,
                 (_) => const RequestPage(),
               ),
               AppRoute(
                 sublettingForm,
                 (_) => const SubletFormPage(),
+              ),
+              AppRoute(
+                apartmentForm,
+                (_) => const ApartmentFormPage(),
               ),
               AppRoute(
                 marketplaceForm,
@@ -151,6 +171,13 @@ class AppRouterService {
                         (params) {
                           final sublet = params.extra as SubletModel?;
                           return SubletFormPage(sublet: sublet);
+                        },
+                      ),
+                      AppRoute(
+                        apartmentForm,
+                        (params) {
+                          final apartment = params.extra as ApartmentModel?;
+                          return ApartmentFormPage(apartment: apartment);
                         },
                       ),
                       AppRoute(

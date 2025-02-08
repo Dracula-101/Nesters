@@ -4,7 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:nesters/domain/models/apartment/amenities.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
+import 'package:nesters/features/apartment/components/amenities_sheet.dart';
 import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
@@ -25,18 +27,7 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
   final TextEditingController _roommateDescriptionController =
       TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool hasDryer = false,
-      hasWashingMachine = false,
-      hasDishwasher = false,
-      hasParking = false,
-      hasGym = false,
-      hasPool = false,
-      hasBalcony = false,
-      hasPatio = false,
-      hasAC = false,
-      hasHeater = false,
-      hasFurnished = false;
-  List<String>? extraAmenities;
+  Amenities amenities = Amenities();
 
   @override
   bool get wantKeepAlive => true;
@@ -48,18 +39,7 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
       _roomDescriptionController.text = widget.sublet!.roomDescription ?? '';
       _roommateDescriptionController.text =
           widget.sublet!.roommateDescription ?? '';
-      hasDryer = widget.sublet!.amenitiesAvailable?.hasDryer ?? false;
-      hasWashingMachine =
-          widget.sublet!.amenitiesAvailable?.hasWashingMachine ?? false;
-      hasDishwasher = widget.sublet!.amenitiesAvailable?.hasDishwasher ?? false;
-      hasParking = widget.sublet!.amenitiesAvailable?.hasParking ?? false;
-      hasGym = widget.sublet!.amenitiesAvailable?.hasGym ?? false;
-      hasPool = widget.sublet!.amenitiesAvailable?.hasPool ?? false;
-      hasBalcony = widget.sublet!.amenitiesAvailable?.hasBalcony ?? false;
-      hasPatio = widget.sublet!.amenitiesAvailable?.hasPatio ?? false;
-      hasAC = widget.sublet!.amenitiesAvailable?.hasAC ?? false;
-      hasHeater = widget.sublet!.amenitiesAvailable?.hasHeater ?? false;
-      hasFurnished = widget.sublet!.amenitiesAvailable?.hasFurnished ?? false;
+      amenities = widget.sublet!.amenitiesAvailable ?? Amenities();
     }
     widget.controller?.addListener(() => addData());
   }
@@ -73,17 +53,7 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
     context.read<SubletFormCubit>().addSecondPageData(
           roomDescription: _roomDescriptionController.text.trim(),
           roommateDescription: _roommateDescriptionController.text.trim(),
-          hasAC: hasAC,
-          hasBalcony: hasBalcony,
-          hasDishwasher: hasDishwasher,
-          hasDryer: hasDryer,
-          hasFurnished: hasFurnished,
-          hasGym: hasGym,
-          hasHeater: hasHeater,
-          hasParking: hasParking,
-          hasPatio: hasPatio,
-          hasPool: hasPool,
-          hasWashingMachine: hasWashingMachine,
+          amenities: amenities,
         );
   }
 
@@ -168,7 +138,16 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
       onTap: () {
         showModalBottomSheet(
           context: context,
-          builder: ((context) => _buildAmenitiesBottomSheet()),
+          builder: (context) {
+            return AmenitiesBottomSheet(
+              amenities: amenities,
+              onChanged: (selectedAmenities) {
+                setState(() {
+                  amenities = selectedAmenities;
+                });
+              },
+            );
+          },
         );
       },
       child: Container(
@@ -214,234 +193,6 @@ class SubletBackgroundInfoState extends State<SubletBackgroundInfo>
         }
         return null;
       },
-    );
-  }
-
-  Widget _buildAmenitiesBottomSheet() {
-    return SizedBox(
-      width: double.infinity,
-      height: 400,
-      child: Column(
-        mainAxisSize: MainAxisSize.max,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Select Amenities',
-              style: AppTheme.titleLarge,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Flexible(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 12,
-                children: [
-                  AmentityWidget(
-                    title: 'Dryer',
-                    value: hasDryer,
-                    icon: Icons.dry,
-                    onChanged: (value) {
-                      setState(() {
-                        hasDryer = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'Gym',
-                    value: hasGym,
-                    icon: Icons.fitness_center,
-                    onChanged: (value) {
-                      setState(() {
-                        hasGym = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'Pool',
-                    value: hasPool,
-                    icon: Icons.pool,
-                    onChanged: (value) {
-                      setState(() {
-                        hasPool = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'AC',
-                    value: hasAC,
-                    icon: Icons.ac_unit,
-                    onChanged: (value) {
-                      setState(() {
-                        hasAC = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'Dishwasher',
-                    value: hasDishwasher,
-                    icon: Icons.dinner_dining,
-                    onChanged: (value) {
-                      setState(() {
-                        hasDishwasher = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'Parking',
-                    value: hasParking,
-                    icon: Icons.local_parking,
-                    onChanged: (value) {
-                      setState(() {
-                        hasParking = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'Balcony',
-                    value: hasBalcony,
-                    icon: Icons.balcony,
-                    onChanged: (value) {
-                      setState(() {
-                        hasBalcony = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'Patio',
-                    value: hasPatio,
-                    icon: FontAwesomeIcons.piedPiperHat,
-                    onChanged: (value) {
-                      setState(() {
-                        hasPatio = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'Heater',
-                    value: hasHeater,
-                    icon: FontAwesomeIcons.fire,
-                    onChanged: (value) {
-                      setState(() {
-                        hasHeater = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'Furnished',
-                    value: hasFurnished,
-                    icon: Icons.weekend,
-                    onChanged: (value) {
-                      setState(() {
-                        hasFurnished = value;
-                      });
-                    },
-                  ),
-                  AmentityWidget(
-                    title: 'Washing Machine',
-                    value: hasWashingMachine,
-                    icon: Icons.wash,
-                    onChanged: (value) {
-                      setState(() {
-                        hasWashingMachine = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class AmentityWidget extends StatefulWidget {
-  final bool value;
-  final String title;
-  final IconData icon;
-  final Function(bool) onChanged;
-  final double? iconsSize;
-  const AmentityWidget(
-      {super.key,
-      required this.value,
-      required this.title,
-      required this.icon,
-      required this.onChanged,
-      this.iconsSize});
-
-  @override
-  State<AmentityWidget> createState() => _AmentityWidgetState();
-}
-
-class _AmentityWidgetState extends State<AmentityWidget> {
-  bool currentValue = false;
-
-  @override
-  void initState() {
-    super.initState();
-    currentValue = widget.value;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          currentValue = !currentValue;
-          widget.onChanged(currentValue);
-        });
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: currentValue
-              ? AppTheme.primaryShades.shade100
-              : AppTheme.greyShades.shade200,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color:
-                currentValue ? AppTheme.primary : AppTheme.greyShades.shade300,
-            width: currentValue ? 1.5 : 1,
-          ),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              widget.icon,
-              color: currentValue
-                  ? AppTheme.primary
-                  : AppTheme.primaryShades.shade300,
-              size: widget.iconsSize ?? 18,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              widget.title,
-              style: AppTheme.bodyMedium.copyWith(
-                color: currentValue
-                    ? AppTheme.primary
-                    : AppTheme.primaryShades.shade300,
-              ),
-            ),
-            const SizedBox(width: 8),
-            if (currentValue)
-              Icon(
-                Icons.check,
-                color: AppTheme.primary,
-              )
-            else
-              Icon(
-                Icons.close,
-                color: AppTheme.primaryShades.shade300,
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

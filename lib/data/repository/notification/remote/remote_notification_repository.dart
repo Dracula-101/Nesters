@@ -18,6 +18,7 @@ abstract class RemoteNotificationRepository {
     required String photoUrl,
     required String token,
   });
+  void listenToTokenChanges(String userId);
   void listenToNotification();
   void removeNotificationListener();
 }

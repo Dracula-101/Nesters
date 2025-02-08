@@ -4,7 +4,6 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
-import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/settings/bloc/settings_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
