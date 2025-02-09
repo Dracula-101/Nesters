@@ -94,10 +94,27 @@ class _AuthViewState extends State<AuthView> {
       listener: (context, state) {
         state.maybeWhen(
           error: (error) {
-            context.showErrorSnackBar(
-              error.message,
-              subtitle: error.authErrorCode.toString(),
-            );
+            if (error is AuthException) {
+              context.showErrorSnackBar(
+                error.message,
+                subtitle: error.authErrorCode.toString(),
+              );
+            } else {
+              context.showErrorSnackBar(
+                error.message,
+              );
+            }
+          },
+          logInSuccess: (bool fromGoogleSignIn, bool fromAppleSignIn) {
+            if (fromGoogleSignIn) {
+              context.showSuccessSnackBar(
+                'Successfully signed in with Google',
+              );
+            } else if (fromAppleSignIn) {
+              context.showSuccessSnackBar(
+                'Successfully signed in with Apple',
+              );
+            }
           },
           orElse: () {},
         );

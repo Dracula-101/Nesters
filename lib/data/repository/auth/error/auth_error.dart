@@ -42,11 +42,10 @@ class GoogleSignInFailedException implements AuthException {
 class AppleSignInFailedException implements AuthException {
   AppleSignInFailedException({
     required this.message,
-    required this.authErrorCode,
   });
 
   @override
-  AuthErrorCode authErrorCode;
+  AuthErrorCode authErrorCode = AuthErrorCode.APPLE_SIGN_IN_FAILED;
 
   @override
   String message;

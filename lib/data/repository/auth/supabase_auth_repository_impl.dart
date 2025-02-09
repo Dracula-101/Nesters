@@ -91,7 +91,8 @@ class SupabaseAuthRepository extends AuthRepository {
       }
     } on PlatformException catch (_) {
       throw GoogleSignInFailedException(
-        message: "Google SHA-1 and SHA-256 keys are not configured properly",
+        message:
+            "Google SHA-1 keys are not configured properly in Firebase Console",
         authErrorCode: AuthErrorCode.GOOGLE_SIGN_IN_FAILED,
       );
     } on Exception catch (error) {
@@ -126,7 +127,6 @@ class SupabaseAuthRepository extends AuthRepository {
     } on Exception catch (error) {
       throw AppleSignInFailedException(
         message: error.errorMessage,
-        authErrorCode: AuthErrorCode.APPLE_SIGN_IN_FAILED,
       );
     }
   }

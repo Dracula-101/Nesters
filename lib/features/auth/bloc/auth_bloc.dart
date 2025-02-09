@@ -5,6 +5,7 @@ import 'package:nesters/data/repository/auth/error/auth_error.dart';
 import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
 import 'package:nesters/data/repository/user/profile/user_chat_profile_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -36,7 +37,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       authAppleSignIn: () async => await _onAppleSignIn(emit),
       authGoogleSignIn: () async => await _onGoogleSignIn(emit),
       authSignOut: () async => await _onSignOut(emit),
-      deleteAccount: () async => await _onDeleteAccount(),
+      deleteAccount: () async => await _onDeleteAccount(emit),
     );
   }
 
@@ -46,7 +47,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(const AuthState.googleSignInLoading());
       await _authRepository.signInWithGoogle();
-    } on GoogleSignInFailedException catch (error) {
+    } on AuthException catch (error) {
       _loggerService.error(error);
       emit(AuthState.error(error));
     }
@@ -58,11 +59,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       emit(const AuthState.appleSignInLoading());
       await _authRepository.signInWithApple();
-    } on Exception catch (error) {
+    } on AuthException catch (error) {
       _loggerService.error(error);
-      if (error is AppleSignInFailedException) {
-        emit(AuthState.error(error));
-      }
+      emit(AuthState.error(error));
     }
   }
 
@@ -71,7 +70,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     try {
       await _authRepository.signOut();
-    } on SignInOutFailedException catch (error) {
+    } on AuthException catch (error) {
       _loggerService.error(error);
       emit(AuthState.error(error));
     }
@@ -94,7 +93,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
   }
 
-  Future<void> _onDeleteAccount() async {
+  Future<void> _onDeleteAccount(
+    Emitter<AuthState> emit,
+  ) async {
     final userId = _authRepository.currentUser?.id;
     if (userId == null) {
       _loggerService.error("User id is null");
@@ -103,8 +104,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       await _userRepository.softDeleteAccount();
       await _userChatRepository.deleteUser(userId!);
       add(const AuthEvent.authSignOut());
-    } catch (error) {
+    } on AppException catch (error) {
       _loggerService.error(error);
+      emit(AuthState.error(error));
     }
   }
 }
