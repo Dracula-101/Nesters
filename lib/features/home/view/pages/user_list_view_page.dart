@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
@@ -581,9 +582,16 @@ class _UserListPageState extends State<UserListPage> {
             child: Text('No items found'),
           ),
         ),
-        noMoreItemsIndicatorBuilder: (_) => const SizedBox(
+        noMoreItemsIndicatorBuilder: (_) => SizedBox(
           child: Center(
-            child: Text('No more items'),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.endIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
           ),
         ),
       ),
@@ -1050,9 +1058,12 @@ class _UserListPageState extends State<UserListPage> {
                                       roomType: selectedRoomType,
                                       smokingHabit: selectedSmokingHabit,
                                       intakePeriod: selectedIntakePeriod,
-                                      intakeYear: int.parse(
-                                        intakeYearController.text,
-                                      ),
+                                      intakeYear:
+                                          intakeYearController.text == ""
+                                              ? null
+                                              : int.parse(
+                                                  intakeYearController.text,
+                                                ),
                                     );
                                     context.read<HomeBloc>().add(
                                           AddFilterProfileEvent(
