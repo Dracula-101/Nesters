@@ -5,10 +5,14 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
+import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/firebase_user_repository.dart';
 import 'package:nesters/data/repository/user/recipient_user/recipient_user_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/user/status/status.dart';
@@ -28,6 +32,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   final Map<String, ChatController> _chatControllers = {};
   StreamSubscription<List<QuickChatUser>>? _recipientUserStreamSubscription;
   late String userId;
+  String? initialChatRoute;
 
   final _logger = GetIt.I<AppLogger>();
   final _localStorage = GetIt.I<LocalStorageRepository>();
@@ -35,6 +40,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   final _recipientUserRepository = GetIt.I<RecipientUserRepository>();
   final _chatRepository = GetIt.I<RemoteChatRepository>();
   final _appSecretsRepository = GetIt.I<AppSecretsRepository>();
+  final _rNotificationRepository = GetIt.I<RemoteNotificationRepository>();
 
   // Socket
   late IO.Socket? socket;
@@ -59,6 +65,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
         await _forceLoadProfiles(emit);
       },
       loadChats: () async {
+        _loadInitialChatRoute();
         await _loadChats();
       },
       initalizeUserStatusSocket: (userId) {
@@ -82,6 +89,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
     );
     socket?.connect();
     socket?.onConnect((data) => _logger.info('Connected to socket'));
+    socket?.onDisconnect((data) => _logger.info('Disconnected from socket'));
   }
 
   Stream<int> showMessageNotificationStream() {
@@ -179,6 +187,10 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
       }
       _updateChatController(chatStates);
       emit(state.copyWith(chatStates: chatStates, isLoading: false));
+      if (initialChatRoute != null) {
+        GoRouter.maybeOf(AppRouterService.navigatorKey.currentContext!)?.push(
+            "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$initialChatRoute");
+      }
     } on Exception catch (e) {
       emit(state.copyWith(error: e));
     }
@@ -267,12 +279,20 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
     return null;
   }
 
+  void _loadInitialChatRoute() {
+    _rNotificationRepository.getInitialChatRoute().then((value) {
+      log("Initial Chat Route: $value");
+      initialChatRoute = value;
+    });
+  }
+
   @override
   Future<void> close() {
     _recipientUserStreamSubscription?.cancel();
     for (ChatController chatHandler in _chatControllers.values) {
       chatHandler.closeChat();
     }
+    socket?.disconnect();
     return super.close();
   }
 }

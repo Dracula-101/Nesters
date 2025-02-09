@@ -86,6 +86,13 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
   }
 
   @override
+  Future<String?> getInitialChatRoute() {
+    return _firebaseMessaging
+        .getInitialMessage()
+        .then((value) => value?.data['chatId']);
+  }
+
+  @override
   void listenToNotification() async {
     _onMessageReceived = FirebaseMessaging.onMessage
         .distinct((a, b) => a.notification?.body == b.notification?.body)
@@ -126,7 +133,7 @@ class FirebaseNotificationRepository extends RemoteNotificationRepository {
               .appRouter.routeInformationProvider.value.uri.path;
           if (currentPath.contains(AppRouterService.homeScreen)) {
             appRouterService.appRouter.go(
-              '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+              '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$chatId',
               extra: userProfile,
             );
           }

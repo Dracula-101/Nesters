@@ -17,15 +17,14 @@ abstract class UserChatRepository {
   Future<void> sendRequest(String currentUserId, String recipientUserId);
   Future<void> acceptRequest(String currentUserId, String recipientUserId);
   Future<void> rejectRequest(String currentUserId, String recipientUserId);
-
-  createChatRoom(String senderId, String receiverId) {}
+  Future<void> createChatRoom(String senderId, String receiverId);
+  Future<void> deleteUser(String userId);
 }
 
 class FirebaseChatUserRepository implements UserChatRepository {
   final FirebaseFirestore _store = FirebaseFirestore.instance;
   final String _userCollectionName = 'users';
   final String _userIdKey = 'userId';
-  final String _userDeletedKey = 'isDeleted';
   final String _acceptedRequestKey = 'isAccepted';
   final String _bannedRequestKey = 'isBanned';
   final String _sentRequestPath = 'sentRequests';
@@ -37,7 +36,6 @@ class FirebaseChatUserRepository implements UserChatRepository {
       QuerySnapshot querySnapshot = await _store
           .collection(_userCollectionName)
           .where(_userIdKey, isEqualTo: userId)
-          .where(_userDeletedKey, isEqualTo: false)
           .get();
       if (querySnapshot.docs.isNotEmpty) {
         Map<String, dynamic>? user =
@@ -198,6 +196,17 @@ class FirebaseChatUserRepository implements UserChatRepository {
           'receiverId': receiverId,
         },
       );
+    } on Exception {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteUser(String userId) async {
+    try {
+      await _store.collection(_userCollectionName).doc(userId).update({
+        'isDeleted': true,
+      });
     } on Exception {
       rethrow;
     }

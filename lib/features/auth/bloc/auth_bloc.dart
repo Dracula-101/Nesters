@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/auth/error/auth_error.dart';
 import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
+import 'package:nesters/data/repository/user/firebase_user_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -20,6 +21,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final CrashServiceRepository _crashServiceRepository =
       GetIt.I<CrashServiceRepository>();
   final UserRepository _userRepository = GetIt.I<UserRepository>();
+  final UserChatRepository _userChatRepository = GetIt.I<UserChatRepository>();
   final AppLogger _loggerService = GetIt.I<AppLogger>();
 
   Future<void> _onEvent(
@@ -113,7 +115,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       _loggerService.error("User id is null");
     }
     try {
-      _userRepository.softDeleteAccount();
+      await _userRepository.softDeleteAccount();
+      await _userChatRepository.deleteUser(userId!);
       add(const AuthEvent.authSignOut());
     } catch (error) {
       _loggerService.error(error);

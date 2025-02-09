@@ -2,10 +2,7 @@ chat taking too much time and space.(App Check issue)
 
 when new image uploaded still shows old one everywhere in edit form.
 
-if user delete accounts, show chat but disable input. and show message.
-
 spring or fall admit change part.
-
 
 notificatiom image.
 ==========
@@ -76,3 +73,5 @@ alphabetical arrangement of all variables, and methods and everything, structure
 end
 ====
 https://shorebird.dev/
+
+    

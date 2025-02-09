@@ -3,8 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
+import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/features/apartment/list/bloc/apartment_bloc.dart';
 import 'package:nesters/features/apartment/list/view/apartment_list_page.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
@@ -83,22 +87,38 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     ).then((value) => setState(() => _isNetworkDisabled = false));
   }
 
+  late final AppLifecycleListener _listener;
+  final AuthRepository authRepository = GetIt.I<AuthRepository>();
+
   @override
   void initState() {
     super.initState();
     if (mounted) {
-      String userId = context.read<AuthBloc>().state.maybeWhen(
-            authenticated: (user) => user.id,
-            orElse: () => throw Exception('User Not Authenticated'),
-          );
-      context
-          .read<CentralChatBloc>()
-          .add(CentralChatEvent.initalizeUserStatusSocket(userId));
+      context.read<CentralChatBloc>().add(
+          CentralChatEvent.initalizeUserStatusSocket(
+              authRepository.currentUser!.id));
       context
           .read<CentralChatBloc>()
           .add(const CentralChatEvent.loadProfiles());
       SystemChannels.textInput.invokeMethod('TextInput.hide');
+      _listener = AppLifecycleListener(
+        onStateChange: (state) {
+          context.read<CentralChatBloc>().add(
+                CentralChatEvent.updateUserStatus(
+                  state == AppLifecycleState.resumed
+                      ? Status.ONLINE
+                      : Status.OFFLINE,
+                ),
+              );
+        },
+      );
     }
+  }
+
+  @override
+  void dispose() {
+    _listener.dispose();
+    super.dispose();
   }
 
   @override

@@ -167,36 +167,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     AppRouterService.navigatorKey.currentContext!.go(route);
   }
 
-  // Note: Remove after adding sockets
-  // void _initalizeAppLifecycleListener(bool isLoggedIn) {
-  //   if (!isLoggedIn) {
-  //     if (userId != null) {
-  //       unawaited(
-  //           _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!));
-  //     }
-  //     _appLifecycleListener?.dispose();
-  //     _appLifecycleListener = null;
-  //   } else {
-  //     unawaited(_userStatusRepository.updateUserStatus(Status.ONLINE, userId!));
-  //     _appLifecycleListener ??= AppLifecycleListener(
-  //       onExitRequested: () async {
-  //         if (userId == null) return AppExitResponse.exit;
-  //         await _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
-  //         return AppExitResponse.exit;
-  //       },
-  //       onStateChange: (lifecycleState) {
-  //         if (lifecycleState == AppLifecycleState.resumed) {
-  //           if (userId == null) return;
-  //           _userStatusRepository.updateUserStatus(Status.ONLINE, userId!);
-  //         } else if (lifecycleState == AppLifecycleState.paused) {
-  //           if (userId == null) return;
-  //           _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
-  //         }
-  //       },
-  //     );
-  //   }
-  // }
-
   void _saveDeviceInfo(User? user) {
     /// This function saves the device information for a user if it has not been saved previously.
     ///
@@ -303,6 +273,6 @@ class ChatNavigationArgs implements NavigationArgs {
 
   ChatNavigationArgs({required this.chatId, required this.user})
       : route =
-            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$chatId',
         args = {'chatId': chatId, 'user': user};
 }

@@ -84,7 +84,7 @@ class ApartmentContactButton extends StatelessWidget {
               context.read<CentralChatBloc>().checkChatExists(ownerId);
           if (chatInfo != null) {
             GoRouter.of(context).go(
-              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatInfo.chatId}",
+              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatInfo.chatId}",
               extra: chatInfo.recipientUser.toUser(),
             );
           } else {

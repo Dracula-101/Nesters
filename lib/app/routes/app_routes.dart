@@ -44,7 +44,8 @@ class AppRouterService {
   static const String apartment = 'apartment';
   static const String apartmentDetail = 'apartment_detail';
   static const String apartmentForm = 'apartment_form';
-  static const String userChatHome = 'chat';
+  static const String userChatHome = 'main_chat';
+  static const String userChatPage = "chat";
   static const String userProfile = 'user_profile';
   static const String userProfileAdvanceFormScreen = '/advance_form';
   static const String userProfileBasicFormScreen = '/basic_form';
@@ -97,13 +98,15 @@ class AppRouterService {
               AppRoute(
                 userChatHome,
                 (params) => const ChatHomePage(),
-              ),
-              AppRoute(
-                '$userChatHome/:chatId',
-                (params) => UserChatPage(
-                  chatId: params.pathParameters['chatId'] ?? '',
-                  userProfile: params.extra as User,
-                ),
+                routes: [
+                  AppRoute(
+                    '$userChatPage/:chatId',
+                    (params) => UserChatPage(
+                      chatId: params.pathParameters['chatId'] ?? '',
+                      userProfile: params.extra as User,
+                    ),
+                  ),
+                ],
               ),
               AppRoute(
                 '$userProfile/:id',

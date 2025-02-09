@@ -13,21 +13,22 @@ import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.d
 import 'package:nesters/features/user/chat/view/widgets/chat_user_widget.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 
 class ChatHomePage extends StatelessWidget {
   const ChatHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Messages',
-            style: AppTheme.titleLarge,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Messages',
+          style: AppTheme.titleLarge,
         ),
-        body: const ChatHomeView(),
+      ),
+      body: const SafeArea(
+        child: ChatHomeView(),
       ),
     );
   }
@@ -40,29 +41,7 @@ class ChatHomeView extends StatefulWidget {
   State<ChatHomeView> createState() => _ChatHomeViewState();
 }
 
-class _ChatHomeViewState extends State<ChatHomeView>
-    with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    context.read<CentralChatBloc>().add(
-          CentralChatEvent.updateUserStatus(
-            state == AppLifecycleState.resumed ? Status.ONLINE : Status.OFFLINE,
-          ),
-        );
-  }
-
+class _ChatHomeViewState extends State<ChatHomeView> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CentralChatBloc, CentralChatState>(
@@ -177,7 +156,6 @@ class _ChatHomeViewState extends State<ChatHomeView>
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 QuickChatUser chatUser = chatStates[index].recipientUser;
-
                 return ChatUserWidget(
                   user: chatUser,
                   lastMessage: context
@@ -188,15 +166,20 @@ class _ChatHomeViewState extends State<ChatHomeView>
                       .read<CentralChatBloc>()
                       .getChatController(chatUser.chatId!)
                       .newMessageCount,
+                  isDeleted: chatUser.isUserDeleted ?? false,
                   onTap: () {
-                    String route =
-                        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatUser.chatId}';
-                    log("chatUser.toString()");
-                    log(chatUser.toString());
-                    GoRouter.of(context).go(
-                      route,
-                      extra: chatUser.toUser(),
-                    );
+                    if (chatUser.isUserDeleted ?? false) {
+                      context.showErrorSnackBar(
+                        'User has deleted their account',
+                      );
+                    } else {
+                      String route =
+                          '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatUser.chatId}';
+                      GoRouter.of(context).go(
+                        route,
+                        extra: chatUser.toUser(),
+                      );
+                    }
                   },
                 );
               },

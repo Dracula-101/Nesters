@@ -53,7 +53,6 @@ function checkSocketConnection(socket) {
     socket.disconnect();
     throw new Error("User id not found in the header");
   }
-  console.log("Socket connected: ", socket.id);
   return userId;
 }
 
@@ -65,7 +64,7 @@ async function getUser(userId) {
     throw new Error("User not found in the database");
   }
   const user = userInfo.data();
-  console.log("User connected: ", user.fullName);
+  console.log("User connected: ", userId);
   return user;
 }
 
@@ -75,8 +74,8 @@ async function updateUserStatus(userId, status) {
 
 //====================== Socket Connections ============================
 async function onSocketDisconnection(socket) {
-  console.log("User disconnected: ", userId);
   const userId = checkSocketConnection(socket);
+  console.log("User disconnected: ", userId);
   await updateUserStatus(userId, {
     status: USER_OFFLINE,
     lastSeen: Date.now(),
@@ -85,6 +84,7 @@ async function onSocketDisconnection(socket) {
 
 async function onUpdateUserStatus(userId, status) {
   const userStatus = status.user_status ? USER_ONLINE : USER_OFFLINE;
+  console.log(`Updated user status: ${userStatus} for user: ${userId}`);
   await updateUserStatus(userId, {
     status: userStatus,
     lastSeen: Date.now(),
@@ -115,3 +115,5 @@ function initializeServer() {
 
 initializeApp();
 initializeServer();
+
+// https://user-status-socket-1092949056178.asia-south1.run.app

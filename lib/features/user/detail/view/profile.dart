@@ -52,7 +52,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         context.read<CentralChatBloc>().doesChatExists(chatId);
     if (doesChatExists && widget.showRequestDialog) {
       GoRouter.of(context).go(
-        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$chatId',
         extra: otherUserProfile.toUser(),
       );
     } else {
