@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -15,7 +14,6 @@ import 'package:nesters/features/user/edit-profile/cubit/edit_profile_cubit.dart
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:nesters/utils/widgets/custom_flat_button.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class EditProfileScreen extends StatelessWidget {
@@ -75,6 +73,10 @@ class _EditProfileViewState extends State<EditProfileView> {
   final TextEditingController flatmateGenderController =
       TextEditingController();
   final TextEditingController roomTypeController = TextEditingController();
+  final TextEditingController intakeYearController = TextEditingController();
+  final TextEditingController intakePeriodController =
+      TextEditingController(text: "Not Selected");
+  DateTime selectedYear = DateTime.now();
 
   @override
   void dispose() {
@@ -91,6 +93,8 @@ class _EditProfileViewState extends State<EditProfileView> {
     hobbiesController.dispose();
     flatmateGenderController.dispose();
     roomTypeController.dispose();
+    intakeYearController.dispose();
+    intakePeriodController.dispose();
     super.dispose();
   }
 
@@ -133,6 +137,12 @@ class _EditProfileViewState extends State<EditProfileView> {
                   ? "No Preference"
                   : state.userEditProfile!.flatmatesGenderPrefs;
           roomTypeController.text = state.userEditProfile!.roomType.toUI();
+          intakeYearController.text =
+              state.userEditProfile!.intakeYear.toString();
+          intakePeriodController.text =
+              state.userEditProfile!.intakePeriod ?? "Not Selected";
+          selectedYear = DateTime(
+              state.userEditProfile!.intakeYear ?? DateTime.now().year);
         }
       },
       builder: (context, state) {
@@ -217,11 +227,30 @@ class _EditProfileViewState extends State<EditProfileView> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
+                                  'Intake Period',
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildIntakePeriodField(),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Intake Year',
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildYearPicker(context),
+                                const SizedBox(height: 16),
+                                Text(
                                   'Person Type',
                                   style: AppTheme.bodyLarge.copyWith(
                                     color: AppTheme.primary,
                                   ),
                                 ),
+                                const SizedBox(height: 8),
                                 CustomDropdownField(
                                   controller: personTypeController,
                                   items: PersonType.values
@@ -376,8 +405,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                           isLoading: state.isSubmitting,
                           onPressed: () {
                             if (state.isSubmitting) return;
-                            int? workExperience =
-                                int.tryParse(workExperienceController.text);
+                            int? workExperience = int.tryParse(
+                              workExperienceController.text,
+                            );
                             if (workExperience == null) {
                               context.showSnackBar(
                                 'Please enter a valid work experience',
@@ -394,26 +424,38 @@ class _EditProfileViewState extends State<EditProfileView> {
                                       collegeNameController.text,
                                   selectedCourseName: degreeNameController.text,
                                   personType: PersonType.fromString(
-                                      personTypeController.text),
-                                  workExperience:
-                                      int.parse(workExperienceController.text),
+                                    personTypeController.text,
+                                  ),
+                                  workExperience: int.parse(
+                                    workExperienceController.text,
+                                  ),
                                   smokingHabit: UserHabit.fromString(
-                                      smokingHabitController.text),
+                                    smokingHabitController.text,
+                                  ),
                                   drinkingHabit: UserHabit.fromString(
-                                      drinkingHabitController.text),
+                                    drinkingHabitController.text,
+                                  ),
                                   foodHabit: UserFoodHabit.fromString(
-                                      foodHabitController.text),
+                                    foodHabitController.text,
+                                  ),
                                   cookingSkill: UserCookingSkill.fromString(
-                                      cookingSkillController.text),
+                                    cookingSkillController.text,
+                                  ),
                                   cleanlinessHabit:
                                       UserCleanlinessHabit.fromString(
-                                          cleaningHabitController.text),
+                                    cleaningHabitController.text,
+                                  ),
                                   bio: bioController.text,
                                   hobbies: hobbiesController.text,
                                   flatmatesGenderPrefs:
                                       flatmateGenderController.text,
                                   roomType: UserRoomType.fromString(
-                                      roomTypeController.text),
+                                    roomTypeController.text,
+                                  ),
+                                  intakeYear: int.parse(
+                                    intakeYearController.text,
+                                  ),
+                                  intakePeriod: intakePeriodController.text,
                                 );
                             context
                                 .read<EditProfileCubit>()
@@ -430,85 +472,139 @@ class _EditProfileViewState extends State<EditProfileView> {
     );
   }
 
+  Widget _buildYearPicker(BuildContext context) {
+    return CustomTextField(
+      controller: intakeYearController,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Intake Year';
+        }
+        return null;
+      },
+      enabled: false,
+      onTap: () async {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Select Year"),
+              content: SizedBox(
+                width: 300,
+                height: 300,
+                child: YearPicker(
+                  firstDate: DateTime(DateTime.now().year - 100, 1),
+                  lastDate: DateTime(DateTime.now().year + 100, 1),
+                  selectedDate: selectedYear,
+                  onChanged: (DateTime dateTime) {
+                    Navigator.pop(context);
+                    intakeYearController.text = dateTime.year.toString();
+                    selectedYear = dateTime;
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildIntakePeriodField() {
+    return CustomDropdownField(
+      validatorText: 'Please Select Your Intake Period',
+      controller: intakePeriodController,
+      items: const [
+        'Fall',
+        'Spring',
+        'Summer',
+        'Winter',
+        'Not Selected',
+      ],
+    );
+  }
+
   Widget _buildProfileImage({
     required String imageUrl,
     required EditProfileState state,
   }) {
     return Center(
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        CircleAvatar(
-          radius: 60,
-          backgroundImage: state.imagePath != null
-              ? Image.file(File(state.imagePath!)).image
-              : NetworkImage(imageUrl),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (_) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.all(
-                    16.0,
-                  ),
-                  child: Wrap(
-                    alignment: WrapAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          _buildOptionItem(
-                            Icons.photo,
-                            'Gallery',
-                            () {
-                              Navigator.pop(context);
-                              _mediaRepository
-                                  .getImageFromGallery()
-                                  .then((value) {
-                                if (value != null) {
-                                  setState(() {
-                                    context
-                                        .read<EditProfileCubit>()
-                                        .updateProfileImage(value.path);
-                                  });
-                                }
-                              });
-                            },
-                          ),
-                          _buildOptionItem(
-                            Icons.camera_alt,
-                            'Camera',
-                            () {
-                              Navigator.pop(context);
-                              _mediaRepository
-                                  .getImageFromGallery()
-                                  .then((value) {
-                                if (value != null) {
-                                  context
-                                      .read<EditProfileCubit>()
-                                      .updateProfileImage(value.path);
-                                }
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      // Add more Row widgets for additional options as needed
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-          child: const Text('Change Profile Image'),
-        ),
-      ],
-    ));
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircleAvatar(
+            radius: 60,
+            backgroundImage: state.imagePath != null
+                ? Image.file(File(state.imagePath!)).image
+                : NetworkImage(imageUrl),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (_) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.all(
+                      16.0,
+                    ),
+                    child: Wrap(
+                      alignment: WrapAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            _buildOptionItem(
+                              Icons.photo,
+                              'Gallery',
+                              () {
+                                Navigator.pop(context);
+                                _mediaRepository.getImageFromGallery().then(
+                                  (value) {
+                                    if (value != null) {
+                                      setState(
+                                        () {
+                                          context
+                                              .read<EditProfileCubit>()
+                                              .updateProfileImage(value.path);
+                                        },
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                            _buildOptionItem(
+                              Icons.camera_alt,
+                              'Camera',
+                              () {
+                                Navigator.pop(context);
+                                _mediaRepository.getImageFromCamera().then(
+                                  (value) {
+                                    if (value != null) {
+                                      context
+                                          .read<EditProfileCubit>()
+                                          .updateProfileImage(value.path);
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        // Add more Row widgets for additional options as needed
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+            child: const Text('Change Profile Image'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildOptionItem(IconData icon, String label, VoidCallback onTap) {
@@ -534,8 +630,11 @@ class _EditProfileViewState extends State<EditProfileView> {
 class SaveButton extends StatefulWidget {
   final VoidCallback onPressed;
   final bool isLoading;
-  const SaveButton(
-      {super.key, required this.onPressed, required this.isLoading});
+  const SaveButton({
+    super.key,
+    required this.onPressed,
+    required this.isLoading,
+  });
 
   @override
   State<SaveButton> createState() => _SaveButtonState();
@@ -549,14 +648,18 @@ class _SaveButtonState extends State<SaveButton> {
         return Container(
           width: double.infinity,
           height: 80,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(
+            16,
+          ),
           child: CustomFlatButton(
             isLoading: widget.isLoading,
             onPressed: () {
               widget.onPressed();
             },
             text: 'Save',
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(
+              16,
+            ),
           ),
         );
       },

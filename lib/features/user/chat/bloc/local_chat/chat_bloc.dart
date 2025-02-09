@@ -10,7 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
-import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/recipient_user/recipient_user_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
@@ -87,33 +87,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     );
     try {
       log("ChatId: ${controller.chatId}");
-      bool chatExists =
-          _localStorageRepository.getBool(controller.chatId) ?? false;
 
-      // if (!chatExists) {
-      //   bool chatExistsRemote =
-      //       await _chatRepository.doesChatExist(controller.chatId);
-      //   if (!chatExistsRemote) {
-      //     await _chatRepository.createChat(
-      //       controller.chatId,
-      //       senderId: senderId,
-      //       receiverId: receiverId,
-      //     );
-      //     unawaited(saveReceipentDetails());
-      //   }
-      // }
-      // socket = IO.io(
-      //   'wss://${_appSecretsRepository.getSecret(AppSecretsKeys.USER_STATUS_SOCKET_URL)}',
-      //   IO.OptionBuilder().setTransports(
-      //     ['websocket'],
-      //   ).setExtraHeaders({
-      //     'userid': senderId,
-      //   }).build(),
-      // );
-      // socket?.connect();
-      // socket?.onConnect(
-      //   (_) => _loggerService.log('User status socket connected'),
-      // );
       emit(
         state.copyWith(
             doesChatExist: true, chatId: controller.chatId, isLoading: false),

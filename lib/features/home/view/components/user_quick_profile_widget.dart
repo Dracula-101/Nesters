@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
@@ -13,11 +11,12 @@ class UserQuickProfileWidget extends StatelessWidget {
   final UserQuickProfile userQuickProfile;
   final EdgeInsets? contentPadding;
   final EdgeInsets? marginPadding;
-  const UserQuickProfileWidget(
-      {super.key,
-      required this.userQuickProfile,
-      this.contentPadding,
-      this.marginPadding});
+  const UserQuickProfileWidget({
+    super.key,
+    required this.userQuickProfile,
+    this.contentPadding,
+    this.marginPadding,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +38,10 @@ class UserQuickProfileWidget extends StatelessWidget {
               color: AppTheme.greyShades.shade300,
               blurRadius: 10,
               spreadRadius: 1,
-              offset: const Offset(0, 2),
+              offset: const Offset(
+                0,
+                2,
+              ),
             ),
           ],
         ),
@@ -147,6 +149,22 @@ class UserQuickProfileWidget extends StatelessWidget {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
+                                userQuickProfile.intakePeriod != null &&
+                                        userQuickProfile.intakePeriod != ""
+                                    ? const SizedBox(height: 2)
+                                    : const SizedBox(),
+                                userQuickProfile.intakePeriod != null &&
+                                        userQuickProfile.intakePeriod != ""
+                                    ? Text(
+                                        _buildIntakeString(
+                                          userQuickProfile.intakePeriod,
+                                          userQuickProfile.intakeYear,
+                                        ),
+                                        style: AppTheme.labelSmall,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      )
+                                    : const SizedBox(),
                               ],
                             ),
                           )
@@ -161,5 +179,13 @@ class UserQuickProfileWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _buildIntakeString(String? intakePeriod, int? intakeYear) {
+    String intakeText = "";
+    if (intakePeriod != null && intakePeriod != "" && intakeYear != null) {
+      intakeText = '$intakePeriod $intakeYear';
+    }
+    return intakeText;
   }
 }

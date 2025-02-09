@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -12,7 +10,6 @@ import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/user/detail/view/shimmer_profile.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
-import 'package:shimmer/shimmer.dart';
 
 class UserProfilePage extends StatelessWidget {
   final String id;
@@ -105,7 +102,7 @@ class _ProfileViewState extends State<ProfileView> {
           _buildSizedBox(91),
           Center(
             child: Text(
-              userProfile?.fullName ?? '',
+              userProfile.fullName ?? '',
               style: AppTheme.headlineSmall.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -193,7 +190,7 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           _buildCard(
             'Hobbies',
-            userProfile?.hobbies ?? '',
+            userProfile.hobbies,
             FontAwesomeIcons.heartPulse,
           ),
         ],
@@ -455,7 +452,7 @@ class _ProfileViewState extends State<ProfileView> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(75),
                     child: Image.network(
-                      userProfile?.profileImage ?? '',
+                      userProfile.profileImage ?? '',
                       fit: BoxFit.cover,
                     ),
                   ),

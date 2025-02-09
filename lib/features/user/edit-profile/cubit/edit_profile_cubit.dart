@@ -1,7 +1,4 @@
-import 'dart:developer';
-
 import 'package:bloc/bloc.dart';
-import 'package:cross_file/src/types/interface.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
@@ -25,29 +22,31 @@ class EditProfileCubit extends Cubit<EditProfileState> {
       emit(state.copyWith(isLoading: false));
       return;
     }
-    _userRepository
-        .getUserProfile(_authRepository.currentUser!.id)
-        .then((user) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-          profileImage: user.profileImage,
-          selectedCollegeName: user.selectedCollegeName,
-          selectedCourseName: user.selectedCourseName,
-          personType: user.personType,
-          workExperience: user.workExperience,
-          smokingHabit: user.smokingHabit,
-          drinkingHabit: user.drinkingHabit,
-          foodHabit: user.foodHabit,
-          cookingSkill: user.cookingSkill,
-          cleanlinessHabit: user.cleanlinessHabit,
-          bio: user.bio,
-          hobbies: user.hobbies,
-          flatmatesGenderPrefs: user.flatmatesGenderPrefs,
-          roomType: user.roomType,
-        ),
-      );
-    });
+    _userRepository.getUserProfile(_authRepository.currentUser!.id).then(
+      (user) {
+        emit(
+          state.copyWith(
+            isLoading: false,
+            profileImage: user.profileImage,
+            selectedCollegeName: user.selectedCollegeName,
+            selectedCourseName: user.selectedCourseName,
+            personType: user.personType,
+            workExperience: user.workExperience,
+            smokingHabit: user.smokingHabit,
+            drinkingHabit: user.drinkingHabit,
+            foodHabit: user.foodHabit,
+            cookingSkill: user.cookingSkill,
+            cleanlinessHabit: user.cleanlinessHabit,
+            bio: user.bio,
+            hobbies: user.hobbies,
+            flatmatesGenderPrefs: user.flatmatesGenderPrefs,
+            roomType: user.roomType,
+            intakePeriod: user.intakePeriod,
+            intakeYear: user.intakeYear,
+          ),
+        );
+      },
+    );
   }
 
   void updateProfileImage(String imagePath) {
@@ -69,6 +68,8 @@ class EditProfileCubit extends Cubit<EditProfileState> {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
+    String? intakePeriod,
+    int? intakeYear,
   }) {
     emit(
       state.copyWith(
@@ -86,15 +87,25 @@ class EditProfileCubit extends Cubit<EditProfileState> {
         hobbies: hobbies,
         flatmatesGenderPrefs: flatmatesGenderPrefs,
         roomType: roomType,
+        intakePeriod: intakePeriod,
+        intakeYear: intakeYear,
       ),
     );
   }
 
   void updateProfileData() async {
     try {
-      emit(state.copyWith(isSubmitting: true));
+      emit(
+        state.copyWith(
+          isSubmitting: true,
+        ),
+      );
       if (_authRepository.currentUser == null) {
-        emit(state.copyWith(isSubmitting: false));
+        emit(
+          state.copyWith(
+            isSubmitting: false,
+          ),
+        );
         return;
       }
       final userId = _authRepository.currentUser!.id;
@@ -103,19 +114,42 @@ class EditProfileCubit extends Cubit<EditProfileState> {
           state.imagePath!,
           userId,
         );
-        emit(state.copyWith(profileImage: imageUrl));
+        emit(
+          state.copyWith(
+            profileImage: imageUrl,
+          ),
+        );
       }
       if (state.userEditProfile == null) {
-        emit(state.copyWith(isSubmitting: false));
+        emit(
+          state.copyWith(
+            isSubmitting: false,
+          ),
+        );
         return;
       }
-      await _userRepository.updateProfile(state.userEditProfile!, userId);
-      emit(state.copyWith(isSuccessful: true));
+      await _userRepository.updateProfile(
+        state.userEditProfile!,
+        userId,
+      );
+      emit(
+        state.copyWith(
+          isSuccessful: true,
+        ),
+      );
     } catch (e) {
       _logger.error('Error updating profile: $e');
-      emit(state.copyWith(isFailure: true));
+      emit(
+        state.copyWith(
+          isFailure: true,
+        ),
+      );
     } finally {
-      emit(state.copyWith(isSubmitting: false));
+      emit(
+        state.copyWith(
+          isSubmitting: false,
+        ),
+      );
     }
   }
 }

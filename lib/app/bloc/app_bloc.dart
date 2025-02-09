@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:get_it/get_it.dart';
@@ -17,7 +14,7 @@ import 'package:nesters/data/repository/device/device_info_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/network/network_checker_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
-import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
@@ -170,36 +167,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     AppRouterService.navigatorKey.currentContext!.go(route);
   }
 
-  // Note: Remove after adding sockets
-  // void _initalizeAppLifecycleListener(bool isLoggedIn) {
-  //   if (!isLoggedIn) {
-  //     if (userId != null) {
-  //       unawaited(
-  //           _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!));
-  //     }
-  //     _appLifecycleListener?.dispose();
-  //     _appLifecycleListener = null;
-  //   } else {
-  //     unawaited(_userStatusRepository.updateUserStatus(Status.ONLINE, userId!));
-  //     _appLifecycleListener ??= AppLifecycleListener(
-  //       onExitRequested: () async {
-  //         if (userId == null) return AppExitResponse.exit;
-  //         await _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
-  //         return AppExitResponse.exit;
-  //       },
-  //       onStateChange: (lifecycleState) {
-  //         if (lifecycleState == AppLifecycleState.resumed) {
-  //           if (userId == null) return;
-  //           _userStatusRepository.updateUserStatus(Status.ONLINE, userId!);
-  //         } else if (lifecycleState == AppLifecycleState.paused) {
-  //           if (userId == null) return;
-  //           _userStatusRepository.updateUserStatus(Status.OFFLINE, userId!);
-  //         }
-  //       },
-  //     );
-  //   }
-  // }
-
   void _saveDeviceInfo(User? user) {
     /// This function saves the device information for a user if it has not been saved previously.
     ///
@@ -254,7 +221,6 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           },
         );
       }
-      _rNotificationRepository.listenToTokenChanges(user.id);
     }
   }
 
@@ -307,6 +273,6 @@ class ChatNavigationArgs implements NavigationArgs {
 
   ChatNavigationArgs({required this.chatId, required this.user})
       : route =
-            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$chatId',
         args = {'chatId': chatId, 'user': user};
 }

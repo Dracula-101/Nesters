@@ -83,7 +83,7 @@ class SubletContactButton extends StatelessWidget {
               context.read<CentralChatBloc>().checkChatExists(ownerId);
           if (chatInfo != null) {
             GoRouter.of(context).go(
-              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatInfo.chatId}",
+              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatInfo.chatId}",
               extra: chatInfo.recipientUser.toUser(),
             );
           } else {
@@ -373,7 +373,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.sublet.location?.address.capitalizeEachWord ?? '',
+              widget.sublet.location?.address.toTitleCase ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],

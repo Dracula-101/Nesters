@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:dropdown_search/dropdown_search.dart';
@@ -56,8 +57,6 @@ class UserProfileBasicFormView extends StatefulWidget {
 }
 
 class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
-  final UserRepository _userRepository = GetIt.I<UserRepository>();
-
   final _formKey = GlobalKey<FormState>();
   final MediaRepository mediaRepository = GetIt.I<MediaRepository>();
   //image variable
@@ -65,21 +64,26 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   String? photoUrl;
   CityInfo? userCityInfo;
 
-  // Full Name, Email, profile image, college name, course name, gender, birthdate
+  // Full Name, Email, profile image, college name, course name, gender, birthdate, intake period and year
+  final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _collegeNameController = TextEditingController();
   final TextEditingController _courseNameController = TextEditingController();
   final TextEditingController _genderController =
       TextEditingController(text: "Not Selected");
+  final TextEditingController _intakePeriodController =
+      TextEditingController(text: "Not Selected");
+  final TextEditingController _intakeYearController = TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
   final TextEditingController _locationContoller = TextEditingController();
   DateTime selectedDate = DateTime.now();
+  DateTime _selectedYear = DateTime.now();
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _fullNameController.text = widget.user.fullName;
+    _fullNameController.text = widget.user.fullName.toTitleCase;
   }
 
   @override
@@ -88,8 +92,11 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     _collegeNameController.dispose();
     _courseNameController.dispose();
     _genderController.dispose();
+    _intakePeriodController.dispose();
+    _intakeYearController.dispose();
     _birthdateController.dispose();
     _locationContoller.dispose();
+
     super.dispose();
   }
 
@@ -109,15 +116,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     }
   }
 
-  void _handleImageButtonPress(context) async {
-    final image = await mediaRepository.getImageFromCamera().then((value) {
-      if (value != null) {
-        setState(() {
-          _image = File(value.path);
-        });
-      }
-      return value;
-    });
+  void _handleImageButtonPress(context, image) async {
     if (image != null) {
       final imageUrl = await GetIt.I<UserRepository>()
           .uploadProfileImage(image.path, widget.user.id)
@@ -129,6 +128,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         setState(() {
           photoUrl = imageUrl;
         });
+        log(photoUrl!);
       }
     }
   }
@@ -154,6 +154,8 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       selectedCollegeName: _collegeNameController.text,
       selectedCourseName: _courseNameController.text,
       gender: _genderController.text,
+      intakePeriod: _intakePeriodController.text,
+      intakeYear: _selectedYear.year,
       city: userCityInfo?.cityName ?? "",
       state: userCityInfo?.stateName,
       country: userCityInfo?.countryName,
@@ -199,6 +201,10 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
                 _buildGenderField(),
                 _buildSpacing(20),
                 _buildCollegeNameField(),
+                _buildSpacing(20),
+                _buildYearPicker(context),
+                _buildSpacing(20),
+                _buildIntakePeriodField(),
                 _buildSpacing(20),
                 _buildDegreeNameField(),
                 _buildSpacing(20),
@@ -266,20 +272,121 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     );
   }
 
+  Widget _buildYearPicker(BuildContext context) {
+    return CustomTextField(
+      controller: _intakeYearController,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Intake Year';
+        }
+        return null;
+      },
+      labelText: 'Intake Year',
+      enabled: false,
+      prefixIcon: Icon(
+        Icons.calendar_today,
+        color: AppTheme.primary,
+      ),
+      onTap: () async {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Select Year"),
+              content: SizedBox(
+                width: 300,
+                height: 300,
+                child: YearPicker(
+                  firstDate: DateTime(DateTime.now().year - 100, 1),
+                  lastDate: DateTime(DateTime.now().year + 100, 1),
+                  // save the selected date to _selectedDate DateTime variable.
+                  // It's used to set the previous selected date when
+                  // re-showing the dialog.
+                  selectedDate: _selectedYear,
+                  onChanged: (DateTime dateTime) {
+                    Navigator.pop(context);
+                    _intakeYearController.text = dateTime.year.toString();
+                    _selectedYear = dateTime;
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildSpacing(double height) {
     return SizedBox(
       height: height,
     );
   }
 
+  // _handleImageButtonPress(context)
   Widget _buildProfileImage(BuildContext context) {
     return Center(
-      child: Stack(
-        children: [
-          CircleAvatar(
-            radius: 75,
-            child: GestureDetector(
-              onTap: () => _handleImageButtonPress(context),
+      child: GestureDetector(
+        onTap: () => {
+          showModalBottomSheet(
+            context: context,
+            builder: (_) {
+              return Container(
+                width: MediaQuery.of(context).size.width,
+                padding: const EdgeInsets.all(
+                  16.0,
+                ),
+                child: Wrap(
+                  alignment: WrapAlignment.start,
+                  children: <Widget>[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        _buildOptionItem(
+                          Icons.photo,
+                          'Gallery',
+                          () {
+                            Navigator.pop(context);
+                            _mediaRepository
+                                .getImageFromGallery()
+                                .then((value) {
+                              if (value != null) {
+                                setState(() {
+                                  _image = File(value.path);
+                                });
+                                _handleImageButtonPress(context, value);
+                              }
+                            });
+                          },
+                        ),
+                        _buildOptionItem(
+                          Icons.camera_alt,
+                          'Camera',
+                          () {
+                            Navigator.pop(context);
+                            _mediaRepository.getImageFromCamera().then((value) {
+                              if (value != null) {
+                                setState(() {
+                                  _image = File(value.path);
+                                });
+                                _handleImageButtonPress(context, value);
+                              }
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    // Add more Row widgets for additional options as needed
+                  ],
+                ),
+              );
+            },
+          )
+        },
+        child: Stack(
+          children: [
+            CircleAvatar(
+              radius: 75,
               child: ClipOval(
                 child: _image != null
                     ? Image.file(
@@ -294,27 +401,43 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
                       ),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
                   Icons.camera_alt,
                   color: Colors.black,
                 ),
-                onPressed: () => _handleImageButtonPress(context),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionItem(IconData icon, String label, VoidCallback onTap) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: AppTheme.primary,
+            ),
+            Text(
+              label,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -508,6 +631,26 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     );
   }
 
+  Widget _buildIntakePeriodField() {
+    return CustomDropdownField(
+      prefixIcon: Icon(
+        FontAwesomeIcons.venusMars,
+        size: 20.0,
+        color: AppTheme.primary,
+      ),
+      labelText: 'Intake Period',
+      validatorText: 'Please select your intake period',
+      controller: _intakePeriodController,
+      items: const [
+        'Fall',
+        'Spring',
+        'Summer',
+        'Winter',
+        'Not Selected',
+      ],
+    );
+  }
+
   Widget _buildLocationField() {
     return CustomDynamicSearchableDropDropField(
       controller: _locationContoller,
@@ -546,7 +689,11 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       child: ElevatedButton(
         onPressed: () {
           if (_genderController.text == "Not Selected") {
-            context.showErrorSnackBar('Please select your gender');
+            context.showErrorSnackBar('Please Select Your Gender');
+            return;
+          }
+          if (_intakePeriodController.text == "Not Selected") {
+            context.showErrorSnackBar('Please Select Your Intake Period');
             return;
           }
           if (_formKey.currentState!.validate()) {

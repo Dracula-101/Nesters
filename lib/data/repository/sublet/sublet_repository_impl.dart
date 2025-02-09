@@ -1,13 +1,12 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:get_it/get_it.dart';
-import 'package:nesters/data/repository/auth/auth_repository.dart';
-import 'package:nesters/data/repository/media/media_compressor.dart';
+import 'package:nesters/data/repository/sublet/error/sublet_error.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/sublet/sublet_filter.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
+import 'package:nesters/utils/extensions/exception.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -33,8 +32,16 @@ class SubletRepositoryImpl implements SubletRepository {
           .upsert(sublet.copyWith(userId: userId).toMap());
       _logger.info('Sublet created successfully with id: ${sublet.id}');
       return sublet.id.toString();
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
     } catch (e) {
-      throw Exception('Failed to create sublet: $e');
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.CREATE_SUBLET_ERROR,
+        e.toString(),
+      );
     }
   }
 
@@ -74,8 +81,16 @@ class SubletRepositoryImpl implements SubletRepository {
           progress: (index++ / imagePaths.length).clamp(0.1, 1.0),
         );
       }
-    } catch (e) {
-      throw Exception('Failed to upload images: $e');
+    } on supabase.StorageException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.message.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.UPLOAD_IMAGES_ERROR,
+        e.getException,
+      );
     }
   }
 
@@ -94,8 +109,16 @@ class SubletRepositoryImpl implements SubletRepository {
           .range(paginationKey, paginationKey + range)
           .order("id", ascending: false);
       return response.map((e) => SubletModel.fromMap(e)).toList();
-    } catch (e) {
-      throw Exception('Failed to get sublets: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.GET_SUBLETS_ERROR,
+        e.getException,
+      );
     }
   }
 
@@ -138,8 +161,16 @@ class SubletRepositoryImpl implements SubletRepository {
           .order("id", ascending: false)
           .select()
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
-    } catch (e) {
-      throw Exception('Failed to get sublets: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.FILTER_SUBLET_ERROR,
+        e.getException,
+      );
     }
   }
 
@@ -250,8 +281,16 @@ class SubletRepositoryImpl implements SubletRepository {
       return queryBuilder
           .order("id")
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
-    } catch (e) {
-      throw Exception('Failed to get sublets: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.FILTER_SUBLET_ERROR,
+        e.getException,
+      );
     }
   }
 
@@ -264,8 +303,16 @@ class SubletRepositoryImpl implements SubletRepository {
           .eq('user_id', userId)
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
       return sublets;
-    } catch (e) {
-      throw Exception('Failed to get sublets: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.GET_SUBLETS_ERROR,
+        e.getException,
+      );
     }
   }
 
@@ -282,8 +329,16 @@ class SubletRepositoryImpl implements SubletRepository {
           .eq('user_id', userId);
       _logger.info('Sublet updated successfully with id: $subletId');
       return sublets;
-    } catch (e) {
-      throw Exception('Failed to update sublet: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.CREATE_SUBLET_ERROR,
+        e.toString(),
+      );
     }
   }
 
@@ -301,8 +356,16 @@ class SubletRepositoryImpl implements SubletRepository {
       }, onConflict: 'sublet_id');
       _logger.info(
           'Like status updated successfully for sublet: $subletId -> ${isLiked ? '❤️' : '💔'}');
-    } catch (e) {
-      throw Exception('Failed to like sublet: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.UPDATE_LIKE_STATUS_ERROR,
+        e.toString(),
+      );
     }
   }
 
@@ -317,8 +380,16 @@ class SubletRepositoryImpl implements SubletRepository {
           .eq('sublet_likes.is_liked', true)
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
       return likedSublets;
-    } catch (e) {
-      throw Exception('Failed to get liked sublets: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.GET_SUBLETS_ERROR,
+        e.getException,
+      );
     }
   }
 
@@ -338,8 +409,16 @@ class SubletRepositoryImpl implements SubletRepository {
           .eq('user_id', userId);
       _logger.info(
           'Sublet ${isAvailable ? 'Shown' : 'Hidden'} successfully with id: $subletId');
-    } catch (e) {
-      throw Exception('Failed to hide sublet: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.CHANGE_SUBLET_AVAILABILITY_STATUS_ERROR,
+        e.toString(),
+      );
     }
   }
 
@@ -355,8 +434,16 @@ class SubletRepositoryImpl implements SubletRepository {
           .eq('id', subletId)
           .eq('user_id', userId);
       _logger.info('Sublet deleted successfully with id: $subletId');
-    } catch (e) {
-      throw Exception('Failed to delete sublet: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERROR,
+        e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DELETE_SUBLET_ERROR,
+        e.toString(),
+      );
     }
   }
 }

@@ -172,16 +172,21 @@ class UserRepository {
     try {
       bool isUserDeleted = userProfile.email == null
           ? false
-          : await hasUserDeletedAccount(email: userProfile.email!);
+          : await hasUserDeletedAccount(
+              email: userProfile.email!,
+            );
       await _databaseRepository.setData(
         userDetailCollection,
         SetData(
-          fields:
-              userProfile.toFieldValues(includeUserDeleteUpdate: isUserDeleted),
+          fields: userProfile.toFieldValues(
+            includeUserDeleteUpdate: isUserDeleted,
+          ),
         ),
       );
       await _storageRepository.saveBool(
-          LocalStorageKeys.userProfileCreated, true);
+        LocalStorageKeys.userProfileCreated,
+        true,
+      );
       return true;
     } catch (e) {
       return false;
@@ -269,6 +274,8 @@ class UserRepository {
           DbKey(key: 'city'),
           DbKey(key: 'state'),
           DbKey(key: 'work_experience'),
+          DbKey(key: 'intake_period'),
+          DbKey(key: 'intake_year'),
         ],
         whereNotFields: [
           FieldValue(
@@ -334,6 +341,8 @@ class UserRepository {
         DbKey(key: 'city'),
         DbKey(key: 'state'),
         DbKey(key: 'work_experience'),
+        DbKey(key: 'intake_period'),
+        DbKey(key: 'intake_year'),
       ],
       whereNotFields: [
         FieldValue(
@@ -370,6 +379,28 @@ class UserRepository {
           equalTo: FieldValue(
             key: 'selected_course_name',
             value: filters.branchName,
+          ),
+        ),
+      );
+    }
+    if (filters.intakePeriod != null && filters.intakePeriod != "") {
+      query.add(
+        QueryData(
+          fieldName: 'intake_period',
+          equalTo: FieldValue(
+            key: 'intake_period',
+            value: filters.intakePeriod,
+          ),
+        ),
+      );
+    }
+    if (filters.intakeYear != null) {
+      query.add(
+        QueryData(
+          fieldName: 'intake_year',
+          equalTo: FieldValue(
+            key: 'intake_year',
+            value: filters.intakeYear,
           ),
         ),
       );
@@ -437,6 +468,8 @@ class UserRepository {
         DbKey(key: 'state'),
         DbKey(key: 'gender'),
         DbKey(key: 'work_experience'),
+        DbKey(key: 'intake_period'),
+        DbKey(key: 'intake_year'),
       ],
       whereNotFields: [
         FieldValue(
@@ -465,7 +498,7 @@ class UserRepository {
         if (user == null) {
           throw Exception('User not found');
         }
-        log("id: ${id}, User: ${user}");
+        log("id: $id, User: $user");
         return UserProfile.fromJson(user);
       });
       return profile;
@@ -479,42 +512,75 @@ class UserRepository {
     try {
       return await _databaseRepository.updateData(
         userDetailCollection,
-        UpdateData(columnId: "id", columnValue: userId, fields: [
-          UpdateFieldValue(
-              fieldName: "profile_image", newValue: profile.profileImage),
-          UpdateFieldValue(
+        UpdateData(
+          columnId: "id",
+          columnValue: userId,
+          fields: [
+            UpdateFieldValue(
+              fieldName: "profile_image",
+              newValue: profile.profileImage,
+            ),
+            UpdateFieldValue(
               fieldName: "selected_college_name",
-              newValue: profile.selectedCollegeName),
-          UpdateFieldValue(
+              newValue: profile.selectedCollegeName,
+            ),
+            UpdateFieldValue(
               fieldName: "selected_course_name",
-              newValue: profile.selectedCourseName),
-          UpdateFieldValue(
+              newValue: profile.selectedCourseName,
+            ),
+            UpdateFieldValue(
               fieldName: "person_type",
-              newValue: profile.personType.toString()),
-          UpdateFieldValue(
-              fieldName: "work_experience", newValue: profile.workExperience),
-          UpdateFieldValue(
+              newValue: profile.personType.toString(),
+            ),
+            UpdateFieldValue(
+              fieldName: "work_experience",
+              newValue: profile.workExperience,
+            ),
+            UpdateFieldValue(
               fieldName: "smoking_habit",
-              newValue: profile.smokingHabit.toString()),
-          UpdateFieldValue(
+              newValue: profile.smokingHabit.toString(),
+            ),
+            UpdateFieldValue(
               fieldName: "drinking_habit",
-              newValue: profile.drinkingHabit.toString()),
-          UpdateFieldValue(
-              fieldName: "food_habit", newValue: profile.foodHabit.toString()),
-          UpdateFieldValue(
+              newValue: profile.drinkingHabit.toString(),
+            ),
+            UpdateFieldValue(
+              fieldName: "food_habit",
+              newValue: profile.foodHabit.toString(),
+            ),
+            UpdateFieldValue(
               fieldName: "cooking_skill",
-              newValue: profile.cookingSkill.toString()),
-          UpdateFieldValue(
+              newValue: profile.cookingSkill.toString(),
+            ),
+            UpdateFieldValue(
               fieldName: "cleanliness_habit",
-              newValue: profile.cleanlinessHabit.toString()),
-          UpdateFieldValue(fieldName: "bio", newValue: profile.bio),
-          UpdateFieldValue(fieldName: "hobbies", newValue: profile.hobbies),
-          UpdateFieldValue(
-              fieldName: "flatmates_gender_prefs",
-              newValue: profile.flatmatesGenderPrefs),
-          UpdateFieldValue(
-              fieldName: "room_type", newValue: profile.roomType.toUI()),
-        ]),
+              newValue: profile.cleanlinessHabit.toString(),
+            ),
+            UpdateFieldValue(
+              fieldName: "bio",
+              newValue: profile.bio,
+            ),
+            UpdateFieldValue(
+              fieldName: "hobbies",
+              newValue: profile.hobbies,
+            ),
+            UpdateFieldValue(
+                fieldName: "flatmates_gender_prefs",
+                newValue: profile.flatmatesGenderPrefs),
+            UpdateFieldValue(
+              fieldName: "room_type",
+              newValue: profile.roomType.toUI(),
+            ),
+            UpdateFieldValue(
+              fieldName: "intake_period",
+              newValue: profile.intakePeriod,
+            ),
+            UpdateFieldValue(
+              fieldName: "intake_year",
+              newValue: profile.intakeYear,
+            ),
+          ],
+        ),
       );
     } catch (e) {
       _logger.error('Error in updating user profile: $e');

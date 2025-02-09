@@ -4,8 +4,12 @@ import 'package:nesters/data/repository/marketplace/marketplace_repository.dart'
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
+import 'package:nesters/utils/extensions/exception.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
+
+import 'error/marketplace_error.dart';
 
 class MarketplaceRepositoryImpl implements MarketplaceRepository {
   MarketplaceRepositoryImpl({
@@ -25,8 +29,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .upsert(item.copyWith(userId: userId).toJson());
       _logger.info('Marketplace created successfully with id: ${item.id}');
       return item.id.toString();
-    } catch (e) {
-      throw Exception('Failed to create Marketplace: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.CREATE_MARKETPLACE_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -69,8 +81,21 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           progress: (index++ / imagePaths.length).clamp(0.1, 1.0),
         );
       }
-    } catch (e) {
-      throw Exception('Failed to upload images: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on supabase.StorageException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.UPLOAD_IMAGES_ERROR,
+        extra: e.error.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.UPLOAD_IMAGES_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -87,8 +112,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .eq('user_id', userId);
       _logger.info('Marketplace updated successfully with id: ${item.id}');
       return true;
-    } catch (e) {
-      return false;
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.UPDATE_MARKETPLACE_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -107,8 +140,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .order('created_at', ascending: false)
           .range(paginationKey, paginationKey + range);
       return response.map((e) => MarketplaceModel.fromJson(e)).toList();
-    } catch (e) {
-      throw Exception('Failed to get Marketplaces: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.GET_MARKETPLACES_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -118,8 +159,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       final response =
           await _supabaseClient.from('marketplaces_categories').select();
       return response.map((e) => MarketplaceCategoryModel.fromJson(e)).toList();
-    } catch (e) {
-      throw Exception('Failed to get Marketplace Categories: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -144,8 +193,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .select()
           .then((response) =>
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
-    } catch (e) {
-      throw Exception('Failed to get Marketplaces: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -181,8 +238,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
             (response) =>
                 response.map((e) => MarketplaceModel.fromJson(e)).toList(),
           );
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
     } on Exception catch (e) {
-      throw Exception('Failed to get Marketplaces: $e');
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -196,8 +261,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .order('created_at', ascending: false)
           .then((response) =>
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
-    } catch (e) {
-      throw Exception('Failed to get User Marketplaces: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.GET_USER_MARKETPLACES_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -213,8 +286,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           onConflict: 'marketplace_id');
       _logger.info(
           'Like status updated successfully for apartment: $itemId -> ${isLiked ? '❤️' : '💔'}');
-    } catch (e) {
-      throw Exception('Failed to update like status: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -231,8 +312,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .eq('marketplaces_likes.is_liked', true)
           .then((response) =>
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
-    } catch (e) {
-      throw Exception('Failed to get Liked Marketplaces: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -250,8 +339,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .eq('user_id', userId);
       _logger.info(
           'Availability status updated successfully for apartment: $itemId -> ${isAvailable ? 'Available' : 'Not Available'}');
-    } catch (e) {
-      throw Exception('Failed to update availability status: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString(),
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERROR,
+        extra: e.getException,
+      );
     }
   }
 
@@ -267,8 +364,16 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .eq('id', itemId)
           .eq('user_id', userId);
       _logger.info('Marketplace deleted successfully with id: $itemId');
-    } catch (e) {
-      throw Exception('Failed to delete Marketplace: $e');
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERROR,
+        extra: e.details.toString().capitalize,
+      );
+    } on Exception catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DELETE_MARKETPLACE_ERROR,
+        extra: e.getException,
+      );
     }
   }
 }

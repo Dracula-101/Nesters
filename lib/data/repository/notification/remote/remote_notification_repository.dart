@@ -18,7 +18,7 @@ abstract class RemoteNotificationRepository {
     required String photoUrl,
     required String token,
   });
-  void listenToTokenChanges(String userId);
+  Future<String?> getInitialChatRoute();
   void listenToNotification();
   void removeNotificationListener();
 }

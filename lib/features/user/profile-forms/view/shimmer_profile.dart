@@ -51,12 +51,6 @@ class ShimmerProfile extends StatelessWidget {
     );
   }
 
-  SizedBox _buildSizedBox(double height) {
-    return SizedBox(
-      height: height,
-    );
-  }
-
   Stack _buildProfileBanner(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,

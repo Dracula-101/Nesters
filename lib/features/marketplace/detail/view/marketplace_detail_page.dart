@@ -86,7 +86,7 @@ class MarketplaceContactButton extends StatelessWidget {
               context.read<CentralChatBloc>().checkChatExists(ownerId);
           if (chatInfo != null) {
             GoRouter.of(context).go(
-              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatInfo.chatId}",
+              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatInfo.chatId}",
               extra: chatInfo.recipientUser.toUser(),
             );
           } else {
@@ -300,7 +300,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.marketplace.location?.address.capitalizeEachWord ?? '',
+              widget.marketplace.location?.address.toTitleCase ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],
@@ -329,7 +329,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.marketplace.name.capitalizeEachWord ?? '',
+                  widget.marketplace.name.toTitleCase,
                   style: AppTheme.titleLarge,
                 ),
                 const SizedBox(height: 4),
@@ -397,7 +397,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
           ),
           const SizedBox(height: 8),
           Text(
-            widget.marketplace.description.capitalize ?? '',
+            widget.marketplace.description.capitalize,
             style: AppTheme.bodyMediumLightVariant,
           ),
           const SizedBox(height: 8),
