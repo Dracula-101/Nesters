@@ -10,7 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
-import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/recipient_user/recipient_user_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';

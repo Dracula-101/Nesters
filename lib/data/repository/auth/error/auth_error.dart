@@ -1,70 +1,65 @@
-class GoogleSignInFailedException implements Exception {
-  final String localizedMessage;
-  GoogleSignInFailedException(
-      [this.localizedMessage = 'An unknown error occurred.']);
+// ignore_for_file: constant_identifier_names
+
+import 'package:nesters/data/repository/utils/app_exception.dart';
+
+abstract class AuthException implements AppException {
+  @override
+  String get message;
+  AuthErrorCode get authErrorCode;
+}
+
+enum AuthErrorCode {
+  // google related error code
+  GOOGLE_SIGN_IN_FAILED,
+  GOOGLE_NO_USER_FOUND,
+  GOOGLE_USER_ID_TOKEN_FAILED,
+  GOOGLE_USER_TOKEN_FAILED,
+
+  // apple related error code
+  APPLE_SIGN_IN_FAILED,
+
+  SIGN_OUT_FAILED;
 
   @override
   String toString() {
-    return localizedMessage;
-  }
-
-  factory GoogleSignInFailedException.fromCode(String code) {
-    switch (code) {
-      case 'account-exists-with-different-credential':
-        return GoogleSignInFailedException(
-          'Account exists with different credentials.',
-        );
-      case 'invalid-credential':
-        return GoogleSignInFailedException(
-          'The credential received is malformed or has expired.',
-        );
-      case 'operation-not-allowed':
-        return GoogleSignInFailedException(
-          'Operation is not allowed.  Please contact support.',
-        );
-      case 'user-disabled':
-        return GoogleSignInFailedException(
-          'This user has been disabled. Please contact support for help.',
-        );
-      case 'user-not-found':
-        return GoogleSignInFailedException(
-          'Email is not found, please create an account.',
-        );
-      case 'wrong-password':
-        return GoogleSignInFailedException(
-          'Incorrect password, please try again.',
-        );
-      case 'invalid-verification-code':
-        return GoogleSignInFailedException(
-          'The credential verification code received is invalid.',
-        );
-      case 'invalid-verification-id':
-        return GoogleSignInFailedException(
-          'The credential verification ID received is invalid.',
-        );
-      default:
-        return GoogleSignInFailedException();
-    }
+    return toString().split('.').last;
   }
 }
 
-class AuthSignInError implements Exception {
-  final String message;
-  AuthSignInError(this.message);
+class GoogleSignInFailedException implements AuthException {
+  GoogleSignInFailedException({
+    required this.message,
+    required this.authErrorCode,
+  });
 
   @override
-  String toString() {
-    return message;
-  }
+  AuthErrorCode authErrorCode;
+
+  @override
+  String message;
 }
 
-class AppleSignInFailedException implements Exception {
-  final String localizedMessage;
-  AppleSignInFailedException(
-      [this.localizedMessage = 'An unknown error occurred.']);
+class AppleSignInFailedException implements AuthException {
+  AppleSignInFailedException({
+    required this.message,
+    required this.authErrorCode,
+  });
 
   @override
-  String toString() {
-    return localizedMessage;
-  }
+  AuthErrorCode authErrorCode;
+
+  @override
+  String message;
+}
+
+class SignInOutFailedException implements AuthException {
+  SignInOutFailedException({
+    required this.message,
+  });
+
+  @override
+  AuthErrorCode authErrorCode = AuthErrorCode.SIGN_OUT_FAILED;
+
+  @override
+  String message;
 }

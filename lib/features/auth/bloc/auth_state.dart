@@ -8,7 +8,7 @@ abstract class AuthState {
   const factory AuthState.unauthenticated() = _Unauthenticated;
   const factory AuthState.googleSignInLoading() = _GoogleSignInLoading;
   const factory AuthState.appleSignInLoading() = _AppleSignInLoading;
-  const factory AuthState.error(String message) = _Error;
+  const factory AuthState.error(AuthException error) = _AuthError;
 
   bool get isAuthenticated => this is _Authenticated;
   bool get isUnauthenticated => this is _Unauthenticated;
@@ -22,7 +22,7 @@ abstract class AuthState {
     required R Function()? initial,
     required R Function()? googleSignInLoading,
     required R Function()? appleSignInLoading,
-    required R Function(String message)? error,
+    required R Function(AuthException error)? error,
   }) {
     if (this is _Authenticated) {
       return authenticated?.call((this as _Authenticated).user) ??
@@ -38,8 +38,8 @@ abstract class AuthState {
     } else if (this is _AppleSignInLoading) {
       return appleSignInLoading?.call() ??
           (throw Exception('Loading state: $this'));
-    } else if (this is _Error) {
-      return error?.call((this as _Error).message) ??
+    } else if (this is _AuthError) {
+      return error?.call((this as _AuthError).error) ??
           (throw Exception('Error state: $this'));
     } else {
       throw Exception('Unknown state: $this');
@@ -53,7 +53,7 @@ abstract class AuthState {
     R Function()? initial,
     R Function()? googleSignInLoading,
     R Function()? appleSignInLoading,
-    R Function(String message)? error,
+    R Function(AuthException error)? error,
     required R Function() orElse,
   }) {
     if (this is _Authenticated) {
@@ -67,8 +67,8 @@ abstract class AuthState {
       return googleSignInLoading?.call() ?? orElse.call();
     } else if (this is _AppleSignInLoading) {
       return appleSignInLoading?.call() ?? orElse.call();
-    } else if (this is _Error) {
-      return error?.call((this as _Error).message) ?? orElse.call();
+    } else if (this is _AuthError) {
+      return error?.call((this as _AuthError).error) ?? orElse.call();
     } else {
       return orElse.call();
     }
@@ -81,7 +81,7 @@ abstract class AuthState {
     required R Function() initial,
     required R Function() googleSignInLoading,
     required R Function() appleSignInLoading,
-    required R Function(String) error,
+    required R Function(AuthException) error,
   }) {
     if (this is _Authenticated) {
       return authenticated((this as _Authenticated).user);
@@ -93,8 +93,8 @@ abstract class AuthState {
       return googleSignInLoading();
     } else if (this is _AppleSignInLoading) {
       return appleSignInLoading();
-    } else if (this is _Error) {
-      return error((this as _Error).message);
+    } else if (this is _AuthError) {
+      return error((this as _AuthError).error);
     } else {
       throw Exception('Unknown state: $this');
     }
@@ -107,7 +107,7 @@ abstract class AuthState {
     R Function()? initial,
     R Function()? googleSignInLoading,
     R Function()? appleSignInLoading,
-    R Function(String)? error,
+    R Function(AuthException)? error,
     R Function(AuthState)? orElse,
   }) {
     if (this is _Authenticated) {
@@ -121,8 +121,8 @@ abstract class AuthState {
       return googleSignInLoading?.call() ?? orElse?.call(this);
     } else if (this is _AppleSignInLoading) {
       return appleSignInLoading?.call() ?? orElse?.call(this);
-    } else if (this is _Error) {
-      return error?.call((this as _Error).message) ?? orElse?.call(this);
+    } else if (this is _AuthError) {
+      return error?.call((this as _AuthError).error) ?? orElse?.call(this);
     } else {
       return orElse?.call(this);
     }
@@ -152,8 +152,8 @@ class _AppleSignInLoading extends AuthState {
   const _AppleSignInLoading();
 }
 
-class _Error extends AuthState {
-  final String message;
+class _AuthError extends AuthState {
+  final AuthException error;
 
-  const _Error(this.message);
+  const _AuthError(this.error);
 }

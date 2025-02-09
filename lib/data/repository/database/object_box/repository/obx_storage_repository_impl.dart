@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:nesters/data/repository/database/object_box/models/chat/chat_entity.dart';
 import 'package:nesters/data/repository/database/object_box/models/chat/message/message_entity.dart';
+import 'package:nesters/data/repository/database/object_box/repository/error/obx_storage_error.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
@@ -40,7 +41,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
     try {
       return chatEntityBox.getAll().map((e) => e.toQuickChatUser()).toList();
     } catch (e) {
-      rethrow;
+      throw ObxStorageValueGetError('chatEntityBox');
     }
   }
 
@@ -53,7 +54,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
         },
       );
     } on Exception {
-      rethrow;
+      throw ObxStorageValueStreamError('chatEntityBox');
     }
   }
 
@@ -72,7 +73,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
         await chatEntityBox.putAsync(quickChat);
       }
     } catch (e) {
-      rethrow;
+      throw ObxStorageValueSaveError('chatEntityBox');
     }
   }
 
@@ -89,7 +90,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       chatEntityBox.put(quickChat);
       return Future.value();
     } catch (e) {
-      rethrow;
+      throw ObxStorageValueSaveError('chatEntityBox');
     }
   }
 
@@ -111,7 +112,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       messageEntity.chat.target = chatEntity;
       messageEntityBox.put(messageEntity);
     } catch (e) {
-      rethrow;
+      throw ObxStorageValueSaveError('messageEntityBox');
     }
   }
 
@@ -121,7 +122,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       Directory objectBoxDir = Directory('${docsDir.path}/$objectBoxDirectory');
       await objectBoxDir.delete(recursive: true);
     } catch (e) {
-      rethrow;
+      throw ObxStorageClearError();
     }
   }
 
@@ -136,7 +137,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       store.close();
       return init();
     } catch (e) {
-      rethrow;
+      throw ObxStorageResetError();
     }
   }
 
@@ -153,7 +154,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
         },
       );
     } catch (e) {
-      rethrow;
+      throw ObxStorageValueStreamError('chatEntityBox');
     }
   }
 
@@ -177,7 +178,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       };
       return subject;
     } catch (e) {
-      rethrow;
+      throw ObxStorageValueStreamError('chatEntityBox');
     }
   }
 
@@ -194,7 +195,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       }
       return chatEntity.messages.reversed.map((e) => e.toMessage()).toList();
     } catch (e) {
-      rethrow;
+      throw ObxStorageValueGetError('chatEntityBox');
     }
   }
 
@@ -207,7 +208,7 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
           .findFirst();
       return chatEntity?.toQuickChatUser();
     } catch (e) {
-      rethrow;
+      throw ObxStorageValueGetError('chatEntityBox');
     }
   }
 }

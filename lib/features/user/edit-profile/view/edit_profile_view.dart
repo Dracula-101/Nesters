@@ -15,7 +15,6 @@ import 'package:nesters/features/user/edit-profile/cubit/edit_profile_cubit.dart
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:nesters/utils/widgets/custom_flat_button.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class EditProfileScreen extends StatelessWidget {

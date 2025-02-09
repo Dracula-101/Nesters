@@ -10,7 +10,7 @@ import 'package:delightful_toast/delight_toast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
-import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
@@ -72,23 +72,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  void showToast(String title, Color color, IconData icon) {
-    DelightToastBar(
-      autoDismiss: true,
-      snackbarDuration: const Duration(seconds: 2),
-      builder: (context) {
-        return ToastCard(
-          title: Text(title, style: AppTheme.bodyMedium),
-          leading: Icon(
-            icon,
-            color: color,
-          ),
-          shadowColor: AppTheme.blackShades.shade100,
-        );
-      },
-    ).show(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -110,17 +93,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
         resizeToAvoidBottomInset: true,
         body: BlocListener<RequestBloc, RequestState>(
           listener: (context, state) {
-            if (state.requestSentError) {
-              showToast(
-                'Failed to send request!',
-                AppTheme.errorColor,
-                FontAwesomeIcons.circleXmark,
+            if (state.requestSendState.exception != null) {
+              context.showErrorSnackBar(
+                state.requestSendState.exception!.message,
+                subtitle: "REQ_SEND_FAIL_ERROR",
               );
-            } else if (state.requestSentSuccess) {
-              showToast(
-                'Request sent successfully!',
-                AppTheme.success,
-                FontAwesomeIcons.circleCheck,
+            } else if (state.requestSendState.isSuccess) {
+              context.showSuccessSnackBar(
+                'Request Sent Successfully',
               );
             }
           },

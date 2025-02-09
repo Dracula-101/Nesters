@@ -14,7 +14,7 @@ import 'package:nesters/data/repository/device/device_info_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/network/network_checker_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
-import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/extensions/extensions.dart';

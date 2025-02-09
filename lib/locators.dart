@@ -8,7 +8,8 @@ import 'package:nesters/data/repository/marketplace/marketplace_repository_impl.
 import 'package:nesters/data/repository/media/media_compressor.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository_impl.dart';
-import 'package:nesters/data/repository/user/firebase_user_repository.dart';
+import 'package:nesters/data/repository/user/profile/firebase_user_profile_repository.dart';
+import 'package:nesters/data/repository/user/profile/user_chat_profile_repository.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:get_it/get_it.dart';
 
@@ -20,7 +21,7 @@ import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/network/network_checker_repository.dart';
 import 'package:nesters/data/repository/network/network_checker_repository_impl.dart';
 import 'package:nesters/data/repository/user/chat/fireabase_chat_repository.dart';
-import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/notification/remote/firebase_notification_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
@@ -60,7 +61,8 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
     storageRepository: localStorageRepository,
     logger: appLoggerService,
   );
-  UserChatRepository userChatRepository = FirebaseChatUserRepository();
+  UserChatProfileRepository userChatRepository =
+      FirebaseUserChatProfileRepository();
   UserStatusRepository userStatusRepository = FirebaseUserStatusRepository();
   LocalNotificationRepository notificationRepository =
       LocalNotificationRepository(

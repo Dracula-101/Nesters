@@ -65,22 +65,23 @@ class _RequestViewState extends State<RequestView> {
                     ),
                   ),
                 ),
-                if (state.isLoading)
+                if (state.requestUserState.isLoading)
                   _buildLoadingScreen()
-                else if (state.error != null)
+                else if (state.requestUserState.exception != null)
                   SliverFillRemaining(
                     child: Center(
-                      child: Text(state.error.toString()),
+                      child: Text(state.requestUserState.exception.toString()),
                     ),
                   )
                 else if (state.currentScreen == RequestScreen.SENT)
-                  if (state.requestSentUsers?.isEmpty ?? true)
+                  if (state.requestUserState.requestSentUsers.isEmpty)
                     _buildNoRequestScreen(RequestScreen.SENT)
                   else
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final user = state.requestSentUsers![index];
+                          final user =
+                              state.requestUserState.requestSentUsers[index];
                           return RequestWidget(
                             user: user,
                             isSent: true,
@@ -98,17 +99,19 @@ class _RequestViewState extends State<RequestView> {
                             },
                           );
                         },
-                        childCount: state.requestSentUsers?.length ?? 0,
+                        childCount:
+                            state.requestUserState.requestSentUsers.length,
                       ),
                     )
                 else if (state.currentScreen == RequestScreen.RECEIVED)
-                  if (state.requestReceivedUsers?.isEmpty ?? true)
+                  if (state.requestUserState.requestReceivedUsers.isEmpty)
                     _buildNoRequestScreen(RequestScreen.RECEIVED)
                   else
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final user = state.requestReceivedUsers![index];
+                          final user = state
+                              .requestUserState.requestReceivedUsers[index];
                           return RequestWidget(
                             user: user,
                             isRejected: user.isBanned,
@@ -126,7 +129,8 @@ class _RequestViewState extends State<RequestView> {
                             },
                           );
                         },
-                        childCount: state.requestReceivedUsers?.length ?? 0,
+                        childCount:
+                            state.requestUserState.requestReceivedUsers.length,
                       ),
                     ),
               ],

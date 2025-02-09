@@ -166,6 +166,14 @@ class _ChatViewState extends State<ChatView> {
           ),
         ],
       ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          color: AppTheme.greyShades.shade200,
+          height: 1,
+          width: double.infinity,
+        ),
+      ),
     );
   }
 

@@ -107,15 +107,15 @@ class _ChatHomeViewState extends State<ChatHomeView> {
                       const Spacer(),
                       BlocBuilder<RequestBloc, RequestState>(
                         builder: (context, state) {
-                          int count = state.requestReceivedUsers?.fold(0,
-                                  (previousValue, element) {
-                                if (!element.isAccepted && !element.isBanned) {
-                                  return (previousValue ?? 0) + 1;
-                                } else {
-                                  return previousValue;
-                                }
-                              }) ??
-                              0;
+                          int count = state
+                              .requestUserState.requestReceivedUsers
+                              .fold(0, (previousValue, element) {
+                            if (!element.isAccepted && !element.isBanned) {
+                              return (previousValue) + 1;
+                            } else {
+                              return previousValue;
+                            }
+                          });
                           if (count != 0) {
                             return Container(
                               padding: const EdgeInsets.all(8.0),

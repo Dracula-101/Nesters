@@ -21,7 +21,6 @@ import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
-import 'package:nesters/utils/widgets/custom_flat_button.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class ApartmentListPage extends StatelessWidget {

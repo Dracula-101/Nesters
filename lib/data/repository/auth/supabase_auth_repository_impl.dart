@@ -3,10 +3,12 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/utils/extensions/exception.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
@@ -58,19 +60,45 @@ class SupabaseAuthRepository extends AuthRepository {
   Future<void> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) {
-      throw GoogleSignInFailedException();
+      return;
     }
-    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    supabase.AuthResponse response = await _supabaseClient.auth
-        .signInWithIdToken(
-          provider: supabase.OAuthProvider.google,
-          idToken: googleAuth.idToken ?? '',
-          accessToken: googleAuth.accessToken ?? '',
-        )
-        .catchError((error) => throw AuthSignInError(error.toString()));
-
-    if (response.user == null) {
-      throw AuthSignInError('Couldn\'t sign in with Google. Please try again');
+    try {
+      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      if (googleAuth.idToken == null || googleAuth.idToken?.isEmpty == true) {
+        throw GoogleSignInFailedException(
+          message: 'User id token not found',
+          authErrorCode: AuthErrorCode.GOOGLE_USER_ID_TOKEN_FAILED,
+        );
+      }
+      if (googleAuth.accessToken == null ||
+          googleAuth.accessToken?.isEmpty == true) {
+        throw GoogleSignInFailedException(
+          message: 'User access token not found',
+          authErrorCode: AuthErrorCode.GOOGLE_USER_TOKEN_FAILED,
+        );
+      }
+      supabase.AuthResponse response =
+          await _supabaseClient.auth.signInWithIdToken(
+        provider: supabase.OAuthProvider.google,
+        idToken: googleAuth.idToken!,
+        accessToken: googleAuth.accessToken ?? '',
+      );
+      if (response.user == null) {
+        throw GoogleSignInFailedException(
+          message: 'No user found',
+          authErrorCode: AuthErrorCode.GOOGLE_NO_USER_FOUND,
+        );
+      }
+    } on PlatformException catch (_) {
+      throw GoogleSignInFailedException(
+        message: "Google SHA-1 and SHA-256 keys are not configured properly",
+        authErrorCode: AuthErrorCode.GOOGLE_SIGN_IN_FAILED,
+      );
+    } on Exception catch (error) {
+      throw GoogleSignInFailedException(
+        message: error.errorMessage,
+        authErrorCode: AuthErrorCode.GOOGLE_SIGN_IN_FAILED,
+      );
     }
   }
 
@@ -88,26 +116,33 @@ class SupabaseAuthRepository extends AuthRepository {
     );
 
     final idToken = credential.identityToken;
-    if (idToken == null) {
-      throw AppleSignInFailedException('Couldn\'t sign in with Apple');
-    }
+    if (idToken == null) return;
     try {
       await _supabaseClient.auth.signInWithIdToken(
         provider: supabase.OAuthProvider.apple,
         idToken: idToken,
         nonce: rawNonce,
       );
-    } catch (error) {
-      throw AuthSignInError(error.toString());
+    } on Exception catch (error) {
+      throw AppleSignInFailedException(
+        message: error.errorMessage,
+        authErrorCode: AuthErrorCode.APPLE_SIGN_IN_FAILED,
+      );
     }
   }
 
   @override
-  Future<void> signOut() {
-    return Future.wait([
-      _googleSignIn.signOut(),
-      _supabaseClient.auth.signOut(),
-    ]);
+  Future<void> signOut() async {
+    try {
+      await Future.wait([
+        _googleSignIn.signOut(),
+        _supabaseClient.auth.signOut(),
+      ]);
+    } on Exception catch (error) {
+      throw SignInOutFailedException(
+        message: error.errorMessage,
+      );
+    }
   }
 
   @override
@@ -122,7 +157,7 @@ class SupabaseAuthRepository extends AuthRepository {
               .single()
               .then((value) => UserProfile.fromJson(value));
         } catch (error) {
-          // ignore: avoid_print
+          // User is either not found or creating a new user
         }
         return User(
           id: event.session!.user.id,

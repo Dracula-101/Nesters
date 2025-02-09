@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
+import 'package:nesters/data/repository/database/remote/error/database_error.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupaDatabaseRepository extends DatabaseRepository {
@@ -38,8 +39,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return response.then((value) => value);
     } catch (e) {
-      // Throw an exception with a descriptive error message
-      throw Exception('Failed to get data: $e');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.GET_DATA_ERROR, table);
     }
   }
 
@@ -68,8 +69,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return await response;
     } catch (e) {
-      // Throw an exception with a descriptive error message
-      throw Exception('Failed to get data: $e');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.GET_DATA_ERROR, table);
     }
   }
 
@@ -108,8 +109,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return transformBuilder.then((value) => value);
     } catch (e) {
-      // Throw an exception with a descriptive error message
-      throw Exception('Failed to get data: $e');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.GET_DATA_ERROR, table);
     }
   }
 
@@ -170,7 +171,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return transformBuilder.then((value) => value);
     } catch (e) {
-      throw Exception('Failed to get data: $e');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.GET_DATA_ERROR, table);
     }
   }
 
@@ -233,7 +235,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return transformBuilder.then((value) => value);
     } catch (e) {
-      throw Exception('Failed to get data: $e');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.GET_DATA_ERROR, table);
     }
   }
 
@@ -248,7 +251,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       final List<Map<String, dynamic>> data = await response;
       return data.isNotEmpty;
     } catch (e) {
-      throw Exception('Failed to get data: $e');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.CHECK_DATA_ERROR, table);
     }
   }
 
@@ -290,7 +294,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return queryBuilder.order(queryData.fieldName).then((value) => value);
     } catch (e) {
-      throw Exception(e.toString());
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.QUERY_DATA_ERROR, table);
     }
   }
 
@@ -316,8 +321,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return response.then((value) => value);
     } catch (error) {
-      // Throw an exception with a descriptive error message
-      throw Exception('Failed to set data: $error');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.SET_DATA_ERROR, table);
     }
   }
 
@@ -350,8 +355,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return response.then((value) => value);
     } catch (error) {
-      // Throw an exception with a descriptive error message
-      throw Exception('Failed to update data: $error');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.UPDATE_DATA_ERROR, table);
     }
   }
 
@@ -372,8 +377,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return response.then((value) => value);
     } catch (error) {
-      // Throw an exception with a descriptive error message
-      throw Exception('Failed to delete data: $error');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.DELETE_DATA_ERROR, table);
     }
   }
 
@@ -403,8 +408,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return response.asStream();
     } catch (e) {
-      // Throw an exception with a descriptive error message
-      throw Exception('Failed to get data: $e');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.SEARCH_DATA_ERROR, table);
     }
   }
 
@@ -434,8 +439,8 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       return response.then((value) => value);
     } catch (e) {
-      // Throw an exception with a descriptive error message
-      throw Exception('Failed to get data: $e');
+      throw DatabaseErrorFactory.fromCode(
+          DatabaseErrorCode.SEARCH_DATA_ERROR, table);
     }
   }
 }

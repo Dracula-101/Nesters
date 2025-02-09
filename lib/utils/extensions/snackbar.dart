@@ -3,6 +3,7 @@ part of 'extensions.dart';
 extension CustomSnackBar on BuildContext {
   void showSnackBar(
     String message, {
+    String? subtitle,
     Widget? icon,
     Color? color,
   }) {
@@ -12,6 +13,9 @@ extension CustomSnackBar on BuildContext {
       builder: (context) {
         return ToastCard(
           title: Text(message, style: AppTheme.bodySmall),
+          subtitle: subtitle != null
+              ? Text(subtitle, style: AppTheme.labelMedium)
+              : null,
           leading: icon,
           shadowColor: AppTheme.blackShades.shade100,
         );
@@ -19,12 +23,15 @@ extension CustomSnackBar on BuildContext {
     ).show(this);
   }
 
-  void showErrorSnackBar(String message) {
-    showSnackBar(message,
-        icon: Icon(
-          FontAwesomeIcons.triangleExclamation,
-          color: AppTheme.error,
-        ));
+  void showErrorSnackBar(String message, {String? subtitle}) {
+    showSnackBar(
+      message,
+      subtitle: subtitle,
+      icon: Icon(
+        FontAwesomeIcons.triangleExclamation,
+        color: AppTheme.error,
+      ),
+    );
   }
 
   void showSuccessSnackBar(String message) {

@@ -6,12 +6,13 @@ import 'dart:math' as math;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:nesters/data/repository/user/error/user_chat_error.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:path/path.dart' as path_provider;
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
-import 'user_chat_repository.dart';
+import 'remote_chat_repository.dart';
 // import 'package:image_downloader/image_downloader.dart';
 
 class FirebaseChatRepository extends RemoteChatRepository {
@@ -36,7 +37,10 @@ class FirebaseChatRepository extends RemoteChatRepository {
         },
       );
     } on Exception {
-      rethrow;
+      throw UserChatErrorFactory.create(
+        UserChatErrorCode.TOKEN_CHANGE_LISTENER_ERROR,
+        'Token Change Listener Error',
+      );
     }
   }
 
@@ -62,7 +66,10 @@ class FirebaseChatRepository extends RemoteChatRepository {
                 .toList(),
           );
     } on Exception {
-      rethrow;
+      throw UserChatErrorFactory.create(
+        UserChatErrorCode.CHAT_GET_MSG_ERROR,
+        'Fetch Chat Messages Error',
+      );
     }
   }
 
@@ -84,7 +91,10 @@ class FirebaseChatRepository extends RemoteChatRepository {
             .toList();
       });
     } on Exception {
-      rethrow;
+      throw UserChatErrorFactory.create(
+        UserChatErrorCode.CHAT_GET_MSG_ERROR,
+        'Get Chat Messages Error',
+      );
     }
   }
 
@@ -113,7 +123,10 @@ class FirebaseChatRepository extends RemoteChatRepository {
       });
       return subject;
     } on Exception {
-      rethrow;
+      throw UserChatErrorFactory.create(
+        UserChatErrorCode.CHAT_GET_MSG_ERROR,
+        'Get Chat Messages Subject Error',
+      );
     }
   }
 
@@ -127,7 +140,10 @@ class FirebaseChatRepository extends RemoteChatRepository {
           .add(message.toMap())
           .then((value) => value.id);
     } on Exception {
-      rethrow;
+      throw UserChatErrorFactory.create(
+        UserChatErrorCode.CHAT_ADD_MSG_ERROR,
+        'Send Message Error',
+      );
     }
   }
 
@@ -138,7 +154,10 @@ class FirebaseChatRepository extends RemoteChatRepository {
             (value) => value.exists,
           );
     } on Exception {
-      rethrow;
+      throw UserChatErrorFactory.create(
+        UserChatErrorCode.CHAT_ROOM_EXIST_ERROR,
+        'Chat Room Exist Error',
+      );
     }
   }
 
@@ -158,7 +177,10 @@ class FirebaseChatRepository extends RemoteChatRepository {
         },
       );
     } on Exception {
-      rethrow;
+      throw UserChatErrorFactory.create(
+        UserChatErrorCode.CHAT_ROOM_CREATE_ERROR,
+        'Create Chat Room Error',
+      );
     }
   }
 
@@ -218,7 +240,10 @@ class FirebaseChatRepository extends RemoteChatRepository {
       // }
       return message;
     } on Exception {
-      rethrow;
+      throw UserChatErrorFactory.create(
+        UserChatErrorCode.CHAT_DOWNLOAD_DOC_ERROR,
+        'Download Document Error',
+      );
     }
   }
 }

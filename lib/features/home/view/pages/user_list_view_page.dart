@@ -172,23 +172,24 @@ class _UserListPageState extends State<UserListPage> {
             actions: [
               BlocBuilder<RequestBloc, RequestState>(
                 builder: (context, state) {
-                  int count = state.requestReceivedUsers?.fold(0,
-                          (previousValue, element) {
-                        if (!element.isAccepted && !element.isBanned) {
-                          return (previousValue ?? 0) + 1;
-                        } else {
-                          return previousValue;
-                        }
-                      }) ??
-                      0;
+                  int count = state.requestUserState.requestReceivedUsers
+                      .fold(0, (previousValue, element) {
+                    if (!element.isAccepted && !element.isBanned) {
+                      return (previousValue) + 1;
+                    } else {
+                      return previousValue;
+                    }
+                  });
                   return Stack(
                     alignment: Alignment.topRight,
                     children: [
                       IconButton(
                         key: widget.requestIconKey,
-                        icon: const Icon(
-                          Icons.notifications,
-                          size: 30,
+                        icon: Icon(
+                          (count > 0)
+                              ? Icons.notifications_active
+                              : Icons.notifications_none_outlined,
+                          size: 26,
                         ),
                         onPressed: () {
                           GoRouter.of(context).go(
@@ -212,33 +213,31 @@ class _UserListPageState extends State<UserListPage> {
                   );
                 },
               ),
-              const SizedBox(
-                width: 10,
-              ),
               StreamBuilder(
                 stream: context
                     .read<CentralChatBloc>()
                     .showMessageNotificationStream(),
                 builder: (context, snapshot) {
-                  return GestureDetector(
-                    onTap: () {
+                  return IconButton(
+                    onPressed: () {
                       GoRouter.of(context).go(
                           '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}');
                     },
-                    child: Badge.count(
+                    icon: Badge.count(
                       key: widget.chatIconKey,
                       count: snapshot.data ?? 0,
                       isLabelVisible:
                           snapshot.data != 0 && snapshot.data != null,
-                      textStyle: AppTheme.labelSmall,
+                      textStyle: AppTheme.labelSmall.copyWith(
+                        fontSize: 10,
+                      ),
                       offset: const Offset(10, -4),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 4.0),
-                        child: Icon(
-                          FontAwesomeIcons.solidMessage,
-                          // weight: 10,
-                          size: 25,
-                        ),
+                      child: Icon(
+                        (snapshot.data != 0 && snapshot.data != null)
+                            ? Icons.chat
+                            : Icons.chat_outlined,
+                        // weight: 10,
+                        size: 24,
                       ),
                     ),
                   );
@@ -246,7 +245,7 @@ class _UserListPageState extends State<UserListPage> {
               ),
               //add some space to its right
               const SizedBox(
-                width: 35,
+                width: 10,
               ),
             ],
             bottom: PreferredSize(
