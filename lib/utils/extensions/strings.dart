@@ -9,7 +9,7 @@ extension StringsExtension on String? {
   }
 
   // Capitalize the first letter of every word in the string
-  String get capitalizeEachWord {
+  String get toTitleCase {
     if (this == null || this!.isEmpty) {
       return '';
     }

@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -74,6 +73,10 @@ class _EditProfileViewState extends State<EditProfileView> {
   final TextEditingController flatmateGenderController =
       TextEditingController();
   final TextEditingController roomTypeController = TextEditingController();
+  final TextEditingController intakeYearController = TextEditingController();
+  final TextEditingController intakePeriodController =
+      TextEditingController(text: "Not Selected");
+  DateTime selectedYear = DateTime.now();
 
   @override
   void dispose() {
@@ -90,6 +93,8 @@ class _EditProfileViewState extends State<EditProfileView> {
     hobbiesController.dispose();
     flatmateGenderController.dispose();
     roomTypeController.dispose();
+    intakeYearController.dispose();
+    intakePeriodController.dispose();
     super.dispose();
   }
 
@@ -132,6 +137,12 @@ class _EditProfileViewState extends State<EditProfileView> {
                   ? "No Preference"
                   : state.userEditProfile!.flatmatesGenderPrefs;
           roomTypeController.text = state.userEditProfile!.roomType.toUI();
+          intakeYearController.text =
+              state.userEditProfile!.intakeYear.toString();
+          intakePeriodController.text =
+              state.userEditProfile!.intakePeriod ?? "Not Selected";
+          selectedYear = DateTime(
+              state.userEditProfile!.intakeYear ?? DateTime.now().year);
         }
       },
       builder: (context, state) {
@@ -216,11 +227,30 @@ class _EditProfileViewState extends State<EditProfileView> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
+                                  'Intake Period',
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildIntakePeriodField(),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Intake Year',
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: AppTheme.primary,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildYearPicker(context),
+                                const SizedBox(height: 16),
+                                Text(
                                   'Person Type',
                                   style: AppTheme.bodyLarge.copyWith(
                                     color: AppTheme.primary,
                                   ),
                                 ),
+                                const SizedBox(height: 8),
                                 CustomDropdownField(
                                   controller: personTypeController,
                                   items: PersonType.values
@@ -375,8 +405,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                           isLoading: state.isSubmitting,
                           onPressed: () {
                             if (state.isSubmitting) return;
-                            int? workExperience =
-                                int.tryParse(workExperienceController.text);
+                            int? workExperience = int.tryParse(
+                              workExperienceController.text,
+                            );
                             if (workExperience == null) {
                               context.showSnackBar(
                                 'Please enter a valid work experience',
@@ -393,26 +424,38 @@ class _EditProfileViewState extends State<EditProfileView> {
                                       collegeNameController.text,
                                   selectedCourseName: degreeNameController.text,
                                   personType: PersonType.fromString(
-                                      personTypeController.text),
-                                  workExperience:
-                                      int.parse(workExperienceController.text),
+                                    personTypeController.text,
+                                  ),
+                                  workExperience: int.parse(
+                                    workExperienceController.text,
+                                  ),
                                   smokingHabit: UserHabit.fromString(
-                                      smokingHabitController.text),
+                                    smokingHabitController.text,
+                                  ),
                                   drinkingHabit: UserHabit.fromString(
-                                      drinkingHabitController.text),
+                                    drinkingHabitController.text,
+                                  ),
                                   foodHabit: UserFoodHabit.fromString(
-                                      foodHabitController.text),
+                                    foodHabitController.text,
+                                  ),
                                   cookingSkill: UserCookingSkill.fromString(
-                                      cookingSkillController.text),
+                                    cookingSkillController.text,
+                                  ),
                                   cleanlinessHabit:
                                       UserCleanlinessHabit.fromString(
-                                          cleaningHabitController.text),
+                                    cleaningHabitController.text,
+                                  ),
                                   bio: bioController.text,
                                   hobbies: hobbiesController.text,
                                   flatmatesGenderPrefs:
                                       flatmateGenderController.text,
                                   roomType: UserRoomType.fromString(
-                                      roomTypeController.text),
+                                    roomTypeController.text,
+                                  ),
+                                  intakeYear: int.parse(
+                                    intakeYearController.text,
+                                  ),
+                                  intakePeriod: intakePeriodController.text,
                                 );
                             context
                                 .read<EditProfileCubit>()
@@ -426,6 +469,57 @@ class _EditProfileViewState extends State<EditProfileView> {
               )
             : const Center(child: CircularProgressIndicator());
       },
+    );
+  }
+
+  Widget _buildYearPicker(BuildContext context) {
+    return CustomTextField(
+      controller: intakeYearController,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Intake Year';
+        }
+        return null;
+      },
+      enabled: false,
+      onTap: () async {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Select Year"),
+              content: SizedBox(
+                width: 300,
+                height: 300,
+                child: YearPicker(
+                  firstDate: DateTime(DateTime.now().year - 100, 1),
+                  lastDate: DateTime(DateTime.now().year + 100, 1),
+                  selectedDate: selectedYear,
+                  onChanged: (DateTime dateTime) {
+                    Navigator.pop(context);
+                    intakeYearController.text = dateTime.year.toString();
+                    selectedYear = dateTime;
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildIntakePeriodField() {
+    return CustomDropdownField(
+      validatorText: 'Please Select Your Intake Period',
+      controller: intakePeriodController,
+      items: const [
+        'Fall',
+        'Spring',
+        'Summer',
+        'Winter',
+        'Not Selected',
+      ],
     );
   }
 

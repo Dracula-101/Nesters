@@ -373,7 +373,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.sublet.location?.address.capitalizeEachWord ?? '',
+              widget.sublet.location?.address.toTitleCase ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],

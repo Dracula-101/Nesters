@@ -145,7 +145,7 @@ class _ChatViewState extends State<ChatView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.receiverProf.fullName.capitalizeEachWord,
+              Text(widget.receiverProf.fullName.toTitleCase,
                   style: AppTheme.labelLarge),
               StreamBuilder<UserStatus?>(
                 stream: context.read<ChatBloc>().userStatus,

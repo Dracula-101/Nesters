@@ -24,44 +24,91 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   void _onEvent(HomeEvent event, Emitter<HomeState> emit) async {
     if (event is LoadProfileEvent) {
-      emit(state.copyWith(isLoading: true));
+      emit(
+        state.copyWith(
+          isLoading: true,
+        ),
+      );
     } else if (event is FetchNextPageEvent) {
-      emit(state.copyWith(isLoading: true));
+      emit(
+        state.copyWith(
+          isLoading: true,
+        ),
+      );
     } else if (event is LoadProfileCompleteEvent) {
-      emit(state.copyWith(profiles: event.profiles, isLoading: false));
+      emit(
+        state.copyWith(
+          profiles: event.profiles,
+          isLoading: false,
+        ),
+      );
     } else if (event is LoadProfileErrorEvent) {
-      emit(state.copyWith(error: event.error, isLoading: false));
+      emit(
+        state.copyWith(
+          error: event.error,
+          isLoading: false,
+        ),
+      );
     } else if (event is SingleAddFilterProfileEvent) {
-      emit(state.copyWith(userFilter: null, isLoading: true));
-      final filteredUser =
-          await _userRepository.getSingleFilteredQuickProfiles(event.filter);
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
+          userFilter: null,
+          isLoading: true,
+        ),
+      );
+      final filteredUser = await _userRepository.getSingleFilteredQuickProfiles(
+        event.filter,
+      );
+      emit(
+        state.copyWith(
           filteredProfiles: filteredUser,
           isLoading: false,
-          singleUserFilter: event.filter));
+          singleUserFilter: event.filter,
+        ),
+      );
     } else if (event is SingleRemoveFilterProfileEvent) {
-      emit(state.copyWith(singleUserFilter: null, filteredProfiles: null));
+      emit(
+        state.copyWith(
+          singleUserFilter: null,
+          filteredProfiles: null,
+        ),
+      );
     } else if (event is AddFilterProfileEvent) {
-      emit(state.copyWith(isLoading: true));
+      emit(
+        state.copyWith(
+          isLoading: true,
+        ),
+      );
       if (event.filter == null) {
-        emit(state.copyWith(
+        emit(
+          state.copyWith(
             userFilter: null,
             singleUserFilter: null,
             filteredProfiles: null,
-            isLoading: false));
+            isLoading: false,
+          ),
+        );
         return;
       }
       final filteredUser =
           await _userRepository.getMultipleFilteredQuickProfiles(event.filter!);
       _logger.debug(
           "Filtered User: ${filteredUser.length} with filter: ${event.filter}");
-      emit(state.copyWith(
+      emit(
+        state.copyWith(
           filteredProfiles: filteredUser,
           isLoading: false,
-          userFilter: event.filter));
+          userFilter: event.filter,
+        ),
+      );
     } else if (event is RemoveFilterProfileEvent) {
-      emit(state.copyWith(
-          userFilter: null, singleUserFilter: null, filteredProfiles: null));
+      emit(
+        state.copyWith(
+          userFilter: null,
+          singleUserFilter: null,
+          filteredProfiles: null,
+        ),
+      );
     }
   }
 

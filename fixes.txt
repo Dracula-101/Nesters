@@ -2,7 +2,7 @@ chat taking too much time and space.(App Check issue)
 
 when new image uploaded still shows old one everywhere in edit form.
 
-spring or fall admit change part.
+when filtered data is 0 show some logo or message home page.
 
 notificatiom image.
 ==========

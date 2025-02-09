@@ -73,7 +73,7 @@ class ChatUserWidget extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              user.fullName.capitalizeEachWord,
+                              user.fullName.toTitleCase,
                               style: AppTheme.titleMedium,
                             ),
                             StreamBuilder<Message?>(

@@ -111,7 +111,7 @@ class MarketplaceModelWidget extends StatelessWidget {
           ),
         ),
         child: Text(
-          '${marketplace.category?.name.capitalizeEachWord.toString()}',
+          '${marketplace.category?.name.toTitleCase.toString()}',
         ),
       ),
     );
@@ -174,7 +174,7 @@ class MarketplaceModelWidget extends StatelessWidget {
               color: AppTheme.onSurface.withOpacity(0.6),
             ),
             child: Text(
-              'Posted ${DateTime.fromMillisecondsSinceEpoch(marketplace.id).toUIDate().capitalizeEachWord.toString()}',
+              'Posted ${DateTime.fromMillisecondsSinceEpoch(marketplace.id).toUIDate().toTitleCase.toString()}',
               style: AppTheme.labelMedium.copyWith(color: AppTheme.surface),
             ),
           ),
@@ -217,7 +217,7 @@ class MarketplaceModelWidget extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(
           child: Text(
-            marketplace.location?.address.capitalizeEachWord ?? '',
+            marketplace.location?.address.toTitleCase ?? '',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),

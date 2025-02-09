@@ -36,6 +36,8 @@ class UserProfile extends Equatable {
   final String hobbies; //changeable
   final String flatmatesGenderPrefs; //changeable
   final UserRoomType roomType; //changeable
+  final String? intakePeriod;
+  final int? intakeYear;
 
   const UserProfile({
     required this.id,
@@ -62,6 +64,8 @@ class UserProfile extends Equatable {
     required this.hobbies,
     required this.flatmatesGenderPrefs,
     required this.roomType,
+    required this.intakePeriod,
+    required this.intakeYear,
   });
 
   @override
@@ -89,6 +93,8 @@ class UserProfile extends Equatable {
         hobbies,
         flatmatesGenderPrefs,
         roomType,
+        intakePeriod,
+        intakeYear,
       ];
 
   List<FieldValue> toFieldValues() {
@@ -116,6 +122,8 @@ class UserProfile extends Equatable {
       FieldValue(key: 'hobbies', value: hobbies),
       FieldValue(key: 'flatmates_gender_prefs', value: flatmatesGenderPrefs),
       FieldValue(key: 'room_type', value: roomType),
+      FieldValue(key: 'intake_period', value: intakePeriod),
+      FieldValue(key: 'intake_year', value: intakeYear),
     ];
   }
 
@@ -144,6 +152,8 @@ class UserProfile extends Equatable {
       'hobbies': hobbies,
       'flatmates_gender_prefs': flatmatesGenderPrefs,
       'room_type': roomType.toString(),
+      'intake_period': intakePeriod,
+      'intake_year': intakeYear,
     };
   }
 
@@ -194,6 +204,9 @@ class UserProfile extends Equatable {
         roomType: json['room_type'] != null
             ? UserRoomType.fromString(json['room_type'])
             : UserRoomType.UNKNOWN,
+        intakePeriod: json['intake_period'] ?? '',
+        // current year take
+        intakeYear: json['intake_year'] ?? DateTime.now().year,
       );
     } on Exception catch (e) {
       throw Exception('Error parsing user profile: $e');
@@ -211,6 +224,8 @@ class UserProfile extends Equatable {
       selectedCourseName: selectedCourseName,
       profileImage: profileImage,
       workExperience: workExperience,
+      intakePeriod: intakePeriod,
+      intakeYear: intakeYear,
     );
   }
 
@@ -229,13 +244,13 @@ class UserProfile extends Equatable {
   String toUserLocation() {
     String location = '';
     if (city?.name != null && city?.name.isEmpty == false) {
-      location = '${city?.name.capitalizeEachWord}, ';
+      location = '${city?.name.toTitleCase}, ';
     }
     if (state?.name != null && state?.name.isEmpty == false) {
-      location += state?.name.capitalizeEachWord ?? '';
+      location += state?.name.toTitleCase ?? '';
     }
     if (country?.name != null && country?.name.isEmpty == false) {
-      location += ', ${country?.name.capitalizeEachWord}';
+      location += ', ${country?.name.toTitleCase}';
     }
     if (location.isEmpty) {
       location = 'Location Not Available';

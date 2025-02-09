@@ -322,7 +322,9 @@ class SupaDatabaseRepository extends DatabaseRepository {
       return response.then((value) => value);
     } catch (error) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.SET_DATA_ERROR, table);
+        DatabaseErrorCode.SET_DATA_ERROR,
+        table,
+      );
     }
   }
 

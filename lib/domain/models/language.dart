@@ -18,7 +18,7 @@ class Language {
 
   @override
   String toString() {
-    return name.capitalizeEachWord;
+    return name.toTitleCase;
   }
 }
 
