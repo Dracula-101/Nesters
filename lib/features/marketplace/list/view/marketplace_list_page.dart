@@ -19,7 +19,6 @@ import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
-import 'package:nesters/utils/widgets/show_error_widget.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarketplacePage extends StatelessWidget {
@@ -123,14 +122,9 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
   }
 
   Widget _buildMarketplacePlaceholder() {
-    return SliverFillRemaining(
-      child: Center(
-        child: Image.asset(
-          AppRasterImages.emptyIcon,
-          width: 100.0,
-          height: 100.0,
-        ),
-      ),
+    return const ShowNoInfoWidget(
+      title: "No marketplaces found",
+      subtitle: "There are no marketplaces available for the selected filter",
     );
   }
 
@@ -138,62 +132,6 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
     return PagedSliverList(
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<MarketplaceModel>(
-        firstPageProgressIndicatorBuilder: (context) =>
-            const ShimmerMarketplacetPage(),
-        firstPageErrorIndicatorBuilder: (context) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                top: 16,
-                bottom: 16,
-              ),
-              child: Image.asset(
-                AppRasterImages.errorIcon,
-                width: 100.0,
-                height: 100.0,
-              ),
-            ),
-          ),
-        ),
-        newPageProgressIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        newPageErrorIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
-        noItemsFoundIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Image.asset(
-              AppRasterImages.emptyIcon,
-              width: 100.0,
-              height: 100.0,
-            ),
-          ),
-        ),
-        noMoreItemsIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
         itemBuilder: (context, marketplace, index) {
           return MarketplaceModelWidget(
             onPressed: () {
@@ -213,6 +151,24 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
             marketplace: marketplace,
           );
         },
+        firstPageProgressIndicatorBuilder: (context) =>
+            const ShimmerMarketplacetPage(),
+        firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageProgressIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+          height: 300,
+        ),
+        noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
+          title: 'No marketplaces found',
+          subtitle:
+              'There are no marketplaces available at the moment, Please try again later.',
+        ),
+        noMoreItemsIndicatorBuilder: (_) => const SizedBox(height: 100),
       ),
     );
   }

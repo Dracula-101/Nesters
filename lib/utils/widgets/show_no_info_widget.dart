@@ -1,11 +1,10 @@
 part of 'widgets.dart';
 
-class ShowInfoWidget extends StatelessWidget {
-  final String message;
+class ShowNoInfoWidget extends StatelessWidget {
+  final String title;
   final String subtitle;
-  final IconData? icon;
-  const ShowInfoWidget(
-      {super.key, required this.message, required this.subtitle, this.icon});
+  const ShowNoInfoWidget(
+      {super.key, required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -16,13 +15,15 @@ class ShowInfoWidget extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              icon ?? Icons.info_outline_rounded,
+            Image.asset(
+              AppRasterImages.emptyIcon,
               color: AppTheme.primaryShades.shade300,
-              size: 90,
+              colorBlendMode: BlendMode.srcIn,
+              width: 90,
+              height: 90,
             ),
             Text(
-              message,
+              title,
               style: AppTheme.titleLarge.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),

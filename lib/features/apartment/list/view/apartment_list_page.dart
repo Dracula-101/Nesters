@@ -7,6 +7,7 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/apartment/lease_period.dart';
@@ -23,7 +24,6 @@ import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
-import 'package:nesters/utils/widgets/show_error_widget.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class ApartmentListPage extends StatelessWidget {
@@ -150,31 +150,21 @@ class _ApartmentListViewState extends State<ApartmentListView> {
     return SliverList.builder(
       itemCount: apartments.length + 1,
       itemBuilder: (context, index) {
-        if (index < apartments.length) {
-          return ApartmentModelWidget(
-            onPressed: () {
-              GoRouter.of(context).go(
-                '${AppRouterService.homeScreen}/${AppRouterService.apartmentDetail}',
-                extra: apartments[index],
-              );
-            },
-            actionOnFavourite: (isFavourite) {
-              return _apartmentRepository.updateLikeStatus(
-                userId: _authRepository.currentUser!.id,
-                apartmentId: apartments[index].id,
-                isLiked: isFavourite,
-              );
-            },
-            apartment: apartments[index],
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 16),
-          child: Image.asset(
-            AppRasterImages.endIcon,
-            width: 50.0,
-            height: 50.0,
-          ),
+        return ApartmentModelWidget(
+          onPressed: () {
+            GoRouter.of(context).go(
+              '${AppRouterService.homeScreen}/${AppRouterService.apartmentDetail}',
+              extra: apartments[index],
+            );
+          },
+          actionOnFavourite: (isFavourite) {
+            return _apartmentRepository.updateLikeStatus(
+              userId: _authRepository.currentUser!.id,
+              apartmentId: apartments[index].id,
+              isLiked: isFavourite,
+            );
+          },
+          apartment: apartments[index],
         );
       },
     );
@@ -186,60 +176,6 @@ class _ApartmentListViewState extends State<ApartmentListView> {
       builderDelegate: PagedChildBuilderDelegate<ApartmentModel>(
         firstPageProgressIndicatorBuilder: (context) =>
             const ShimmerApartmentPage(),
-        firstPageErrorIndicatorBuilder: (context) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                top: 16,
-                bottom: 16,
-              ),
-              child: Image.asset(
-                AppRasterImages.errorIcon,
-                width: 100.0,
-                height: 100.0,
-              ),
-            ),
-          ),
-        ),
-        newPageProgressIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        newPageErrorIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
-        noItemsFoundIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Image.asset(
-              AppRasterImages.emptyIcon,
-              width: 100.0,
-              height: 100.0,
-            ),
-          ),
-        ),
-        noMoreItemsIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
         itemBuilder: (context, apartment, index) {
           return ApartmentModelWidget(
             onPressed: () {
@@ -258,6 +194,26 @@ class _ApartmentListViewState extends State<ApartmentListView> {
             apartment: apartment,
           );
         },
+        animateTransitions: true,
+        transitionDuration: const Duration(
+          milliseconds: 500,
+        ),
+        firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageProgressIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+          height: 300,
+        ),
+        noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
+          title: "No Apartments Found",
+          subtitle:
+              "There are no apartments at the moment, Please try again later",
+        ),
+        noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 100),
       ),
     );
   }

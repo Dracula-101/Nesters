@@ -26,7 +26,6 @@ import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
-import 'package:nesters/utils/widgets/show_error_widget.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class SubletListPage extends StatelessWidget {
@@ -114,14 +113,9 @@ class _SubletListViewState extends State<SubletListView> {
                 if (state.filteredSubletList?.isNotEmpty ?? false)
                   _buildFilteredSublets(state.filteredSubletList!)
                 else
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Image.asset(
-                        AppRasterImages.emptyIcon,
-                        width: 100.0,
-                        height: 100.0,
-                      ),
-                    ),
+                  const ShowNoInfoWidget(
+                    title: "No Sublets Found",
+                    subtitle: "No sublets found for the selected filters",
                   )
               else
                 _buildSubletList(state.subletList ?? []),
@@ -140,31 +134,21 @@ class _SubletListViewState extends State<SubletListView> {
     return SliverList.builder(
       itemCount: sublets.length + 1,
       itemBuilder: (context, index) {
-        if (index < sublets.length) {
-          return SubletModelWidget(
-            onPressed: () {
-              GoRouter.of(context).go(
-                '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
-                extra: sublets[index],
-              );
-            },
-            actionOnFavourite: (isFavourite) {
-              return _subletRepository.updateLikeStatus(
-                userId: _authRepository.currentUser!.id,
-                subletId: sublets[index].id,
-                isLiked: isFavourite,
-              );
-            },
-            sublet: sublets[index],
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 16),
-          child: Image.asset(
-            AppRasterImages.endIcon,
-            width: 50.0,
-            height: 50.0,
-          ),
+        return SubletModelWidget(
+          onPressed: () {
+            GoRouter.of(context).go(
+              '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
+              extra: sublets[index],
+            );
+          },
+          actionOnFavourite: (isFavourite) {
+            return _subletRepository.updateLikeStatus(
+              userId: _authRepository.currentUser!.id,
+              subletId: sublets[index].id,
+              isLiked: isFavourite,
+            );
+          },
+          sublet: sublets[index],
         );
       },
     );
@@ -176,60 +160,6 @@ class _SubletListViewState extends State<SubletListView> {
       builderDelegate: PagedChildBuilderDelegate<SubletModel>(
         firstPageProgressIndicatorBuilder: (context) =>
             const ShimmerSubletPage(),
-        firstPageErrorIndicatorBuilder: (context) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                top: 16,
-                bottom: 16,
-              ),
-              child: Image.asset(
-                AppRasterImages.errorIcon,
-                width: 100.0,
-                height: 100.0,
-              ),
-            ),
-          ),
-        ),
-        newPageProgressIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        newPageErrorIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
-        noItemsFoundIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Image.asset(
-              AppRasterImages.emptyIcon,
-              width: 100.0,
-              height: 100.0,
-            ),
-          ),
-        ),
-        noMoreItemsIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
         itemBuilder: (context, sublet, index) {
           return SubletModelWidget(
             onPressed: () {
@@ -248,6 +178,25 @@ class _SubletListViewState extends State<SubletListView> {
             sublet: sublet,
           );
         },
+        animateTransitions: true,
+        transitionDuration: const Duration(
+          milliseconds: 500,
+        ),
+        firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageProgressIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+          height: 300,
+        ),
+        noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
+          title: "No Sublets Found",
+          subtitle: "There are no sublet at the moment, Please try again later",
+        ),
+        noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 100),
       ),
     );
   }

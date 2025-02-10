@@ -1,9 +1,4 @@
-import 'dart:async';
-import 'dart:io';
-
-import 'package:flutter/material.dart';
-import 'package:nesters/data/repository/utils/app_exception.dart';
-import 'package:nesters/theme/theme.dart';
+part of 'widgets.dart';
 
 class ShowWarningWidget extends StatelessWidget {
   final String message;

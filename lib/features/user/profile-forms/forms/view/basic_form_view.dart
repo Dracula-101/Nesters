@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 import 'dart:io';
 
@@ -19,8 +21,6 @@ import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:nesters/utils/widgets/show_error_widget.dart';
-import 'package:nesters/utils/widgets/show_info_widget.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -167,12 +167,9 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       final isProfileSet = await GetIt.I<UserRepository>()
           .setBasicUserProfileData(userBasicProfile);
       if (isProfileSet) {
-        // ignore: use_build_context_synchronously
         context.showSuccessSnackBar('Profile created successfully');
-        // ignore: use_build_context_synchronously
         GoRouter.of(context).go(AppRouterService.homeScreen);
       } else {
-        // ignore: use_build_context_synchronously
         context.showErrorSnackBar('Error while creating user profile');
       }
     } on AppException catch (e) {

@@ -28,7 +28,6 @@ import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
-import 'package:nesters/utils/widgets/show_error_widget.dart';
 
 class UserListPage extends StatefulWidget {
   final GlobalKey chatIconKey;
@@ -558,91 +557,39 @@ class _UserListPageState extends State<UserListPage> {
           userQuickProfile: item,
         ),
         firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
-        firstPageErrorIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.emptyIcon,
-                width: 100.0,
-                height: 100.0,
-              ),
-            ),
-          ),
+        firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
         ),
-        newPageErrorIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
+        newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
         ),
-        newPageProgressIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
+        newPageProgressIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+          height: 300,
         ),
-        noItemsFoundIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Image.asset(
-              AppRasterImages.emptyIcon,
-              width: 100.0,
-              height: 100.0,
-            ),
-          ),
+        noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
+          title: 'No Profiles Found',
+          subtitle:
+              'There are no profiles at the moment, Please try again later.',
         ),
-        noMoreItemsIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
+        noMoreItemsIndicatorBuilder: (_) => const SizedBox(height: 100),
       ),
     );
   }
 
   Widget _buildFilteredUserList(List<UserQuickProfile> profiles) {
     if (profiles.isEmpty) {
-      return SliverFillRemaining(
-        child: Center(
-          child: Image.asset(
-            AppRasterImages.emptyIcon,
-            width: 100.0,
-            height: 100.0,
-          ),
-        ),
+      return const ShowNoInfoWidget(
+        title: 'No Profiles Found',
+        subtitle: 'There are no profiles matching the filter criteria.',
       );
     }
     return SliverList.builder(
-      itemCount: profiles.length + 1, // Increase itemCount by 1
+      itemCount: profiles.length,
       itemBuilder: (context, index) {
-        if (index < profiles.length) {
-          return UserQuickProfileWidget(
-            userQuickProfile: profiles[index],
-          );
-        } else {
-          // Add your custom widget at the end
-          return Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 16),
-            child: Image.asset(
-              AppRasterImages.endIcon,
-              width: 50.0,
-              height: 50.0,
-            ),
-          );
-        }
+        return UserQuickProfileWidget(
+          userQuickProfile: profiles[index],
+        );
       },
     );
   }

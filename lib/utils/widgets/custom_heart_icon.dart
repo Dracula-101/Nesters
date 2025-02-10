@@ -53,22 +53,23 @@ class _HeartIconState extends State<HeartIcon>
           fit: BoxFit.cover,
         ),
         onTap: () {
-          debouncer.run(
-            () async {
+          debouncer.run(() {
+            try {
+              widget.onPressed?.call(isFavourite);
               _controller?.reset();
               if (!isFavourite) {
                 _controller?.forward();
               } else {
                 _controller?.reverse();
               }
-              setState(
-                () {
-                  isFavourite = !isFavourite;
-                },
-              );
-              await widget.onPressed?.call(isFavourite);
-            },
-          );
+              setState(() {
+                isFavourite = !isFavourite;
+              });
+            } on AppException catch (e) {
+              // ignore: use_build_context_synchronously
+              context.showErrorSnackBar(e.message);
+            }
+          });
         },
       ),
     );
