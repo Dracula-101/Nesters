@@ -17,7 +17,6 @@ import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
-import 'package:nesters/features/sublet/list/view/components/shimmer_sublet_list_widget.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
 import 'package:nesters/features/sublet/list/view/shimmer_sublet_list_page.dart';
 import 'package:nesters/theme/theme.dart';
@@ -134,12 +133,6 @@ class _SubletListViewState extends State<SubletListView> {
     );
   }
 
-  Widget _buildLoadingIndicator() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
-  }
-
   Widget _buildErrorIndicator(Exception error) {
     return Center(
       child: Text('Error: $error'),
@@ -184,9 +177,49 @@ class _SubletListViewState extends State<SubletListView> {
     return PagedSliverList(
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<SubletModel>(
-        firstPageProgressIndicatorBuilder: (context) => ShimmerSubletPage(),
+        firstPageProgressIndicatorBuilder: (context) =>
+            const ShimmerSubletPage(),
         firstPageErrorIndicatorBuilder: (context) =>
             _buildErrorIndicator(_pagingController.error),
+        newPageProgressIndicatorBuilder: (_) => const SizedBox(
+          height: 100,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        newPageErrorIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.emptyIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
+          ),
+        ),
+        noItemsFoundIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Image.asset(
+              AppRasterImages.emptyIcon,
+              width: 100.0,
+              height: 100.0,
+            ),
+          ),
+        ),
+        noMoreItemsIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.endIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
+          ),
+        ),
         itemBuilder: (context, sublet, index) {
           return SubletModelWidget(
             onPressed: () {
