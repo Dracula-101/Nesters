@@ -558,6 +558,7 @@ class _UserListPageState extends State<UserListPage> {
         itemBuilder: (context, item, index) => UserQuickProfileWidget(
           userQuickProfile: item,
         ),
+        firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
         firstPageErrorIndicatorBuilder: (_) => SizedBox(
           child: Center(
             child: Padding(
@@ -575,14 +576,13 @@ class _UserListPageState extends State<UserListPage> {
             child: Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 16),
               child: Image.asset(
-                AppRasterImages.emptyIcon,
+                AppRasterImages.endIcon,
                 width: 50.0,
                 height: 50.0,
               ),
             ),
           ),
         ),
-        firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
         newPageProgressIndicatorBuilder: (_) => const SizedBox(
           height: 100,
           child: Center(

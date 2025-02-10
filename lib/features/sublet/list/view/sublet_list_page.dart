@@ -133,12 +133,6 @@ class _SubletListViewState extends State<SubletListView> {
     );
   }
 
-  Widget _buildErrorIndicator(Exception error) {
-    return Center(
-      child: Text('Error: $error'),
-    );
-  }
-
   Widget _buildFilteredSublets(List<SubletModel> sublets) {
     return SliverList.builder(
       itemCount: sublets.length + 1,
@@ -179,8 +173,21 @@ class _SubletListViewState extends State<SubletListView> {
       builderDelegate: PagedChildBuilderDelegate<SubletModel>(
         firstPageProgressIndicatorBuilder: (context) =>
             const ShimmerSubletPage(),
-        firstPageErrorIndicatorBuilder: (context) =>
-            _buildErrorIndicator(_pagingController.error),
+        firstPageErrorIndicatorBuilder: (context) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                top: 16,
+                bottom: 16,
+              ),
+              child: Image.asset(
+                AppRasterImages.errorIcon,
+                width: 100.0,
+                height: 100.0,
+              ),
+            ),
+          ),
+        ),
         newPageProgressIndicatorBuilder: (_) => const SizedBox(
           height: 100,
           child: Center(
@@ -192,7 +199,7 @@ class _SubletListViewState extends State<SubletListView> {
             child: Padding(
               padding: const EdgeInsets.only(top: 16, bottom: 16),
               child: Image.asset(
-                AppRasterImages.emptyIcon,
+                AppRasterImages.endIcon,
                 width: 50.0,
                 height: 50.0,
               ),

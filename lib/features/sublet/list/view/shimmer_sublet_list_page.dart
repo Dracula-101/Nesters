@@ -9,7 +9,7 @@ class ShimmerSubletPage extends StatelessWidget {
     return Column(
       children: [
         //create 7 shimmering cards
-        for (int i = 0; i < 2; i++) const ShimmerSubletModelWidget(),
+        for (int i = 0; i < 10; i++) const ShimmerSubletModelWidget(),
       ],
     );
   }

@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_carousel.dart';
-import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
@@ -91,7 +90,22 @@ class MarketplaceModelWidget extends StatelessWidget {
                 _buildMarketplacePrice(),
               ],
             ),
-            if (bottom != null) bottom!,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: DottedLine(
+                width: double.infinity,
+                color: AppTheme.greyShades.shade400,
+                dashWidth: 7,
+                spaceWidth: 2,
+                height: 2,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8, left: 10, right: 10),
+              child: _buildLocation(),
+            ),
+            const SizedBox(height: 8),
+            bottom ?? const SizedBox(),
           ],
         ),
       ),
@@ -110,8 +124,18 @@ class MarketplaceModelWidget extends StatelessWidget {
             topRight: Radius.circular(12),
           ),
         ),
-        child: Text(
-          '${marketplace.category?.name.toTitleCase.toString()}',
+        child: Row(
+          children: [
+            Icon(
+              Icons.category,
+              color: AppTheme.primary,
+              size: 16,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              '${marketplace.category?.name.toTitleCase.toString()}',
+            ),
+          ],
         ),
       ),
     );
@@ -120,8 +144,6 @@ class MarketplaceModelWidget extends StatelessWidget {
   Widget _buildPickupPeriod() {
     return Row(
       children: [
-        Text('Pick-up from'),
-        const SizedBox(width: 4),
         Icon(
           Icons.calendar_today_rounded,
           color: AppTheme.primary,
@@ -198,8 +220,7 @@ class MarketplaceModelWidget extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            _buildLocation(),
-            const SizedBox(height: 4),
+            _buildPickupPeriod(),
           ],
         ),
       ),

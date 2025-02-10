@@ -5,8 +5,8 @@ import 'package:lottie/lottie.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:shimmer/shimmer.dart';
 
-class ShimmerSubletModelWidget extends StatelessWidget {
-  const ShimmerSubletModelWidget({super.key});
+class ShimmerApartmentModelWidget extends StatelessWidget {
+  const ShimmerApartmentModelWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +55,6 @@ class ShimmerSubletModelWidget extends StatelessWidget {
                         fit: BoxFit.cover,
                       ),
                     ),
-                    _buildTitle(),
                     _buildDatePosted(),
                   ],
                 ),
@@ -105,44 +104,6 @@ class ShimmerSubletModelWidget extends StatelessWidget {
           ),
         )
       ],
-    );
-  }
-
-  Widget _buildTitle() {
-    return Positioned(
-      bottom: -3,
-      left: 0,
-      child: Container(
-        padding: const EdgeInsets.only(left: 8, right: 12, top: 4),
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          borderRadius: const BorderRadius.only(
-            topRight: Radius.circular(12),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.bed_rounded,
-              color: AppTheme.primary,
-              size: 16,
-            ),
-            const SizedBox(width: 4),
-            Shimmer.fromColors(
-              baseColor: Colors.grey[100]!,
-              highlightColor: Colors.grey[300]!,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
-                ),
-                width: 100,
-                height: 20,
-              ),
-            )
-          ],
-        ),
-      ),
     );
   }
 
