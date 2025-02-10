@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -8,6 +9,7 @@ import 'package:nesters/data/repository/apartment/apartment_repository.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
@@ -39,6 +41,7 @@ class _UserFavouritePostPageState extends State<UserFavouritePostPage> {
   List<SubletModel>? favouriteSubletPosts;
   List<ApartmentModel>? favouriteApartmentPosts;
   bool isLoading = true;
+  AppException? error;
 
   @override
   void initState() {
@@ -57,12 +60,13 @@ class _UserFavouritePostPageState extends State<UserFavouritePostPage> {
         favouriteMarketplacePosts = value[0] as List<MarketplaceModel>;
         favouriteSubletPosts = value[1] as List<SubletModel>;
         favouriteApartmentPosts = value[2] as List<ApartmentModel>;
-        setState(() {
-          isLoading = false;
-        });
       });
-    } catch (e, s) {
-      log(e.toString(), stackTrace: s);
+    } on AppException catch (e, s) {
+      error = e;
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -115,225 +119,256 @@ class _UserFavouritePostPageState extends State<UserFavouritePostPage> {
           ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ((favouriteMarketplacePosts?.isEmpty ?? true) &&
-                  (favouriteSubletPosts?.isEmpty ?? true) &&
-                  (favouriteApartmentPosts?.isEmpty ?? true))
-              ? const Center(child: Text("No Liked Posts"))
-              : ListView.builder(
-                  itemCount: getItemCount(selectedUserFavouritePost),
-                  itemBuilder: (context, index) {
-                    if (selectedUserFavouritePost ==
-                        SelectedUserFavouritePost.sublet) {
-                      final sublet = favouriteSubletPosts![index];
-                      return SubletModelWidget(
-                        sublet: sublet,
-                        onPressed: () {
-                          GoRouter.of(context).go(
-                            "${AppRouterService.homeScreen}/${AppRouterService.subletDetail}",
-                            extra: sublet,
-                          );
-                        },
-                        action: Positioned(
-                          top: 8,
-                          right: 8,
-                          child: GestureDetector(
-                            onTap: () async {
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => AlertDialog.adaptive(
-                                  title: const Text("Are you sure?"),
-                                  content: const Text(
-                                      "Do you want to remove this post from your liked posts?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(ctx);
-                                      },
-                                      child: const Text("Cancel"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        _subletRepository
-                                            .updateLikeStatus(
-                                          subletId: sublet.id,
-                                          userId:
-                                              _authRepository.currentUser!.id,
-                                          isLiked: false,
-                                        )
-                                            .then((value) {
-                                          Navigator.pop(ctx);
-                                          context.showSuccessSnackBar(
-                                              "Post removed from liked posts");
-                                          setState(() {
-                                            favouriteSubletPosts!
-                                                .removeAt(index);
-                                          });
-                                          getFavouritePosts();
-                                        });
-                                      },
-                                      child: const Text("Remove"),
-                                    ),
-                                  ],
-                                ),
+      body: error != null
+          ? _buildErrorWidget()
+          : isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ((favouriteMarketplacePosts?.isEmpty ?? true) &&
+                      (favouriteSubletPosts?.isEmpty ?? true) &&
+                      (favouriteApartmentPosts?.isEmpty ?? true))
+                  ? const Center(child: Text("No Liked Posts"))
+                  : ListView.builder(
+                      itemCount: getItemCount(selectedUserFavouritePost),
+                      itemBuilder: (context, index) {
+                        if (selectedUserFavouritePost ==
+                            SelectedUserFavouritePost.sublet) {
+                          final sublet = favouriteSubletPosts![index];
+                          return SubletModelWidget(
+                            sublet: sublet,
+                            onPressed: () {
+                              GoRouter.of(context).go(
+                                "${AppRouterService.homeScreen}/${AppRouterService.subletDetail}",
+                                extra: sublet,
                               );
                             },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppTheme.error,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.delete,
-                                color: AppTheme.onError,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    } else if (selectedUserFavouritePost ==
-                        SelectedUserFavouritePost.apartment) {
-                      final apartment = favouriteApartmentPosts![index];
-                      return ApartmentModelWidget(
-                        apartment: apartment,
-                        onPressed: () {
-                          GoRouter.of(context).go(
-                            "${AppRouterService.homeScreen}/${AppRouterService.apartmentDetail}",
-                            extra: apartment,
-                          );
-                        },
-                        action: Positioned(
-                          top: 8,
-                          right: 8,
-                          child: GestureDetector(
-                            onTap: () async {
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => AlertDialog.adaptive(
-                                  title: const Text("Are You Sure?"),
-                                  content: const Text(
-                                    "Do You Want To Remove This Post From Uour Favorites?",
+                            action: Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog.adaptive(
+                                      title: const Text("Are you sure?"),
+                                      content: const Text(
+                                          "Do you want to remove this post from your liked posts?"),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                          },
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            _subletRepository
+                                                .updateLikeStatus(
+                                              subletId: sublet.id,
+                                              userId: _authRepository
+                                                  .currentUser!.id,
+                                              isLiked: false,
+                                            )
+                                                .then((value) {
+                                              Navigator.pop(ctx);
+                                              context.showSuccessSnackBar(
+                                                  "Post removed from liked posts");
+                                              setState(() {
+                                                favouriteSubletPosts!
+                                                    .removeAt(index);
+                                              });
+                                              getFavouritePosts();
+                                            });
+                                          },
+                                          child: const Text("Remove"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.error,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(ctx);
-                                      },
-                                      child: const Text("Cancel"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        _apartmentRepository
-                                            .updateLikeStatus(
-                                          apartmentId: apartment.id,
-                                          userId:
-                                              _authRepository.currentUser!.id,
-                                          isLiked: false,
-                                        )
-                                            .then((value) {
-                                          Navigator.pop(ctx);
-                                          context.showSuccessSnackBar(
-                                              "Post Removed From Favorites");
-                                          setState(() {
-                                            favouriteApartmentPosts!
-                                                .removeAt(index);
-                                          });
-                                          getFavouritePosts();
-                                        });
-                                      },
-                                      child: const Text("Remove"),
-                                    ),
-                                  ],
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: AppTheme.onError,
+                                  ),
                                 ),
-                              );
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppTheme.error,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.delete,
-                                color: AppTheme.onError,
                               ),
                             ),
-                          ),
-                        ),
-                      );
-                    } else {
-                      final marketplace = favouriteMarketplacePosts![index];
-                      return MarketplaceModelWidget(
-                        marketplace: marketplace,
-                        onPressed: () {
-                          GoRouter.of(context).go(
-                            "${AppRouterService.homeScreen}/${AppRouterService.marketplaceDetail}",
-                            extra: marketplace,
                           );
-                        },
-                        action: Positioned(
-                          top: 8,
-                          right: 8,
-                          child: GestureDetector(
-                            onTap: () async {
-                              showDialog(
-                                context: context,
-                                builder: (ctx) => AlertDialog.adaptive(
-                                  title: const Text("Are you sure?"),
-                                  content: const Text(
-                                      "Do you want to remove this post from your liked posts?"),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () {
-                                        Navigator.pop(ctx);
-                                      },
-                                      child: const Text("Cancel"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        _marketplaceRepository
-                                            .updateLikeStatus(
-                                          itemId: marketplace.id,
-                                          userId:
-                                              _authRepository.currentUser!.id,
-                                          isLiked: false,
-                                        )
-                                            .then((value) {
-                                          Navigator.pop(ctx);
-                                          context.showSuccessSnackBar(
-                                              "Post removed from liked posts");
-                                          setState(() {
-                                            favouriteMarketplacePosts!
-                                                .removeAt(index);
-                                          });
-                                          getFavouritePosts();
-                                        });
-                                      },
-                                      child: const Text("Remove"),
-                                    ),
-                                  ],
-                                ),
+                        } else if (selectedUserFavouritePost ==
+                            SelectedUserFavouritePost.apartment) {
+                          final apartment = favouriteApartmentPosts![index];
+                          return ApartmentModelWidget(
+                            apartment: apartment,
+                            onPressed: () {
+                              GoRouter.of(context).go(
+                                "${AppRouterService.homeScreen}/${AppRouterService.apartmentDetail}",
+                                extra: apartment,
                               );
                             },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: AppTheme.error,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                Icons.delete,
-                                color: AppTheme.onError,
+                            action: Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog.adaptive(
+                                      title: const Text("Are You Sure?"),
+                                      content: const Text(
+                                        "Do You Want To Remove This Post From Uour Favorites?",
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                          },
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            _apartmentRepository
+                                                .updateLikeStatus(
+                                              apartmentId: apartment.id,
+                                              userId: _authRepository
+                                                  .currentUser!.id,
+                                              isLiked: false,
+                                            )
+                                                .then((value) {
+                                              Navigator.pop(ctx);
+                                              context.showSuccessSnackBar(
+                                                  "Post Removed From Favorites");
+                                              setState(() {
+                                                favouriteApartmentPosts!
+                                                    .removeAt(index);
+                                              });
+                                              getFavouritePosts();
+                                            });
+                                          },
+                                          child: const Text("Remove"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.error,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: AppTheme.onError,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                ),
+                          );
+                        } else {
+                          final marketplace = favouriteMarketplacePosts![index];
+                          return MarketplaceModelWidget(
+                            marketplace: marketplace,
+                            onPressed: () {
+                              GoRouter.of(context).go(
+                                "${AppRouterService.homeScreen}/${AppRouterService.marketplaceDetail}",
+                                extra: marketplace,
+                              );
+                            },
+                            action: Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  showDialog(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog.adaptive(
+                                      title: const Text("Are you sure?"),
+                                      content: const Text(
+                                          "Do you want to remove this post from your liked posts?"),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(ctx);
+                                          },
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            _marketplaceRepository
+                                                .updateLikeStatus(
+                                              itemId: marketplace.id,
+                                              userId: _authRepository
+                                                  .currentUser!.id,
+                                              isLiked: false,
+                                            )
+                                                .then((value) {
+                                              Navigator.pop(ctx);
+                                              context.showSuccessSnackBar(
+                                                  "Post removed from liked posts");
+                                              setState(() {
+                                                favouriteMarketplacePosts!
+                                                    .removeAt(index);
+                                              });
+                                              getFavouritePosts();
+                                            });
+                                          },
+                                          child: const Text("Remove"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.error,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.delete,
+                                    color: AppTheme.onError,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.error,
+            color: AppTheme.error,
+            size: 90,
+          ),
+          Text(
+            error!.message,
+            style: AppTheme.titleMedium,
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                isLoading = true;
+                error = null;
+              });
+              getFavouritePosts();
+            },
+            child: const Text("Retry"),
+          ),
+        ],
+      ),
     );
   }
 }

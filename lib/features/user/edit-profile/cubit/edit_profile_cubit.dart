@@ -2,9 +2,11 @@ import 'package:bloc/bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/features/auth/bloc/auth_error.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 import 'edit_profile_state.dart';
@@ -17,16 +19,16 @@ class EditProfileCubit extends Cubit<EditProfileState> {
   final AppLogger _logger = GetIt.I<AppLogger>();
 
   void getUserProfile() {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     if (_authRepository.currentUser == null) {
-      emit(state.copyWith(isLoading: false));
+      emit(state.copyWith(loadingState: state.loadingState?.resetLoading()));
       return;
     }
     _userRepository.getUserProfile(_authRepository.currentUser!.id).then(
       (user) {
         emit(
           state.copyWith(
-            isLoading: false,
+            loadingState: state.loadingState?.success(),
             profileImage: user.profileImage,
             selectedCollegeName: user.selectedCollegeName,
             selectedCourseName: user.selectedCourseName,
@@ -43,6 +45,21 @@ class EditProfileCubit extends Cubit<EditProfileState> {
             roomType: user.roomType,
           ),
         );
+      },
+    ).catchError(
+      (error) {
+        _logger.error('Error getting user profile: $error');
+        if (error is AppException) {
+          emit(
+            state.copyWith(
+              loadingState: state.loadingState?.failure(error),
+            ),
+          );
+        }
+      },
+    ).whenComplete(
+      () {
+        emit(state.copyWith(loadingState: state.loadingState?.resetLoading()));
       },
     );
   }
@@ -89,9 +106,10 @@ class EditProfileCubit extends Cubit<EditProfileState> {
 
   void updateProfileData() async {
     try {
-      emit(state.copyWith(isSubmitting: true));
+      emit(state.copyWith(submitState: state.submitState?.loading()));
       if (_authRepository.currentUser == null) {
-        emit(state.copyWith(isSubmitting: false));
+        emit(state.copyWith(
+            submitState: state.submitState?.failure(UserNotAuthError())));
         return;
       }
       final userId = _authRepository.currentUser!.id;
@@ -103,16 +121,16 @@ class EditProfileCubit extends Cubit<EditProfileState> {
         emit(state.copyWith(profileImage: imageUrl));
       }
       if (state.userEditProfile == null) {
-        emit(state.copyWith(isSubmitting: false));
+        emit(state.copyWith(submitState: state.submitState?.resetLoading()));
         return;
       }
       await _userRepository.updateProfile(state.userEditProfile!, userId);
-      emit(state.copyWith(isSuccessful: true));
-    } catch (e) {
+      emit(state.copyWith(submitState: state.submitState?.success()));
+    } on AppException catch (e) {
       _logger.error('Error updating profile: $e');
-      emit(state.copyWith(isFailure: true));
+      emit(state.copyWith(submitState: state.submitState?.failure(e)));
     } finally {
-      emit(state.copyWith(isSubmitting: false));
+      emit(state.copyWith(submitState: state.submitState?.resetLoading()));
     }
   }
 }

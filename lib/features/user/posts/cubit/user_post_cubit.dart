@@ -4,6 +4,7 @@ import 'package:nesters/data/repository/apartment/apartment_repository.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
@@ -30,37 +31,40 @@ class UserPostCubit extends Cubit<UserPostState> {
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
 
   Future<void> fetchSubletUserPosts() async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     try {
       final userId = _authRepository.currentUser!.id;
       final posts = await _subletRepository.getUserSublets(userId: userId);
-      emit(state.copyWith(sublets: posts, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(
+          sublets: posts, loadingState: state.loadingState?.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(loadingState: state.loadingState?.failure(e)));
     }
   }
 
   Future<void> fetchApartmentUserPosts() async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     try {
       final userId = _authRepository.currentUser!.id;
       final posts =
           await _apartmentRepository.getUserApartments(userId: userId);
-      emit(state.copyWith(apartments: posts, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(
+          apartments: posts, loadingState: state.loadingState?.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(loadingState: state.loadingState?.failure(e)));
     }
   }
 
   Future<void> fetchMarketplaceUserPosts() async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     try {
       final userId = _authRepository.currentUser!.id;
       final posts =
           await _marketplaceRepository.getUserMarketplaces(userId: userId);
-      emit(state.copyWith(marketplaces: posts, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(
+          marketplaces: posts, loadingState: state.loadingState?.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(loadingState: state.loadingState?.failure(e)));
     }
   }
 
@@ -68,7 +72,7 @@ class UserPostCubit extends Cubit<UserPostState> {
     required String subletId,
     required bool isVisible,
   }) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     try {
       final userId = _authRepository.currentUser!.id;
       await _subletRepository.changeSubletAvailabilityStatus(
@@ -81,9 +85,11 @@ class UserPostCubit extends Cubit<UserPostState> {
           updatedSublets.add(sublet);
         }
       }
-      emit(state.copyWith(sublets: updatedSublets, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(
+          sublets: updatedSublets,
+          loadingState: state.loadingState?.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(loadingState: state.loadingState?.failure(e)));
     }
   }
 
@@ -91,7 +97,7 @@ class UserPostCubit extends Cubit<UserPostState> {
     required String apartmentId,
     required bool isVisible,
   }) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     try {
       final userId = _authRepository.currentUser!.id;
       await _apartmentRepository.changeApartmentAvailabilityStatus(
@@ -104,9 +110,11 @@ class UserPostCubit extends Cubit<UserPostState> {
           updatedApartments.add(apartment);
         }
       }
-      emit(state.copyWith(apartments: updatedApartments, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(
+          apartments: updatedApartments,
+          loadingState: state.loadingState?.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(loadingState: state.loadingState?.failure(e)));
     }
   }
 
@@ -114,7 +122,7 @@ class UserPostCubit extends Cubit<UserPostState> {
     required int itemId,
     required bool isVisible,
   }) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     try {
       final userId = _authRepository.currentUser!.id;
       await _marketplaceRepository.changeAvailabilityStatus(
@@ -128,14 +136,16 @@ class UserPostCubit extends Cubit<UserPostState> {
           updatedMarketplaces.add(marketplace);
         }
       }
-      emit(state.copyWith(marketplaces: updatedMarketplaces, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(
+          marketplaces: updatedMarketplaces,
+          loadingState: state.loadingState?.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(loadingState: state.loadingState?.failure(e)));
     }
   }
 
   Future<void> deleteSublet({required String subletId}) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     try {
       final userId = _authRepository.currentUser!.id;
       await _subletRepository.deleteUserSublet(
@@ -143,14 +153,16 @@ class UserPostCubit extends Cubit<UserPostState> {
       final updatedSublets = state.sublets
           .where((sublet) => sublet.id != int.tryParse(subletId))
           .toList();
-      emit(state.copyWith(sublets: updatedSublets, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(
+          sublets: updatedSublets,
+          loadingState: state.loadingState?.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(loadingState: state.loadingState?.failure(e)));
     }
   }
 
   Future<void> deleteApartment({required String apartmentId}) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     try {
       final userId = _authRepository.currentUser!.id;
       await _apartmentRepository.deleteUserApartment(
@@ -158,14 +170,16 @@ class UserPostCubit extends Cubit<UserPostState> {
       final updatedApartments = state.apartments
           .where((apartment) => apartment.id != int.tryParse(apartmentId))
           .toList();
-      emit(state.copyWith(apartments: updatedApartments, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(
+          apartments: updatedApartments,
+          loadingState: state.loadingState?.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(loadingState: state.loadingState?.failure(e)));
     }
   }
 
   Future<void> deleteMarketplace({required int itemId}) async {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     try {
       final userId = _authRepository.currentUser!.id;
       await _marketplaceRepository.deleteUserMarketplace(
@@ -173,9 +187,11 @@ class UserPostCubit extends Cubit<UserPostState> {
       final updatedMarketplaces = state.marketplaces
           .where((marketplace) => marketplace.id != itemId)
           .toList();
-      emit(state.copyWith(marketplaces: updatedMarketplaces, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e, isLoading: false));
+      emit(state.copyWith(
+          marketplaces: updatedMarketplaces,
+          loadingState: state.loadingState?.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(loadingState: state.loadingState?.failure(e)));
     }
   }
 }

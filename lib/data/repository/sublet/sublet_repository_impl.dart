@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:nesters/data/repository/database/remote/error/database_error.dart';
 import 'package:nesters/data/repository/sublet/error/sublet_error.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/sublet/sublet_filter.dart';
@@ -34,12 +35,14 @@ class SubletRepositoryImpl implements SubletRepository {
       return sublet.id.toString();
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
-    } catch (e) {
+    } on SocketException catch (_) {
+      throw NoNetworkError();
+    } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.CREATE_SUBLET_ERROR,
+        SubletErrorCode.CREATE_SUBLET_ERR,
         e.toString(),
       );
     }
@@ -83,12 +86,14 @@ class SubletRepositoryImpl implements SubletRepository {
       }
     } on supabase.StorageException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.message.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.UPLOAD_IMAGES_ERROR,
+        SubletErrorCode.UPLOAD_IMAGES_ERR,
         e.getException,
       );
     }
@@ -111,12 +116,14 @@ class SubletRepositoryImpl implements SubletRepository {
       return response.map((e) => SubletModel.fromMap(e)).toList();
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.GET_SUBLETS_ERROR,
+        SubletErrorCode.GET_SUBLETS_ERR,
         e.getException,
       );
     }
@@ -163,12 +170,14 @@ class SubletRepositoryImpl implements SubletRepository {
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.FILTER_SUBLET_ERROR,
+        SubletErrorCode.FILTER_SUBLET_ERR,
         e.getException,
       );
     }
@@ -283,12 +292,14 @@ class SubletRepositoryImpl implements SubletRepository {
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.FILTER_SUBLET_ERROR,
+        SubletErrorCode.FILTER_SUBLET_ERR,
         e.getException,
       );
     }
@@ -305,12 +316,14 @@ class SubletRepositoryImpl implements SubletRepository {
       return sublets;
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.GET_SUBLETS_ERROR,
+        SubletErrorCode.GET_SUBLETS_ERR,
         e.getException,
       );
     }
@@ -331,12 +344,14 @@ class SubletRepositoryImpl implements SubletRepository {
       return sublets;
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.CREATE_SUBLET_ERROR,
+        SubletErrorCode.CREATE_SUBLET_ERR,
         e.toString(),
       );
     }
@@ -358,12 +373,14 @@ class SubletRepositoryImpl implements SubletRepository {
           'Like status updated successfully for sublet: $subletId -> ${isLiked ? '❤️' : '💔'}');
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.UPDATE_LIKE_STATUS_ERROR,
+        SubletErrorCode.UPDATE_LIKE_STATUS_ERR,
         e.toString(),
       );
     }
@@ -382,12 +399,14 @@ class SubletRepositoryImpl implements SubletRepository {
       return likedSublets;
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.GET_SUBLETS_ERROR,
+        SubletErrorCode.GET_SUBLETS_ERR,
         e.getException,
       );
     }
@@ -411,12 +430,14 @@ class SubletRepositoryImpl implements SubletRepository {
           'Sublet ${isAvailable ? 'Shown' : 'Hidden'} successfully with id: $subletId');
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.CHANGE_SUBLET_AVAILABILITY_STATUS_ERROR,
+        SubletErrorCode.CHANGE_SUBLET_AVAILABILITY_STATUS_ERR,
         e.toString(),
       );
     }
@@ -436,12 +457,14 @@ class SubletRepositoryImpl implements SubletRepository {
       _logger.info('Sublet deleted successfully with id: $subletId');
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DB_ERROR,
+        SubletErrorCode.DB_ERR,
         e.details.toString(),
       );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
     } on Exception catch (e) {
       throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.DELETE_SUBLET_ERROR,
+        SubletErrorCode.DELETE_SUBLET_ERR,
         e.toString(),
       );
     }

@@ -3,14 +3,14 @@
 import 'package:nesters/data/repository/utils/app_exception.dart';
 
 enum UserChatProfileErrorCode {
-  GET_PROFILE_ERROR,
-  GET_SENT_REQ_ERROR,
-  GET_RECEIVED_REQ_ERROR,
-  SEND_REQ_ERROR,
-  CREATE_CHAT_ROOM_ERROR,
-  ACCEPT_REQ_ERROR,
-  REJECT_REQ_ERROR,
-  DELETE_USER_ERROR,
+  GET_PROFILE_ERR,
+  GET_SENT_REQ_ERR,
+  GET_RECEIVED_REQ_ERR,
+  SEND_REQ_ERR,
+  CREATE_CHAT_ROOM_ERR,
+  ACCEPT_REQ_ERR,
+  REJECT_REQ_ERR,
+  DELETE_USER_ERR,
 }
 
 abstract class UserChatProfileError extends AppException {
@@ -30,7 +30,7 @@ class GetProfileError extends UserChatProfileError {
 
   GetProfileError({required this.extra})
       : super(
-          code: UserChatProfileErrorCode.GET_PROFILE_ERROR,
+          code: UserChatProfileErrorCode.GET_PROFILE_ERR,
           message: 'Failed to get profile',
         );
 }
@@ -40,7 +40,7 @@ class GetSentReqError extends UserChatProfileError {
 
   GetSentReqError({required this.extra})
       : super(
-          code: UserChatProfileErrorCode.GET_SENT_REQ_ERROR,
+          code: UserChatProfileErrorCode.GET_SENT_REQ_ERR,
           message: 'Failed to get sent requests',
         );
 }
@@ -50,7 +50,7 @@ class GetReceivedReqError extends UserChatProfileError {
 
   GetReceivedReqError({required this.extra})
       : super(
-          code: UserChatProfileErrorCode.GET_RECEIVED_REQ_ERROR,
+          code: UserChatProfileErrorCode.GET_RECEIVED_REQ_ERR,
           message: 'Failed to get received requests',
         );
 }
@@ -60,7 +60,7 @@ class CreateChatRoomError extends UserChatProfileError {
 
   CreateChatRoomError({required this.extra})
       : super(
-          code: UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERROR,
+          code: UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERR,
           message: 'Failed to create chat room',
         );
 }
@@ -70,7 +70,7 @@ class SendReqError extends UserChatProfileError {
 
   SendReqError({required this.extra})
       : super(
-          code: UserChatProfileErrorCode.SEND_REQ_ERROR,
+          code: UserChatProfileErrorCode.SEND_REQ_ERR,
           message: 'Failed to send request',
         );
 }
@@ -80,7 +80,7 @@ class AcceptReqError extends UserChatProfileError {
 
   AcceptReqError({required this.extra})
       : super(
-          code: UserChatProfileErrorCode.ACCEPT_REQ_ERROR,
+          code: UserChatProfileErrorCode.ACCEPT_REQ_ERR,
           message: 'Failed to accept request',
         );
 }
@@ -90,7 +90,7 @@ class RejectReqError extends UserChatProfileError {
 
   RejectReqError({required this.extra})
       : super(
-          code: UserChatProfileErrorCode.REJECT_REQ_ERROR,
+          code: UserChatProfileErrorCode.REJECT_REQ_ERR,
           message: 'Failed to reject request',
         );
 }
@@ -100,7 +100,7 @@ class DeleteUserError extends UserChatProfileError {
 
   DeleteUserError({required this.extra})
       : super(
-          code: UserChatProfileErrorCode.DELETE_USER_ERROR,
+          code: UserChatProfileErrorCode.DELETE_USER_ERR,
           message: 'Failed to delete user',
         );
 }
@@ -109,21 +109,21 @@ class UserChatProfileErrorFactory {
   static UserChatProfileError create(
       UserChatProfileErrorCode code, String extra) {
     switch (code) {
-      case UserChatProfileErrorCode.GET_PROFILE_ERROR:
+      case UserChatProfileErrorCode.GET_PROFILE_ERR:
         return GetProfileError(extra: extra);
-      case UserChatProfileErrorCode.GET_SENT_REQ_ERROR:
+      case UserChatProfileErrorCode.GET_SENT_REQ_ERR:
         return GetSentReqError(extra: extra);
-      case UserChatProfileErrorCode.GET_RECEIVED_REQ_ERROR:
+      case UserChatProfileErrorCode.GET_RECEIVED_REQ_ERR:
         return GetReceivedReqError(extra: extra);
-      case UserChatProfileErrorCode.SEND_REQ_ERROR:
+      case UserChatProfileErrorCode.SEND_REQ_ERR:
         return SendReqError(extra: extra);
-      case UserChatProfileErrorCode.ACCEPT_REQ_ERROR:
+      case UserChatProfileErrorCode.ACCEPT_REQ_ERR:
         return AcceptReqError(extra: extra);
-      case UserChatProfileErrorCode.REJECT_REQ_ERROR:
+      case UserChatProfileErrorCode.REJECT_REQ_ERR:
         return RejectReqError(extra: extra);
-      case UserChatProfileErrorCode.DELETE_USER_ERROR:
+      case UserChatProfileErrorCode.DELETE_USER_ERR:
         return DeleteUserError(extra: extra);
-      case UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERROR:
+      case UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERR:
         return CreateChatRoomError(extra: extra);
     }
   }

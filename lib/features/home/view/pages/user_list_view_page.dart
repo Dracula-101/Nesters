@@ -23,9 +23,11 @@ import 'package:nesters/features/home/view/components/top_bar_action_button.dart
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/widgets/show_error_widget.dart';
 
 class UserListPage extends StatefulWidget {
   final GlobalKey chatIconKey;
@@ -85,11 +87,8 @@ class _UserListPageState extends State<UserListPage> {
             .read<HomeBloc>()
             .add(LoadProfileCompleteEvent(_pagingController.itemList ?? []));
       }
-    } on Exception catch (error) {
+    } catch (error) {
       _pagingController.error = error;
-      if (mounted) {
-        context.read<HomeBloc>().add(LoadProfileErrorEvent(error));
-      }
     }
   }
 
@@ -172,8 +171,8 @@ class _UserListPageState extends State<UserListPage> {
             actions: [
               BlocBuilder<RequestBloc, RequestState>(
                 builder: (context, state) {
-                  int count = state.requestUserState.requestReceivedUsers
-                      .fold(0, (previousValue, element) {
+                  int count = state.requestReceivedUsers.fold(0,
+                      (previousValue, element) {
                     if (!element.isAccepted && !element.isBanned) {
                       return (previousValue) + 1;
                     } else {
@@ -544,18 +543,10 @@ class _UserListPageState extends State<UserListPage> {
         itemBuilder: (context, item, index) => UserQuickProfileWidget(
           userQuickProfile: item,
         ),
-        firstPageErrorIndicatorBuilder: (_) => Container(
-          height: 100,
-          child: const Center(
-            child: Text('First Page Error'),
-          ),
+        firstPageErrorIndicatorBuilder: (error) => ShowErrorWidget(
+          error: _pagingController.error,
         ),
-        newPageErrorIndicatorBuilder: (_) => Container(
-          height: 100,
-          child: const Center(
-            child: Text('New Page Error'),
-          ),
-        ),
+        newPageErrorIndicatorBuilder: (_) => const SizedBox(),
         firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
         newPageProgressIndicatorBuilder: (_) => Container(
           height: 100,
@@ -563,16 +554,8 @@ class _UserListPageState extends State<UserListPage> {
             child: CircularProgressIndicator(),
           ),
         ),
-        noItemsFoundIndicatorBuilder: (_) => Container(
-          child: const Center(
-            child: Text('No items found'),
-          ),
-        ),
-        noMoreItemsIndicatorBuilder: (_) => Container(
-          child: const Center(
-            child: Text('No more items'),
-          ),
-        ),
+        noItemsFoundIndicatorBuilder: (_) => const SizedBox(height: 100),
+        noMoreItemsIndicatorBuilder: (_) => const SizedBox(height: 100),
       ),
     );
   }
@@ -1002,6 +985,13 @@ class UniversityFilterTile extends StatelessWidget {
                           child: Image.network(
                             university.logo ?? '',
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.error_outline_rounded,
+                                color: AppTheme.error,
+                                size: 16,
+                              );
+                            },
                           ),
                         ),
                       )),

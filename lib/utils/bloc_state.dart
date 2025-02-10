@@ -22,4 +22,6 @@ abstract class BlocState {
   BlocState resetLoading();
 
   BlocState failure(AppException error);
+
+  BlocState success();
 }

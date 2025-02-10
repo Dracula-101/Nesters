@@ -3,12 +3,7 @@
 part of 'request_bloc.dart';
 
 class RequestUserState extends BlocState {
-  final List<Request> requestSentUsers;
-  final List<Request> requestReceivedUsers;
-
   RequestUserState({
-    this.requestSentUsers = const [],
-    this.requestReceivedUsers = const [],
     bool isLoading = false,
     AppException? error,
     bool isSuccess = false,
@@ -20,15 +15,11 @@ class RequestUserState extends BlocState {
 
   @override
   RequestUserState copyWith({
-    List<Request>? requestSentUsers,
-    List<Request>? requestReceivedUsers,
     bool? isLoading,
     AppException? error,
     bool? isSuccess,
   }) {
     return RequestUserState(
-      requestSentUsers: requestSentUsers ?? this.requestSentUsers,
-      requestReceivedUsers: requestReceivedUsers ?? this.requestReceivedUsers,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? exception,
       isSuccess: isSuccess ?? this.isSuccess,
@@ -37,9 +28,7 @@ class RequestUserState extends BlocState {
 
   @override
   RequestUserState loading() {
-    return copyWith(
-      requestSentUsers: requestSentUsers,
-      requestReceivedUsers: requestReceivedUsers,
+    return RequestUserState(
       isLoading: true,
       error: null,
       isSuccess: false,
@@ -51,27 +40,21 @@ class RequestUserState extends BlocState {
     return copyWith(isLoading: false);
   }
 
-  RequestUserState loadUserSuccess({
-    required List<Request> requestSentUsers,
-    required List<Request> requestReceivedUsers,
-  }) {
-    return copyWith(
-      requestSentUsers: requestSentUsers,
-      requestReceivedUsers: requestReceivedUsers,
+  @override
+  RequestUserState failure(AppException error) {
+    return RequestUserState(
       isLoading: false,
-      error: null,
-      isSuccess: true,
+      error: error,
+      isSuccess: false,
     );
   }
 
   @override
-  RequestUserState failure(AppException error) {
-    return copyWith(
-      requestSentUsers: requestSentUsers,
-      requestReceivedUsers: requestReceivedUsers,
+  RequestUserState success() {
+    return RequestUserState(
       isLoading: false,
-      error: error,
-      isSuccess: false,
+      error: null,
+      isSuccess: true,
     );
   }
 }
@@ -131,22 +114,30 @@ class RequestSendState extends BlocState {
 
 class RequestState {
   final RequestScreen currentScreen;
+  final List<Request> requestSentUsers;
+  final List<Request> requestReceivedUsers;
   final RequestUserState requestUserState;
   final RequestSendState requestSendState;
 
   RequestState({
     this.currentScreen = RequestScreen.RECEIVED,
+    this.requestSentUsers = const [],
+    this.requestReceivedUsers = const [],
     required this.requestUserState,
     required this.requestSendState,
   });
 
   RequestState copyWith({
     RequestScreen? currentScreen,
+    List<Request>? requestSentUsers,
+    List<Request>? requestReceivedUsers,
     RequestUserState? requestUserState,
     RequestSendState? requestSendState,
   }) {
     return RequestState(
       currentScreen: currentScreen ?? this.currentScreen,
+      requestSentUsers: requestSentUsers ?? this.requestSentUsers,
+      requestReceivedUsers: requestReceivedUsers ?? this.requestReceivedUsers,
       requestUserState: requestUserState ?? this.requestUserState,
       requestSendState: requestSendState ?? this.requestSendState,
     );

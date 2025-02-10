@@ -454,6 +454,13 @@ class _ProfileViewState extends State<ProfileView> {
                     child: Image.network(
                       userProfile.profileImage ?? '',
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.error_outline_rounded,
+                          color: AppTheme.error,
+                          size: 16,
+                        );
+                      },
                     ),
                   ),
                 ),

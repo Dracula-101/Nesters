@@ -98,13 +98,15 @@ class _EditProfileViewState extends State<EditProfileView> {
     return BlocConsumer<EditProfileCubit, EditProfileState>(
       listener: (context, state) {
         if (state.userEditProfile != null) {
-          if (state.isSuccessful) {
+          if (state.submitState?.exception != null) {
+            context.showErrorSnackBar(
+              state.submitState!.exception!.message,
+            );
+          } else if (state.submitState?.isSuccess ?? false) {
             context.showSuccessSnackBar('Profile updated successfully');
             if (GoRouter.of(context).canPop()) {
               GoRouter.of(context).pop();
             }
-          } else if (state.isFailure) {
-            context.showErrorSnackBar('Could not update profile');
           }
           collegeNameController.text =
               state.userEditProfile!.selectedCollegeName ?? '';
@@ -135,7 +137,8 @@ class _EditProfileViewState extends State<EditProfileView> {
         }
       },
       builder: (context, state) {
-        return state.userEditProfile != null && !state.isLoading
+        return state.userEditProfile != null &&
+                !(state.loadingState?.isLoading ?? true)
             ? BlocBuilder<UserBloc, UserState>(
                 builder: (context, userState) {
                   return RawScrollbar(
@@ -372,9 +375,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                           ),
                         ),
                         SaveButton(
-                          isLoading: state.isSubmitting,
+                          isLoading: state.submitState?.isLoading ?? false,
                           onPressed: () {
-                            if (state.isSubmitting) return;
+                            if (state.submitState?.isLoading ?? false) return;
                             int? workExperience =
                                 int.tryParse(workExperienceController.text);
                             if (workExperience == null) {

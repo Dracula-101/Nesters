@@ -15,16 +15,16 @@ abstract class SubletError extends AppException {
 }
 
 enum SubletErrorCode {
-  DB_ERROR,
-  CREATE_SUBLET_ERROR,
-  UPLOAD_IMAGES_ERROR,
-  GET_SUBLETS_ERROR,
-  FILTER_SUBLET_ERROR,
-  GET_SUBLET_LIKE_STATUS_ERROR,
-  UPDATE_LIKE_STATUS_ERROR,
-  GET_USER_LIKED_SUBLETS_ERROR,
-  CHANGE_SUBLET_AVAILABILITY_STATUS_ERROR,
-  DELETE_SUBLET_ERROR;
+  DB_ERR,
+  CREATE_SUBLET_ERR,
+  UPLOAD_IMAGES_ERR,
+  GET_SUBLETS_ERR,
+  FILTER_SUBLET_ERR,
+  GET_SUBLET_LIKE_STATUS_ERR,
+  UPDATE_LIKE_STATUS_ERR,
+  GET_USER_LIKED_SUBLETS_ERR,
+  CHANGE_SUBLET_AVAILABILITY_STATUS_ERR,
+  DELETE_SUBLET_ERR;
 
   @override
   String toString() {
@@ -37,7 +37,7 @@ class SubletDBError extends SubletError {
 
   SubletDBError({required this.extra})
       : super(
-          code: SubletErrorCode.DB_ERROR,
+          code: SubletErrorCode.DB_ERR,
           message: 'Database error',
         );
 }
@@ -47,7 +47,7 @@ class CreateSubletError extends SubletError {
 
   CreateSubletError({required this.extra})
       : super(
-          code: SubletErrorCode.CREATE_SUBLET_ERROR,
+          code: SubletErrorCode.CREATE_SUBLET_ERR,
           message: 'Failed to create sublet',
         );
 }
@@ -57,7 +57,7 @@ class UploadImagesError extends SubletError {
 
   UploadImagesError({required this.extra})
       : super(
-          code: SubletErrorCode.UPLOAD_IMAGES_ERROR,
+          code: SubletErrorCode.UPLOAD_IMAGES_ERR,
           message: 'Failed to upload images',
         );
 }
@@ -67,7 +67,7 @@ class GetSubletsError extends SubletError {
 
   GetSubletsError({required this.extra})
       : super(
-          code: SubletErrorCode.GET_SUBLETS_ERROR,
+          code: SubletErrorCode.GET_SUBLETS_ERR,
           message: 'Failed to get sublets',
         );
 }
@@ -77,7 +77,7 @@ class FilterSubletError extends SubletError {
 
   FilterSubletError({required this.extra})
       : super(
-          code: SubletErrorCode.FILTER_SUBLET_ERROR,
+          code: SubletErrorCode.FILTER_SUBLET_ERR,
           message: 'Failed to filter sublets',
         );
 }
@@ -87,7 +87,7 @@ class GetSubletLikeStatusError extends SubletError {
 
   GetSubletLikeStatusError({required this.extra})
       : super(
-          code: SubletErrorCode.GET_SUBLET_LIKE_STATUS_ERROR,
+          code: SubletErrorCode.GET_SUBLET_LIKE_STATUS_ERR,
           message: 'Failed to get sublet like status',
         );
 }
@@ -97,7 +97,7 @@ class UpdateLikeStatusError extends SubletError {
 
   UpdateLikeStatusError({required this.extra})
       : super(
-          code: SubletErrorCode.UPDATE_LIKE_STATUS_ERROR,
+          code: SubletErrorCode.UPDATE_LIKE_STATUS_ERR,
           message: 'Failed to update like status',
         );
 }
@@ -107,7 +107,7 @@ class GetUserLikedSubletsError extends SubletError {
 
   GetUserLikedSubletsError({required this.extra})
       : super(
-          code: SubletErrorCode.GET_USER_LIKED_SUBLETS_ERROR,
+          code: SubletErrorCode.GET_USER_LIKED_SUBLETS_ERR,
           message: 'Failed to get user liked sublets',
         );
 }
@@ -117,7 +117,7 @@ class ChangeSubletAvailabilityStatusError extends SubletError {
 
   ChangeSubletAvailabilityStatusError({required this.extra})
       : super(
-          code: SubletErrorCode.CHANGE_SUBLET_AVAILABILITY_STATUS_ERROR,
+          code: SubletErrorCode.CHANGE_SUBLET_AVAILABILITY_STATUS_ERR,
           message: 'Failed to change sublet availability status',
         );
 }
@@ -127,7 +127,7 @@ class DeleteUserSubletError extends SubletError {
 
   DeleteUserSubletError({required this.extra})
       : super(
-          code: SubletErrorCode.DELETE_SUBLET_ERROR,
+          code: SubletErrorCode.DELETE_SUBLET_ERR,
           message: 'Failed to delete user sublet',
         );
 }
@@ -137,7 +137,7 @@ class UnknownSubletError extends SubletError {
 
   UnknownSubletError({required this.extra})
       : super(
-          code: SubletErrorCode.CREATE_SUBLET_ERROR,
+          code: SubletErrorCode.CREATE_SUBLET_ERR,
           message: 'An unknown error occurred',
         );
 }
@@ -145,25 +145,25 @@ class UnknownSubletError extends SubletError {
 class SubletErrorFactory {
   static SubletError createSubletError(SubletErrorCode code, String extra) {
     switch (code) {
-      case SubletErrorCode.DB_ERROR:
+      case SubletErrorCode.DB_ERR:
         return SubletDBError(extra: extra);
-      case SubletErrorCode.CREATE_SUBLET_ERROR:
+      case SubletErrorCode.CREATE_SUBLET_ERR:
         return CreateSubletError(extra: extra);
-      case SubletErrorCode.UPLOAD_IMAGES_ERROR:
+      case SubletErrorCode.UPLOAD_IMAGES_ERR:
         return UploadImagesError(extra: extra);
-      case SubletErrorCode.GET_SUBLETS_ERROR:
+      case SubletErrorCode.GET_SUBLETS_ERR:
         return GetSubletsError(extra: extra);
-      case SubletErrorCode.FILTER_SUBLET_ERROR:
+      case SubletErrorCode.FILTER_SUBLET_ERR:
         return FilterSubletError(extra: extra);
-      case SubletErrorCode.GET_SUBLET_LIKE_STATUS_ERROR:
+      case SubletErrorCode.GET_SUBLET_LIKE_STATUS_ERR:
         return GetSubletLikeStatusError(extra: extra);
-      case SubletErrorCode.GET_USER_LIKED_SUBLETS_ERROR:
+      case SubletErrorCode.GET_USER_LIKED_SUBLETS_ERR:
         return GetUserLikedSubletsError(extra: extra);
-      case SubletErrorCode.UPDATE_LIKE_STATUS_ERROR:
+      case SubletErrorCode.UPDATE_LIKE_STATUS_ERR:
         return UpdateLikeStatusError(extra: extra);
-      case SubletErrorCode.CHANGE_SUBLET_AVAILABILITY_STATUS_ERROR:
+      case SubletErrorCode.CHANGE_SUBLET_AVAILABILITY_STATUS_ERR:
         return ChangeSubletAvailabilityStatusError(extra: extra);
-      case SubletErrorCode.DELETE_SUBLET_ERROR:
+      case SubletErrorCode.DELETE_SUBLET_ERR:
         return DeleteUserSubletError(extra: extra);
       default:
         return UnknownSubletError(extra: extra);

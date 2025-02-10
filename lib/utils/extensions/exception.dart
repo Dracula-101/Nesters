@@ -80,23 +80,23 @@ extension ExceptionExtension on Exception {
     } else if (this is StateError) {
       return "ERR_ILLEGAL_STATE";
     } else if (this is IOException) {
-      return "ERR_IO_ERROR";
+      return "ERR_IO_ERR";
     } else if (this is MissingPluginException) {
       return "ERR_MISSING_PLUGIN";
     } else if (this is IsolateSpawnException) {
       return "ERR_ISOLATE_SPAWN_FAILED";
     } else if (this is PlatformException) {
-      return "ERR_PLATFORM_ERROR";
+      return "ERR_PLATFORM_ERR";
     } else if (this is JsonUnsupportedObjectError) {
       return "ERR_INVALID_JSON_DATA";
     } else if (this is TlsException) {
-      return "ERR_TLS_ERROR";
+      return "ERR_TLS_ERR";
     } else if (this is UnsupportedError) {
       return "ERR_OPERATION_NOT_SUPPORTED";
     } else if (this is ProcessException) {
       return "ERR_PROCESS_FAILED";
     } else {
-      return "ERR_UNKNOWN_ERROR";
+      return "ERR_UNKNOWN_ERR";
     }
   }
 

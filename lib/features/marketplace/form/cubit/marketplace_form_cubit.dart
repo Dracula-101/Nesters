@@ -6,11 +6,13 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_link_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_period_model.dart';
 import 'package:nesters/domain/models/user/location.dart';
+import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'marketplace_form_state.dart';
@@ -80,7 +82,7 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
   }
 
   Future<void> createSublet() async {
-    emit(state.copyWith(isSubmitting: true));
+    emit(state.copyWith(submitState: state.submitState?.loading()));
     try {
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
@@ -109,24 +111,22 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
       emit(state.copyWith(
         submitError: null,
         imageUploadTask: null,
-        isSubmitting: false,
-        isSubmitComplete: true,
+        submitState: state.submitState?.success(),
       ));
-    } on Exception catch (e) {
+    } on AppException catch (e) {
       _logger.log('Error creating sublet: $e');
       emit(state.copyWith(
         submitError: e,
-        isSubmitting: false,
-        isSubmitComplete: false,
+        submitState: state.submitState?.failure(e),
         imageUploadTask: null,
       ));
     }
   }
 
   Future<void> updateSublet() async {
-    if (state.isSubmitting ?? false) return;
+    if (state.submitState?.isLoading ?? false) return;
     try {
-      emit(state.copyWith(isSubmitting: true));
+      emit(state.copyWith(submitState: state.submitState?.loading()));
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(submitError: Exception('User ID is null')));
@@ -162,15 +162,13 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
       emit(state.copyWith(
         submitError: null,
         imageUploadTask: null,
-        isSubmitting: false,
-        isSubmitComplete: true,
+        submitState: state.submitState?.success(),
       ));
-    } on Exception catch (e) {
+    } on AppException catch (e) {
       _logger.log('Error creating sublet: $e');
       emit(state.copyWith(
         submitError: e,
-        isSubmitting: false,
-        isSubmitComplete: false,
+        submitState: state.submitState?.failure(e),
         imageUploadTask: null,
       ));
     }

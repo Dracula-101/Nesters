@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -8,6 +10,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/apartment/lease_period.dart';
@@ -18,12 +21,14 @@ import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
+import 'package:nesters/features/sublet/list/view/components/sublet_list_error.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
+import 'package:nesters/utils/widgets/show_error_widget.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class SubletListPage extends StatelessWidget {
@@ -79,7 +84,7 @@ class _SubletListViewState extends State<SubletListView> {
       context
           .read<SubletBloc>()
           .add(SubletEvent.saveSublets(_pagingController.itemList ?? []));
-    } catch (error) {
+    } on AppException catch (error) {
       _pagingController.error = error;
     }
   }
@@ -138,9 +143,9 @@ class _SubletListViewState extends State<SubletListView> {
     );
   }
 
-  Widget _buildErrorIndicator(Exception error) {
-    return Center(
-      child: Text('Error: $error'),
+  Widget _buildErrorIndicator(AppException error) {
+    return ShowErrorWidget(
+      error: error,
     );
   }
 

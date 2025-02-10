@@ -1,30 +1,134 @@
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/utils/bloc_state.dart';
+
+class EditProfileSubmitState extends BlocState {
+  EditProfileSubmitState({
+    required bool isLoading,
+    required AppException? exception,
+    required bool isSuccess,
+  }) : super(
+          isLoading: isLoading,
+          exception: exception,
+          isSuccess: isSuccess,
+        );
+
+  @override
+  EditProfileSubmitState copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return EditProfileSubmitState(
+      isLoading: isLoading ?? this.isLoading,
+      exception: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
+
+  @override
+  EditProfileSubmitState failure(AppException error) {
+    return EditProfileSubmitState(
+      isLoading: false,
+      exception: error,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  EditProfileSubmitState loading() {
+    return EditProfileSubmitState(
+      isLoading: true,
+      exception: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  EditProfileSubmitState resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  @override
+  EditProfileSubmitState success() {
+    return EditProfileSubmitState(
+      isLoading: false,
+      exception: null,
+      isSuccess: true,
+    );
+  }
+}
+
+class EditProfileLoadingState extends BlocState {
+  EditProfileLoadingState({
+    required bool isLoading,
+    required AppException? exception,
+    required bool isSuccess,
+  }) : super(
+          isLoading: isLoading,
+          exception: exception,
+          isSuccess: isSuccess,
+        );
+
+  @override
+  EditProfileLoadingState copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return EditProfileLoadingState(
+      isLoading: isLoading ?? this.isLoading,
+      exception: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
+
+  @override
+  EditProfileLoadingState failure(AppException error) {
+    return EditProfileLoadingState(
+      isLoading: false,
+      exception: error,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  EditProfileLoadingState loading() {
+    return EditProfileLoadingState(
+      isLoading: true,
+      exception: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  EditProfileLoadingState resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  @override
+  EditProfileLoadingState success() {
+    return EditProfileLoadingState(
+      isLoading: false,
+      exception: null,
+      isSuccess: true,
+    );
+  }
+}
 
 class EditProfileState {
   final UserEditProfile? userEditProfile;
-  final bool isLoading;
+  final EditProfileLoadingState? loadingState;
   final String? imagePath;
-  final bool isSubmitting;
-  final bool isSuccessful;
-  final bool isFailure;
+  final EditProfileSubmitState? submitState;
 
   const EditProfileState({
     this.userEditProfile,
-    this.isLoading = true,
+    this.loadingState,
     this.imagePath,
-    this.isSubmitting = false,
-    this.isSuccessful = false,
-    this.isFailure = false,
+    this.submitState,
   });
 
   EditProfileState copyWith({
-    bool? isLoading,
     String? imagePath,
-    bool? isSubmitting,
-    bool? isSuccessful,
-    bool? isFailure,
+    EditProfileLoadingState? loadingState,
+    EditProfileSubmitState? submitState,
     String? profileImage,
     String? selectedCollegeName,
     String? selectedCourseName,
@@ -41,11 +145,9 @@ class EditProfileState {
     UserRoomType? roomType,
   }) {
     return EditProfileState(
-      isLoading: isLoading ?? this.isLoading,
       imagePath: imagePath ?? this.imagePath,
-      isSubmitting: isSubmitting ?? this.isSubmitting,
-      isSuccessful: isSuccessful ?? this.isSuccessful,
-      isFailure: isFailure ?? this.isFailure,
+      loadingState: loadingState ?? this.loadingState,
+      submitState: submitState ?? this.submitState,
       userEditProfile: UserEditProfile(
         profileImage: profileImage ?? userEditProfile?.profileImage,
         selectedCollegeName:
@@ -78,7 +180,7 @@ class EditProfileState {
 
   @override
   String toString() {
-    return 'EditProfileState(userEditProfile: $userEditProfile, isLoading: $isLoading, isSubmitting: $isSubmitting)';
+    return 'EditProfileState(userEditProfile: $userEditProfile)';
   }
 }
 

@@ -20,10 +20,3 @@ class RequestAlreadySentError implements AppException {
 
   RequestAlreadySentError([this.message = "Request already sent"]);
 }
-
-class UserNotAuthError implements AppException {
-  @override
-  String message;
-
-  UserNotAuthError([this.message = "User not authenticated"]);
-}

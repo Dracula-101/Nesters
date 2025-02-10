@@ -252,6 +252,15 @@ class CustomSearchableDropDownFieldState<T>
                 ),
             ],
           ),
+          errorBuilder: (context, searchEntry, error) {
+            return ShowErrorWidget(error: error);
+          },
+          emptyBuilder: (context, searchEntry) {
+            return ShowInfoWidget(
+              message: 'No items found',
+              subtitle: 'No data related to \'$searchEntry\' found',
+            );
+          },
           containerBuilder: (context, child) {
             return Padding(
               padding: const EdgeInsets.only(
@@ -377,6 +386,15 @@ class _CustomBottomSheetDropdownFieldState<T>
             return Padding(
               padding: const EdgeInsets.only(left: 6.0, right: 6.0, top: 12.0),
               child: child,
+            );
+          },
+          errorBuilder: (context, searchEntry, error) {
+            return ShowErrorWidget(error: error);
+          },
+          emptyBuilder: (context, searchEntry) {
+            return ShowInfoWidget(
+              message: 'No items found',
+              subtitle: 'No data related to \'$searchEntry\' found',
             );
           },
           itemBuilder: (context, T? item, isSelected) {
@@ -650,7 +668,6 @@ class _CustomDynamicSearchableDropDropFieldState
                         child: const Text('Close'),
                       ),
                   ],
-                  contentPadding: const EdgeInsets.all(0),
                   actionsPadding: const EdgeInsets.all(0),
                   content: SingleChildScrollView(
                     child: Column(
@@ -722,9 +739,8 @@ class _CustomDynamicSearchableDropDropFieldState
                                         child: CircularProgressIndicator(),
                                       );
                                     } else if (snapshot.hasError) {
-                                      return const Center(
-                                        child: Text('An error occurred'),
-                                      );
+                                      return ShowErrorWidget(
+                                          error: snapshot.error as Exception);
                                     } else if (snapshot.data != null) {
                                       return StatefulBuilder(
                                         key: _rebuildKey,
@@ -804,8 +820,8 @@ class _CustomDynamicSearchableDropDropFieldState
                                         child: CircularProgressIndicator(),
                                       );
                                     } else if (snapshot.hasError) {
-                                      return const Center(
-                                        child: Text('An error occurred'),
+                                      return ShowErrorWidget(
+                                        error: snapshot.error as Exception,
                                       );
                                     } else if (snapshot.hasData) {
                                       return SizedBox(

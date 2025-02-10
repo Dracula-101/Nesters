@@ -38,7 +38,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
       );
     } on Exception {
       throw UserChatErrorFactory.create(
-        UserChatErrorCode.TOKEN_CHANGE_LISTENER_ERROR,
+        UserChatErrorCode.TOKEN_CHANGE_LISTENER_ERR,
         'Token Change Listener Error',
       );
     }
@@ -67,7 +67,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
           );
     } on Exception {
       throw UserChatErrorFactory.create(
-        UserChatErrorCode.CHAT_GET_MSG_ERROR,
+        UserChatErrorCode.CHAT_GET_MSG_ERR,
         'Fetch Chat Messages Error',
       );
     }
@@ -92,7 +92,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
       });
     } on Exception {
       throw UserChatErrorFactory.create(
-        UserChatErrorCode.CHAT_GET_MSG_ERROR,
+        UserChatErrorCode.CHAT_GET_MSG_ERR,
         'Get Chat Messages Error',
       );
     }
@@ -124,7 +124,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
       return subject;
     } on Exception {
       throw UserChatErrorFactory.create(
-        UserChatErrorCode.CHAT_GET_MSG_ERROR,
+        UserChatErrorCode.CHAT_GET_MSG_ERR,
         'Get Chat Messages Subject Error',
       );
     }
@@ -141,7 +141,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
           .then((value) => value.id);
     } on Exception {
       throw UserChatErrorFactory.create(
-        UserChatErrorCode.CHAT_ADD_MSG_ERROR,
+        UserChatErrorCode.CHAT_ADD_MSG_ERR,
         'Send Message Error',
       );
     }
@@ -155,7 +155,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
           );
     } on Exception {
       throw UserChatErrorFactory.create(
-        UserChatErrorCode.CHAT_ROOM_EXIST_ERROR,
+        UserChatErrorCode.CHAT_ROOM_EXIST_ERR,
         'Chat Room Exist Error',
       );
     }
@@ -178,7 +178,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
       );
     } on Exception {
       throw UserChatErrorFactory.create(
-        UserChatErrorCode.CHAT_ROOM_CREATE_ERROR,
+        UserChatErrorCode.CHAT_ROOM_CREATE_ERR,
         'Create Chat Room Error',
       );
     }
@@ -241,7 +241,7 @@ class FirebaseChatRepository extends RemoteChatRepository {
       return message;
     } on Exception {
       throw UserChatErrorFactory.create(
-        UserChatErrorCode.CHAT_DOWNLOAD_DOC_ERROR,
+        UserChatErrorCode.CHAT_DOWNLOAD_DOC_ERR,
         'Download Document Error',
       );
     }

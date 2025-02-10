@@ -34,7 +34,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       }
     } on Exception {
       throw UserChatProfileErrorFactory.create(
-        UserChatProfileErrorCode.GET_PROFILE_ERROR,
+        UserChatProfileErrorCode.GET_PROFILE_ERR,
         'Get User Name And Profile Error',
       );
     }
@@ -67,7 +67,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       });
     } on Exception {
       throw UserChatProfileErrorFactory.create(
-        UserChatProfileErrorCode.GET_RECEIVED_REQ_ERROR,
+        UserChatProfileErrorCode.GET_RECEIVED_REQ_ERR,
         'Get Received User Requests Error',
       );
     }
@@ -100,7 +100,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       });
     } on Exception {
       throw UserChatProfileErrorFactory.create(
-        UserChatProfileErrorCode.GET_SENT_REQ_ERROR,
+        UserChatProfileErrorCode.GET_SENT_REQ_ERR,
         'Get Sent User Requests Error',
       );
     }
@@ -129,7 +129,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       ]);
     } on Exception {
       throw UserChatProfileErrorFactory.create(
-        UserChatProfileErrorCode.SEND_REQ_ERROR,
+        UserChatProfileErrorCode.SEND_REQ_ERR,
         'Send Request Error',
       );
     }
@@ -156,7 +156,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       ]);
     } on Exception {
       throw UserChatProfileErrorFactory.create(
-        UserChatProfileErrorCode.ACCEPT_REQ_ERROR,
+        UserChatProfileErrorCode.ACCEPT_REQ_ERR,
         'Accept Request Error',
       );
     }
@@ -183,7 +183,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       ]);
     } on Exception {
       throw UserChatProfileErrorFactory.create(
-        UserChatProfileErrorCode.REJECT_REQ_ERROR,
+        UserChatProfileErrorCode.REJECT_REQ_ERR,
         'Reject Request Error',
       );
     }
@@ -203,7 +203,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       );
     } on Exception {
       throw UserChatProfileErrorFactory.create(
-        UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERROR,
+        UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERR,
         'Create Chat Room Error',
       );
     }
@@ -217,7 +217,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       });
     } on Exception {
       throw UserChatProfileErrorFactory.create(
-        UserChatProfileErrorCode.DELETE_USER_ERROR,
+        UserChatProfileErrorCode.DELETE_USER_ERR,
         'Delete User Error',
       );
     }

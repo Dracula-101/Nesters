@@ -6,15 +6,18 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
+import 'package:nesters/features/marketplace/list/view/components/marketplace_error.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
+import 'package:nesters/utils/widgets/show_error_widget.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarketplacePage extends StatelessWidget {
@@ -73,7 +76,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
       // ignore: use_build_context_synchronously
       context.read<MarketplaceBloc>().add(
           MarketplaceEvent.saveMarketplaces(_pagingController.itemList ?? []));
-    } catch (error) {
+    } on AppException catch (error) {
       _pagingController.error = error;
     }
   }
@@ -123,10 +126,8 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
     );
   }
 
-  Widget _buildErrorIndicator(Exception error) {
-    return Center(
-      child: Text('Error: $error'),
-    );
+  Widget _buildErrorIndicator(AppException error) {
+    return ShowErrorWidget(error: error);
   }
 
   Widget _buildMarketplacePlaceholder() {

@@ -4,8 +4,12 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 import 'package:nesters/data/repository/auth/auth_repository.dart';
+import 'package:nesters/data/repository/database/local/error/local_storage_error.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
+import 'package:nesters/data/repository/database/remote/error/database_error.dart';
+import 'package:nesters/data/repository/user/error/user_error.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/location/city_info.dart';
@@ -73,16 +77,10 @@ class UserRepository {
   }
 
   Future<List<MarketplaceModel>> getMarketplaceData() async {
-    try {
-      return await _databaseRepository.getData(
-        "marketplace",
-        orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
-      ).then(
-          (event) => event.map((e) => MarketplaceModel.fromJson(e)).toList());
-    } catch (e) {
-      _logger.error('Error in getting marketplace data: $e');
-      rethrow;
-    }
+    return await _databaseRepository.getData(
+      "marketplace",
+      orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
+    ).then((event) => event.map((e) => MarketplaceModel.fromJson(e)).toList());
   }
 
   Future<List<University?>> getAllUniversities() async {
@@ -93,29 +91,21 @@ class UserRepository {
   }
 
   Future<List<Degree?>> getAllDegrees() async {
-    try {
-      return await _databaseRepository
-          .searchDataFromFuture(
-            masterDegreeCollection,
-            FieldValue(key: 'title', value: ''),
-          )
-          .then((event) => event.map((e) => Degree.fromJson(e)).toList());
-    } catch (e) {
-      return List.empty();
-    }
+    return await _databaseRepository
+        .searchDataFromFuture(
+          masterDegreeCollection,
+          FieldValue(key: 'title', value: ''),
+        )
+        .then((event) => event.map((e) => Degree.fromJson(e)).toList());
   }
 
   Future<List<CityInfo>> searchCities({required String searchQuery}) async {
     String baseUrl =
         "https://api.thecompaniesapi.com/v2/locations/cities?search=$searchQuery";
-    try {
-      http.Response response = await http.get(Uri.parse(baseUrl));
-      CityInfoResponse cityInfoResponse =
-          CityInfoResponse.fromJson(jsonDecode(response.body));
-      return CityInfo.fromResponse(cityInfoResponse);
-    } catch (e) {
-      return List.empty();
-    }
+    http.Response response = await http.get(Uri.parse(baseUrl));
+    CityInfoResponse cityInfoResponse =
+        CityInfoResponse.fromJson(jsonDecode(response.body));
+    return CityInfo.fromResponse(cityInfoResponse);
   }
 
   List<String> getCountries() {
@@ -138,34 +128,26 @@ class UserRepository {
         ],
       );
     } catch (e) {
-      return false;
-    }
-  }
-
-  Future<List<University>?> getUniversities(String? searchString) async {
-    try {
-      return await _databaseRepository
-          .searchDataFromFuture(
-            universityCollection,
-            FieldValue(key: 'title', value: searchString ?? ''),
-          )
-          .then((event) => event.map((e) => University.fromJson(e)).toList());
-    } catch (e) {
       return null;
     }
   }
 
-  Future<List<Degree>?> getMastersDegree(String? searchString) async {
-    try {
-      return await _databaseRepository
-          .searchDataFromFuture(
-            masterDegreeCollection,
-            FieldValue(key: 'title', value: searchString ?? ''),
-          )
-          .then((event) => event.map((e) => Degree.fromJson(e)).toList());
-    } catch (e) {
-      return null;
-    }
+  Future<List<University>> getUniversities(String? searchString) async {
+    return await _databaseRepository
+        .searchDataFromFuture(
+          universityCollection,
+          FieldValue(key: 'title', value: searchString ?? ''),
+        )
+        .then((event) => event.map((e) => University.fromJson(e)).toList());
+  }
+
+  Future<List<Degree>> getMastersDegree(String? searchString) async {
+    return await _databaseRepository
+        .searchDataFromFuture(
+          masterDegreeCollection,
+          FieldValue(key: 'title', value: searchString ?? ''),
+        )
+        .then((event) => event.map((e) => Degree.fromJson(e)).toList());
   }
 
   Future<bool> setBasicUserProfileData(UserBasicProfile userProfile) async {
@@ -188,8 +170,18 @@ class UserRepository {
         true,
       );
       return true;
+    } on SocketException {
+      throw NoNetworkError();
+    } on LocalStorageError {
+      throw UserBasicInfoError(message: 'Error setting user profile');
+    } on DatabaseError {
+      throw UserBasicInfoError(
+        message: 'Error setting values in DB',
+      );
+    } on AppException {
+      rethrow;
     } catch (e) {
-      return false;
+      throw UserBasicInfoError(message: 'Error setting user profile');
     }
   }
 
@@ -208,8 +200,16 @@ class UserRepository {
           ),
         ],
       );
+    } on SocketException {
+      throw NoNetworkError();
+    } on DatabaseError {
+      throw UserBasicInfoError(
+        message: 'Error checking user deleted status',
+      );
     } catch (e) {
-      return Future.value(false);
+      throw UserBasicInfoError(
+        message: 'Error checking user deleted status',
+      );
     }
   }
 
@@ -237,9 +237,10 @@ class UserRepository {
           )
           .then(
               (event) => event.map((e) => LocationState.fromJson(e)).toList());
-    } catch (e) {
-      _logger.error('Error in getting states: $e');
+    } on AppException {
       rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting states');
     }
   }
 
@@ -251,9 +252,10 @@ class UserRepository {
             FieldValue(key: 'name', value: searchQuery ?? ''),
           )
           .then((event) => event.map((e) => Language.fromJson(e)).toList());
-    } catch (e) {
-      _logger.error('Error in getting languages: $e');
+    } on AppException {
       rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting languages');
     }
   }
 
@@ -287,175 +289,194 @@ class UserRepository {
         ],
       ).then(
           (event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
-    } catch (e, stackTrace) {
-      _logger.error('Error in getting user quick profiles: $e',
-          stackTrace: stackTrace);
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
       rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting user profiles');
     }
   }
 
   Future<List<UserQuickProfile>> getSingleFilteredQuickProfiles(
       SingleUserFilter filter) async {
-    QueryData? query;
-    if (filter is UniversityFilter) {
-      query = QueryData(
-        fieldName: 'selected_college_name',
-        equalTo: FieldValue(
-          key: 'selected_college_name',
-          value: filter.university,
-        ),
-      );
-    } else if (filter is BranchFilter) {
-      query = QueryData(
-        fieldName: 'selected_course_name',
-        equalTo: FieldValue(
-          key: 'selected_course_name',
-          value: filter.branch,
-        ),
-      );
-    } else if (filter is GenderFilter) {
-      query = QueryData(
-        fieldName: 'gender',
-        equalTo: FieldValue(
-          key: 'gender',
-          value: filter.gender,
-        ),
-      );
+    try {
+      QueryData? query;
+      if (filter is UniversityFilter) {
+        query = QueryData(
+          fieldName: 'selected_college_name',
+          equalTo: FieldValue(
+            key: 'selected_college_name',
+            value: filter.university,
+          ),
+        );
+      } else if (filter is BranchFilter) {
+        query = QueryData(
+          fieldName: 'selected_course_name',
+          equalTo: FieldValue(
+            key: 'selected_course_name',
+            value: filter.branch,
+          ),
+        );
+      } else if (filter is GenderFilter) {
+        query = QueryData(
+          fieldName: 'gender',
+          equalTo: FieldValue(
+            key: 'gender',
+            value: filter.gender,
+          ),
+        );
+      }
+      if (query == null) {
+        throw Exception('Invalid filter type');
+      }
+      final userId = _authRepository.currentUser?.id;
+      return await _databaseRepository.getFilteredData(
+        userDetailCollection,
+        query,
+        orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
+        columns: [
+          DbKey(key: 'id'),
+          DbKey(key: 'full_name'),
+          DbKey(key: 'profile_image'),
+          DbKey(key: 'selected_college_name'),
+          DbKey(key: 'selected_course_name'),
+          DbKey(key: 'city'),
+          DbKey(key: 'state'),
+          DbKey(key: 'work_experience'),
+        ],
+        whereNotFields: [
+          FieldValue(
+            key: 'id',
+            value: userId,
+          ),
+          FieldValue(
+            key: 'user_deleted',
+            value: true,
+          ),
+        ],
+      ).then(
+          (event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting user profiles');
     }
-    if (query == null) {
-      throw Exception('Invalid filter type');
-    }
-    final userId = _authRepository.currentUser?.id;
-    return await _databaseRepository.getFilteredData(
-      userDetailCollection,
-      query,
-      orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
-      columns: [
-        DbKey(key: 'id'),
-        DbKey(key: 'full_name'),
-        DbKey(key: 'profile_image'),
-        DbKey(key: 'selected_college_name'),
-        DbKey(key: 'selected_course_name'),
-        DbKey(key: 'city'),
-        DbKey(key: 'state'),
-        DbKey(key: 'work_experience'),
-      ],
-      whereNotFields: [
-        FieldValue(
-          key: 'id',
-          value: userId,
-        ),
-        FieldValue(
-          key: 'user_deleted',
-          value: true,
-        ),
-      ],
-    ).then((event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
   }
 
   Future<List<UserQuickProfile>> getMultipleFilteredQuickProfiles(
     UserFilter filters,
   ) async {
-    List<QueryData> query = [];
-    if (filters.universityName != null && filters.universityName != "") {
-      query.add(
-        QueryData(
-          fieldName: 'selected_college_name',
-          equalTo: FieldValue(
-            key: 'selected_college_name',
-            value: filters.universityName,
+    try {
+      List<QueryData> query = [];
+      if (filters.universityName != null && filters.universityName != "") {
+        query.add(
+          QueryData(
+            fieldName: 'selected_college_name',
+            equalTo: FieldValue(
+              key: 'selected_college_name',
+              value: filters.universityName,
+            ),
           ),
-        ),
-      );
-    }
-    if (filters.branchName != null && filters.branchName != "") {
-      query.add(
-        QueryData(
-          fieldName: 'selected_course_name',
-          equalTo: FieldValue(
-            key: 'selected_course_name',
-            value: filters.branchName,
+        );
+      }
+      if (filters.branchName != null && filters.branchName != "") {
+        query.add(
+          QueryData(
+            fieldName: 'selected_course_name',
+            equalTo: FieldValue(
+              key: 'selected_course_name',
+              value: filters.branchName,
+            ),
           ),
-        ),
-      );
-    }
-    if (filters.drinkingHabit != null &&
-        filters.drinkingHabit != UserHabit.UNKNOWN) {
-      query.add(
-        QueryData(
-          fieldName: "drinking_habit",
-          equalTo: FieldValue(
-            key: "drinking_habit",
-            value: filters.drinkingHabit,
+        );
+      }
+      if (filters.drinkingHabit != null &&
+          filters.drinkingHabit != UserHabit.UNKNOWN) {
+        query.add(
+          QueryData(
+            fieldName: "drinking_habit",
+            equalTo: FieldValue(
+              key: "drinking_habit",
+              value: filters.drinkingHabit,
+            ),
           ),
-        ),
-      );
-    }
-    if (filters.smokingHabit != null &&
-        filters.smokingHabit != UserHabit.UNKNOWN) {
-      query.add(
-        QueryData(
-          fieldName: "smoking_habit",
-          equalTo: FieldValue(
-            key: "smoking_habit",
-            value: filters.smokingHabit,
+        );
+      }
+      if (filters.smokingHabit != null &&
+          filters.smokingHabit != UserHabit.UNKNOWN) {
+        query.add(
+          QueryData(
+            fieldName: "smoking_habit",
+            equalTo: FieldValue(
+              key: "smoking_habit",
+              value: filters.smokingHabit,
+            ),
           ),
-        ),
-      );
-    }
-    if (filters.personType != null &&
-        filters.personType != PersonType.UNKNOWN) {
-      query.add(
-        QueryData(
-          fieldName: "person_type",
-          equalTo: FieldValue(
-            key: "person_type",
-            value: filters.personType,
+        );
+      }
+      if (filters.personType != null &&
+          filters.personType != PersonType.UNKNOWN) {
+        query.add(
+          QueryData(
+            fieldName: "person_type",
+            equalTo: FieldValue(
+              key: "person_type",
+              value: filters.personType,
+            ),
           ),
-        ),
-      );
-    }
-    if (filters.flatmateGenderPref != null &&
-        filters.flatmateGenderPref != "") {
-      query.add(
-        QueryData(
-          fieldName: "gender",
-          equalTo: FieldValue(
-            key: "gender",
-            value: filters.flatmateGenderPref,
+        );
+      }
+      if (filters.flatmateGenderPref != null &&
+          filters.flatmateGenderPref != "") {
+        query.add(
+          QueryData(
+            fieldName: "gender",
+            equalTo: FieldValue(
+              key: "gender",
+              value: filters.flatmateGenderPref,
+            ),
           ),
-        ),
-      );
+        );
+      }
+      final userId = _authRepository.currentUser?.id;
+      return await _databaseRepository.getMultipleFilteredData(
+        userDetailCollection,
+        query,
+        orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
+        columns: [
+          DbKey(key: 'id'),
+          DbKey(key: 'full_name'),
+          DbKey(key: 'profile_image'),
+          DbKey(key: 'selected_college_name'),
+          DbKey(key: 'selected_course_name'),
+          DbKey(key: 'city'),
+          DbKey(key: 'state'),
+          DbKey(key: 'gender'),
+          DbKey(key: 'work_experience'),
+        ],
+        whereNotFields: [
+          FieldValue(
+            key: 'id',
+            value: userId,
+          ),
+          FieldValue(
+            key: 'user_deleted',
+            value: true,
+          ),
+        ],
+      ).then((value) {
+        return value.map((e) => UserQuickProfile.fromJson(e ?? {})).toList();
+      });
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting user profiles');
     }
-    final userId = _authRepository.currentUser?.id;
-    return await _databaseRepository.getMultipleFilteredData(
-      userDetailCollection,
-      query,
-      orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
-      columns: [
-        DbKey(key: 'id'),
-        DbKey(key: 'full_name'),
-        DbKey(key: 'profile_image'),
-        DbKey(key: 'selected_college_name'),
-        DbKey(key: 'selected_course_name'),
-        DbKey(key: 'city'),
-        DbKey(key: 'state'),
-        DbKey(key: 'gender'),
-        DbKey(key: 'work_experience'),
-      ],
-      whereNotFields: [
-        FieldValue(
-          key: 'id',
-          value: userId,
-        ),
-        FieldValue(
-          key: 'user_deleted',
-          value: true,
-        ),
-      ],
-    ).then((value) {
-      return value.map((e) => UserQuickProfile.fromJson(e ?? {})).toList();
-    });
   }
 
   Future<UserProfile> getUserProfile(String id) async {
@@ -474,9 +495,12 @@ class UserRepository {
         return UserProfile.fromJson(user);
       });
       return profile;
-    } catch (e) {
-      _logger.error('Error in getting user profile: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
       rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting user profile');
     }
   }
 
@@ -521,9 +545,12 @@ class UserRepository {
               fieldName: "room_type", newValue: profile.roomType.toUI()),
         ]),
       );
-    } catch (e) {
-      _logger.error('Error in updating user profile: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
       rethrow;
+    } catch (e) {
+      throw UpdateUserInfoError(message: 'Error in updating user profile');
     }
   }
 
@@ -547,9 +574,12 @@ class UserRepository {
       final imageUrl =
           _storageClient.from('profile_images').getPublicUrl(storageImagePath);
       return imageUrl;
-    } catch (e) {
-      _logger.error('Error in updating user profile image: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
       rethrow;
+    } catch (e) {
+      throw UploadUserImageError(message: 'Error in uploading user image');
     }
   }
 
@@ -572,9 +602,12 @@ class UserRepository {
           ],
         ),
       );
-    } catch (e) {
-      _logger.error('Error in deleting user account: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
       rethrow;
+    } catch (e) {
+      throw UserDeleteError(message: 'Error in deleting user account');
     }
   }
 }

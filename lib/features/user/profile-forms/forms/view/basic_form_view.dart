@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/location/city_info.dart';
@@ -18,6 +19,8 @@ import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/widgets/show_error_widget.dart';
+import 'package:nesters/utils/widgets/show_info_widget.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 // import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -126,11 +129,11 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     }
   }
 
-  Future<List<University>?> getUniversities(String? searchString) async {
+  Future<List<University>> getUniversities(String? searchString) async {
     return GetIt.I<UserRepository>().getUniversities(searchString);
   }
 
-  Future<List<Degree>?> getMastersDegree(String? searchString) async {
+  Future<List<Degree>> getMastersDegree(String? searchString) async {
     return GetIt.I<UserRepository>().getMastersDegree(searchString);
   }
 
@@ -163,10 +166,14 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         // ignore: use_build_context_synchronously
         context.showErrorSnackBar('Error while creating user profile');
       }
-    } catch (e) {
+    } on AppException catch (e) {
       if (mounted) {
-        context.showErrorSnackBar('Error while creating user profile');
+        context.showErrorSnackBar(e.message);
       }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -405,20 +412,30 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
             border: InputBorder.none,
           ),
         ),
-        asyncItems: (value) => getUniversities(value).then(
-          (value) {
-            if (value != null) {
-              return value;
-            } else {
-              return [];
-            }
-          },
-        ),
+        asyncItems: (value) => getUniversities(value),
         popupProps: PopupProps.dialog(
           containerBuilder: (context, child) {
             return Padding(
               padding: const EdgeInsets.only(left: 6.0, right: 6.0, top: 14.0),
               child: child,
+            );
+          },
+          errorBuilder: (context, searchEntry, error) {
+            return ShowErrorWidget(error: error);
+          },
+          emptyBuilder: (context, searchEntry) {
+            return ShowInfoWidget(
+              message: searchEntry.isNotEmpty ? 'No items found' : 'Search',
+              subtitle: searchEntry.isNotEmpty
+                  ? 'No data related to "$searchEntry" found'
+                  : 'Search for your graduate degree',
+            );
+          },
+          loadingBuilder: (context, searchEntry) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primary,
+              ),
             );
           },
           searchFieldProps: TextFieldProps(
@@ -500,20 +517,30 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
             border: InputBorder.none,
           ),
         ),
-        asyncItems: (value) => getMastersDegree(value).then(
-          (value) {
-            if (value != null) {
-              return value;
-            } else {
-              return [];
-            }
-          },
-        ),
+        asyncItems: (value) => getMastersDegree(value),
         popupProps: PopupProps.dialog(
           containerBuilder: (context, child) {
             return Padding(
               padding: const EdgeInsets.only(left: 6.0, right: 6.0, top: 12.0),
               child: child,
+            );
+          },
+          errorBuilder: (context, searchEntry, error) {
+            return ShowErrorWidget(error: error);
+          },
+          emptyBuilder: (context, searchEntry) {
+            return ShowInfoWidget(
+              message: searchEntry.isNotEmpty ? 'No items found' : 'Search',
+              subtitle: searchEntry.isNotEmpty
+                  ? 'No data related to "$searchEntry" found'
+                  : 'Search for your graduate degree',
+            );
+          },
+          loadingBuilder: (context, searchEntry) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primary,
+              ),
             );
           },
           searchFieldProps: TextFieldProps(
@@ -592,6 +619,16 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
           return 'Please select your city';
         }
         return null;
+      },
+      emptyBuilder: (p0) {
+        return ShowInfoWidget(
+          message:
+              _locationContoller.text.isEmpty ? 'Location' : 'No items found',
+          subtitle: _locationContoller.text.isEmpty
+              ? 'Find and select your city'
+              : 'No data related to "${_locationContoller.text}" found',
+          icon: Icons.search,
+        );
       },
       onItemClick: (value) {
         userCityInfo = value;

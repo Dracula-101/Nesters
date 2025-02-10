@@ -18,7 +18,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     User user,
   ) : super(UserState(user: user)) {
     on<UserEvent>(
-      (event, emit) => event.when(
+      (event, emit) async => await event.when(
         loadUser: (user) => emit(state.copyWith(user: user)),
         loadUniversities: () async => await _loadUniversities(event, emit),
         loadDegrees: () async => await _loadDegrees(event, emit),
@@ -38,7 +38,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   final MarketplaceRepository _marketplaceRepository =
       GetIt.I<MarketplaceRepository>();
 
-  Future<void> _loadUniversities(UserEvent event, Emitter<UserState> emit) {
+  Future<void> _loadUniversities(
+      UserEvent event, Emitter<UserState> emit) async {
     emit(state.copyWith(isLoadingUniversities: true));
     final cachedUniversities = _localStorageRepository.getListClass(
         LocalStorageKeys.universityList, (p0) => University.fromJson(p0));
@@ -46,7 +47,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       emit(state.copyWith(
           universities: cachedUniversities, isLoadingUniversities: false));
     }
-    return _userRepository.getAllUniversities().then((universities) {
+    try {
+      final universities = await _userRepository.getAllUniversities();
       if (universities.isNotEmpty) {
         _localStorageRepository.saveListClass(LocalStorageKeys.universityList,
             universities, (p0) => p0?.toJson() ?? {});
@@ -55,17 +57,20 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       } else {
         emit(state.copyWith(isLoadingUniversities: false));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(isLoadingUniversities: false));
+    }
   }
 
-  Future<void> _loadDegrees(UserEvent event, Emitter<UserState> emit) {
+  Future<void> _loadDegrees(UserEvent event, Emitter<UserState> emit) async {
     emit(state.copyWith(isLoadingDegrees: true));
     final cachedDegrees = _localStorageRepository.getListClass(
         LocalStorageKeys.degreeList, (p0) => Degree.fromJson(p0));
     if (cachedDegrees?.isNotEmpty ?? false) {
       emit(state.copyWith(degrees: cachedDegrees, isLoadingDegrees: false));
     }
-    return _userRepository.getAllDegrees().then((degrees) {
+    try {
+      final degrees = await _userRepository.getAllDegrees();
       if (degrees.isNotEmpty) {
         _localStorageRepository.saveListClass(
             LocalStorageKeys.degreeList, degrees, (p0) => p0?.toJson() ?? {});
@@ -73,11 +78,13 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       } else {
         emit(state.copyWith(isLoadingDegrees: false));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(isLoadingDegrees: false));
+    }
   }
 
   Future<void> _loadMarketplaceCategories(
-      UserEvent event, Emitter<UserState> emit) {
+      UserEvent event, Emitter<UserState> emit) async {
     emit(state.copyWith(isLoadingMarketplaceCategory: true));
     final cachedMarketplaceCategories = _localStorageRepository.getListClass(
         LocalStorageKeys.marketplaceCategoryList,
@@ -87,9 +94,9 @@ class UserBloc extends Bloc<UserEvent, UserState> {
           marketplaceCategory: cachedMarketplaceCategories,
           isLoadingMarketplaceCategory: false));
     }
-    return _marketplaceRepository
-        .getMarketplaceCategories()
-        .then((marketplaceCategories) {
+    try {
+      final marketplaceCategories =
+          await _marketplaceRepository.getMarketplaceCategories();
       if (marketplaceCategories.isNotEmpty) {
         _localStorageRepository.saveListClass(
             LocalStorageKeys.marketplaceCategoryList,
@@ -101,6 +108,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       } else {
         emit(state.copyWith(isLoadingMarketplaceCategory: false));
       }
-    });
+    } catch (e) {
+      emit(state.copyWith(isLoadingMarketplaceCategory: false));
+    }
   }
 }

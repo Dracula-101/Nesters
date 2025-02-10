@@ -1,14 +1,66 @@
 part of 'marketplace_form_cubit.dart';
 
+class MarketplaceLoadingState extends BlocState {
+  MarketplaceLoadingState({
+    required bool isLoading,
+    required AppException? exception,
+    required bool isSuccess,
+  }) : super(
+          isLoading: isLoading,
+          exception: exception,
+          isSuccess: isSuccess,
+        );
+
+  @override
+  MarketplaceLoadingState failure(AppException error) {
+    return MarketplaceLoadingState(
+      isLoading: false,
+      exception: error,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  MarketplaceLoadingState loading() {
+    return MarketplaceLoadingState(
+      isLoading: true,
+      exception: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  MarketplaceLoadingState resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  @override
+  MarketplaceLoadingState copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return MarketplaceLoadingState(
+      isLoading: isLoading ?? this.isLoading,
+      exception: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
+
+  @override
+  MarketplaceLoadingState success() {
+    return MarketplaceLoadingState(
+      isLoading: false,
+      exception: null,
+      isSuccess: true,
+    );
+  }
+}
+
 class MarketplaceFormState {
   final MarketplaceModel? item;
   final Exception? error;
   final int pageNumber;
   final bool hasSecondPageAccess;
   final bool isValidating;
-  final bool? isSubmitting;
-  final bool? isSubmitComplete;
-  final Exception? submitError;
+  final MarketplaceLoadingState? submitState;
   final MarketplaceImageUploadTask? imageUploadTask;
   final List<MarketplaceCategoryModel> marketplaceCategories;
   final bool? isPreFilled;
@@ -20,9 +72,7 @@ class MarketplaceFormState {
     this.pageNumber = 0,
     this.hasSecondPageAccess = false,
     this.isValidating = false,
-    this.isSubmitting,
-    this.isSubmitComplete,
-    this.submitError,
+    this.submitState,
     this.imageUploadTask,
     this.marketplaceCategories = const [],
     this.isPreFilled,
@@ -35,8 +85,7 @@ class MarketplaceFormState {
     int? pageNumber,
     bool? hasSecondPageAccess,
     bool? isValidating,
-    bool? isSubmitting,
-    bool? isSubmitComplete,
+    MarketplaceLoadingState? submitState,
     Exception? submitError,
     MarketplaceImageUploadTask? imageUploadTask,
     List<MarketplaceCategoryModel>? marketplaceCategories,
@@ -49,9 +98,7 @@ class MarketplaceFormState {
       pageNumber: pageNumber ?? this.pageNumber,
       hasSecondPageAccess: hasSecondPageAccess ?? this.hasSecondPageAccess,
       isValidating: isValidating ?? this.isValidating,
-      isSubmitting: isSubmitting ?? this.isSubmitting,
-      isSubmitComplete: isSubmitComplete ?? this.isSubmitComplete,
-      submitError: submitError ?? this.submitError,
+      submitState: submitState ?? submitState,
       imageUploadTask: imageUploadTask ?? this.imageUploadTask,
       marketplaceCategories:
           marketplaceCategories ?? this.marketplaceCategories,
@@ -59,38 +106,4 @@ class MarketplaceFormState {
       selectedImages: selectedImages ?? this.selectedImages,
     );
   }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is MarketplaceFormState &&
-        other.item == item &&
-        other.error == error &&
-        other.pageNumber == pageNumber &&
-        other.hasSecondPageAccess == hasSecondPageAccess &&
-        other.isValidating == isValidating &&
-        other.isSubmitting == isSubmitting &&
-        other.isSubmitComplete == isSubmitComplete &&
-        other.submitError == submitError &&
-        other.imageUploadTask == imageUploadTask &&
-        listEquals(other.marketplaceCategories, marketplaceCategories) &&
-        other.isPreFilled == isPreFilled &&
-        listEquals(other.selectedImages, selectedImages);
-  }
-
-  @override
-  int get hashCode =>
-      item.hashCode ^
-      error.hashCode ^
-      pageNumber.hashCode ^
-      hasSecondPageAccess.hashCode ^
-      isValidating.hashCode ^
-      isSubmitting.hashCode ^
-      isSubmitComplete.hashCode ^
-      submitError.hashCode ^
-      imageUploadTask.hashCode ^
-      marketplaceCategories.hashCode ^
-      isPreFilled.hashCode ^
-      selectedImages.hashCode;
 }

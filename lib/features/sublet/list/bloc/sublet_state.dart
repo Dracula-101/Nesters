@@ -1,9 +1,63 @@
 part of 'sublet_bloc.dart';
 
+class SubletLoadingState extends BlocState {
+  SubletLoadingState({
+    required bool isLoading,
+    required AppException? exception,
+    required bool isSuccess,
+  }) : super(
+          isLoading: isLoading,
+          exception: exception,
+          isSuccess: isSuccess,
+        );
+
+  @override
+  SubletLoadingState copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return SubletLoadingState(
+      isLoading: isLoading ?? this.isLoading,
+      exception: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
+
+  @override
+  SubletLoadingState failure(AppException error) {
+    return SubletLoadingState(
+      isLoading: false,
+      exception: error,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  SubletLoadingState loading() {
+    return SubletLoadingState(
+      isLoading: true,
+      exception: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  SubletLoadingState resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  @override
+  SubletLoadingState success() {
+    return SubletLoadingState(
+      isLoading: false,
+      exception: null,
+      isSuccess: true,
+    );
+  }
+}
+
 class SubletState {
   final List<SubletModel>? subletList;
   final List<SubletModel>? filteredSubletList;
-  final Exception? error;
+  final SubletLoadingState? loading;
   // Single category of sublet filtering
   final SingleSubletFilter? singleSubletFilter;
   final SubletFilter? subletFilter;
@@ -11,7 +65,7 @@ class SubletState {
   const SubletState({
     this.subletList,
     this.filteredSubletList,
-    this.error,
+    this.loading,
     this.singleSubletFilter,
     this.subletFilter,
   });
@@ -19,59 +73,16 @@ class SubletState {
   SubletState copyWith({
     List<SubletModel>? subletList,
     List<SubletModel>? filteredSubletList,
-    Exception? error,
+    SubletLoadingState? loading,
     SingleSubletFilter? singleSubletFilter,
     SubletFilter? subletFilter,
   }) {
     return SubletState(
       subletList: subletList ?? this.subletList,
       filteredSubletList: filteredSubletList ?? this.filteredSubletList,
-      error: error ?? this.error,
+      loading: loading ?? this.loading,
       singleSubletFilter: singleSubletFilter,
       subletFilter: subletFilter,
     );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is SubletState &&
-        listEquals(other.subletList, subletList) &&
-        other.error == error &&
-        other.singleSubletFilter == singleSubletFilter &&
-        listEquals(other.filteredSubletList, filteredSubletList) &&
-        other.subletFilter == subletFilter;
-  }
-
-  @override
-  int get hashCode => subletList.hashCode ^ error.hashCode;
-
-  R when<R>({
-    required R Function(List<SubletModel>? subletList, Exception? error) loaded,
-    required R Function() initial,
-  }) {
-    if (subletList != null) {
-      return loaded(subletList, error);
-    } else {
-      return initial();
-    }
-  }
-
-  R maybeWhen<R>({
-    R Function(List<SubletModel>? subletList, Exception? error)? loaded,
-    R Function()? initial,
-    required R Function() orElse,
-  }) {
-    if (subletList != null) {
-      return loaded != null ? loaded(subletList, error) : orElse();
-    } else {
-      return initial != null ? initial() : orElse();
-    }
-  }
-
-  @override
-  String toString() {
-    return 'SubletState(subletList: $subletList, error: $error)';
   }
 }
