@@ -2,8 +2,6 @@ chat taking too much time and space.(App Check issue)
 
 when new image uploaded still shows old one everywhere in edit form.
 
-when filtered data is 0 show some logo or message home page.
-
 shimmer for sublet. and hcekc other
 
 check if fetching works when filter is applied all pages.

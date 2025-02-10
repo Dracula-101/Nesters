@@ -615,34 +615,37 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   Widget _buildFilteredUserList(List<UserQuickProfile> profiles) {
-    return profiles.isNotEmpty
-        ? SliverList.builder(
-            itemCount: profiles.length + 1, // Increase itemCount by 1
-            itemBuilder: (context, index) {
-              if (index < profiles.length) {
-                return UserQuickProfileWidget(
-                  userQuickProfile: profiles[index],
-                );
-              } else {
-                // Add your custom widget at the end
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8, bottom: 16),
-                  child: Image.asset(
-                    AppRasterImages.endIcon,
-                    width: 50.0,
-                    height: 50.0,
-                  ),
-                );
-              }
-            },
-          )
-        : Center(
+    if (profiles.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Image.asset(
+            AppRasterImages.emptyIcon,
+            width: 100.0,
+            height: 100.0,
+          ),
+        ),
+      );
+    }
+    return SliverList.builder(
+      itemCount: profiles.length + 1, // Increase itemCount by 1
+      itemBuilder: (context, index) {
+        if (index < profiles.length) {
+          return UserQuickProfileWidget(
+            userQuickProfile: profiles[index],
+          );
+        } else {
+          // Add your custom widget at the end
+          return Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 16),
             child: Image.asset(
-              AppRasterImages.emptyIcon,
-              width: 100.0,
-              height: 100.0,
+              AppRasterImages.endIcon,
+              width: 50.0,
+              height: 50.0,
             ),
           );
+        }
+      },
+    );
   }
 
   void showFilterDialog(
