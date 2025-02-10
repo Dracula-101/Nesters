@@ -558,16 +558,28 @@ class _UserListPageState extends State<UserListPage> {
         itemBuilder: (context, item, index) => UserQuickProfileWidget(
           userQuickProfile: item,
         ),
-        firstPageErrorIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
+        firstPageErrorIndicatorBuilder: (_) => SizedBox(
           child: Center(
-            child: Text('First Page Error'),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.emptyIcon,
+                width: 100.0,
+                height: 100.0,
+              ),
+            ),
           ),
         ),
-        newPageErrorIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
+        newPageErrorIndicatorBuilder: (_) => SizedBox(
           child: Center(
-            child: Text('New Page Error'),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.emptyIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
           ),
         ),
         firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
@@ -577,9 +589,13 @@ class _UserListPageState extends State<UserListPage> {
             child: CircularProgressIndicator(),
           ),
         ),
-        noItemsFoundIndicatorBuilder: (_) => const SizedBox(
+        noItemsFoundIndicatorBuilder: (_) => SizedBox(
           child: Center(
-            child: Text('No items found'),
+            child: Image.asset(
+              AppRasterImages.emptyIcon,
+              width: 100.0,
+              height: 100.0,
+            ),
           ),
         ),
         noMoreItemsIndicatorBuilder: (_) => SizedBox(
@@ -599,14 +615,34 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   Widget _buildFilteredUserList(List<UserQuickProfile> profiles) {
-    return SliverList.builder(
-      itemCount: profiles.length,
-      itemBuilder: (context, index) {
-        return UserQuickProfileWidget(
-          userQuickProfile: profiles[index],
-        );
-      },
-    );
+    return profiles.isNotEmpty
+        ? SliverList.builder(
+            itemCount: profiles.length + 1, // Increase itemCount by 1
+            itemBuilder: (context, index) {
+              if (index < profiles.length) {
+                return UserQuickProfileWidget(
+                  userQuickProfile: profiles[index],
+                );
+              } else {
+                // Add your custom widget at the end
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8, bottom: 16),
+                  child: Image.asset(
+                    AppRasterImages.endIcon,
+                    width: 50.0,
+                    height: 50.0,
+                  ),
+                );
+              }
+            },
+          )
+        : Center(
+            child: Image.asset(
+              AppRasterImages.emptyIcon,
+              width: 100.0,
+              height: 100.0,
+            ),
+          );
   }
 
   void showFilterDialog(

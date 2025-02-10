@@ -1,11 +1,10 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
@@ -18,7 +17,9 @@ import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
+import 'package:nesters/features/sublet/list/view/components/shimmer_sublet_list_widget.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
+import 'package:nesters/features/sublet/list/view/shimmer_sublet_list_page.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -113,9 +114,10 @@ class _SubletListViewState extends State<SubletListView> {
                 else
                   SliverFillRemaining(
                     child: Center(
-                      child: Text(
-                        'No sublets found',
-                        style: AppTheme.titleLarge,
+                      child: Image.asset(
+                        AppRasterImages.emptyIcon,
+                        width: 100.0,
+                        height: 100.0,
                       ),
                     ),
                   )
@@ -146,23 +148,33 @@ class _SubletListViewState extends State<SubletListView> {
 
   Widget _buildFilteredSublets(List<SubletModel> sublets) {
     return SliverList.builder(
-      itemCount: sublets.length,
+      itemCount: sublets.length + 1,
       itemBuilder: (context, index) {
-        return SubletModelWidget(
-          onPressed: () {
-            GoRouter.of(context).go(
-              '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
-              extra: sublets[index],
-            );
-          },
-          actionOnFavourite: (isFavourite) {
-            return _subletRepository.updateLikeStatus(
-              userId: _authRepository.currentUser!.id,
-              subletId: sublets[index].id,
-              isLiked: isFavourite,
-            );
-          },
-          sublet: sublets[index],
+        if (index < sublets.length) {
+          return SubletModelWidget(
+            onPressed: () {
+              GoRouter.of(context).go(
+                '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
+                extra: sublets[index],
+              );
+            },
+            actionOnFavourite: (isFavourite) {
+              return _subletRepository.updateLikeStatus(
+                userId: _authRepository.currentUser!.id,
+                subletId: sublets[index].id,
+                isLiked: isFavourite,
+              );
+            },
+            sublet: sublets[index],
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 16),
+          child: Image.asset(
+            AppRasterImages.endIcon,
+            width: 50.0,
+            height: 50.0,
+          ),
         );
       },
     );
@@ -172,8 +184,7 @@ class _SubletListViewState extends State<SubletListView> {
     return PagedSliverList(
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<SubletModel>(
-        firstPageProgressIndicatorBuilder: (context) =>
-            _buildLoadingIndicator(),
+        firstPageProgressIndicatorBuilder: (context) => ShimmerSubletPage(),
         firstPageErrorIndicatorBuilder: (context) =>
             _buildErrorIndicator(_pagingController.error),
         itemBuilder: (context, sublet, index) {
