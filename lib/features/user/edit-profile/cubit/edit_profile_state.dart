@@ -143,6 +143,8 @@ class EditProfileState {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
+    String? intakePeriod,
+    int? intakeYear,
   }) {
     return EditProfileState(
       imagePath: imagePath ?? this.imagePath,
@@ -174,6 +176,9 @@ class EditProfileState {
         flatmatesGenderPrefs:
             flatmatesGenderPrefs ?? userEditProfile?.flatmatesGenderPrefs ?? '',
         roomType: roomType ?? userEditProfile?.roomType ?? UserRoomType.UNKNOWN,
+        intakePeriod: intakePeriod ?? userEditProfile?.intakePeriod ?? '',
+        intakeYear:
+            intakeYear ?? userEditProfile?.intakeYear ?? DateTime.now().year,
       ),
     );
   }
@@ -199,6 +204,8 @@ class UserEditProfile {
   final String hobbies;
   final String flatmatesGenderPrefs;
   final UserRoomType roomType;
+  final String? intakePeriod;
+  final int? intakeYear;
 
   const UserEditProfile({
     required this.profileImage,
@@ -215,6 +222,8 @@ class UserEditProfile {
     required this.hobbies,
     required this.flatmatesGenderPrefs,
     required this.roomType,
+    required this.intakePeriod,
+    required this.intakeYear,
   });
 
   UserEditProfile copyWith({
@@ -232,6 +241,8 @@ class UserEditProfile {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
+    String? intakePeriod,
+    int? intakeYear,
   }) {
     return UserEditProfile(
       profileImage: profileImage ?? this.profileImage,
@@ -248,11 +259,13 @@ class UserEditProfile {
       hobbies: hobbies ?? this.hobbies,
       flatmatesGenderPrefs: flatmatesGenderPrefs ?? this.flatmatesGenderPrefs,
       roomType: roomType ?? this.roomType,
+      intakePeriod: intakePeriod ?? this.intakePeriod,
+      intakeYear: intakeYear ?? this.intakeYear,
     );
   }
 
   @override
   String toString() {
-    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollegeName, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType)';
+    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollegeName, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType, intakePeriod: $intakePeriod, intakeYear: $intakeYear)';
   }
 }

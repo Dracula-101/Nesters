@@ -181,7 +181,7 @@ class SubletModelWidget extends StatelessWidget {
               color: AppTheme.onSurface.withOpacity(0.6),
             ),
             child: Text(
-              'Posted ${DateTime.fromMillisecondsSinceEpoch(sublet.id).toUIDate().capitalizeEachWord}',
+              'Posted ${DateTime.fromMillisecondsSinceEpoch(sublet.id).toUIDate().toTitleCase}',
               style: AppTheme.labelMedium.copyWith(color: AppTheme.surface),
             ),
           ),
@@ -223,7 +223,7 @@ class SubletModelWidget extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(
           child: Text(
-            sublet.location?.address.capitalizeEachWord ?? '',
+            sublet.location?.address.toTitleCase ?? '',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),

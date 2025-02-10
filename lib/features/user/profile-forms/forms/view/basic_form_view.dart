@@ -67,22 +67,26 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   String? photoUrl;
   CityInfo? userCityInfo;
 
-  // Full Name, Email, profile image, college name, course name, gender, birthdate
+  // Full Name, Email, profile image, college name, course name, gender, birthdate, intake period and year
   final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _collegeNameController = TextEditingController();
   final TextEditingController _courseNameController = TextEditingController();
   final TextEditingController _genderController =
       TextEditingController(text: "Not Selected");
+  final TextEditingController _intakePeriodController =
+      TextEditingController(text: "Not Selected");
+  final TextEditingController _intakeYearController = TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
   final TextEditingController _locationContoller = TextEditingController();
   DateTime selectedDate = DateTime.now();
+  DateTime _selectedYear = DateTime.now();
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _fullNameController.text = widget.user.fullName;
+    _fullNameController.text = widget.user.fullName.toTitleCase;
   }
 
   @override
@@ -91,8 +95,11 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     _collegeNameController.dispose();
     _courseNameController.dispose();
     _genderController.dispose();
+    _intakePeriodController.dispose();
+    _intakeYearController.dispose();
     _birthdateController.dispose();
     _locationContoller.dispose();
+
     super.dispose();
   }
 
@@ -150,6 +157,8 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       selectedCollegeName: _collegeNameController.text,
       selectedCourseName: _courseNameController.text,
       gender: _genderController.text,
+      intakePeriod: _intakePeriodController.text,
+      intakeYear: _selectedYear.year,
       city: userCityInfo?.cityName ?? "",
       state: userCityInfo?.stateName,
       country: userCityInfo?.countryName,
@@ -199,6 +208,10 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
                 _buildGenderField(),
                 _buildSpacing(20),
                 _buildCollegeNameField(),
+                _buildSpacing(20),
+                _buildYearPicker(context),
+                _buildSpacing(20),
+                _buildIntakePeriodField(),
                 _buildSpacing(20),
                 _buildDegreeNameField(),
                 _buildSpacing(20),
@@ -262,6 +275,51 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       ),
       onTap: () async {
         await _selectDate(context);
+      },
+    );
+  }
+
+  Widget _buildYearPicker(BuildContext context) {
+    return CustomTextField(
+      controller: _intakeYearController,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Intake Year';
+        }
+        return null;
+      },
+      labelText: 'Intake Year',
+      enabled: false,
+      prefixIcon: Icon(
+        Icons.calendar_today,
+        color: AppTheme.primary,
+      ),
+      onTap: () async {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Select Year"),
+              content: SizedBox(
+                width: 300,
+                height: 300,
+                child: YearPicker(
+                  firstDate: DateTime(DateTime.now().year - 100, 1),
+                  lastDate: DateTime(DateTime.now().year + 100, 1),
+                  // save the selected date to _selectedDate DateTime variable.
+                  // It's used to set the previous selected date when
+                  // re-showing the dialog.
+                  selectedDate: _selectedYear,
+                  onChanged: (DateTime dateTime) {
+                    Navigator.pop(context);
+                    _intakeYearController.text = dateTime.year.toString();
+                    _selectedYear = dateTime;
+                  },
+                ),
+              ),
+            );
+          },
+        );
       },
     );
   }
@@ -600,6 +658,26 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     );
   }
 
+  Widget _buildIntakePeriodField() {
+    return CustomDropdownField(
+      prefixIcon: Icon(
+        FontAwesomeIcons.venusMars,
+        size: 20.0,
+        color: AppTheme.primary,
+      ),
+      labelText: 'Intake Period',
+      validatorText: 'Please select your intake period',
+      controller: _intakePeriodController,
+      items: const [
+        'Fall',
+        'Spring',
+        'Summer',
+        'Winter',
+        'Not Selected',
+      ],
+    );
+  }
+
   Widget _buildLocationField() {
     return CustomDynamicSearchableDropDropField(
       controller: _locationContoller,
@@ -648,7 +726,11 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       child: ElevatedButton(
         onPressed: () {
           if (_genderController.text == "Not Selected") {
-            context.showErrorSnackBar('Please select your gender');
+            context.showErrorSnackBar('Please Select Your Gender');
+            return;
+          }
+          if (_intakePeriodController.text == "Not Selected") {
+            context.showErrorSnackBar('Please Select Your Intake Period');
             return;
           }
           if (_formKey.currentState!.validate()) {

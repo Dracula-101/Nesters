@@ -43,6 +43,8 @@ class EditProfileCubit extends Cubit<EditProfileState> {
             hobbies: user.hobbies,
             flatmatesGenderPrefs: user.flatmatesGenderPrefs,
             roomType: user.roomType,
+            intakePeriod: user.intakePeriod,
+            intakeYear: user.intakeYear,
           ),
         );
       },
@@ -83,6 +85,8 @@ class EditProfileCubit extends Cubit<EditProfileState> {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
+    String? intakePeriod,
+    int? intakeYear,
   }) {
     emit(
       state.copyWith(
@@ -100,6 +104,8 @@ class EditProfileCubit extends Cubit<EditProfileState> {
         hobbies: hobbies,
         flatmatesGenderPrefs: flatmatesGenderPrefs,
         roomType: roomType,
+        intakePeriod: intakePeriod,
+        intakeYear: intakeYear,
       ),
     );
   }
@@ -118,7 +124,11 @@ class EditProfileCubit extends Cubit<EditProfileState> {
           state.imagePath!,
           userId,
         );
-        emit(state.copyWith(profileImage: imageUrl));
+        emit(
+          state.copyWith(
+            profileImage: imageUrl,
+          ),
+        );
       }
       if (state.userEditProfile == null) {
         emit(state.copyWith(submitState: state.submitState?.resetLoading()));

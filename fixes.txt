@@ -2,18 +2,15 @@ chat taking too much time and space.(App Check issue)
 
 when new image uploaded still shows old one everywhere in edit form.
 
-spring or fall admit change part.
-
 notificatiom image.
 ==========
 2]map view,
+shimmer for other pages.
 =============================================
 images while editing for sublet and marketplace we are not deleting the previous ones.
 
 
 in chat i send other person request, other person send me request, then both  accepted each other scenario.,
-
-in roommates once the roommate found remove from search internal field.
 
 number of messages unseen on bottom bar when app terminated goes away error,
 
@@ -21,19 +18,9 @@ Skipping property 'messageType': type 'ChatMessageType' not supported, consider 
 
 network image if fails gives errors handle it
 
-fall ummer and intake year field,
-
-only advance form filled user show on home page and tell user to be visible to others you must fill ur details. also fetch all except self,
-
 post - need 1 roommate, ...
 
 multiple media at once chat, chat files, chat videos, chat audios,
-
-on back click the alert dialog doesn't go back, instead the page goes back ontapmedia,chat
-
-change notification icon and app launcher icon,
-
-if image in notification then handle,
 
 if app is closed, how to handle then, notification on click routing,
 
@@ -49,26 +36,13 @@ offset method user profiles change, https://www.youtube.com/watch?v=poqTHxtDXwU&
 
 error handling delightful toast ust,
 
-user status when app closes or internet goes off, need socket, but temprory do it using onDisconnect realtime firebase method,
-
 add everywhere
 ==============
 schimer effect,
 image compression size reduce add to all sides, like profile is remaining
 net issue check give error,
 university and master list call and store when the user basif profile gets page loaded even before opening the dropdown,
-home page infinite control error handling,
-fetching user data when app is launched,
-cache data and images,
-
-googel sign in app image,
-
-
-
-
-may be not needed
-================
-alphabetical arrangement of all variables, and methods and everything, structured.
+cache
 
 end
 ====
