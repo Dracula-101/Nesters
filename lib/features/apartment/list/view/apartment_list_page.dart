@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
@@ -11,6 +12,7 @@ import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/apartment/lease_period.dart';
 import 'package:nesters/domain/models/apartment/apartment_filter.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
+import 'package:nesters/features/apartment/list/view/shimmer_apartment_list_page.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/home/view/components/filter_tile.dart';
@@ -113,9 +115,10 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                 else
                   SliverFillRemaining(
                     child: Center(
-                      child: Text(
-                        'No apartments found',
-                        style: AppTheme.titleLarge,
+                      child: Image.asset(
+                        AppRasterImages.emptyIcon,
+                        width: 100.0,
+                        height: 100.0,
                       ),
                     ),
                   )
@@ -132,37 +135,35 @@ class _ApartmentListViewState extends State<ApartmentListView> {
     );
   }
 
-  Widget _buildLoadingIndicator() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
-  }
-
-  Widget _buildErrorIndicator(Exception error) {
-    return Center(
-      child: Text('Error: $error'),
-    );
-  }
-
   Widget _buildFilteredApartments(List<ApartmentModel> apartments) {
     return SliverList.builder(
-      itemCount: apartments.length,
+      itemCount: apartments.length + 1,
       itemBuilder: (context, index) {
-        return ApartmentModelWidget(
-          onPressed: () {
-            GoRouter.of(context).go(
-              '${AppRouterService.homeScreen}/${AppRouterService.apartmentDetail}',
-              extra: apartments[index],
-            );
-          },
-          actionOnFavourite: (isFavourite) {
-            return _apartmentRepository.updateLikeStatus(
-              userId: _authRepository.currentUser!.id,
-              apartmentId: apartments[index].id,
-              isLiked: isFavourite,
-            );
-          },
-          apartment: apartments[index],
+        if (index < apartments.length) {
+          return ApartmentModelWidget(
+            onPressed: () {
+              GoRouter.of(context).go(
+                '${AppRouterService.homeScreen}/${AppRouterService.apartmentDetail}',
+                extra: apartments[index],
+              );
+            },
+            actionOnFavourite: (isFavourite) {
+              return _apartmentRepository.updateLikeStatus(
+                userId: _authRepository.currentUser!.id,
+                apartmentId: apartments[index].id,
+                isLiked: isFavourite,
+              );
+            },
+            apartment: apartments[index],
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 16),
+          child: Image.asset(
+            AppRasterImages.endIcon,
+            width: 50.0,
+            height: 50.0,
+          ),
         );
       },
     );
@@ -173,9 +174,61 @@ class _ApartmentListViewState extends State<ApartmentListView> {
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<ApartmentModel>(
         firstPageProgressIndicatorBuilder: (context) =>
-            _buildLoadingIndicator(),
-        firstPageErrorIndicatorBuilder: (context) =>
-            _buildErrorIndicator(_pagingController.error),
+            const ShimmerApartmentPage(),
+        firstPageErrorIndicatorBuilder: (context) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                top: 16,
+                bottom: 16,
+              ),
+              child: Image.asset(
+                AppRasterImages.errorIcon,
+                width: 100.0,
+                height: 100.0,
+              ),
+            ),
+          ),
+        ),
+        newPageProgressIndicatorBuilder: (_) => const SizedBox(
+          height: 100,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        newPageErrorIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.endIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
+          ),
+        ),
+        noItemsFoundIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Image.asset(
+              AppRasterImages.emptyIcon,
+              width: 100.0,
+              height: 100.0,
+            ),
+          ),
+        ),
+        noMoreItemsIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.endIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
+          ),
+        ),
         itemBuilder: (context, apartment, index) {
           return ApartmentModelWidget(
             onPressed: () {

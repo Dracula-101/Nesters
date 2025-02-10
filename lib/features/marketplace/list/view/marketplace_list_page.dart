@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
@@ -11,6 +12,7 @@ import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
+import 'package:nesters/features/marketplace/list/view/shimmer_marketplace_list_page.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/features/home/user/user_bloc.dart';
@@ -117,24 +119,13 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
     );
   }
 
-  Widget _buildLoadingIndicator() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
-  }
-
-  Widget _buildErrorIndicator(Exception error) {
-    return Center(
-      child: Text('Error: $error'),
-    );
-  }
-
   Widget _buildMarketplacePlaceholder() {
     return SliverFillRemaining(
       child: Center(
-        child: Text(
-          "No marketplaces found",
-          style: AppTheme.titleLarge,
+        child: Image.asset(
+          AppRasterImages.emptyIcon,
+          width: 100.0,
+          height: 100.0,
         ),
       ),
     );
@@ -145,9 +136,61 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<MarketplaceModel>(
         firstPageProgressIndicatorBuilder: (context) =>
-            _buildLoadingIndicator(),
-        firstPageErrorIndicatorBuilder: (context) =>
-            _buildErrorIndicator(_pagingController.error),
+            const ShimmerMarketplacetPage(),
+        firstPageErrorIndicatorBuilder: (context) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                top: 16,
+                bottom: 16,
+              ),
+              child: Image.asset(
+                AppRasterImages.errorIcon,
+                width: 100.0,
+                height: 100.0,
+              ),
+            ),
+          ),
+        ),
+        newPageProgressIndicatorBuilder: (_) => const SizedBox(
+          height: 100,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+        newPageErrorIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.endIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
+          ),
+        ),
+        noItemsFoundIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Image.asset(
+              AppRasterImages.emptyIcon,
+              width: 100.0,
+              height: 100.0,
+            ),
+          ),
+        ),
+        noMoreItemsIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.endIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
+          ),
+        ),
         itemBuilder: (context, marketplace, index) {
           return MarketplaceModelWidget(
             onPressed: () {
@@ -159,9 +202,10 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
             onFavourite: (isFavourite) {
               final userId = _authRepository.currentUser?.id;
               return _marketplaceRepository.updateLikeStatus(
-                  userId: userId!,
-                  itemId: marketplace.id,
-                  isLiked: isFavourite);
+                userId: userId!,
+                itemId: marketplace.id,
+                isLiked: isFavourite,
+              );
             },
             marketplace: marketplace,
           );

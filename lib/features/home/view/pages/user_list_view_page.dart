@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
@@ -557,33 +558,56 @@ class _UserListPageState extends State<UserListPage> {
         itemBuilder: (context, item, index) => UserQuickProfileWidget(
           userQuickProfile: item,
         ),
-        firstPageErrorIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
-          child: Center(
-            child: Text('First Page Error'),
-          ),
-        ),
-        newPageErrorIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
-          child: Center(
-            child: Text('New Page Error'),
-          ),
-        ),
         firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
+        firstPageErrorIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.emptyIcon,
+                width: 100.0,
+                height: 100.0,
+              ),
+            ),
+          ),
+        ),
+        newPageErrorIndicatorBuilder: (_) => SizedBox(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.endIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
+          ),
+        ),
         newPageProgressIndicatorBuilder: (_) => const SizedBox(
           height: 100,
           child: Center(
             child: CircularProgressIndicator(),
           ),
         ),
-        noItemsFoundIndicatorBuilder: (_) => const SizedBox(
+        noItemsFoundIndicatorBuilder: (_) => SizedBox(
           child: Center(
-            child: Text('No items found'),
+            child: Image.asset(
+              AppRasterImages.emptyIcon,
+              width: 100.0,
+              height: 100.0,
+            ),
           ),
         ),
-        noMoreItemsIndicatorBuilder: (_) => const SizedBox(
+        noMoreItemsIndicatorBuilder: (_) => SizedBox(
           child: Center(
-            child: Text('No more items'),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 16),
+              child: Image.asset(
+                AppRasterImages.endIcon,
+                width: 50.0,
+                height: 50.0,
+              ),
+            ),
           ),
         ),
       ),
@@ -591,12 +615,35 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   Widget _buildFilteredUserList(List<UserQuickProfile> profiles) {
+    if (profiles.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Image.asset(
+            AppRasterImages.emptyIcon,
+            width: 100.0,
+            height: 100.0,
+          ),
+        ),
+      );
+    }
     return SliverList.builder(
-      itemCount: profiles.length,
+      itemCount: profiles.length + 1, // Increase itemCount by 1
       itemBuilder: (context, index) {
-        return UserQuickProfileWidget(
-          userQuickProfile: profiles[index],
-        );
+        if (index < profiles.length) {
+          return UserQuickProfileWidget(
+            userQuickProfile: profiles[index],
+          );
+        } else {
+          // Add your custom widget at the end
+          return Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 16),
+            child: Image.asset(
+              AppRasterImages.endIcon,
+              width: 50.0,
+              height: 50.0,
+            ),
+          );
+        }
       },
     );
   }
@@ -1050,9 +1097,12 @@ class _UserListPageState extends State<UserListPage> {
                                       roomType: selectedRoomType,
                                       smokingHabit: selectedSmokingHabit,
                                       intakePeriod: selectedIntakePeriod,
-                                      intakeYear: int.parse(
-                                        intakeYearController.text,
-                                      ),
+                                      intakeYear:
+                                          intakeYearController.text == ""
+                                              ? null
+                                              : int.parse(
+                                                  intakeYearController.text,
+                                                ),
                                     );
                                     context.read<HomeBloc>().add(
                                           AddFilterProfileEvent(

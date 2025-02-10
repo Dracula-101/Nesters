@@ -10,7 +10,7 @@ class ShimmerHomePage extends StatelessWidget {
       child: Column(
         children: [
           //create 7 shimmering cards
-          for (int i = 0; i < 7; i++) const ShimmeringUserQuickProfileWidget(),
+          for (int i = 0; i < 15; i++) const ShimmeringUserQuickProfileWidget(),
         ],
       ),
     );
