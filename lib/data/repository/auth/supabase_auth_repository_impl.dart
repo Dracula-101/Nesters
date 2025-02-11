@@ -1,16 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
-import 'dart:io';
-
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/domain/models/user/profile/user_info.dart';
-import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/extensions/exception.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
@@ -36,10 +33,9 @@ class SupabaseAuthRepository extends AuthRepository {
 
   UserInfo? _userInfo;
   User? _currentUser;
-  final StreamController<User?> _userController =
-      StreamController<User?>.broadcast();
-  final StreamController<UserInfo?> _userInfoController =
-      StreamController<UserInfo?>.broadcast();
+  final BehaviorSubject<User?> _userController = BehaviorSubject<User?>();
+  final BehaviorSubject<UserInfo?> _userInfoController =
+      BehaviorSubject<UserInfo?>.seeded(null);
 
   _init() {
     _supabaseClient.auth.onAuthStateChange.listen((event) async {
