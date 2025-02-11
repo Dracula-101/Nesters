@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
@@ -6,13 +7,13 @@ import 'package:nesters/utils/bloc_state.dart';
 
 class EditProfileSubmitState extends BlocState {
   EditProfileSubmitState({
-    required bool isLoading,
-    required AppException? exception,
-    required bool isSuccess,
+    bool? isLoading,
+    AppException? exception,
+    bool? isSuccess,
   }) : super(
-          isLoading: isLoading,
+          isLoading: isLoading ?? false,
           exception: exception,
-          isSuccess: isSuccess,
+          isSuccess: isSuccess ?? false,
         );
 
   @override
@@ -60,13 +61,13 @@ class EditProfileSubmitState extends BlocState {
 
 class EditProfileLoadingState extends BlocState {
   EditProfileLoadingState({
-    required bool isLoading,
-    required AppException? exception,
-    required bool isSuccess,
+    bool? isLoading,
+    AppException? exception,
+    bool? isSuccess,
   }) : super(
-          isLoading: isLoading,
+          isLoading: isLoading ?? false,
           exception: exception,
-          isSuccess: isSuccess,
+          isSuccess: isSuccess ?? false,
         );
 
   @override
@@ -112,17 +113,17 @@ class EditProfileLoadingState extends BlocState {
   }
 }
 
-class EditProfileState {
+class EditProfileState extends Equatable {
   final UserEditProfile? userEditProfile;
   final EditProfileLoadingState? loadingState;
-  final String? imagePath;
   final EditProfileSubmitState? submitState;
+  final String? imagePath;
 
   const EditProfileState({
     this.userEditProfile,
     this.loadingState,
-    this.imagePath,
     this.submitState,
+    this.imagePath,
   });
 
   EditProfileState copyWith({
@@ -185,8 +186,16 @@ class EditProfileState {
 
   @override
   String toString() {
-    return 'EditProfileState(userEditProfile: $userEditProfile)';
+    return 'EditProfileState(userEditProfile: $userEditProfile), loadingState: $loadingState, imagePath: $imagePath, submitState: $submitState)';
   }
+
+  @override
+  List<Object?> get props => [
+        userEditProfile,
+        loadingState,
+        imagePath,
+        submitState,
+      ];
 }
 
 class UserEditProfile {

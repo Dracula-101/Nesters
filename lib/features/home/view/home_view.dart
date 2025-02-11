@@ -8,15 +8,10 @@ import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/status/status.dart';
-import 'package:nesters/features/apartment/list/bloc/apartment_bloc.dart';
 import 'package:nesters/features/apartment/list/view/apartment_list_page.dart';
-import 'package:nesters/features/home/home.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/home_page_tutorial.dart';
 import 'package:nesters/features/home/view/pages/user_list_view_page.dart';
-import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/marketplace_list_page.dart';
-import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 import 'package:nesters/features/sublet/list/view/sublet_list_page.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/theme/theme.dart';
@@ -121,42 +116,22 @@ class _HomeScaffoldState extends State<HomeScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => HomeBloc(),
-        ),
-        BlocProvider(
-          create: (context) => UserBloc(authRepository.currentUser!),
-        ),
-        BlocProvider(
-          create: (context) => SubletBloc(),
-        ),
-        BlocProvider(
-          create: (context) => ApartmentBloc(),
-        ),
-        BlocProvider(
-          create: (context) => MarketplaceBloc(),
-        )
-      ],
-      child: BlocListener<AppBloc, AppState>(
-        listenWhen: (previous, current) =>
-            previous.isOnline != current.isOnline,
-        listener: (context, state) {
-          if (state.isOnline) {
-            if (_isNetworkDisabled) {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              }
-            }
-          } else {
-            if (!_isNetworkDisabled) {
-              showNetworkDisabledBottomSheet();
+    return BlocListener<AppBloc, AppState>(
+      listenWhen: (previous, current) => previous.isOnline != current.isOnline,
+      listener: (context, state) {
+        if (state.isOnline) {
+          if (_isNetworkDisabled) {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
             }
           }
-        },
-        child: HomeView(initialIndex: widget.initialIndex),
-      ),
+        } else {
+          if (!_isNetworkDisabled) {
+            showNetworkDisabledBottomSheet();
+          }
+        }
+      },
+      child: HomeView(initialIndex: widget.initialIndex),
     );
   }
 }
@@ -361,29 +336,21 @@ class _HomeViewState extends State<HomeView> {
         },
       ),
       body: SafeArea(
-        child: BlocBuilder<UserBloc, UserState>(
-          builder: (context, state) {
-            return BlocBuilder<HomeBloc, HomeState>(
-              builder: (context, state) {
-                return ValueListenableBuilder(
-                  valueListenable: _selectedIndex,
-                  builder: (context, value, child) {
-                    return IndexedStack(
-                      index: value,
-                      children: [
-                        UserListPage(
-                          chatIconKey: _chatIconKey,
-                          requestIconKey: _requestIconKey,
-                          settingsIconKey: _settingsIconKey,
-                        ),
-                        const SubletListPage(),
-                        const ApartmentListPage(),
-                        const MarketplacePage(),
-                      ],
-                    );
-                  },
-                );
-              },
+        child: ValueListenableBuilder(
+          valueListenable: _selectedIndex,
+          builder: (context, value, child) {
+            return IndexedStack(
+              index: value,
+              children: [
+                UserListPage(
+                  chatIconKey: _chatIconKey,
+                  requestIconKey: _requestIconKey,
+                  settingsIconKey: _settingsIconKey,
+                ),
+                const SubletListPage(),
+                const ApartmentListPage(),
+                const MarketplacePage(),
+              ],
             );
           },
         ),

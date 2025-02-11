@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,14 +12,19 @@ import 'package:nesters/data/repository/crash_services/crash_services_repository
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/device/device_info_repository.dart';
+import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/network/network_checker_repository.dart';
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/domain/models/college/degree.dart';
+import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
+import 'package:rxdart/rxdart.dart';
 
 part 'app_state.dart';
 part 'app_event.dart';
@@ -26,12 +32,16 @@ part 'app_event.dart';
 class AppBloc extends Bloc<AppEvent, AppState> {
   AppBloc() : super(const AppState()) {
     on<AppEvent>((event, emit) async {
-      event.when(
+      await event.when(
         load: () => _loadApp(event, emit),
         loaded: (isSuccessful, isOnboaringComplete) =>
             _loadedApp(event, emit, isSuccessful),
         networkChange: (data, isOnline) =>
             _handleNetworkChange(emit, data, isOnline),
+        loadDegrees: () async => await _loadDegrees(event, emit),
+        loadUniversities: () async => await _loadUniversities(event, emit),
+        loadMarketplaceCategories: () async =>
+            await _loadMarketplaceCategories(event, emit),
       );
     });
     add(const AppEvent.load());
@@ -41,6 +51,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   final AppLogger _loggerService = GetIt.instance.get<AppLogger>();
   final _authRepository = GetIt.instance.get<AuthRepository>();
   final _userRepository = GetIt.instance.get<UserRepository>();
+  final _marketplaceRepository = GetIt.instance.get<MarketplaceRepository>();
   final _localStorageRepository = GetIt.instance.get<LocalStorageRepository>();
   final _obxStorageRepository = GetIt.instance.get<ObxStorageRepository>();
   final _deviceInfoRepository = GetIt.instance.get<DeviceInfoRepository>();
@@ -253,6 +264,80 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     bool isOnline,
   ) {
     emit(AppState(networkData: data, isOnline: isOnline));
+  }
+
+  Future<void> _loadUniversities(AppEvent event, Emitter<AppState> emit) async {
+    emit(state.copyWith(isLoadingUniversities: true));
+    final cachedUniversities = _localStorageRepository.getListClass(
+        LocalStorageKeys.universityList, (p0) => University.fromJson(p0));
+    if (cachedUniversities?.isNotEmpty ?? false) {
+      emit(state.copyWith(
+          universities: cachedUniversities, isLoadingUniversities: false));
+    }
+    try {
+      final universities = await _userRepository.getAllUniversities();
+      if (universities.isNotEmpty) {
+        _localStorageRepository.saveListClass(LocalStorageKeys.universityList,
+            universities, (p0) => p0?.toJson() ?? {});
+        emit(state.copyWith(
+            universities: universities, isLoadingUniversities: false));
+      } else {
+        emit(state.copyWith(isLoadingUniversities: false));
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoadingUniversities: false));
+    }
+  }
+
+  Future<void> _loadDegrees(AppEvent event, Emitter<AppState> emit) async {
+    emit(state.copyWith(isLoadingDegrees: true));
+    final cachedDegrees = _localStorageRepository.getListClass(
+        LocalStorageKeys.degreeList, (p0) => Degree.fromJson(p0));
+    if (cachedDegrees?.isNotEmpty ?? false) {
+      emit(state.copyWith(degrees: cachedDegrees, isLoadingDegrees: false));
+    }
+    try {
+      final degrees = await _userRepository.getAllDegrees();
+      if (degrees.isNotEmpty) {
+        _localStorageRepository.saveListClass(
+            LocalStorageKeys.degreeList, degrees, (p0) => p0?.toJson() ?? {});
+        emit(state.copyWith(degrees: degrees, isLoadingDegrees: false));
+      } else {
+        emit(state.copyWith(isLoadingDegrees: false));
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoadingDegrees: false));
+    }
+  }
+
+  Future<void> _loadMarketplaceCategories(
+      AppEvent event, Emitter<AppState> emit) async {
+    emit(state.copyWith(isLoadingMarketplaceCategory: true));
+    final cachedMarketplaceCategories = _localStorageRepository.getListClass(
+        LocalStorageKeys.marketplaceCategoryList,
+        (p0) => MarketplaceCategoryModel.fromJson(p0));
+    if (cachedMarketplaceCategories?.isNotEmpty ?? false) {
+      emit(state.copyWith(
+          marketplaceCategory: cachedMarketplaceCategories,
+          isLoadingMarketplaceCategory: false));
+    }
+    try {
+      final marketplaceCategories =
+          await _marketplaceRepository.getMarketplaceCategories();
+      if (marketplaceCategories.isNotEmpty) {
+        _localStorageRepository.saveListClass(
+            LocalStorageKeys.marketplaceCategoryList,
+            marketplaceCategories,
+            (p0) => p0.toJson());
+        emit(state.copyWith(
+            marketplaceCategory: marketplaceCategories,
+            isLoadingMarketplaceCategory: false));
+      } else {
+        emit(state.copyWith(isLoadingMarketplaceCategory: false));
+      }
+    } catch (e) {
+      emit(state.copyWith(isLoadingMarketplaceCategory: false));
+    }
   }
 }
 

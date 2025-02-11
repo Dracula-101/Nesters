@@ -1,21 +1,5 @@
 part of 'app_bloc.dart';
 
-// @freezed
-// class AppEvent with _$AppEvent {
-//   const factory AppEvent() = _AppEvent;
-
-//   const factory AppEvent.load() = _Load;
-//   const factory AppEvent.loaded({
-//     required bool isSuccessful,
-//     required bool isOnboaringComplete,
-//   }) = _Loaded;
-
-//   const factory AppEvent.networkChange({
-//     required NetworkData data,
-//     required bool isOnline,
-//   }) = _NetworkChange;
-// }
-
 class AppEvent {
   const AppEvent();
   const factory AppEvent.load() = _Load;
@@ -27,20 +11,35 @@ class AppEvent {
     required NetworkData data,
     required bool isOnline,
   }) = _NetworkChange;
+  const factory AppEvent.loadUniversities() = _LoadUniversities;
+  const factory AppEvent.loadDegrees() = _LoadDegrees;
+  const factory AppEvent.loadMarketplaceCategories() =
+      _LoadMarketplaceCategories;
 
-  R when<R>({
-    required R Function() load,
-    required R Function(bool isSuccessful, bool isOnboaringComplete) loaded,
-    required R Function(NetworkData data, bool isOnline) networkChange,
+  Future<void> when<R>({
+    required Future<void> Function() load,
+    required void Function(bool isSuccessful, bool isOnboaringComplete) loaded,
+    required void Function(NetworkData data, bool isOnline) networkChange,
+    required Future<void> Function() loadUniversities,
+    required Future<void> Function() loadDegrees,
+    required Future<void> Function() loadMarketplaceCategories,
   }) {
     if (this is _Load) {
       return load();
     } else if (this is _Loaded) {
-      return loaded((this as _Loaded).isSuccessful,
+      loaded((this as _Loaded).isSuccessful,
           (this as _Loaded).isOnboaringComplete);
+      return Future.value();
     } else if (this is _NetworkChange) {
-      return networkChange(
+      networkChange(
           (this as _NetworkChange).data, (this as _NetworkChange).isOnline);
+      return Future.value();
+    } else if (this is _LoadUniversities) {
+      return loadUniversities();
+    } else if (this is _LoadDegrees) {
+      return loadDegrees();
+    } else if (this is _LoadMarketplaceCategories) {
+      return loadMarketplaceCategories();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -50,6 +49,9 @@ class AppEvent {
     R Function()? load,
     R Function(bool isSuccessful, bool isOnboaringComplete)? loaded,
     R Function(NetworkData data, bool isOnline)? networkChange,
+    R Function()? loadUniversities,
+    R Function()? loadDegrees,
+    R Function()? loadMarketplaceCategories,
     required R Function() orElse,
   }) {
     if (this is _Load) {
@@ -63,6 +65,14 @@ class AppEvent {
       return networkChange != null
           ? networkChange(
               (this as _NetworkChange).data, (this as _NetworkChange).isOnline)
+          : orElse();
+    } else if (this is _LoadUniversities) {
+      return loadUniversities != null ? loadUniversities() : orElse();
+    } else if (this is _LoadDegrees) {
+      return loadDegrees != null ? loadDegrees() : orElse();
+    } else if (this is _LoadMarketplaceCategories) {
+      return loadMarketplaceCategories != null
+          ? loadMarketplaceCategories()
           : orElse();
     } else {
       throw Exception('Unknown event: $this');
@@ -73,6 +83,9 @@ class AppEvent {
     R Function()? load,
     R Function(bool isSuccessful, bool isOnboaringComplete)? loaded,
     R Function(NetworkData data, bool isOnline)? networkChange,
+    R Function()? loadUniversities,
+    R Function()? loadDegrees,
+    R Function()? loadMarketplaceCategories,
     required R Function() orElse,
   }) {
     if (this is _Load) {
@@ -86,6 +99,14 @@ class AppEvent {
       return networkChange != null
           ? networkChange(
               (this as _NetworkChange).data, (this as _NetworkChange).isOnline)
+          : orElse();
+    } else if (this is _LoadUniversities) {
+      return loadUniversities != null ? loadUniversities() : orElse();
+    } else if (this is _LoadDegrees) {
+      return loadDegrees != null ? loadDegrees() : orElse();
+    } else if (this is _LoadMarketplaceCategories) {
+      return loadMarketplaceCategories != null
+          ? loadMarketplaceCategories()
           : orElse();
     } else {
       throw Exception('Unknown event: $this');
@@ -139,4 +160,16 @@ class _NetworkChange extends AppEvent {
 
   @override
   int get hashCode => data.hashCode ^ isOnline.hashCode;
+}
+
+class _LoadUniversities extends AppEvent {
+  const _LoadUniversities();
+}
+
+class _LoadDegrees extends AppEvent {
+  const _LoadDegrees();
+}
+
+class _LoadMarketplaceCategories extends AppEvent {
+  const _LoadMarketplaceCategories();
 }

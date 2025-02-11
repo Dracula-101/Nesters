@@ -10,6 +10,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
@@ -61,7 +62,6 @@ class UserProfileBasicFormView extends StatefulWidget {
 
 class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final _formKey = GlobalKey<FormState>();
-  final MediaRepository mediaRepository = GetIt.I<MediaRepository>();
   //image variable
   File? _image;
   String? photoUrl;
@@ -69,6 +69,8 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
 
   // Full Name, Email, profile image, college name, course name, gender, birthdate, intake period and year
   final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
+  final AuthRepository _authRepository = GetIt.I<AuthRepository>();
+
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _collegeNameController = TextEditingController();
   final TextEditingController _courseNameController = TextEditingController();
@@ -166,6 +168,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     try {
       final isProfileSet = await GetIt.I<UserRepository>()
           .setBasicUserProfileData(userBasicProfile);
+      await _authRepository.updateUserInfo();
       if (isProfileSet) {
         context.showSuccessSnackBar('Profile created successfully');
         GoRouter.of(context).go(AppRouterService.homeScreen);

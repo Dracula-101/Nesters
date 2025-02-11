@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
@@ -22,7 +23,6 @@ import 'package:nesters/features/apartment/list/view/components/apartment_list_w
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
@@ -31,18 +31,21 @@ class ApartmentListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          GoRouter.of(context).go(
-            '${AppRouterService.homeScreen}/${AppRouterService.apartmentForm}',
-          );
-        },
-        heroTag: "add_apartment",
-        child: const Icon(Icons.add),
-      ),
-      body: const SafeArea(
-        child: ApartmentListView(),
+    return BlocProvider(
+      create: (context) => ApartmentBloc(),
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            GoRouter.of(context).go(
+              '${AppRouterService.homeScreen}/${AppRouterService.apartmentForm}',
+            );
+          },
+          heroTag: "add_apartment",
+          child: const Icon(Icons.add),
+        ),
+        body: const SafeArea(
+          child: ApartmentListView(),
+        ),
       ),
     );
   }
@@ -239,7 +242,7 @@ class _ApartmentListViewState extends State<ApartmentListView> {
           height: 50,
           child: BlocBuilder<ApartmentBloc, ApartmentState>(
             builder: (context, apartmentState) {
-              return BlocBuilder<UserBloc, UserState>(
+              return BlocBuilder<AppBloc, AppState>(
                 builder: (context, userState) {
                   return ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 6),

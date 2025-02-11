@@ -29,7 +29,7 @@ class AppBlocObserver extends BlocObserver {
     Bloc<dynamic, dynamic> bloc,
     Transition<dynamic, dynamic> transition,
   ) {
-    super.onTransition(bloc, transition);
     _appLogger.debug(transition);
+    super.onTransition(bloc, transition);
   }
 }

@@ -10,6 +10,7 @@ import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository_impl.dart';
 import 'package:nesters/data/repository/user/profile/firebase_user_profile_repository.dart';
 import 'package:nesters/data/repository/user/profile/user_chat_profile_repository.dart';
+import 'package:nesters/data/repository/user/user_repository_impl.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:get_it/get_it.dart';
 
@@ -55,7 +56,7 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   RemoteChatRepository remoteChatRepository = FirebaseChatRepository();
   RecipientUserRepository firebaseRecipientQuickUserRepository =
       FirebaseRecipientUserRepository();
-  UserRepository userRepository = UserRepository(
+  UserRepository userRepository = UserRepositoryImpl(
     authRepository: authRepository,
     databaseRepository: databaseRepository,
     storageRepository: localStorageRepository,
