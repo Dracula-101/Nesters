@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
@@ -678,17 +679,15 @@ class UserRepositoryImpl implements UserRepository {
       final storageImagePath =
           '$userId/profile_image_$dateEpoch.${profileImagePath.split('.').last}';
       if (previousImageUrl != null) {
-        final previousImageName = previousImageUrl.split('/').last;
-        await _storageClient.from('profile_images').remove([previousImageName]);
+        String previousImageName = previousImageUrl.split('/').last;
+        await _storageClient
+            .from('profile_images')
+            .remove(["$userId/$previousImageName"]);
       }
       await _storageClient.from('profile_images').uploadBinary(
             storageImagePath,
             imageBytes,
             retryAttempts: 5,
-            fileOptions: const FileOptions(
-              upsert: true,
-              cacheControl: '3600',
-            ),
           );
       final imageUrl =
           _storageClient.from('profile_images').getPublicUrl(storageImagePath);
@@ -698,6 +697,7 @@ class UserRepositoryImpl implements UserRepository {
     } on AppException {
       rethrow;
     } catch (e) {
+      _logger.error('Error in uploading profile image: $e');
       throw UploadUserImageError(message: 'Error in uploading user image');
     }
   }
