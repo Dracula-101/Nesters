@@ -43,24 +43,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     return BlocConsumer<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
-        if (state.submitError != null) {
-          // log("Error: ${state.submitError}");
-          context.showSnackBar(
-            'An unknown error occurred, please try again later',
-            icon: Icon(
-              FontAwesomeIcons.triangleExclamation,
-              color: AppTheme.error,
-            ),
+        if (state.submitState?.exception != null) {
+          context.showErrorSnackBar(
+            state.submitState!.exception!.message,
           );
         }
-        if (state.isSubmitComplete ?? false) {
+        if (state.submitState?.isSuccess ?? false) {
           Future.delayed(1.sec).then((value) {
-            context.showSnackBar(
+            context.showSuccessSnackBar(
               'Sublet ${(state.isPreFilled ?? false) ? 'updated' : 'created'} successfully',
-              icon: Icon(
-                FontAwesomeIcons.circleCheck,
-                color: AppTheme.success,
-              ),
             );
             Navigator.of(context).pop();
           });
@@ -88,7 +79,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
                   : null,
             ),
             child: DynamicProgressIndicator(
-              currentValue: state.isSubmitComplete ?? false
+              currentValue: state.submitState?.isSuccess ?? false
                   ? 1.0
                   : state.imageUploadTask?.progress ?? 1.0,
               totalValue: 1.0,
@@ -97,7 +88,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
               backgroundColor: AppTheme.primaryShades.shade300,
               progressColor: AppTheme.primaryShades.shade600,
               child: Text(
-                state.isSubmitComplete ?? false
+                state.submitState?.isSuccess ?? false
                     ? (state.isPreFilled ?? false)
                         ? 'Updated'
                         : 'Submitted'

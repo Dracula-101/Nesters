@@ -9,6 +9,7 @@ import 'package:nesters/data/repository/user/profile/user_chat_profile_repositor
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/user/request/request.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/features/auth/bloc/auth_error.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc_error.dart';
 import 'package:nesters/utils/bloc_state.dart';
 import 'package:rxdart/rxdart.dart';
@@ -76,8 +77,8 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
   }
 
   bool doesRequestExist(String userId) {
-    bool isRequestSent = state.requestUserState.requestSentUsers
-        .any((element) => element.receiver.id == userId);
+    bool isRequestSent =
+        state.requestSentUsers.any((element) => element.receiver.id == userId);
     return isRequestSent;
   }
 
@@ -96,10 +97,10 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
         ),
         onData: (data) {
           return state.copyWith(
-              requestUserState: state.requestUserState.loadUserSuccess(
             requestSentUsers: data[0],
             requestReceivedUsers: data[1],
-          ));
+            requestUserState: state.requestUserState.success(),
+          );
         },
         onError: (error, stackTrace) {
           return state.copyWith(

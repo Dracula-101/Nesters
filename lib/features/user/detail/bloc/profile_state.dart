@@ -1,39 +1,75 @@
 part of 'profile_bloc.dart';
 
-class ProfileState {
-  final bool isLoading;
-  final UserProfile? userProfile;
-  final Exception? error;
+class ProfileStatus extends BlocState {
+  ProfileStatus({
+    required bool isLoading,
+    required AppException? exception,
+    required bool isSuccess,
+  }) : super(
+          isLoading: isLoading,
+          exception: exception,
+          isSuccess: isSuccess,
+        );
 
-  const ProfileState({
-    this.isLoading = true,
-    this.userProfile,
-    this.error,
-  });
-
-  ProfileState copyWith({
-    bool? isLoading,
-    UserProfile? userProfile,
-    Exception? error,
-  }) {
-    return ProfileState(
+  @override
+  ProfileStatus copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return ProfileStatus(
       isLoading: isLoading ?? this.isLoading,
-      userProfile: userProfile ?? this.userProfile,
-      error: error ?? this.error,
+      exception: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
     );
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is ProfileState &&
-        other.userProfile == userProfile &&
-        other.error == error &&
-        other.isLoading == isLoading;
+  ProfileStatus failure(AppException error) {
+    return ProfileStatus(
+      isLoading: false,
+      exception: error,
+      isSuccess: false,
+    );
   }
 
   @override
-  int get hashCode =>
-      userProfile.hashCode ^ error.hashCode ^ isLoading.hashCode;
+  ProfileStatus loading() {
+    return ProfileStatus(
+      isLoading: true,
+      exception: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  ProfileStatus resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  @override
+  ProfileStatus success() {
+    return ProfileStatus(
+      isLoading: false,
+      exception: null,
+      isSuccess: true,
+    );
+  }
+}
+
+class ProfileState {
+  final UserProfile? userProfile;
+  final ProfileStatus? profileStatus;
+
+  const ProfileState({
+    this.userProfile,
+    this.profileStatus,
+  });
+
+  ProfileState copyWith({
+    UserProfile? userProfile,
+    ProfileStatus? profileStatus,
+  }) {
+    return ProfileState(
+      userProfile: userProfile ?? this.userProfile,
+      profileStatus: profileStatus ?? this.profileStatus,
+    );
+  }
 }

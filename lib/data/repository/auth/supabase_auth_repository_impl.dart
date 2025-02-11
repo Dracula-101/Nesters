@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -6,6 +7,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
+import 'package:nesters/domain/models/user/profile/user_info.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/extensions/exception.dart';
@@ -18,7 +20,9 @@ import 'error/auth_error.dart';
 class SupabaseAuthRepository extends AuthRepository {
   SupabaseAuthRepository({
     required AppSecretsRepository appSecretsRepository,
-  }) : _appSecrets = appSecretsRepository;
+  }) : _appSecrets = appSecretsRepository {
+    _init();
+  }
 
   final AppSecretsRepository _appSecrets;
 
@@ -30,7 +34,39 @@ class SupabaseAuthRepository extends AuthRepository {
     serverClientId: _appSecrets.getSecret(AppSecretsKeys.GOOGLE_WEB_CLIENT_ID),
   );
 
-  UserProfile? _userProfile;
+  UserInfo? _userInfo;
+  User? _currentUser;
+  final StreamController<User?> _userController =
+      StreamController<User?>.broadcast();
+  final StreamController<UserInfo?> _userInfoController =
+      StreamController<UserInfo?>.broadcast();
+
+  _init() {
+    _supabaseClient.auth.onAuthStateChange.listen((event) async {
+      if (event.session?.user != null) {
+        try {
+          _userInfo = await _supabaseClient
+              .from('user_details')
+              .select()
+              .eq('id', event.session!.user.id)
+              .single()
+              .then((value) => UserInfo.fromJson(value));
+          _currentUser = currentUser;
+          _userInfoController.add(_userInfo);
+          _userController.add(_currentUser);
+        } catch (error) {
+          _currentUser = currentUser;
+          _userController.add(_currentUser);
+          _userInfo = null;
+        }
+      } else {
+        _currentUser = null;
+        _userInfoController.add(null);
+        _userController.add(_currentUser);
+        _userInfo = null;
+      }
+    });
+  }
 
   @override
   User? get currentUser {
@@ -41,14 +77,26 @@ class SupabaseAuthRepository extends AuthRepository {
       return User(
         id: user.id,
         email: user.email ?? "",
-        fullName: _userProfile?.fullName ?? user.userMetadata?['name'] ?? '',
-        photoUrl: _userProfile?.profileImage ??
-            user.userMetadata?['avatar_url'] ??
-            '',
+        fullName: _userInfo?.fullName ?? user.userMetadata?['name'] ?? '',
+        photoUrl:
+            _userInfo?.profileImage ?? user.userMetadata?['avatar_url'] ?? '',
         accessToken: accessToken,
       );
     }
     return null;
+  }
+
+  @override
+  Stream<User?> get user {
+    return _userController.stream.asBroadcastStream();
+  }
+
+  @override
+  UserInfo? get currentUserInfo => _userInfo;
+
+  @override
+  Stream<UserInfo?> get userInfo {
+    return _userInfoController.stream.asBroadcastStream();
   }
 
   @override
@@ -146,37 +194,22 @@ class SupabaseAuthRepository extends AuthRepository {
   }
 
   @override
-  Stream<User?> get user {
-    return _supabaseClient.auth.onAuthStateChange.asyncMap((event) async {
-      if (event.session != null) {
-        try {
-          _userProfile = await _supabaseClient
-              .from('user_details')
-              .select()
-              .eq('id', event.session!.user.id)
-              .single()
-              .then((value) => UserProfile.fromJson(value));
-        } catch (error) {
-          // User is either not found or creating a new user
-        }
-        return User(
-          id: event.session!.user.id,
-          email: event.session!.user.email ?? "",
-          fullName: _userProfile?.fullName ??
-              event.session!.user.userMetadata?['name'] ??
-              '',
-          photoUrl: _userProfile?.profileImage ??
-              event.session!.user.userMetadata?['avatar_url'] ??
-              '',
-          accessToken: event.session!.accessToken,
-        );
-      }
-      return null;
-    });
+  Future<String?> getAccessToken() async {
+    return Future.value(_supabaseClient.auth.currentSession?.accessToken);
   }
 
   @override
-  Future<String?> getAccessToken() async {
-    return Future.value(_supabaseClient.auth.currentSession?.accessToken);
+  Future<void> updateUserInfo() async {
+    try {
+      UserInfo? userInfo = await _supabaseClient
+          .from('user_details')
+          .select()
+          .eq('id', _currentUser!.id)
+          .single()
+          .then((value) => UserInfo.fromJson(value));
+      _userInfo = userInfo;
+      _userInfoController.add(_userInfo);
+    } catch (error) {}
+    return Future.value();
   }
 }

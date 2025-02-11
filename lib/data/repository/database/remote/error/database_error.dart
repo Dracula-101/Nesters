@@ -15,14 +15,14 @@ abstract class DatabaseError extends AppException {
 }
 
 enum DatabaseErrorCode {
-  GET_DATA_ERROR,
-  CHECK_DATA_ERROR,
-  ADD_DATA_ERROR,
-  SET_DATA_ERROR,
-  QUERY_DATA_ERROR,
-  UPDATE_DATA_ERROR,
-  SEARCH_DATA_ERROR,
-  DELETE_DATA_ERROR;
+  GET_DATA_ERR,
+  CHECK_DATA_ERR,
+  ADD_DATA_ERR,
+  SET_DATA_ERR,
+  QUERY_DATA_ERR,
+  UPDATE_DATA_ERR,
+  SEARCH_DATA_ERR,
+  DELETE_DATA_ERR;
 
   @override
   String toString() {
@@ -36,7 +36,7 @@ class DatabaseGetDataError extends DatabaseError {
   DatabaseGetDataError({
     required this.table,
   }) : super(
-          code: DatabaseErrorCode.GET_DATA_ERROR,
+          code: DatabaseErrorCode.GET_DATA_ERR,
           message: 'Error getting data from $table',
         );
 }
@@ -47,7 +47,7 @@ class DatabaseCheckDataError extends DatabaseError {
   DatabaseCheckDataError({
     required this.table,
   }) : super(
-          code: DatabaseErrorCode.CHECK_DATA_ERROR,
+          code: DatabaseErrorCode.CHECK_DATA_ERR,
           message: 'Error checking data in $table',
         );
 }
@@ -58,7 +58,7 @@ class DatabaseAddDataError extends DatabaseError {
   DatabaseAddDataError({
     required this.table,
   }) : super(
-          code: DatabaseErrorCode.ADD_DATA_ERROR,
+          code: DatabaseErrorCode.ADD_DATA_ERR,
           message: 'Error adding data to $table',
         );
 }
@@ -69,7 +69,7 @@ class DatabaseSetDataError extends DatabaseError {
   DatabaseSetDataError({
     required this.table,
   }) : super(
-          code: DatabaseErrorCode.SET_DATA_ERROR,
+          code: DatabaseErrorCode.SET_DATA_ERR,
           message: 'Error setting data to $table',
         );
 }
@@ -80,7 +80,7 @@ class DatabaseQueryDataError extends DatabaseError {
   DatabaseQueryDataError({
     required this.table,
   }) : super(
-          code: DatabaseErrorCode.QUERY_DATA_ERROR,
+          code: DatabaseErrorCode.QUERY_DATA_ERR,
           message: 'Error querying data in $table',
         );
 }
@@ -91,7 +91,7 @@ class DatabaseSearchDataError extends DatabaseError {
   DatabaseSearchDataError({
     required this.table,
   }) : super(
-          code: DatabaseErrorCode.SEARCH_DATA_ERROR,
+          code: DatabaseErrorCode.SEARCH_DATA_ERR,
           message: 'Error searching data in $table',
         );
 }
@@ -102,7 +102,7 @@ class DatabaseUpdateDataError extends DatabaseError {
   DatabaseUpdateDataError({
     required this.table,
   }) : super(
-          code: DatabaseErrorCode.UPDATE_DATA_ERROR,
+          code: DatabaseErrorCode.UPDATE_DATA_ERR,
           message: 'Error updating data in $table',
         );
 }
@@ -113,7 +113,7 @@ class DatabaseDeleteDataError extends DatabaseError {
   DatabaseDeleteDataError({
     required this.table,
   }) : super(
-          code: DatabaseErrorCode.DELETE_DATA_ERROR,
+          code: DatabaseErrorCode.DELETE_DATA_ERR,
           message: 'Error deleting data from $table',
         );
 }
@@ -121,22 +121,31 @@ class DatabaseDeleteDataError extends DatabaseError {
 class DatabaseErrorFactory {
   static DatabaseError fromCode(DatabaseErrorCode code, String table) {
     switch (code) {
-      case DatabaseErrorCode.GET_DATA_ERROR:
+      case DatabaseErrorCode.GET_DATA_ERR:
         return DatabaseGetDataError(table: table);
-      case DatabaseErrorCode.CHECK_DATA_ERROR:
+      case DatabaseErrorCode.CHECK_DATA_ERR:
         return DatabaseCheckDataError(table: table);
-      case DatabaseErrorCode.ADD_DATA_ERROR:
+      case DatabaseErrorCode.ADD_DATA_ERR:
         return DatabaseAddDataError(table: table);
-      case DatabaseErrorCode.SET_DATA_ERROR:
+      case DatabaseErrorCode.SET_DATA_ERR:
         return DatabaseSetDataError(table: table);
-      case DatabaseErrorCode.QUERY_DATA_ERROR:
+      case DatabaseErrorCode.QUERY_DATA_ERR:
         return DatabaseQueryDataError(table: table);
-      case DatabaseErrorCode.SEARCH_DATA_ERROR:
+      case DatabaseErrorCode.SEARCH_DATA_ERR:
         return DatabaseSearchDataError(table: table);
-      case DatabaseErrorCode.UPDATE_DATA_ERROR:
+      case DatabaseErrorCode.UPDATE_DATA_ERR:
         return DatabaseUpdateDataError(table: table);
-      case DatabaseErrorCode.DELETE_DATA_ERROR:
+      case DatabaseErrorCode.DELETE_DATA_ERR:
         return DatabaseDeleteDataError(table: table);
     }
   }
+}
+
+class NoNetworkError extends AppException {
+  @override
+  String message;
+
+  NoNetworkError([
+    this.message = 'Please check your internet connection and try again',
+  ]);
 }

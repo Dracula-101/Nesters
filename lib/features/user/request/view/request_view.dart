@@ -74,14 +74,13 @@ class _RequestViewState extends State<RequestView> {
                     ),
                   )
                 else if (state.currentScreen == RequestScreen.SENT)
-                  if (state.requestUserState.requestSentUsers.isEmpty)
+                  if (state.requestSentUsers.isEmpty)
                     _buildNoRequestScreen(RequestScreen.SENT)
                   else
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final user =
-                              state.requestUserState.requestSentUsers[index];
+                          final user = state.requestSentUsers[index];
                           return RequestWidget(
                             user: user,
                             isSent: true,
@@ -99,19 +98,17 @@ class _RequestViewState extends State<RequestView> {
                             },
                           );
                         },
-                        childCount:
-                            state.requestUserState.requestSentUsers.length,
+                        childCount: state.requestSentUsers.length,
                       ),
                     )
                 else if (state.currentScreen == RequestScreen.RECEIVED)
-                  if (state.requestUserState.requestReceivedUsers.isEmpty)
+                  if (state.requestReceivedUsers.isEmpty)
                     _buildNoRequestScreen(RequestScreen.RECEIVED)
                   else
                     SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final user = state
-                              .requestUserState.requestReceivedUsers[index];
+                          final user = state.requestReceivedUsers[index];
                           return RequestWidget(
                             user: user,
                             isRejected: user.isBanned,
@@ -129,8 +126,7 @@ class _RequestViewState extends State<RequestView> {
                             },
                           );
                         },
-                        childCount:
-                            state.requestUserState.requestReceivedUsers.length,
+                        childCount: state.requestReceivedUsers.length,
                       ),
                     ),
               ],
@@ -363,42 +359,98 @@ class RequestWidget extends StatelessWidget {
                     width: imageSize,
                   ),
                   SizedBox(width: gap),
-                  SizedBox(
-                    height: imageSize,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Text(
-                          isSent ? user.sender.name : user.receiver.name,
-                        ),
-                        Text(
-                          user.sentAt.toLongUIDateTime(),
-                          style: AppTheme.labelMediumLightVariant,
-                        ),
-                        const SizedBox(height: 5),
-                        if (type == RequestScreen.SENT)
-                          GestureDetector(
-                            child: Container(
-                              width: (MediaQuery.of(context).size.width -
-                                  2 * horizontalMargin -
-                                  2 * horizontalPadding -
-                                  imageSize -
-                                  gap),
-                              decoration: BoxDecoration(
-                                color: user.isBanned
-                                    ? AppTheme.errorColor.withOpacity(0.1)
-                                    : user.isAccepted
-                                        ? AppTheme.success.withOpacity(0.1)
-                                        : AppTheme.primary.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(4),
+                  Flexible(
+                    child: SizedBox(
+                      height: imageSize,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            isSent ? user.sender.name : user.receiver.name,
+                          ),
+                          Flexible(
+                            child: Text(
+                              user.sentAt.toLongUIDateTime(),
+                              style: AppTheme.labelMediumLightVariant,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          if (type == RequestScreen.SENT)
+                            GestureDetector(
+                              child: Container(
+                                width: (MediaQuery.of(context).size.width -
+                                    2 * horizontalMargin -
+                                    2 * horizontalPadding -
+                                    imageSize -
+                                    gap),
+                                decoration: BoxDecoration(
+                                  color: user.isBanned
+                                      ? AppTheme.errorColor.withOpacity(0.1)
+                                      : user.isAccepted
+                                          ? AppTheme.success.withOpacity(0.1)
+                                          : AppTheme.primary.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                alignment: Alignment.center,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 3,
+                                ),
+                                child: user.isAccepted || user.isBanned
+                                    ? Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            user.isBanned
+                                                ? FontAwesomeIcons.ban
+                                                : FontAwesomeIcons.check,
+                                            color: user.isBanned
+                                                ? AppTheme.errorColor
+                                                : AppTheme.success,
+                                            size: 16,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            user.isBanned
+                                                ? 'Rejected'
+                                                : 'Accepted',
+                                            style: AppTheme.labelSmall.copyWith(
+                                              color: user.isBanned
+                                                  ? AppTheme.errorColor
+                                                  : AppTheme.success,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    : Text(
+                                        'Sent',
+                                        style: AppTheme.labelSmall.copyWith(
+                                          color: AppTheme.primary,
+                                        ),
+                                      ),
                               ),
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 3,
-                              ),
-                              child: user.isAccepted || user.isBanned
-                                  ? Row(
+                            )
+                          else
+                            user.isAccepted || user.isBanned
+                                ? Container(
+                                    width: (MediaQuery.of(context).size.width -
+                                        2 * horizontalMargin -
+                                        2 * horizontalPadding -
+                                        imageSize -
+                                        gap),
+                                    decoration: BoxDecoration(
+                                      color: user.isBanned
+                                          ? AppTheme.errorColor.withOpacity(0.1)
+                                          : AppTheme.success.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 3,
+                                    ),
+                                    child: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(
@@ -422,117 +474,71 @@ class RequestWidget extends StatelessWidget {
                                           ),
                                         ),
                                       ],
-                                    )
-                                  : Text(
-                                      'Sent',
-                                      style: AppTheme.labelSmall.copyWith(
-                                        color: AppTheme.primary,
-                                      ),
                                     ),
-                            ),
-                          )
-                        else
-                          user.isAccepted || user.isBanned
-                              ? Container(
-                                  width: (MediaQuery.of(context).size.width -
-                                      2 * horizontalMargin -
-                                      2 * horizontalPadding -
-                                      imageSize -
-                                      gap),
-                                  decoration: BoxDecoration(
-                                    color: user.isBanned
-                                        ? AppTheme.errorColor.withOpacity(0.1)
-                                        : AppTheme.success.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  alignment: Alignment.center,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 3,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
+                                  )
+                                : Row(
                                     children: [
-                                      Icon(
-                                        user.isBanned
-                                            ? FontAwesomeIcons.ban
-                                            : FontAwesomeIcons.check,
-                                        color: user.isBanned
-                                            ? AppTheme.errorColor
-                                            : AppTheme.success,
-                                        size: 16,
+                                      InkWell(
+                                        onTap: onAccept,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 3,
+                                          ),
+                                          width: (MediaQuery.of(context)
+                                                          .size
+                                                          .width -
+                                                      2 * horizontalMargin -
+                                                      2 * horizontalPadding -
+                                                      imageSize -
+                                                      gap) /
+                                                  2 -
+                                              gap / 2,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primary,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            'Accept',
+                                            style: AppTheme.labelSmall.copyWith(
+                                                color: AppTheme.surface),
+                                          ),
+                                        ),
                                       ),
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        user.isBanned ? 'Rejected' : 'Accepted',
-                                        style: AppTheme.labelSmall.copyWith(
-                                          color: user.isBanned
-                                              ? AppTheme.errorColor
-                                              : AppTheme.success,
+                                      SizedBox(width: gap),
+                                      InkWell(
+                                        onTap: onReject,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 3,
+                                          ),
+                                          width: (MediaQuery.of(context)
+                                                          .size
+                                                          .width -
+                                                      2 * horizontalMargin -
+                                                      2 * horizontalPadding -
+                                                      imageSize -
+                                                      gap) /
+                                                  2 -
+                                              gap / 2,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: AppTheme.primary
+                                                .withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                          child: Text(
+                                            'Reject',
+                                            style: AppTheme.labelSmall,
+                                          ),
                                         ),
                                       ),
                                     ],
-                                  ),
-                                )
-                              : Row(
-                                  children: [
-                                    InkWell(
-                                      onTap: onAccept,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 3,
-                                        ),
-                                        width:
-                                            (MediaQuery.of(context).size.width -
-                                                        2 * horizontalMargin -
-                                                        2 * horizontalPadding -
-                                                        imageSize -
-                                                        gap) /
-                                                    2 -
-                                                gap / 2,
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                          color: AppTheme.primary,
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          'Accept',
-                                          style: AppTheme.labelSmall.copyWith(
-                                              color: AppTheme.surface),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: gap),
-                                    InkWell(
-                                      onTap: onReject,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 3,
-                                        ),
-                                        width:
-                                            (MediaQuery.of(context).size.width -
-                                                        2 * horizontalMargin -
-                                                        2 * horizontalPadding -
-                                                        imageSize -
-                                                        gap) /
-                                                    2 -
-                                                gap / 2,
-                                        alignment: Alignment.center,
-                                        decoration: BoxDecoration(
-                                          color:
-                                              AppTheme.primary.withOpacity(0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                        ),
-                                        child: Text(
-                                          'Reject',
-                                          style: AppTheme.labelSmall,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                      ],
+                                  )
+                        ],
+                      ),
                     ),
                   ),
                 ],

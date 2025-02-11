@@ -3,21 +3,21 @@
 import 'package:nesters/data/repository/utils/app_exception.dart';
 
 enum UserChatErrorCode {
-  CHAT_GET_MSG_ERROR,
-  CHAT_ADD_MSG_ERROR,
-  CHAT_ROOM_CREATE_ERROR,
-  CHAT_ROOM_EXIST_ERROR,
-  CHAT_UPLOAD_DOC_ERROR,
-  CHAT_DOWNLOAD_DOC_ERROR,
-  TOKEN_CHANGE_LISTENER_ERROR,
+  CHAT_GET_MSG_ERR,
+  CHAT_ADD_MSG_ERR,
+  CHAT_ROOM_CREATE_ERR,
+  CHAT_ROOM_EXIST_ERR,
+  CHAT_UPLOAD_DOC_ERR,
+  CHAT_DOWNLOAD_DOC_ERR,
+  TOKEN_CHANGE_LISTENER_ERR,
 
-  GET_PROFILE_ERROR,
-  GET_SENT_REQ_ERROR,
-  GET_RECEIVED_REQ_ERROR,
-  SEND_REQ_ERROR,
-  ACCEPT_REQ_ERROR,
-  REJECT_REQ_ERROR,
-  DELETE_USER_ERROR,
+  GET_PROFILE_ERR,
+  GET_SENT_REQ_ERR,
+  GET_RECEIVED_REQ_ERR,
+  SEND_REQ_ERR,
+  ACCEPT_REQ_ERR,
+  REJECT_REQ_ERR,
+  DELETE_USER_ERR,
 }
 
 abstract class UserChatError extends AppException {
@@ -37,7 +37,7 @@ class ChatGetMsgError extends UserChatError {
 
   ChatGetMsgError({required this.extra})
       : super(
-          code: UserChatErrorCode.CHAT_GET_MSG_ERROR,
+          code: UserChatErrorCode.CHAT_GET_MSG_ERR,
           message: 'Failed to get messages',
         );
 }
@@ -47,7 +47,7 @@ class ChatAddMsgError extends UserChatError {
 
   ChatAddMsgError({required this.extra})
       : super(
-          code: UserChatErrorCode.CHAT_ADD_MSG_ERROR,
+          code: UserChatErrorCode.CHAT_ADD_MSG_ERR,
           message: 'Failed to add message',
         );
 }
@@ -57,7 +57,7 @@ class ChatRoomCreateError extends UserChatError {
 
   ChatRoomCreateError({required this.extra})
       : super(
-          code: UserChatErrorCode.CHAT_ROOM_CREATE_ERROR,
+          code: UserChatErrorCode.CHAT_ROOM_CREATE_ERR,
           message: 'Failed to create chat room',
         );
 }
@@ -67,7 +67,7 @@ class ChatRoomExistError extends UserChatError {
 
   ChatRoomExistError({required this.extra})
       : super(
-          code: UserChatErrorCode.CHAT_ROOM_EXIST_ERROR,
+          code: UserChatErrorCode.CHAT_ROOM_EXIST_ERR,
           message: 'Chat room already exists',
         );
 }
@@ -77,7 +77,7 @@ class ChatUploadDocError extends UserChatError {
 
   ChatUploadDocError({required this.extra})
       : super(
-          code: UserChatErrorCode.CHAT_UPLOAD_DOC_ERROR,
+          code: UserChatErrorCode.CHAT_UPLOAD_DOC_ERR,
           message: 'Failed to upload document',
         );
 }
@@ -87,7 +87,7 @@ class ChatDownloadDocError extends UserChatError {
 
   ChatDownloadDocError({required this.extra})
       : super(
-          code: UserChatErrorCode.CHAT_DOWNLOAD_DOC_ERROR,
+          code: UserChatErrorCode.CHAT_DOWNLOAD_DOC_ERR,
           message: 'Failed to download document',
         );
 }
@@ -97,7 +97,7 @@ class ChatTokenChangeListenerError extends UserChatError {
 
   ChatTokenChangeListenerError({required this.extra})
       : super(
-          code: UserChatErrorCode.TOKEN_CHANGE_LISTENER_ERROR,
+          code: UserChatErrorCode.TOKEN_CHANGE_LISTENER_ERR,
           message: 'Failed to change token listener',
         );
 }
@@ -107,7 +107,7 @@ class GetProfileError extends UserChatError {
 
   GetProfileError({required this.extra})
       : super(
-          code: UserChatErrorCode.GET_PROFILE_ERROR,
+          code: UserChatErrorCode.GET_PROFILE_ERR,
           message: 'Failed to get profile',
         );
 }
@@ -117,7 +117,7 @@ class GetSentReqError extends UserChatError {
 
   GetSentReqError({required this.extra})
       : super(
-          code: UserChatErrorCode.GET_SENT_REQ_ERROR,
+          code: UserChatErrorCode.GET_SENT_REQ_ERR,
           message: 'Failed to get sent requests',
         );
 }
@@ -127,7 +127,7 @@ class GetReceivedReqError extends UserChatError {
 
   GetReceivedReqError({required this.extra})
       : super(
-          code: UserChatErrorCode.GET_RECEIVED_REQ_ERROR,
+          code: UserChatErrorCode.GET_RECEIVED_REQ_ERR,
           message: 'Failed to get received requests',
         );
 }
@@ -137,7 +137,7 @@ class SendReqError extends UserChatError {
 
   SendReqError({required this.extra})
       : super(
-          code: UserChatErrorCode.SEND_REQ_ERROR,
+          code: UserChatErrorCode.SEND_REQ_ERR,
           message: 'Failed to send request',
         );
 }
@@ -147,7 +147,7 @@ class AcceptReqError extends UserChatError {
 
   AcceptReqError({required this.extra})
       : super(
-          code: UserChatErrorCode.ACCEPT_REQ_ERROR,
+          code: UserChatErrorCode.ACCEPT_REQ_ERR,
           message: 'Failed to accept request',
         );
 }
@@ -157,7 +157,7 @@ class RejectReqError extends UserChatError {
 
   RejectReqError({required this.extra})
       : super(
-          code: UserChatErrorCode.REJECT_REQ_ERROR,
+          code: UserChatErrorCode.REJECT_REQ_ERR,
           message: 'Failed to reject request',
         );
 }
@@ -167,7 +167,7 @@ class DeleteUserError extends UserChatError {
 
   DeleteUserError({required this.extra})
       : super(
-          code: UserChatErrorCode.DELETE_USER_ERROR,
+          code: UserChatErrorCode.DELETE_USER_ERR,
           message: 'Failed to delete user',
         );
 }
@@ -175,33 +175,33 @@ class DeleteUserError extends UserChatError {
 class UserChatErrorFactory {
   static UserChatError create(UserChatErrorCode code, String extra) {
     switch (code) {
-      case UserChatErrorCode.CHAT_GET_MSG_ERROR:
+      case UserChatErrorCode.CHAT_GET_MSG_ERR:
         return ChatGetMsgError(extra: extra);
-      case UserChatErrorCode.CHAT_ADD_MSG_ERROR:
+      case UserChatErrorCode.CHAT_ADD_MSG_ERR:
         return ChatAddMsgError(extra: extra);
-      case UserChatErrorCode.CHAT_ROOM_CREATE_ERROR:
+      case UserChatErrorCode.CHAT_ROOM_CREATE_ERR:
         return ChatRoomCreateError(extra: extra);
-      case UserChatErrorCode.CHAT_ROOM_EXIST_ERROR:
+      case UserChatErrorCode.CHAT_ROOM_EXIST_ERR:
         return ChatRoomExistError(extra: extra);
-      case UserChatErrorCode.CHAT_UPLOAD_DOC_ERROR:
+      case UserChatErrorCode.CHAT_UPLOAD_DOC_ERR:
         return ChatUploadDocError(extra: extra);
-      case UserChatErrorCode.CHAT_DOWNLOAD_DOC_ERROR:
+      case UserChatErrorCode.CHAT_DOWNLOAD_DOC_ERR:
         return ChatDownloadDocError(extra: extra);
-      case UserChatErrorCode.TOKEN_CHANGE_LISTENER_ERROR:
+      case UserChatErrorCode.TOKEN_CHANGE_LISTENER_ERR:
         return ChatTokenChangeListenerError(extra: extra);
-      case UserChatErrorCode.GET_PROFILE_ERROR:
+      case UserChatErrorCode.GET_PROFILE_ERR:
         return GetProfileError(extra: extra);
-      case UserChatErrorCode.GET_SENT_REQ_ERROR:
+      case UserChatErrorCode.GET_SENT_REQ_ERR:
         return GetSentReqError(extra: extra);
-      case UserChatErrorCode.GET_RECEIVED_REQ_ERROR:
+      case UserChatErrorCode.GET_RECEIVED_REQ_ERR:
         return GetReceivedReqError(extra: extra);
-      case UserChatErrorCode.SEND_REQ_ERROR:
+      case UserChatErrorCode.SEND_REQ_ERR:
         return SendReqError(extra: extra);
-      case UserChatErrorCode.ACCEPT_REQ_ERROR:
+      case UserChatErrorCode.ACCEPT_REQ_ERR:
         return AcceptReqError(extra: extra);
-      case UserChatErrorCode.REJECT_REQ_ERROR:
+      case UserChatErrorCode.REJECT_REQ_ERR:
         return RejectReqError(extra: extra);
-      case UserChatErrorCode.DELETE_USER_ERROR:
+      case UserChatErrorCode.DELETE_USER_ERR:
         return DeleteUserError(extra: extra);
     }
   }

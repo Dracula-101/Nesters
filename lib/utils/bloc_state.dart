@@ -22,4 +22,24 @@ abstract class BlocState {
   BlocState resetLoading();
 
   BlocState failure(AppException error);
+
+  BlocState success();
+
+  @override
+  int get hashCode =>
+      isLoading.hashCode ^ exception.hashCode ^ isSuccess.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is BlocState &&
+          runtimeType == other.runtimeType &&
+          isLoading == other.isLoading &&
+          exception == other.exception &&
+          isSuccess == other.isSuccess;
+
+  @override
+  String toString() {
+    return '\nisLoading: $isLoading,\nexception: $exception,\nisSuccess: $isSuccess';
+  }
 }

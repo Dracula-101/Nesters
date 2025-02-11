@@ -6,8 +6,8 @@ enum LocalStorageErrorCode {
   OBJECT_MISMATCH,
   OBJECT_SAVE,
   OBJECT_CLEAR,
-  STORAGE_CLEAR_ERROR,
-  STORAGE_ERROR;
+  STORAGE_CLEAR_ERR,
+  STORAGE_ERR;
 
   @override
   String toString() {
@@ -57,7 +57,7 @@ class LocalStorageGetKeyError implements LocalStorageError {
   String key;
 
   @override
-  final LocalStorageErrorCode errorCode = LocalStorageErrorCode.STORAGE_ERROR;
+  final LocalStorageErrorCode errorCode = LocalStorageErrorCode.STORAGE_ERR;
 
   LocalStorageGetKeyError(
     this.key,
@@ -100,7 +100,7 @@ class LocalStorageClearError implements LocalStorageError {
 
   @override
   final LocalStorageErrorCode errorCode =
-      LocalStorageErrorCode.STORAGE_CLEAR_ERROR;
+      LocalStorageErrorCode.STORAGE_CLEAR_ERR;
 
   LocalStorageClearError([this.message = 'Error clearing storage']);
 }

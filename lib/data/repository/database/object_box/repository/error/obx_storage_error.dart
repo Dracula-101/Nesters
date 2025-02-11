@@ -8,12 +8,12 @@ abstract class ObxStorageError implements AppException {
 }
 
 enum ObxStorageErrorCode {
-  VALUE_GET_ERROR,
-  VALUE_STREAM_ERROR,
-  VALUE_SAVE_ERROR,
-  STORAGE_CLEAR_ERROR,
-  STORAGE_ERROR,
-  RESET_ERROR;
+  VALUE_GET_ERR,
+  VALUE_STREAM_ERR,
+  VALUE_SAVE_ERR,
+  STORAGE_CLEAR_ERR,
+  STORAGE_ERR,
+  RESET_ERR;
 
   String get name => toString().split('.').last;
 }
@@ -28,7 +28,7 @@ class ObxStorageValueGetError implements ObxStorageError {
       : message = 'Error getting value for key: $key';
 
   @override
-  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.VALUE_GET_ERROR;
+  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.VALUE_GET_ERR;
 }
 
 class ObxStorageValueStreamError implements ObxStorageError {
@@ -41,7 +41,7 @@ class ObxStorageValueStreamError implements ObxStorageError {
       : message = 'Error streaming value for key: $key';
 
   @override
-  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.VALUE_STREAM_ERROR;
+  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.VALUE_STREAM_ERR;
 }
 
 class ObxStorageValueSaveError implements ObxStorageError {
@@ -54,7 +54,7 @@ class ObxStorageValueSaveError implements ObxStorageError {
       : message = 'Error saving value for key: $key';
 
   @override
-  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.VALUE_SAVE_ERROR;
+  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.VALUE_SAVE_ERR;
 }
 
 class ObxStorageClearError implements ObxStorageError {
@@ -62,7 +62,7 @@ class ObxStorageClearError implements ObxStorageError {
   String message = 'Error clearing storage';
 
   @override
-  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.STORAGE_CLEAR_ERROR;
+  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.STORAGE_CLEAR_ERR;
 }
 
 class ObxStorageErrorError implements ObxStorageError {
@@ -70,7 +70,7 @@ class ObxStorageErrorError implements ObxStorageError {
   String message = 'Error with storage';
 
   @override
-  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.STORAGE_ERROR;
+  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.STORAGE_ERR;
 }
 
 class ObxStorageResetError implements ObxStorageError {
@@ -78,5 +78,5 @@ class ObxStorageResetError implements ObxStorageError {
   String message = 'Error resetting storage';
 
   @override
-  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.RESET_ERROR;
+  final ObxStorageErrorCode errorCode = ObxStorageErrorCode.RESET_ERR;
 }

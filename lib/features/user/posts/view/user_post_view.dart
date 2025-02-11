@@ -57,6 +57,18 @@ class _UserPostViewState extends State<UserPostView> {
           loading: () => const Center(
             child: CircularProgressIndicator(),
           ),
+          error: (error) => Center(
+            child: Column(
+              children: [
+                Icon(
+                  Icons.error,
+                  color: AppTheme.error,
+                  size: 90,
+                ),
+                Text(error.message),
+              ],
+            ),
+          ),
           data: (sublets, marketplace, apartments, view) => (sublets.isEmpty &&
                   marketplace.isEmpty &&
                   apartments.isEmpty)
@@ -427,6 +439,8 @@ class _UserPostViewState extends State<UserPostView> {
                                 context: context,
                                 builder: (ctx) {
                                   return AlertDialog.adaptive(
+                                    actionsPadding: const EdgeInsets.only(
+                                        right: 8, bottom: 8),
                                     title: Text(
                                       "Delete Item",
                                       style: AppTheme.titleLarge,
@@ -444,13 +458,15 @@ class _UserPostViewState extends State<UserPostView> {
                                             Icon(Icons.warning,
                                                 color: AppTheme.error),
                                             const SizedBox(width: 10),
-                                            Text(
-                                              'This action cannot be undone.',
-                                              style:
-                                                  AppTheme.bodyMedium.copyWith(
-                                                color: AppTheme.error,
+                                            Flexible(
+                                              child: Text(
+                                                'This action cannot be undone.',
+                                                style: AppTheme.bodyMedium
+                                                    .copyWith(
+                                                  color: AppTheme.error,
+                                                ),
                                               ),
-                                            ),
+                                            )
                                           ],
                                         )
                                       ],
@@ -487,12 +503,11 @@ class _UserPostViewState extends State<UserPostView> {
                             },
                           ),
                         ),
+                      // TODO: Handle this case.
+                      Object() => null,
                     };
                   },
                 ),
-          showError: (message) => Center(
-            child: Text(message),
-          ),
         );
       },
     );

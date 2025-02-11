@@ -15,20 +15,20 @@ abstract class MarketplaceError extends AppException {
 }
 
 enum MarketplaceErrorCode {
-  DB_ERROR,
-  CREATE_MARKETPLACE_ERROR,
-  UPLOAD_IMAGES_ERROR,
-  UPDATE_MARKETPLACE_ERROR,
-  GET_MARKETPLACES_ERROR,
-  GET_MARKETPLACE_CATEGORIES_ERROR,
-  GET_SINGLE_FILTERED_MARKETPLACES_ERROR,
-  GET_MULTIPLE_FILTERED_MARKETPLACES_ERROR,
-  GET_USER_MARKETPLACES_ERROR,
-  UPDATE_LIKE_STATUS_ERROR,
-  GET_USER_LIKED_MARKETPLACES_ERROR,
-  CHANGE_AVAILABILITY_STATUS_ERROR,
-  DELETE_MARKETPLACE_ERROR,
-  UNKNOWN_ERROR;
+  DB_ERR,
+  CREATE_MARKETPLACE_ERR,
+  UPLOAD_IMAGES_ERR,
+  UPDATE_MARKETPLACE_ERR,
+  GET_MARKETPLACES_ERR,
+  GET_MARKETPLACE_CATEGORIES_ERR,
+  GET_SINGLE_FILTERED_MARKETPLACES_ERR,
+  GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
+  GET_USER_MARKETPLACES_ERR,
+  UPDATE_LIKE_STATUS_ERR,
+  GET_USER_LIKED_MARKETPLACES_ERR,
+  CHANGE_AVAILABILITY_STATUS_ERR,
+  DELETE_MARKETPLACE_ERR,
+  UNKNOWN_ERR;
 
   @override
   String toString() {
@@ -41,7 +41,7 @@ class CreateMarketplaceError extends MarketplaceError {
 
   CreateMarketplaceError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.CREATE_MARKETPLACE_ERROR,
+          code: MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
           message: 'Failed to create marketplace',
         );
 }
@@ -51,7 +51,7 @@ class UploadImagesError extends MarketplaceError {
 
   UploadImagesError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.UPLOAD_IMAGES_ERROR,
+          code: MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
           message: 'Failed to upload images',
         );
 }
@@ -61,7 +61,7 @@ class UpdateMarketplaceError extends MarketplaceError {
 
   UpdateMarketplaceError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.UPDATE_MARKETPLACE_ERROR,
+          code: MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR,
           message: 'Failed to update marketplace',
         );
 }
@@ -71,7 +71,7 @@ class GetMarketplacesError extends MarketplaceError {
 
   GetMarketplacesError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.GET_MARKETPLACES_ERROR,
+          code: MarketplaceErrorCode.GET_MARKETPLACES_ERR,
           message: 'Failed to get marketplaces',
         );
 }
@@ -81,7 +81,7 @@ class GetMarketplaceCategoriesError extends MarketplaceError {
 
   GetMarketplaceCategoriesError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERROR,
+          code: MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR,
           message: 'Failed to get marketplace categories',
         );
 }
@@ -91,7 +91,7 @@ class GetSingleFilteredMarketplacesError extends MarketplaceError {
 
   GetSingleFilteredMarketplacesError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERROR,
+          code: MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR,
           message: 'Failed to get single filtered marketplaces',
         );
 }
@@ -101,7 +101,7 @@ class GetMultipleFilteredMarketplacesError extends MarketplaceError {
 
   GetMultipleFilteredMarketplacesError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERROR,
+          code: MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
           message: 'Failed to get multiple filtered marketplaces',
         );
 }
@@ -111,7 +111,7 @@ class GetUserMarketplacesError extends MarketplaceError {
 
   GetUserMarketplacesError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.GET_USER_MARKETPLACES_ERROR,
+          code: MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR,
           message: 'Failed to get user marketplaces',
         );
 }
@@ -121,7 +121,7 @@ class UpdateLikeStatusError extends MarketplaceError {
 
   UpdateLikeStatusError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERROR,
+          code: MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR,
           message: 'Failed to update like status',
         );
 }
@@ -131,7 +131,7 @@ class GetUserLikedMarketplacesError extends MarketplaceError {
 
   GetUserLikedMarketplacesError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERROR,
+          code: MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR,
           message: 'Failed to get user liked marketplaces',
         );
 }
@@ -141,7 +141,7 @@ class ChangeAvailabilityStatusError extends MarketplaceError {
 
   ChangeAvailabilityStatusError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERROR,
+          code: MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR,
           message: 'Failed to change availability status',
         );
 }
@@ -151,7 +151,7 @@ class DeleteUserMarketplaceError extends MarketplaceError {
 
   DeleteUserMarketplaceError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.DELETE_MARKETPLACE_ERROR,
+          code: MarketplaceErrorCode.DELETE_MARKETPLACE_ERR,
           message: 'Failed to delete user marketplace',
         );
 }
@@ -161,7 +161,7 @@ class MarketplaceDBError extends MarketplaceError {
 
   MarketplaceDBError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.DB_ERROR,
+          code: MarketplaceErrorCode.DB_ERR,
           message: 'Error occurred while processing the request',
         );
 }
@@ -171,7 +171,7 @@ class UnknownMarketplaceError extends MarketplaceError {
 
   UnknownMarketplaceError({required this.extra})
       : super(
-          code: MarketplaceErrorCode.CREATE_MARKETPLACE_ERROR,
+          code: MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
           message: 'Unknown marketplace error',
         );
 }
@@ -182,31 +182,31 @@ class MarketplaceErrorFactory {
     String extra = '',
   }) {
     switch (code) {
-      case MarketplaceErrorCode.DB_ERROR:
+      case MarketplaceErrorCode.DB_ERR:
         return MarketplaceDBError(extra: extra);
-      case MarketplaceErrorCode.CREATE_MARKETPLACE_ERROR:
+      case MarketplaceErrorCode.CREATE_MARKETPLACE_ERR:
         return CreateMarketplaceError(extra: extra);
-      case MarketplaceErrorCode.UPLOAD_IMAGES_ERROR:
+      case MarketplaceErrorCode.UPLOAD_IMAGES_ERR:
         return UploadImagesError(extra: extra);
-      case MarketplaceErrorCode.UPDATE_MARKETPLACE_ERROR:
+      case MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR:
         return UpdateMarketplaceError(extra: extra);
-      case MarketplaceErrorCode.GET_MARKETPLACES_ERROR:
+      case MarketplaceErrorCode.GET_MARKETPLACES_ERR:
         return GetMarketplacesError(extra: extra);
-      case MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERROR:
+      case MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR:
         return GetMarketplaceCategoriesError(extra: extra);
-      case MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERROR:
+      case MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR:
         return GetSingleFilteredMarketplacesError(extra: extra);
-      case MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERROR:
+      case MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR:
         return GetMultipleFilteredMarketplacesError(extra: extra);
-      case MarketplaceErrorCode.GET_USER_MARKETPLACES_ERROR:
+      case MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR:
         return GetUserMarketplacesError(extra: extra);
-      case MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERROR:
+      case MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR:
         return UpdateLikeStatusError(extra: extra);
-      case MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERROR:
+      case MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR:
         return GetUserLikedMarketplacesError(extra: extra);
-      case MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERROR:
+      case MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR:
         return ChangeAvailabilityStatusError(extra: extra);
-      case MarketplaceErrorCode.DELETE_MARKETPLACE_ERROR:
+      case MarketplaceErrorCode.DELETE_MARKETPLACE_ERR:
         return DeleteUserMarketplaceError(extra: extra);
       default:
         return UnknownMarketplaceError(extra: extra);

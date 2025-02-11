@@ -97,7 +97,7 @@ class _ChatViewState extends State<ChatView> {
           listener: (context, state) {},
           builder: (context, state) {
             return SafeArea(
-              child: state.isLoading
+              child: state.chatState?.isLoading ?? false
                   ? const Center(
                       child: CircularProgressIndicator(),
                     )

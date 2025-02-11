@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
-import 'package:nesters/features/auth/bloc/auth_bloc.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/user/detail/view/shimmer_profile.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -20,21 +19,11 @@ class UserProfilePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColor.lightGrey,
       resizeToAvoidBottomInset: true,
-      body: BlocProvider(
-        create: (context) => UserBloc(
-          context.read<AuthBloc>().state.maybeWhen(
-                authenticated: (user) => user,
-                orElse: () => throw Exception('User not authenticated'),
-              ),
-        ),
-        child: SafeArea(
-          child: BlocBuilder<UserBloc, UserState>(
-            builder: (context, state) {
-              return ProfileView(
-                id: id,
-              );
-            },
-          ),
+      body: SafeArea(
+        child: BlocBuilder<AppBloc, AppState>(
+          builder: (context, state) {
+            return ProfileView(id: id);
+          },
         ),
       ),
     );
@@ -65,11 +54,9 @@ class _ProfileViewState extends State<ProfileView> {
     // Fetch user profile
     final profileData = await userRepository.getUserProfile(widget.id);
     _loggerService.info('User Profile: $profileData');
-    setState(
-      () {
-        userProfile = profileData;
-      },
-    );
+    setState(() {
+      userProfile = profileData;
+    });
     //after 2 sec set loading to false
     Future.delayed(
       const Duration(seconds: 2),
@@ -454,6 +441,13 @@ class _ProfileViewState extends State<ProfileView> {
                     child: Image.network(
                       userProfile.profileImage ?? '',
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.error_outline_rounded,
+                          color: AppTheme.error,
+                          size: 16,
+                        );
+                      },
                     ),
                   ),
                 ),

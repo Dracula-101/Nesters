@@ -34,7 +34,6 @@ class AppRasterImages {
   static const String roommatesImage1 = '$_mainFolder/user/roommates.jpg';
   static const String roommatesImage2 = '$_mainFolder/user/roommates1.jpg';
   static const String googleIcon = '$_mainFolder/icons/google.png';
-  static const String endIcon = '$_mainFolder/icons/end.png';
   static const String emptyIcon = '$_mainFolder/icons/empty-folder.png';
   static const String errorIcon = '$_mainFolder/icons/error-mark.png';
   static const String userProfileBackgroundBanner =

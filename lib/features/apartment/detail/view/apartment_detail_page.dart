@@ -411,9 +411,14 @@ class _HeroCarouselState extends State<HeroCarousel> {
   }
 
   Future<void> preloadImages() async {
-    await Future.wait(
-      widget.images.map((photo) => precacheImage(NetworkImage(photo), context)),
-    );
+    try {
+      await Future.wait(
+        widget.images
+            .map((photo) => precacheImage(NetworkImage(photo), context)),
+      );
+    } catch (e) {
+      // ignore: avoid_print
+    }
   }
 
   @override

@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:nesters/data/repository/database/remote/error/database_error.dart';
@@ -38,9 +39,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return response.then((value) => value);
-    } catch (e) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.GET_DATA_ERROR, table);
+          DatabaseErrorCode.GET_DATA_ERR, table);
     }
   }
 
@@ -68,9 +71,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return await response;
-    } catch (e) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.GET_DATA_ERROR, table);
+          DatabaseErrorCode.GET_DATA_ERR, table);
     }
   }
 
@@ -108,9 +113,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return transformBuilder.then((value) => value);
-    } catch (e) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.GET_DATA_ERROR, table);
+          DatabaseErrorCode.GET_DATA_ERR, table);
     }
   }
 
@@ -170,9 +177,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return transformBuilder.then((value) => value);
-    } catch (e) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.GET_DATA_ERROR, table);
+          DatabaseErrorCode.GET_DATA_ERR, table);
     }
   }
 
@@ -234,9 +243,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return transformBuilder.then((value) => value);
-    } catch (e) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.GET_DATA_ERROR, table);
+          DatabaseErrorCode.GET_DATA_ERR, table);
     }
   }
 
@@ -250,9 +261,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
       }
       final List<Map<String, dynamic>> data = await response;
       return data.isNotEmpty;
-    } catch (e) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.CHECK_DATA_ERROR, table);
+          DatabaseErrorCode.CHECK_DATA_ERR, table);
     }
   }
 
@@ -293,9 +306,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
             queryData.lessThanOrEqualTo!.value);
       }
       return queryBuilder.order(queryData.fieldName).then((value) => value);
-    } catch (e) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.QUERY_DATA_ERROR, table);
+          DatabaseErrorCode.QUERY_DATA_ERR, table);
     }
   }
 
@@ -320,11 +335,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return response.then((value) => value);
-    } catch (error) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-        DatabaseErrorCode.SET_DATA_ERROR,
-        table,
-      );
+          DatabaseErrorCode.SET_DATA_ERR, table);
     }
   }
 
@@ -356,9 +371,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return response.then((value) => value);
-    } catch (error) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.UPDATE_DATA_ERROR, table);
+          DatabaseErrorCode.UPDATE_DATA_ERR, table);
     }
   }
 
@@ -378,9 +395,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return response.then((value) => value);
-    } catch (error) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.DELETE_DATA_ERROR, table);
+          DatabaseErrorCode.DELETE_DATA_ERR, table);
     }
   }
 
@@ -409,9 +428,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return response.asStream();
-    } catch (e) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.SEARCH_DATA_ERROR, table);
+          DatabaseErrorCode.SEARCH_DATA_ERR, table);
     }
   }
 
@@ -440,9 +461,11 @@ class SupaDatabaseRepository extends DatabaseRepository {
         }
       }
       return response.then((value) => value);
-    } catch (e) {
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
       throw DatabaseErrorFactory.fromCode(
-          DatabaseErrorCode.SEARCH_DATA_ERROR, table);
+          DatabaseErrorCode.SEARCH_DATA_ERR, table);
     }
   }
 }

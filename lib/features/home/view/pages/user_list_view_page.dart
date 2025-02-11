@@ -5,8 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
-import 'package:nesters/constants/app_assets.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
@@ -16,7 +17,6 @@ import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
@@ -28,7 +28,7 @@ import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
-class UserListPage extends StatefulWidget {
+class UserListPage extends StatelessWidget {
   final GlobalKey chatIconKey;
   final GlobalKey requestIconKey;
   final GlobalKey settingsIconKey;
@@ -39,10 +39,38 @@ class UserListPage extends StatefulWidget {
       required this.settingsIconKey});
 
   @override
-  State<UserListPage> createState() => _UserListPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => HomeBloc(
+        authRepository: GetIt.I<AuthRepository>(),
+      ),
+      child: Scaffold(
+        body: SafeArea(
+          child: UserListView(
+            requestIconKey: requestIconKey,
+            chatIconKey: chatIconKey,
+            settingsIconKey: settingsIconKey,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _UserListPageState extends State<UserListPage> {
+class UserListView extends StatefulWidget {
+  final GlobalKey chatIconKey;
+  final GlobalKey requestIconKey;
+  final GlobalKey settingsIconKey;
+  const UserListView(
+      {super.key,
+      required this.chatIconKey,
+      required this.requestIconKey,
+      required this.settingsIconKey});
+  @override
+  State<UserListView> createState() => _UserListViewState();
+}
+
+class _UserListViewState extends State<UserListView> {
   final UserRepository userRepository = GetIt.I<UserRepository>();
   final PagingController<int, UserQuickProfile> _pagingController =
       PagingController(firstPageKey: 0);
@@ -93,11 +121,8 @@ class _UserListPageState extends State<UserListPage> {
             .read<HomeBloc>()
             .add(LoadProfileCompleteEvent(_pagingController.itemList ?? []));
       }
-    } on Exception catch (error) {
+    } catch (error) {
       _pagingController.error = error;
-      if (mounted) {
-        context.read<HomeBloc>().add(LoadProfileErrorEvent(error));
-      }
     }
   }
 
@@ -124,7 +149,7 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   Widget _buildAppBar() {
-    return BlocBuilder<UserBloc, UserState>(
+    return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
         return SliverPadding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -149,8 +174,9 @@ class _UserListPageState extends State<UserListPage> {
                     backgroundImage: const AssetImage(
                       'assets/images/user/user_placeholder.png',
                     ),
-                    foregroundImage: NetworkImage(state.user.photoUrl),
-                    child: state.user.photoUrl.isEmpty
+                    foregroundImage:
+                        NetworkImage(state.user?.profileImage ?? ""),
+                    child: state.user?.profileImage?.isEmpty == true
                         ? const Icon(
                             Icons.person,
                             size: 20,
@@ -168,7 +194,7 @@ class _UserListPageState extends State<UserListPage> {
                         style: AppTheme.bodyLarge,
                       ),
                       Text(
-                        state.user.fullName.toTitleCase,
+                        state.user?.fullName.toTitleCase ?? '',
                         style: AppTheme.bodySmallLightVariant,
                       ),
                     ],
@@ -180,8 +206,8 @@ class _UserListPageState extends State<UserListPage> {
             actions: [
               BlocBuilder<RequestBloc, RequestState>(
                 builder: (context, state) {
-                  int count = state.requestUserState.requestReceivedUsers
-                      .fold(0, (previousValue, element) {
+                  int count = state.requestReceivedUsers.fold(0,
+                      (previousValue, element) {
                     if (!element.isAccepted && !element.isBanned) {
                       return (previousValue) + 1;
                     } else {
@@ -272,8 +298,8 @@ class _UserListPageState extends State<UserListPage> {
   Widget _buildTopActionsBar() {
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, homeState) {
-        return BlocBuilder<UserBloc, UserState>(
-          builder: (context, userState) {
+        return BlocBuilder<AppBloc, AppState>(
+          builder: (context, appState) {
             return ListView(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               scrollDirection: Axis.horizontal,
@@ -282,7 +308,7 @@ class _UserListPageState extends State<UserListPage> {
                   icon: Icons.filter,
                   title: 'Filter',
                   onPressed: () {
-                    showFilterDialog(context, homeState, userState);
+                    showFilterDialog(context, homeState, appState);
                   },
                   isActive: homeState.userFilter != null,
                   closeIcon: false,
@@ -326,7 +352,7 @@ class _UserListPageState extends State<UserListPage> {
                                         style: AppTheme.titleLarge,
                                       ),
                                     ),
-                                    if (userState.universities.isEmpty)
+                                    if (appState.universities.isEmpty)
                                       const Center(
                                         child: CircularProgressIndicator(),
                                       )
@@ -335,18 +361,17 @@ class _UserListPageState extends State<UserListPage> {
                                         child: ListView.builder(
                                           controller: scrollController,
                                           itemCount:
-                                              userState.universities.length,
+                                              appState.universities.length,
                                           itemBuilder: (context, index) {
                                             return UniversityFilterTile(
                                               isSelected: false,
                                               onTap: () {
                                                 Navigator.of(context).pop(
-                                                  userState
-                                                      .universities[index]!,
+                                                  appState.universities[index]!,
                                                 );
                                               },
-                                              university: userState
-                                                  .universities[index]!,
+                                              university:
+                                                  appState.universities[index]!,
                                             );
                                           },
                                         ),
@@ -379,10 +404,10 @@ class _UserListPageState extends State<UserListPage> {
                             .read<HomeBloc>()
                             .add(SingleRemoveFilterProfileEvent());
                       } else {
-                        if (userState.degrees.isEmpty) {
+                        if (appState.degrees.isEmpty) {
                           context
-                              .read<UserBloc>()
-                              .add(const UserEvent.loadDegrees());
+                              .read<AppBloc>()
+                              .add(const AppEvent.loadDegrees());
                         }
                         // open a modal bottom sheet
                         showModalBottomSheet(
@@ -409,7 +434,7 @@ class _UserListPageState extends State<UserListPage> {
                                         style: AppTheme.titleLarge,
                                       ),
                                     ),
-                                    if (userState.degrees.isEmpty)
+                                    if (appState.degrees.isEmpty)
                                       const Center(
                                         child: CircularProgressIndicator(),
                                       )
@@ -417,16 +442,16 @@ class _UserListPageState extends State<UserListPage> {
                                       Expanded(
                                         child: ListView.builder(
                                           controller: scrollController,
-                                          itemCount: userState.degrees.length,
+                                          itemCount: appState.degrees.length,
                                           itemBuilder: (context, index) {
                                             return DegreeFilterTile(
                                               isSelected: false,
                                               onTap: () {
                                                 Navigator.of(context).pop(
-                                                  userState.degrees[index]!,
+                                                  appState.degrees[index]!,
                                                 );
                                               },
-                                              degree: userState.degrees[index]!,
+                                              degree: appState.degrees[index]!,
                                             );
                                           },
                                         ),
@@ -559,97 +584,45 @@ class _UserListPageState extends State<UserListPage> {
           userQuickProfile: item,
         ),
         firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
-        firstPageErrorIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.emptyIcon,
-                width: 100.0,
-                height: 100.0,
-              ),
-            ),
-          ),
+        firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
         ),
-        newPageErrorIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
+        newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
         ),
-        newPageProgressIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
+        newPageProgressIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+          height: 300,
         ),
-        noItemsFoundIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Image.asset(
-              AppRasterImages.emptyIcon,
-              width: 100.0,
-              height: 100.0,
-            ),
-          ),
+        noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
+          title: 'No Profiles Found',
+          subtitle:
+              'There are no profiles at the moment, Please try again later.',
         ),
-        noMoreItemsIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
+        noMoreItemsIndicatorBuilder: (_) => const SizedBox(height: 100),
       ),
     );
   }
 
   Widget _buildFilteredUserList(List<UserQuickProfile> profiles) {
     if (profiles.isEmpty) {
-      return SliverFillRemaining(
-        child: Center(
-          child: Image.asset(
-            AppRasterImages.emptyIcon,
-            width: 100.0,
-            height: 100.0,
-          ),
-        ),
+      return const ShowNoInfoWidget(
+        title: 'No Profiles Found',
+        subtitle: 'There are no profiles matching the filter criteria.',
       );
     }
     return SliverList.builder(
-      itemCount: profiles.length + 1, // Increase itemCount by 1
+      itemCount: profiles.length,
       itemBuilder: (context, index) {
-        if (index < profiles.length) {
-          return UserQuickProfileWidget(
-            userQuickProfile: profiles[index],
-          );
-        } else {
-          // Add your custom widget at the end
-          return Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 16),
-            child: Image.asset(
-              AppRasterImages.endIcon,
-              width: 50.0,
-              height: 50.0,
-            ),
-          );
-        }
+        return UserQuickProfileWidget(
+          userQuickProfile: profiles[index],
+        );
       },
     );
   }
 
   void showFilterDialog(
-      BuildContext context, HomeState state, UserState userState) {
+      BuildContext context, HomeState state, AppState appState) {
     UserFilterTypes userFilterTypeSelected = UserFilterTypes.University;
     String selectedUniversity = state.userFilter?.universityName ?? '';
     String selectedBranch = state.userFilter?.branchName ?? '';
@@ -663,7 +636,7 @@ class _UserListPageState extends State<UserListPage> {
         state.userFilter?.drinkingHabit ?? UserHabit.UNKNOWN;
     UserRoomType selectedRoomType =
         state.userFilter?.roomType ?? UserRoomType.UNKNOWN;
-    List<University?> filterUniversities = userState.universities;
+    List<University?> filterUniversities = appState.universities;
     DateTime selectedYearDateTime = DateTime.now();
     showDialog(
       context: context,
@@ -771,13 +744,12 @@ class _UserListPageState extends State<UserListPage> {
                                                   if (value == "") {
                                                     setState(() {
                                                       filterUniversities =
-                                                          userState
-                                                              .universities;
+                                                          appState.universities;
                                                     });
                                                   } else {
                                                     setState(
                                                       () {
-                                                        filterUniversities = userState
+                                                        filterUniversities = appState
                                                             .universities
                                                             .where((element) =>
                                                                 element?.title
@@ -830,21 +802,21 @@ class _UserListPageState extends State<UserListPage> {
                                         UserFilterTypes.Branch =>
                                           ListView.builder(
                                             shrinkWrap: true,
-                                            itemCount: userState.degrees.length,
+                                            itemCount: appState.degrees.length,
                                             itemBuilder: (context, index) {
                                               return DegreeFilterTile(
                                                 isSelected: selectedBranch ==
-                                                    userState
+                                                    appState
                                                         .degrees[index]!.name,
                                                 isDense: true,
                                                 onTap: () {
                                                   setState(() {
-                                                    selectedBranch = userState
+                                                    selectedBranch = appState
                                                         .degrees[index]!.name;
                                                   });
                                                 },
                                                 degree:
-                                                    userState.degrees[index]!,
+                                                    appState.degrees[index]!,
                                               );
                                             },
                                           ),
@@ -1185,6 +1157,13 @@ class UniversityFilterTile extends StatelessWidget {
                           child: Image.network(
                             university.logo ?? '',
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.error_outline_rounded,
+                                color: AppTheme.error,
+                                size: 16,
+                              );
+                            },
                           ),
                         ),
                       )),

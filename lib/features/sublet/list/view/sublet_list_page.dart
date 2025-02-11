@@ -3,10 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/apartment/lease_period.dart';
@@ -17,12 +19,12 @@ import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
+import 'package:nesters/features/sublet/list/view/components/sublet_list_error.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
 import 'package:nesters/features/sublet/list/view/shimmer_sublet_list_page.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
@@ -31,17 +33,20 @@ class SubletListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          GoRouter.of(context).go(
-            '${AppRouterService.homeScreen}/${AppRouterService.sublettingForm}',
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
-      body: const SafeArea(
-        child: SubletListView(),
+    return BlocProvider(
+      create: (context) => SubletBloc(),
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            GoRouter.of(context).go(
+              '${AppRouterService.homeScreen}/${AppRouterService.sublettingForm}',
+            );
+          },
+          child: const Icon(Icons.add),
+        ),
+        body: const SafeArea(
+          child: SubletListView(),
+        ),
       ),
     );
   }
@@ -79,7 +84,7 @@ class _SubletListViewState extends State<SubletListView> {
       context
           .read<SubletBloc>()
           .add(SubletEvent.saveSublets(_pagingController.itemList ?? []));
-    } catch (error) {
+    } on AppException catch (error) {
       _pagingController.error = error;
     }
   }
@@ -111,14 +116,9 @@ class _SubletListViewState extends State<SubletListView> {
                 if (state.filteredSubletList?.isNotEmpty ?? false)
                   _buildFilteredSublets(state.filteredSubletList!)
                 else
-                  SliverFillRemaining(
-                    child: Center(
-                      child: Image.asset(
-                        AppRasterImages.emptyIcon,
-                        width: 100.0,
-                        height: 100.0,
-                      ),
-                    ),
+                  const ShowNoInfoWidget(
+                    title: "No Sublets Found",
+                    subtitle: "No sublets found for the selected filters",
                   )
               else
                 _buildSubletList(state.subletList ?? []),
@@ -137,31 +137,21 @@ class _SubletListViewState extends State<SubletListView> {
     return SliverList.builder(
       itemCount: sublets.length + 1,
       itemBuilder: (context, index) {
-        if (index < sublets.length) {
-          return SubletModelWidget(
-            onPressed: () {
-              GoRouter.of(context).go(
-                '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
-                extra: sublets[index],
-              );
-            },
-            actionOnFavourite: (isFavourite) {
-              return _subletRepository.updateLikeStatus(
-                userId: _authRepository.currentUser!.id,
-                subletId: sublets[index].id,
-                isLiked: isFavourite,
-              );
-            },
-            sublet: sublets[index],
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.only(top: 8, bottom: 16),
-          child: Image.asset(
-            AppRasterImages.endIcon,
-            width: 50.0,
-            height: 50.0,
-          ),
+        return SubletModelWidget(
+          onPressed: () {
+            GoRouter.of(context).go(
+              '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
+              extra: sublets[index],
+            );
+          },
+          actionOnFavourite: (isFavourite) {
+            return _subletRepository.updateLikeStatus(
+              userId: _authRepository.currentUser!.id,
+              subletId: sublets[index].id,
+              isLiked: isFavourite,
+            );
+          },
+          sublet: sublets[index],
         );
       },
     );
@@ -173,60 +163,6 @@ class _SubletListViewState extends State<SubletListView> {
       builderDelegate: PagedChildBuilderDelegate<SubletModel>(
         firstPageProgressIndicatorBuilder: (context) =>
             const ShimmerSubletPage(),
-        firstPageErrorIndicatorBuilder: (context) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(
-                top: 16,
-                bottom: 16,
-              ),
-              child: Image.asset(
-                AppRasterImages.errorIcon,
-                width: 100.0,
-                height: 100.0,
-              ),
-            ),
-          ),
-        ),
-        newPageProgressIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        ),
-        newPageErrorIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 16, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
-        noItemsFoundIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Image.asset(
-              AppRasterImages.emptyIcon,
-              width: 100.0,
-              height: 100.0,
-            ),
-          ),
-        ),
-        noMoreItemsIndicatorBuilder: (_) => SizedBox(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 8, bottom: 16),
-              child: Image.asset(
-                AppRasterImages.endIcon,
-                width: 50.0,
-                height: 50.0,
-              ),
-            ),
-          ),
-        ),
         itemBuilder: (context, sublet, index) {
           return SubletModelWidget(
             onPressed: () {
@@ -245,6 +181,25 @@ class _SubletListViewState extends State<SubletListView> {
             sublet: sublet,
           );
         },
+        animateTransitions: true,
+        transitionDuration: const Duration(
+          milliseconds: 500,
+        ),
+        firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageProgressIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+          height: 300,
+        ),
+        noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
+          title: "No Sublets Found",
+          subtitle: "There are no sublet at the moment, Please try again later",
+        ),
+        noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 100),
       ),
     );
   }
@@ -270,7 +225,7 @@ class _SubletListViewState extends State<SubletListView> {
           height: 50,
           child: BlocBuilder<SubletBloc, SubletState>(
             builder: (context, subletState) {
-              return BlocBuilder<UserBloc, UserState>(
+              return BlocBuilder<AppBloc, AppState>(
                 builder: (context, userState) {
                   return ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -732,659 +687,615 @@ class _SubletListViewState extends State<SubletListView> {
             return BlocProvider.value(
               value: context.read<HomeBloc>(),
               child: BlocProvider.value(
-                  value: context.read<SubletBloc>(),
-                  child: BlocBuilder<HomeBloc, HomeState>(
-                    builder: (context, homeState) {
-                      return SizedBox(
-                        width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height,
-                        child: Material(
-                          color: AppTheme.surface,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
+                value: context.read<SubletBloc>(),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  child: Material(
+                    color: AppTheme.surface,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 4, left: 16, right: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 4, left: 16, right: 16),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      'Filters',
-                                      style: AppTheme.titleLarge.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.close),
-                                      iconSize: 20,
-                                      onPressed: () {
-                                        Navigator.of(ctx).pop();
-                                      },
-                                    )
-                                  ],
+                              Text(
+                                'Filters',
+                                style: AppTheme.titleLarge.copyWith(
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              const Divider(
-                                height: 1,
-                                thickness: 1,
-                              ),
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.topCenter,
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.35,
-                                        child: ListView(
-                                          shrinkWrap: true,
-                                          children: [
-                                            ...SubletFilterTypes.values.map(
-                                              (e) => FilterTab(
-                                                title: e.toString(),
-                                                isSelected: e ==
-                                                    subletFilterTypeSelected,
-                                                onTap: () {
-                                                  setState(() {
-                                                    subletFilterTypeSelected =
-                                                        e;
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.65,
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            border: Border(
-                                              left: BorderSide(
-                                                color: AppTheme
-                                                    .greyShades.shade300,
-                                              ),
-                                            ),
-                                          ),
-                                          child: Container(
-                                            child: switch (
-                                                subletFilterTypeSelected) {
-                                              SubletFilterTypes
-                                                    .RoomateGenderPref =>
-                                                ListView(
-                                                  children: [
-                                                    FilterTile(
-                                                      title: "Male",
-                                                      isSelected:
-                                                          selectedGender ==
-                                                              'Male',
-                                                      onTap: () {
-                                                        setState(() {
-                                                          selectedGender =
-                                                              "Male";
-                                                        });
-                                                      },
-                                                    ),
-                                                    FilterTile(
-                                                      title: "Female",
-                                                      isSelected:
-                                                          selectedGender ==
-                                                              'Female',
-                                                      onTap: () {
-                                                        setState(() {
-                                                          selectedGender =
-                                                              "Female";
-                                                        });
-                                                      },
-                                                    ),
-                                                  ],
-                                                ),
-                                              SubletFilterTypes.Rent => Column(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 4),
-                                                      child: Row(
-                                                        children: [
-                                                          Text(
-                                                            "Start Rent",
-                                                            style: AppTheme
-                                                                .titleSmall,
-                                                          ),
-                                                          const Spacer(),
-                                                          GestureDetector(
-                                                            onTap: () {
-                                                              showDialog(
-                                                                  context:
-                                                                      context,
-                                                                  builder:
-                                                                      (ctx) {
-                                                                    return CustomValuePicker(
-                                                                      // 100 to 10000 with 100 increment
-                                                                      values: List.generate(
-                                                                          100,
-                                                                          (index) => (100 + (index * 100))
-                                                                              .toInt()
-                                                                              .toString()),
-                                                                      title:
-                                                                          "Select Start Rent",
-                                                                    );
-                                                                  }).then((value) {
-                                                                if (value !=
-                                                                    null) {
-                                                                  setState(() {
-                                                                    rentStart =
-                                                                        double.parse(
-                                                                            value);
-                                                                  });
-                                                                }
-                                                              });
-                                                            },
-                                                            child: Container(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(8),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                border:
-                                                                    Border.all(
-                                                                  color: AppTheme
-                                                                      .greyShades
-                                                                      .shade300,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            8),
-                                                              ),
-                                                              child: Text(
-                                                                (rentStart ==
-                                                                        null)
-                                                                    ? "Select"
-                                                                    : "\$$rentStart",
-                                                                style: AppTheme
-                                                                    .bodySmall,
-                                                              ),
-                                                            ),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 8),
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 4),
-                                                      child: Row(
-                                                        children: [
-                                                          Text(
-                                                            "End Rent",
-                                                            style: AppTheme
-                                                                .titleSmall
-                                                                .copyWith(
-                                                              color: rentStart ==
-                                                                      null
-                                                                  ? AppTheme
-                                                                      .greyShades
-                                                                      .shade400
-                                                                  : AppTheme
-                                                                      .onSurface,
-                                                            ),
-                                                          ),
-                                                          const Spacer(),
-                                                          GestureDetector(
-                                                            onTap: () {
-                                                              if (rentStart ==
-                                                                  null) {
-                                                                return;
-                                                              }
-                                                              showDialog(
-                                                                      context:
-                                                                          context,
-                                                                      builder:
-                                                                          (ctx) {
-                                                                        return CustomValuePicker(
-                                                                          // 100 to 10000 with 100 increment
-                                                                          values: List.generate(
-                                                                              rentStart != null ? rentStart!.toInt() : 100,
-                                                                              (index) => ((rentStart ?? 100) + (index * 100)).toInt().toString()),
-                                                                          title:
-                                                                              "Select End Rent",
-                                                                        );
-                                                                      })
-                                                                  .then(
-                                                                      (value) {
-                                                                if (value !=
-                                                                    null) {
-                                                                  setState(() {
-                                                                    rentEnd = double
-                                                                        .parse(
-                                                                            value);
-                                                                  });
-                                                                }
-                                                              });
-                                                            },
-                                                            child: Container(
-                                                              padding:
-                                                                  const EdgeInsets
-                                                                      .all(8),
-                                                              decoration:
-                                                                  BoxDecoration(
-                                                                border:
-                                                                    Border.all(
-                                                                  color: AppTheme
-                                                                      .greyShades
-                                                                      .shade300,
-                                                                ),
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            8),
-                                                              ),
-                                                              child: Text(
-                                                                (rentEnd !=
-                                                                        null)
-                                                                    ? "\$$rentEnd"
-                                                                    : "Select",
-                                                                style: AppTheme
-                                                                    .bodySmall
-                                                                    .copyWith(
-                                                                  color: rentStart ==
-                                                                          null
-                                                                      ? AppTheme
-                                                                          .greyShades
-                                                                          .shade400
-                                                                      : AppTheme
-                                                                          .onSurface,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              SubletFilterTypes.ApartmentSize =>
-                                                ListView(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 4),
-                                                      child: Text(
-                                                        "No of Beds: ${selectedApartmentSize?.beds ?? "1"}",
-                                                        style: AppTheme
-                                                            .titleMedium,
-                                                      ),
-                                                    ),
-                                                    Slider(
-                                                      value:
-                                                          selectedApartmentSize
-                                                                  ?.beds
-                                                                  ?.toDouble() ??
-                                                              1,
-                                                      onChanged: (value) {
-                                                        setState(() {
-                                                          selectedApartmentSize =
-                                                              ApartmentSize(
-                                                            beds: value.toInt(),
-                                                            baths:
-                                                                selectedApartmentSize
-                                                                        ?.baths ??
-                                                                    1,
-                                                          );
-                                                        });
-                                                      },
-                                                      min: 1,
-                                                      max: 5,
-                                                      divisions: 100,
-                                                    ),
-                                                    const Divider(
-                                                      height: 1,
-                                                      thickness: 1,
-                                                    ),
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 4),
-                                                      child: Text(
-                                                        "No of Baths: ${selectedApartmentSize?.baths ?? "1"}",
-                                                        style: AppTheme
-                                                            .titleMedium,
-                                                      ),
-                                                    ),
-                                                    Slider(
-                                                      value:
-                                                          selectedApartmentSize
-                                                                  ?.baths
-                                                                  ?.toDouble() ??
-                                                              1,
-                                                      onChanged: (value) {
-                                                        setState(() {
-                                                          selectedApartmentSize =
-                                                              ApartmentSize(
-                                                            baths:
-                                                                value.toInt(),
-                                                            beds:
-                                                                selectedApartmentSize
-                                                                        ?.beds ??
-                                                                    1,
-                                                          );
-                                                        });
-                                                      },
-                                                      min: 1,
-                                                      max: 5,
-                                                      divisions: 100,
-                                                    )
-                                                  ],
-                                                ),
-                                              SubletFilterTypes.RoomType =>
-                                                ListView(
-                                                  children: [
-                                                    ...UserRoomType.toList()
-                                                        .map(
-                                                      (e) => FilterTile(
-                                                        title: e.toUI(),
-                                                        isSelected:
-                                                            selectedRoomType ==
-                                                                e,
-                                                        onTap: () {
-                                                          setState(() {
-                                                            selectedRoomType =
-                                                                e;
-                                                          });
-                                                        },
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              SubletFilterTypes.LeasePeriods =>
-                                                ListView(
-                                                  children: [
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 4),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            "Start Date",
-                                                            style: AppTheme
-                                                                .titleSmall,
-                                                          ),
-                                                          GestureDetector(
-                                                            onTap: () {
-                                                              showDatePicker(
-                                                                context:
-                                                                    context,
-                                                                initialDate:
-                                                                    DateTime
-                                                                        .now(),
-                                                                lastDate: selectedLeasePeriod
-                                                                        ?.endDate ??
-                                                                    DateTime.now().add(
-                                                                        const Duration(
-                                                                            days:
-                                                                                365)),
-                                                                firstDate:
-                                                                    DateTime
-                                                                        .now(),
-                                                              ).then((value) {
-                                                                if (value !=
-                                                                    null) {
-                                                                  setState(() {
-                                                                    selectedLeasePeriod =
-                                                                        LeasePeriod(
-                                                                      startDate:
-                                                                          value,
-                                                                      endDate:
-                                                                          selectedLeasePeriod
-                                                                              ?.endDate,
-                                                                    );
-                                                                  });
-                                                                }
-                                                              });
-                                                            },
-                                                            child: selectedLeasePeriod
-                                                                        ?.startDate !=
-                                                                    null
-                                                                ? Text(
-                                                                    "${selectedLeasePeriod?.startDate!.day}, ${selectedLeasePeriod?.startDate!.monthName(true)}, ${selectedLeasePeriod?.startDate!.year}",
-                                                                    style: AppTheme
-                                                                        .bodySmall,
-                                                                  )
-                                                                : Container(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            8),
-                                                                    decoration:
-                                                                        BoxDecoration(
-                                                                      border:
-                                                                          Border
-                                                                              .all(
-                                                                        color: AppTheme
-                                                                            .greyShades
-                                                                            .shade300,
-                                                                      ),
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              8),
-                                                                    ),
-                                                                    child: Text(
-                                                                      "Select",
-                                                                      style: AppTheme
-                                                                          .bodySmall,
-                                                                    ),
-                                                                  ),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 8),
-                                                    Padding(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 16,
-                                                          vertical: 4),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            "End Date",
-                                                            style: AppTheme
-                                                                .titleSmall,
-                                                          ),
-                                                          GestureDetector(
-                                                            onTap: () {
-                                                              showDatePicker(
-                                                                context:
-                                                                    context,
-                                                                initialDate:
-                                                                    selectedLeasePeriod
-                                                                            ?.startDate ??
-                                                                        DateTime
-                                                                            .now(),
-                                                                lastDate: DateTime
-                                                                        .now()
-                                                                    .add(const Duration(
-                                                                        days:
-                                                                            365)),
-                                                                firstDate: selectedLeasePeriod
-                                                                        ?.startDate ??
-                                                                    DateTime
-                                                                        .now(),
-                                                              ).then((value) {
-                                                                if (value !=
-                                                                    null) {
-                                                                  setState(() {
-                                                                    selectedLeasePeriod =
-                                                                        LeasePeriod(
-                                                                      startDate:
-                                                                          selectedLeasePeriod
-                                                                              ?.startDate,
-                                                                      endDate:
-                                                                          value,
-                                                                    );
-                                                                  });
-                                                                }
-                                                              });
-                                                            },
-                                                            child: selectedLeasePeriod
-                                                                        ?.endDate !=
-                                                                    null
-                                                                ? Text(
-                                                                    "${selectedLeasePeriod?.endDate!.day}, ${selectedLeasePeriod?.endDate!.monthName(true)}, ${selectedLeasePeriod?.endDate!.year}",
-                                                                    style: AppTheme
-                                                                        .bodySmall,
-                                                                  )
-                                                                : Container(
-                                                                    padding:
-                                                                        const EdgeInsets
-                                                                            .all(
-                                                                            8),
-                                                                    decoration:
-                                                                        BoxDecoration(
-                                                                      border:
-                                                                          Border
-                                                                              .all(
-                                                                        color: AppTheme
-                                                                            .greyShades
-                                                                            .shade300,
-                                                                      ),
-                                                                      borderRadius:
-                                                                          BorderRadius.circular(
-                                                                              8),
-                                                                    ),
-                                                                    child: Text(
-                                                                      "Select",
-                                                                      style: AppTheme
-                                                                          .bodySmall,
-                                                                    ),
-                                                                  ),
-                                                          )
-                                                        ],
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                              SubletFilterTypes.Ameneties =>
-                                                ListView(
-                                                  children: [
-                                                    ...AmenitiesType.values.map(
-                                                      (e) => FilterTile(
-                                                        title: e.toUi(),
-                                                        isSelected:
-                                                            selectedAmenities
-                                                                .containsKey(e),
-                                                        onTap: () {
-                                                          setState(() {
-                                                            if (selectedAmenities
-                                                                .containsKey(
-                                                                    e)) {
-                                                              selectedAmenities
-                                                                  .remove(e);
-                                                            } else {
-                                                              selectedAmenities[
-                                                                  e] = true;
-                                                            }
-                                                          });
-                                                        },
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                            },
-                                          ),
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const Divider(
-                                height: 1,
-                                thickness: 1,
-                              ),
-                              Container(
-                                width: MediaQuery.of(context).size.width,
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        context.read<SubletBloc>().add(
-                                            const SubletEvent
-                                                .removeFilterEvent());
-                                        Navigator.of(context).pop();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: AppTheme.errorColor,
-                                      ),
-                                      child: Text(
-                                        'Reset',
-                                        style: AppTheme.bodyMedium.copyWith(
-                                          color: AppTheme.onError,
-                                        ),
-                                      ),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        final subletFilter = SubletFilter(
-                                          roommateGenderPref: selectedGender,
-                                          startRent: rentStart,
-                                          endRent: rentEnd,
-                                          leasePeriod: selectedLeasePeriod,
-                                          apartmentSize: selectedApartmentSize,
-                                          roomType: selectedRoomType,
-                                          amenitiesAvailable:
-                                              Amenities.fromAmenitiesTypes(
-                                                  selectedAmenities.keys
-                                                      .toList()),
-                                        );
-                                        context.read<SubletBloc>().add(
-                                            SubletEvent.addFilterEvent(
-                                                subletFilter));
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text(
-                                        'Apply',
-                                        style: AppTheme.bodyMedium.copyWith(
-                                          color: AppColor.white,
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                iconSize: 20,
+                                onPressed: () {
+                                  Navigator.of(ctx).pop();
+                                },
                               )
                             ],
                           ),
                         ),
-                      );
-                    },
-                  )),
+                        const Divider(
+                          height: 1,
+                          thickness: 1,
+                        ),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.topCenter,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.35,
+                                  child: ListView(
+                                    shrinkWrap: true,
+                                    children: [
+                                      ...SubletFilterTypes.values.map(
+                                        (e) => FilterTab(
+                                          title: e.toString(),
+                                          isSelected:
+                                              e == subletFilterTypeSelected,
+                                          onTap: () {
+                                            setState(() {
+                                              subletFilterTypeSelected = e;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.65,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        left: BorderSide(
+                                          color: AppTheme.greyShades.shade300,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Container(
+                                      child: switch (subletFilterTypeSelected) {
+                                        SubletFilterTypes.RoomateGenderPref =>
+                                          ListView(
+                                            children: [
+                                              FilterTile(
+                                                title: "Male",
+                                                isSelected:
+                                                    selectedGender == 'Male',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedGender = "Male";
+                                                  });
+                                                },
+                                              ),
+                                              FilterTile(
+                                                title: "Female",
+                                                isSelected:
+                                                    selectedGender == 'Female',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedGender = "Female";
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        SubletFilterTypes.Rent => Column(
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 4),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      "Start Rent",
+                                                      style:
+                                                          AppTheme.titleSmall,
+                                                    ),
+                                                    const Spacer(),
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        showDialog(
+                                                            context: context,
+                                                            builder: (ctx) {
+                                                              return CustomValuePicker(
+                                                                // 100 to 10000 with 100 increment
+                                                                values: List.generate(
+                                                                    100,
+                                                                    (index) => (100 +
+                                                                            (index *
+                                                                                100))
+                                                                        .toInt()
+                                                                        .toString()),
+                                                                title:
+                                                                    "Select Start Rent",
+                                                              );
+                                                            }).then((value) {
+                                                          if (value != null) {
+                                                            setState(() {
+                                                              rentStart =
+                                                                  double.parse(
+                                                                      value);
+                                                            });
+                                                          }
+                                                        });
+                                                      },
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          border: Border.all(
+                                                            color: AppTheme
+                                                                .greyShades
+                                                                .shade300,
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
+                                                        ),
+                                                        child: Text(
+                                                          (rentStart == null)
+                                                              ? "Select"
+                                                              : "\$$rentStart",
+                                                          style: AppTheme
+                                                              .bodySmall,
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 4),
+                                                child: Row(
+                                                  children: [
+                                                    Text(
+                                                      "End Rent",
+                                                      style: AppTheme.titleSmall
+                                                          .copyWith(
+                                                        color: rentStart == null
+                                                            ? AppTheme
+                                                                .greyShades
+                                                                .shade400
+                                                            : AppTheme
+                                                                .onSurface,
+                                                      ),
+                                                    ),
+                                                    const Spacer(),
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        if (rentStart == null) {
+                                                          return;
+                                                        }
+                                                        showDialog(
+                                                            context: context,
+                                                            builder: (ctx) {
+                                                              return CustomValuePicker(
+                                                                // 100 to 10000 with 100 increment
+                                                                values: List.generate(
+                                                                    rentStart !=
+                                                                            null
+                                                                        ? rentStart!
+                                                                            .toInt()
+                                                                        : 100,
+                                                                    (index) => ((rentStart ??
+                                                                                100) +
+                                                                            (index *
+                                                                                100))
+                                                                        .toInt()
+                                                                        .toString()),
+                                                                title:
+                                                                    "Select End Rent",
+                                                              );
+                                                            }).then((value) {
+                                                          if (value != null) {
+                                                            setState(() {
+                                                              rentEnd =
+                                                                  double.parse(
+                                                                      value);
+                                                            });
+                                                          }
+                                                        });
+                                                      },
+                                                      child: Container(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8),
+                                                        decoration:
+                                                            BoxDecoration(
+                                                          border: Border.all(
+                                                            color: AppTheme
+                                                                .greyShades
+                                                                .shade300,
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(8),
+                                                        ),
+                                                        child: Text(
+                                                          (rentEnd != null)
+                                                              ? "\$$rentEnd"
+                                                              : "Select",
+                                                          style: AppTheme
+                                                              .bodySmall
+                                                              .copyWith(
+                                                            color: rentStart ==
+                                                                    null
+                                                                ? AppTheme
+                                                                    .greyShades
+                                                                    .shade400
+                                                                : AppTheme
+                                                                    .onSurface,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        SubletFilterTypes.ApartmentSize =>
+                                          ListView(
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 4),
+                                                child: Text(
+                                                  "No of Beds: ${selectedApartmentSize?.beds ?? "1"}",
+                                                  style: AppTheme.titleMedium,
+                                                ),
+                                              ),
+                                              Slider(
+                                                value: selectedApartmentSize
+                                                        ?.beds
+                                                        ?.toDouble() ??
+                                                    1,
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    selectedApartmentSize =
+                                                        ApartmentSize(
+                                                      beds: value.toInt(),
+                                                      baths:
+                                                          selectedApartmentSize
+                                                                  ?.baths ??
+                                                              1,
+                                                    );
+                                                  });
+                                                },
+                                                min: 1,
+                                                max: 5,
+                                                divisions: 100,
+                                              ),
+                                              const Divider(
+                                                height: 1,
+                                                thickness: 1,
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 4),
+                                                child: Text(
+                                                  "No of Baths: ${selectedApartmentSize?.baths ?? "1"}",
+                                                  style: AppTheme.titleMedium,
+                                                ),
+                                              ),
+                                              Slider(
+                                                value: selectedApartmentSize
+                                                        ?.baths
+                                                        ?.toDouble() ??
+                                                    1,
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    selectedApartmentSize =
+                                                        ApartmentSize(
+                                                      baths: value.toInt(),
+                                                      beds:
+                                                          selectedApartmentSize
+                                                                  ?.beds ??
+                                                              1,
+                                                    );
+                                                  });
+                                                },
+                                                min: 1,
+                                                max: 5,
+                                                divisions: 100,
+                                              )
+                                            ],
+                                          ),
+                                        SubletFilterTypes.RoomType => ListView(
+                                            children: [
+                                              ...UserRoomType.toList().map(
+                                                (e) => FilterTile(
+                                                  title: e.toUI(),
+                                                  isSelected:
+                                                      selectedRoomType == e,
+                                                  onTap: () {
+                                                    setState(() {
+                                                      selectedRoomType = e;
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        SubletFilterTypes.LeasePeriods =>
+                                          ListView(
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 4),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      "Start Date",
+                                                      style:
+                                                          AppTheme.titleSmall,
+                                                    ),
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        showDatePicker(
+                                                          context: context,
+                                                          initialDate:
+                                                              DateTime.now(),
+                                                          lastDate: selectedLeasePeriod
+                                                                  ?.endDate ??
+                                                              DateTime.now().add(
+                                                                  const Duration(
+                                                                      days:
+                                                                          365)),
+                                                          firstDate:
+                                                              DateTime.now(),
+                                                        ).then((value) {
+                                                          if (value != null) {
+                                                            setState(() {
+                                                              selectedLeasePeriod =
+                                                                  LeasePeriod(
+                                                                startDate:
+                                                                    value,
+                                                                endDate:
+                                                                    selectedLeasePeriod
+                                                                        ?.endDate,
+                                                              );
+                                                            });
+                                                          }
+                                                        });
+                                                      },
+                                                      child: selectedLeasePeriod
+                                                                  ?.startDate !=
+                                                              null
+                                                          ? Text(
+                                                              "${selectedLeasePeriod?.startDate!.day}, ${selectedLeasePeriod?.startDate!.monthName(true)}, ${selectedLeasePeriod?.startDate!.year}",
+                                                              style: AppTheme
+                                                                  .bodySmall,
+                                                            )
+                                                          : Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                border:
+                                                                    Border.all(
+                                                                  color: AppTheme
+                                                                      .greyShades
+                                                                      .shade300,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8),
+                                                              ),
+                                                              child: Text(
+                                                                "Select",
+                                                                style: AppTheme
+                                                                    .bodySmall,
+                                                              ),
+                                                            ),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 16,
+                                                        vertical: 4),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      "End Date",
+                                                      style:
+                                                          AppTheme.titleSmall,
+                                                    ),
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        showDatePicker(
+                                                          context: context,
+                                                          initialDate:
+                                                              selectedLeasePeriod
+                                                                      ?.startDate ??
+                                                                  DateTime
+                                                                      .now(),
+                                                          lastDate: DateTime
+                                                                  .now()
+                                                              .add(
+                                                                  const Duration(
+                                                                      days:
+                                                                          365)),
+                                                          firstDate:
+                                                              selectedLeasePeriod
+                                                                      ?.startDate ??
+                                                                  DateTime
+                                                                      .now(),
+                                                        ).then((value) {
+                                                          if (value != null) {
+                                                            setState(() {
+                                                              selectedLeasePeriod =
+                                                                  LeasePeriod(
+                                                                startDate:
+                                                                    selectedLeasePeriod
+                                                                        ?.startDate,
+                                                                endDate: value,
+                                                              );
+                                                            });
+                                                          }
+                                                        });
+                                                      },
+                                                      child: selectedLeasePeriod
+                                                                  ?.endDate !=
+                                                              null
+                                                          ? Text(
+                                                              "${selectedLeasePeriod?.endDate!.day}, ${selectedLeasePeriod?.endDate!.monthName(true)}, ${selectedLeasePeriod?.endDate!.year}",
+                                                              style: AppTheme
+                                                                  .bodySmall,
+                                                            )
+                                                          : Container(
+                                                              padding:
+                                                                  const EdgeInsets
+                                                                      .all(8),
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                border:
+                                                                    Border.all(
+                                                                  color: AppTheme
+                                                                      .greyShades
+                                                                      .shade300,
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .circular(
+                                                                            8),
+                                                              ),
+                                                              child: Text(
+                                                                "Select",
+                                                                style: AppTheme
+                                                                    .bodySmall,
+                                                              ),
+                                                            ),
+                                                    )
+                                                  ],
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        SubletFilterTypes.Ameneties => ListView(
+                                            children: [
+                                              ...AmenitiesType.values.map(
+                                                (e) => FilterTile(
+                                                  title: e.toUi(),
+                                                  isSelected: selectedAmenities
+                                                      .containsKey(e),
+                                                  onTap: () {
+                                                    setState(() {
+                                                      if (selectedAmenities
+                                                          .containsKey(e)) {
+                                                        selectedAmenities
+                                                            .remove(e);
+                                                      } else {
+                                                        selectedAmenities[e] =
+                                                            true;
+                                                      }
+                                                    });
+                                                  },
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                      },
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                        const Divider(
+                          height: 1,
+                          thickness: 1,
+                        ),
+                        Container(
+                          width: MediaQuery.of(context).size.width,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  context.read<SubletBloc>().add(
+                                      const SubletEvent.removeFilterEvent());
+                                  Navigator.of(context).pop();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.errorColor,
+                                ),
+                                child: Text(
+                                  'Reset',
+                                  style: AppTheme.bodyMedium.copyWith(
+                                    color: AppTheme.onError,
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  final subletFilter = SubletFilter(
+                                    roommateGenderPref: selectedGender,
+                                    startRent: rentStart,
+                                    endRent: rentEnd,
+                                    leasePeriod: selectedLeasePeriod,
+                                    apartmentSize: selectedApartmentSize,
+                                    roomType: selectedRoomType,
+                                    amenitiesAvailable:
+                                        Amenities.fromAmenitiesTypes(
+                                            selectedAmenities.keys.toList()),
+                                  );
+                                  context.read<SubletBloc>().add(
+                                      SubletEvent.addFilterEvent(subletFilter));
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  'Apply',
+                                  style: AppTheme.bodyMedium.copyWith(
+                                    color: AppColor.white,
+                                  ),
+                                ),
+                              )
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             );
           },
         );

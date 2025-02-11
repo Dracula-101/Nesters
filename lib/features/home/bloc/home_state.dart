@@ -1,16 +1,17 @@
 part of 'home_bloc.dart';
 
-class HomeState {
+class HomeState extends Equatable {
   final List<UserQuickProfile>? profiles;
   final List<UserQuickProfile>? filteredProfiles;
   final Exception? error;
   final bool isLoading;
-  // Advanced filtering
+  final UserInfo? user;
   final UserFilter? userFilter;
   // Single category of user filtering
   final SingleUserFilter? singleUserFilter;
 
   const HomeState({
+    this.user,
     this.profiles,
     this.filteredProfiles,
     this.error,
@@ -19,11 +20,23 @@ class HomeState {
     this.singleUserFilter,
   });
 
+  @override
+  List<Object?> get props => [
+        profiles,
+        filteredProfiles,
+        error,
+        isLoading,
+        user,
+        userFilter,
+        singleUserFilter,
+      ];
+
   HomeState copyWith({
     List<UserQuickProfile>? profiles,
     List<UserQuickProfile>? filteredProfiles,
     Exception? error,
     bool? isLoading,
+    UserInfo? user,
     UserFilter? userFilter,
     SingleUserFilter? singleUserFilter,
   }) {
@@ -33,24 +46,10 @@ class HomeState {
       error: error ?? this.error,
       isLoading: isLoading ?? this.isLoading,
       userFilter: userFilter,
+      user: user ?? this.user,
       singleUserFilter: singleUserFilter,
     );
   }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is HomeState &&
-        listEquals(other.profiles, profiles) &&
-        other.error == error &&
-        other.isLoading == isLoading &&
-        other.userFilter == userFilter &&
-        other.singleUserFilter == singleUserFilter;
-  }
-
-  @override
-  int get hashCode => profiles.hashCode ^ error.hashCode ^ isLoading.hashCode;
 
   R when<R>({
     required R Function(

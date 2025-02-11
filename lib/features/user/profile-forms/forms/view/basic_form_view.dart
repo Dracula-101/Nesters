@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 import 'dart:io';
 
@@ -8,8 +10,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/location/city_info.dart';
@@ -58,7 +62,6 @@ class UserProfileBasicFormView extends StatefulWidget {
 
 class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final _formKey = GlobalKey<FormState>();
-  final MediaRepository mediaRepository = GetIt.I<MediaRepository>();
   //image variable
   File? _image;
   String? photoUrl;
@@ -66,6 +69,8 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
 
   // Full Name, Email, profile image, college name, course name, gender, birthdate, intake period and year
   final MediaRepository _mediaRepository = GetIt.I<MediaRepository>();
+  final AuthRepository _authRepository = GetIt.I<AuthRepository>();
+
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _collegeNameController = TextEditingController();
   final TextEditingController _courseNameController = TextEditingController();
@@ -133,11 +138,11 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     }
   }
 
-  Future<List<University>?> getUniversities(String? searchString) async {
+  Future<List<University>> getUniversities(String? searchString) async {
     return GetIt.I<UserRepository>().getUniversities(searchString);
   }
 
-  Future<List<Degree>?> getMastersDegree(String? searchString) async {
+  Future<List<Degree>> getMastersDegree(String? searchString) async {
     return GetIt.I<UserRepository>().getMastersDegree(searchString);
   }
 
@@ -163,19 +168,21 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     try {
       final isProfileSet = await GetIt.I<UserRepository>()
           .setBasicUserProfileData(userBasicProfile);
+      await _authRepository.updateUserInfo();
       if (isProfileSet) {
-        // ignore: use_build_context_synchronously
         context.showSuccessSnackBar('Profile created successfully');
-        // ignore: use_build_context_synchronously
         GoRouter.of(context).go(AppRouterService.homeScreen);
       } else {
-        // ignore: use_build_context_synchronously
         context.showErrorSnackBar('Error while creating user profile');
       }
-    } catch (e) {
+    } on AppException catch (e) {
       if (mounted) {
-        context.showErrorSnackBar('Error while creating user profile');
+        context.showErrorSnackBar(e.message);
       }
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -463,20 +470,30 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
             border: InputBorder.none,
           ),
         ),
-        asyncItems: (value) => getUniversities(value).then(
-          (value) {
-            if (value != null) {
-              return value;
-            } else {
-              return [];
-            }
-          },
-        ),
+        asyncItems: (value) => getUniversities(value),
         popupProps: PopupProps.dialog(
           containerBuilder: (context, child) {
             return Padding(
               padding: const EdgeInsets.only(left: 6.0, right: 6.0, top: 14.0),
               child: child,
+            );
+          },
+          errorBuilder: (context, searchEntry, error) {
+            return ShowErrorWidget(error: error);
+          },
+          emptyBuilder: (context, searchEntry) {
+            return ShowInfoWidget(
+              message: searchEntry.isNotEmpty ? 'No items found' : 'Search',
+              subtitle: searchEntry.isNotEmpty
+                  ? 'No data related to "$searchEntry" found'
+                  : 'Search for your graduate degree',
+            );
+          },
+          loadingBuilder: (context, searchEntry) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primary,
+              ),
             );
           },
           searchFieldProps: TextFieldProps(
@@ -558,20 +575,30 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
             border: InputBorder.none,
           ),
         ),
-        asyncItems: (value) => getMastersDegree(value).then(
-          (value) {
-            if (value != null) {
-              return value;
-            } else {
-              return [];
-            }
-          },
-        ),
+        asyncItems: (value) => getMastersDegree(value),
         popupProps: PopupProps.dialog(
           containerBuilder: (context, child) {
             return Padding(
               padding: const EdgeInsets.only(left: 6.0, right: 6.0, top: 12.0),
               child: child,
+            );
+          },
+          errorBuilder: (context, searchEntry, error) {
+            return ShowErrorWidget(error: error);
+          },
+          emptyBuilder: (context, searchEntry) {
+            return ShowInfoWidget(
+              message: searchEntry.isNotEmpty ? 'No items found' : 'Search',
+              subtitle: searchEntry.isNotEmpty
+                  ? 'No data related to "$searchEntry" found'
+                  : 'Search for your graduate degree',
+            );
+          },
+          loadingBuilder: (context, searchEntry) {
+            return Center(
+              child: CircularProgressIndicator(
+                color: AppTheme.primary,
+              ),
             );
           },
           searchFieldProps: TextFieldProps(
@@ -670,6 +697,16 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
           return 'Please select your city';
         }
         return null;
+      },
+      emptyBuilder: (p0) {
+        return ShowInfoWidget(
+          message:
+              _locationContoller.text.isEmpty ? 'Location' : 'No items found',
+          subtitle: _locationContoller.text.isEmpty
+              ? 'Find and select your city'
+              : 'No data related to "${_locationContoller.text}" found',
+          icon: Icons.search,
+        );
       },
       onItemClick: (value) {
         userCityInfo = value;

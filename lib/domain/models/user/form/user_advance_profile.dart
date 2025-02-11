@@ -22,6 +22,7 @@ class UserAdvanceProfile extends Equatable {
   final String roomType;
   final String flatematesGenderPrefs;
   final Map<String, String>? socialMedia;
+  final String? imageUrl;
 
   const UserAdvanceProfile({
     required this.id,
@@ -42,6 +43,7 @@ class UserAdvanceProfile extends Equatable {
     required this.roomType,
     required this.flatematesGenderPrefs,
     required this.socialMedia,
+    required this.imageUrl,
   });
 
   @override
@@ -64,6 +66,7 @@ class UserAdvanceProfile extends Equatable {
         roomType,
         flatematesGenderPrefs,
         socialMedia,
+        imageUrl,
       ];
 
   //toJson
@@ -87,7 +90,84 @@ class UserAdvanceProfile extends Equatable {
       'room_type': roomType,
       'flatmates_gender_prefs': flatematesGenderPrefs,
       'social_media': socialMedia,
+      'image_url': imageUrl,
     };
+  }
+
+  //copyWith
+  UserAdvanceProfile copyWith({
+    String? id,
+    PersonType? personType,
+    String? bio,
+    String? primaryLang,
+    Map<String, String>? otherLang,
+    String? city,
+    String? state,
+    String? undergradCollegeName,
+    int? workExperience,
+    String? foodHabit,
+    String? cookingSkill,
+    UserHabit? drinkingHabit,
+    UserHabit? smokingHabit,
+    String? cleanlinessHabit,
+    String? hobbies,
+    String? roomType,
+    String? flatematesGenderPrefs,
+    Map<String, String>? socialMedia,
+    String? imageUrl,
+  }) {
+    return UserAdvanceProfile(
+      id: id ?? this.id,
+      personType: personType ?? this.personType,
+      bio: bio ?? this.bio,
+      primaryLang: primaryLang ?? this.primaryLang,
+      otherLang: otherLang ?? this.otherLang,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      undergradCollegeName: undergradCollegeName ?? this.undergradCollegeName,
+      workExperience: workExperience ?? this.workExperience,
+      foodHabit: foodHabit ?? this.foodHabit,
+      cookingSkill: cookingSkill ?? this.cookingSkill,
+      drinkingHabit: drinkingHabit ?? this.drinkingHabit,
+      smokingHabit: smokingHabit ?? this.smokingHabit,
+      cleanlinessHabit: cleanlinessHabit ?? this.cleanlinessHabit,
+      hobbies: hobbies ?? this.hobbies,
+      roomType: roomType ?? this.roomType,
+      flatematesGenderPrefs:
+          flatematesGenderPrefs ?? this.flatematesGenderPrefs,
+      socialMedia: socialMedia ?? this.socialMedia,
+      imageUrl: imageUrl ?? this.imageUrl,
+    );
+  }
+
+  //fromJson
+  factory UserAdvanceProfile.fromJson(Map<String, dynamic> json) {
+    return UserAdvanceProfile(
+      id: json['id'] as String?,
+      personType: PersonType.values
+          .firstWhere((e) => e.toString() == json['person_type']),
+      bio: json['bio'] as String,
+      primaryLang: json['primary_lang'] as String,
+      otherLang: Map<String, String>.from(json['other_lang']),
+      city: json['city'] as String,
+      state: json['state'] as String,
+      undergradCollegeName: json['undergrad_college_name'] as String,
+      workExperience: json['work_experience'] as int,
+      foodHabit: json['food_habit'] as String,
+      cookingSkill: json['cooking_skill'] as String,
+      drinkingHabit: UserHabit.values
+          .firstWhere((e) => e.toString() == json['drinking_habit']),
+      smokingHabit: UserHabit.values
+          .firstWhere((e) => e.toString() == json['smoking_habit']),
+      cleanlinessHabit: json['cleanliness_habit'] as String,
+      hobbies: json['hobbies'] as String,
+      roomType: json['room_type'] as String,
+      flatematesGenderPrefs: json['flatmates_gender_prefs'] as String,
+      socialMedia: json['social_media'] != null
+          ? Map<String, String>.from(json['social_media'])
+          : null,
+      imageUrl: json['profile_image'] as String?,
+    );
   }
 
   //toFieldValues
@@ -111,6 +191,7 @@ class UserAdvanceProfile extends Equatable {
       FieldValue(key: 'room_type', value: roomType),
       FieldValue(key: 'flatmates_gender_prefs', value: flatematesGenderPrefs),
       FieldValue(key: 'social_media', value: socialMedia),
+      FieldValue(key: 'profile_image', value: imageUrl),
     ];
   }
 }

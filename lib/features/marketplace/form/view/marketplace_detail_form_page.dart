@@ -206,6 +206,14 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
         color: AppTheme.greyShades.shade600,
         size: 22,
       ),
+      emptyBuilder: (context) {
+        return ShowInfoWidget(
+          message: _categoryController.text.isNotEmpty ? 'Not Found' : 'Search',
+          subtitle: _categoryController.text.isNotEmpty
+              ? 'No category found with the name "${_categoryController.text}"'
+              : 'Search for the category like "Furniture"',
+        );
+      },
       controller: _categoryController,
       asyncStaticItems: context.read<MarketplaceFormCubit>().getCategories(),
       itemAsString: (item) => (item as MarketplaceCategoryModel?)?.name ?? "",
