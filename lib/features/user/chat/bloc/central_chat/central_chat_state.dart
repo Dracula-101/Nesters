@@ -1,71 +1,16 @@
 part of 'central_chat_bloc.dart';
-
-class ChatLoadingState extends BlocState {
-  ChatLoadingState({
-    bool isLoading = false,
-    AppException? error,
-    bool isSuccess = false,
-  }) : super(
-          isLoading: isLoading,
-          exception: error,
-          isSuccess: isSuccess,
-        );
-
-  @override
-  ChatLoadingState copyWith(
-      {bool? isLoading, AppException? error, bool? isSuccess}) {
-    return ChatLoadingState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? exception,
-      isSuccess: isSuccess ?? this.isSuccess,
-    );
-  }
-
-  @override
-  ChatLoadingState failure(AppException error) {
-    return ChatLoadingState(
-      isLoading: false,
-      error: error,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  ChatLoadingState loading() {
-    return ChatLoadingState(
-      isLoading: true,
-      error: null,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  ChatLoadingState resetLoading() {
-    return copyWith(isLoading: false);
-  }
-
-  @override
-  ChatLoadingState success() {
-    return ChatLoadingState(
-      isLoading: false,
-      error: null,
-      isSuccess: true,
-    );
-  }
-}
-
 class CentralChatState {
   final List<ChatInfo> chatStates;
-  final ChatLoadingState? chatState;
+  final BlocState chatState;
 
   const CentralChatState({
     this.chatStates = const [],
-    this.chatState,
+    this.chatState = const BlocState(),
   });
 
   CentralChatState copyWith({
     List<ChatInfo>? chatStates,
-    ChatLoadingState? chatState,
+    BlocState? chatState,
   }) {
     return CentralChatState(
       chatStates: chatStates ?? this.chatStates,

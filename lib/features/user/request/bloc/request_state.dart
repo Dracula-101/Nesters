@@ -2,137 +2,27 @@
 
 part of 'request_bloc.dart';
 
-class RequestUserState extends BlocState {
-  RequestUserState({
-    bool isLoading = false,
-    AppException? error,
-    bool isSuccess = false,
-  }) : super(
-          isLoading: isLoading,
-          exception: error,
-          isSuccess: isSuccess,
-        );
-
-  @override
-  RequestUserState copyWith({
-    bool? isLoading,
-    AppException? error,
-    bool? isSuccess,
-  }) {
-    return RequestUserState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? exception,
-      isSuccess: isSuccess ?? this.isSuccess,
-    );
-  }
-
-  @override
-  RequestUserState loading() {
-    return RequestUserState(
-      isLoading: true,
-      error: null,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  RequestUserState resetLoading() {
-    return copyWith(isLoading: false);
-  }
-
-  @override
-  RequestUserState failure(AppException error) {
-    return RequestUserState(
-      isLoading: false,
-      error: error,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  RequestUserState success() {
-    return RequestUserState(
-      isLoading: false,
-      error: null,
-      isSuccess: true,
-    );
-  }
-}
-
-class RequestSendState extends BlocState {
-  RequestSendState({
-    bool isLoading = false,
-    AppException? error,
-    bool isSuccess = false,
-  }) : super(
-          isLoading: isLoading,
-          exception: error,
-          isSuccess: isSuccess,
-        );
-
-  @override
-  RequestSendState copyWith(
-      {bool? isLoading, AppException? error, bool? isSuccess}) {
-    return RequestSendState(
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? exception,
-      isSuccess: isSuccess ?? this.isSuccess,
-    );
-  }
-
-  @override
-  RequestSendState failure(AppException error) {
-    return copyWith(
-      isLoading: false,
-      error: error,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  RequestSendState loading() {
-    return copyWith(
-      isLoading: true,
-      error: null,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  RequestSendState resetLoading() {
-    return copyWith(isLoading: false);
-  }
-
-  RequestSendState success() {
-    return copyWith(
-      isLoading: false,
-      error: null,
-      isSuccess: true,
-    );
-  }
-}
-
 class RequestState {
   final RequestScreen currentScreen;
   final List<Request> requestSentUsers;
   final List<Request> requestReceivedUsers;
-  final RequestUserState requestUserState;
-  final RequestSendState requestSendState;
+  final BlocState requestUserState;
+  final BlocState requestSendState;
 
   RequestState({
     this.currentScreen = RequestScreen.RECEIVED,
     this.requestSentUsers = const [],
     this.requestReceivedUsers = const [],
-    required this.requestUserState,
-    required this.requestSendState,
+    this.requestUserState = const BlocState(),
+    this.requestSendState = const BlocState(),
   });
 
   RequestState copyWith({
     RequestScreen? currentScreen,
     List<Request>? requestSentUsers,
     List<Request>? requestReceivedUsers,
-    RequestUserState? requestUserState,
-    RequestSendState? requestSendState,
+    BlocState? requestUserState,
+    BlocState? requestSendState,
   }) {
     return RequestState(
       currentScreen: currentScreen ?? this.currentScreen,
