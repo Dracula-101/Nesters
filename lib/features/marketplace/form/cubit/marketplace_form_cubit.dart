@@ -83,11 +83,13 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
   }
 
   Future<void> createSublet() async {
+    if (state.submitState.isLoading) return;
     emit(state.copyWith(submitState: state.submitState.loading()));
     try {
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
-        emit(state.copyWith(submitState: state.submitState.failure(UserNotAuthError())));
+        emit(state.copyWith(
+            submitState: state.submitState.failure(UserNotAuthError())));
         return;
       }
       Stream<MarketplaceImageUploadTask> uploadImageStream =
@@ -123,12 +125,13 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
   }
 
   Future<void> updateSublet() async {
-    if (state.submitState.isLoading ?? false) return;
+    if (state.submitState.isLoading) return;
     try {
       emit(state.copyWith(submitState: state.submitState.loading()));
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
-        emit(state.copyWith(submitState: state.submitState.failure(UserNotAuthError())));
+        emit(state.copyWith(
+            submitState: state.submitState.failure(UserNotAuthError())));
         return;
       }
       List<String> uploadedImagesUrl = [];

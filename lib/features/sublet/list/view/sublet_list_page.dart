@@ -113,9 +113,11 @@ class _SubletListViewState extends State<SubletListView> {
                 if (state.filteredSubletList?.isNotEmpty ?? false)
                   _buildFilteredSublets(state.filteredSubletList!)
                 else
-                  const ShowNoInfoWidget(
-                    title: "No Sublets Found",
-                    subtitle: "No sublets found for the selected filters",
+                  const SliverFillRemaining(
+                    child: ShowNoInfoWidget(
+                      title: "No Sublets Found",
+                      subtitle: "No sublets found for the selected filters",
+                    ),
                   )
               else
                 _buildSubletList(state.subletList ?? []),
@@ -132,7 +134,7 @@ class _SubletListViewState extends State<SubletListView> {
 
   Widget _buildFilteredSublets(List<SubletModel> sublets) {
     return SliverList.builder(
-      itemCount: sublets.length + 1,
+      itemCount: sublets.length,
       itemBuilder: (context, index) {
         return SubletModelWidget(
           onPressed: () {
@@ -194,7 +196,8 @@ class _SubletListViewState extends State<SubletListView> {
         ),
         noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
           title: "No Sublets Found",
-          subtitle: "There are no sublet at the moment, Please try again later",
+          subtitle:
+              "There are no sublets at the moment. Please try again later.",
         ),
         noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 100),
       ),
@@ -326,8 +329,7 @@ class _SubletListViewState extends State<SubletListView> {
                                                                           .toInt(),
                                                                       rentEnd
                                                                           .toInt())));
-                                                      Navigator.of(context)
-                                                          .pop();
+                                                      Navigator.of(ctx).pop();
                                                     },
                                                     text: "Apply",
                                                   )
@@ -447,7 +449,7 @@ class _SubletListViewState extends State<SubletListView> {
                                                           beds:
                                                               apartmentSizeBeds,
                                                         ))));
-                                                    Navigator.of(context).pop();
+                                                    Navigator.of(ctx).pop();
                                                   },
                                                 )
                                               ],
@@ -1229,7 +1231,7 @@ class _SubletListViewState extends State<SubletListView> {
                                 context
                                     .read<SubletBloc>()
                                     .add(const SubletEvent.removeFilterEvent());
-                                Navigator.of(context).pop();
+                                Navigator.of(ctx).pop();
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppTheme.errorColor,
@@ -1256,7 +1258,7 @@ class _SubletListViewState extends State<SubletListView> {
                                 );
                                 context.read<SubletBloc>().add(
                                     SubletEvent.addFilterEvent(subletFilter));
-                                Navigator.of(context).pop();
+                                Navigator.of(ctx).pop();
                               },
                               child: Text(
                                 'Apply',

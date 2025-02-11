@@ -13,6 +13,8 @@ import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/settings/bloc/settings_bloc.dart';
 import 'package:nesters/features/user/posts/cubit/user_post_state.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/bloc_state.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -21,7 +23,13 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(
+    return BlocConsumer<SettingsBloc, SettingsState>(
+      listener: (context, state) {
+        if (state.userVisibilityState.exception != null) {
+          context.showErrorSnackBar(
+              state.userVisibilityState.exception?.message ?? '');
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           body: SettingsView(
@@ -42,8 +50,6 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  bool isSwitched = false;
-
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
@@ -76,7 +82,15 @@ class _SettingsViewState extends State<SettingsView> {
           snap: true,
         ),
         if (widget.state.user != null) _buildProfile(widget.state.user!),
-        _buildProfileSettings(isSwitched),
+        _buildProfileSettings(
+          widget.state.userVisibilityState,
+          widget.state.user?.hasRoommateFound ?? false,
+          (value) {
+            context
+                .read<SettingsBloc>()
+                .add(SettingsEvent.changeVisibility(isVisible: value));
+          },
+        ),
         _buildUserPostSettings(),
         _buildAppInfoSettings(),
         _buildDeleteAccount(),
@@ -124,7 +138,11 @@ class _SettingsViewState extends State<SettingsView> {
     });
   }
 
-  Widget _buildProfileSettings(bool isSwitched) {
+  Widget _buildProfileSettings(
+    BlocState userVisibilityState,
+    bool isSwitched,
+    Function(bool) changeVisibility,
+  ) {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
       sliver: SliverToBoxAdapter(
@@ -153,14 +171,11 @@ class _SettingsViewState extends State<SettingsView> {
               const Divider(thickness: 1, height: 1),
               SettingSwitch(
                 title: "Visibility",
-                subtitle: "Still looking for roomates?",
+                subtitle: "Have you found roommates yet?",
                 icon: Icons.visibility,
-                value: isSwitched,
-                onChanged: (value) {
-                  setState(() {
-                    isSwitched = value;
-                  });
-                },
+                value: !isSwitched,
+                isLoading: userVisibilityState.isLoading,
+                onChanged: (value) => changeVisibility(!value),
               )
             ],
           ),
@@ -489,6 +504,7 @@ class SettingSwitch extends StatefulWidget {
   final IconData? icon;
   final bool value;
   final ValueChanged<bool> onChanged;
+  final bool? isLoading;
 
   const SettingSwitch({
     super.key,
@@ -497,6 +513,7 @@ class SettingSwitch extends StatefulWidget {
     this.icon,
     required this.value,
     required this.onChanged,
+    this.isLoading,
   });
 
   @override
@@ -543,19 +560,26 @@ class _SettingSwitchState extends State<SettingSwitch> {
               ],
             ),
           ),
-          Transform.scale(
-            scale: 0.8,
-            child: CupertinoSwitch(
-              value: _currentValue,
-              onChanged: (value) {
-                setState(() {
-                  _currentValue = value;
-                });
-                widget.onChanged(value);
-              },
-              activeColor: AppTheme.primary,
+          if (widget.isLoading ?? false)
+            const SizedBox(
+              height: 12,
+              width: 12,
+              child: CircularProgressIndicator(strokeWidth: 1),
+            )
+          else
+            Transform.scale(
+              scale: 0.8,
+              child: CupertinoSwitch(
+                value: _currentValue,
+                onChanged: (value) {
+                  setState(() {
+                    _currentValue = value;
+                  });
+                  widget.onChanged(value);
+                },
+                activeColor: AppTheme.primary,
+              ),
             ),
-          ),
         ],
       ),
     );

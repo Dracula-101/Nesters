@@ -1,18 +1,6 @@
 part of 'app_bloc.dart';
 
-// @freezed
-// class AppState with _$AppState {
-//   const factory AppState.initial() = AppInitial;
-//   const factory AppState.loadInProgress() = AppLoadInProgress;
-//   const factory AppState.loadSuccess() = AppLoadSuccess;
-//   const factory AppState.loadFailure() = AppLoadFailure;
-//   const factory AppState.networkChange({
-//     required NetworkData data,
-//     required bool isOnline,
-//   }) = AppNetworkChange;
-// }
-
-class AppState {
+class AppState extends Equatable {
   final bool isLoading;
   final bool isOnline;
   final NetworkData networkData;
@@ -25,7 +13,7 @@ class AppState {
   final BlocState degreesState;
   final BlocState marketplaceCategoryState;
 
-  AppState({
+  const AppState({
     this.isLoading = true,
     this.isOnline = true,
     this.networkData = NetworkData.UNKNOWN,
@@ -33,9 +21,9 @@ class AppState {
     this.universities = const [],
     this.degrees = const [],
     this.marketplaceCategory = const [],
-    this.universitiesState = BlocState(),
-    this.degreesState = BlocState(),
-    this.marketplaceCategoryState = BlocState(),
+    this.universitiesState = const BlocState(),
+    this.degreesState = const BlocState(),
+    this.marketplaceCategoryState = const BlocState(),
   });
 
   AppState copyWith({
@@ -46,6 +34,9 @@ class AppState {
     List<University?>? universities,
     List<Degree?>? degrees,
     List<MarketplaceCategoryModel>? marketplaceCategory,
+    BlocState? universitiesState,
+    BlocState? degreesState,
+    BlocState? marketplaceCategoryState,
   }) {
     return AppState(
       isLoading: isLoading ?? this.isLoading,
@@ -53,31 +44,23 @@ class AppState {
       networkData: networkData ?? this.networkData,
       error: error ?? this.error,
       universities: universities ?? this.universities,
-      isLoadingUniversities:
-          isLoadingUniversities ?? this.isLoadingUniversities,
       degrees: degrees ?? this.degrees,
-      isLoadingDegrees: isLoadingDegrees ?? this.isLoadingDegrees,
       marketplaceCategory: marketplaceCategory ?? this.marketplaceCategory,
-      isLoadingMarketplaceCategory:
-          isLoadingMarketplaceCategory ?? this.isLoadingMarketplaceCategory,
+      universitiesState: universitiesState ?? this.universitiesState,
     );
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is AppState &&
-        other.isLoading == isLoading &&
-        other.isOnline == isOnline &&
-        other.networkData == networkData &&
-        other.error == error;
-  }
-
-  @override
-  int get hashCode =>
-      isLoading.hashCode ^
-      isOnline.hashCode ^
-      networkData.hashCode ^
-      error.hashCode;
+  List<Object?> get props => [
+        isLoading,
+        isOnline,
+        networkData,
+        error,
+        universities,
+        degrees,
+        marketplaceCategory,
+        universitiesState,
+        degreesState,
+        marketplaceCategoryState,
+      ];
 }

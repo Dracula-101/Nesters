@@ -44,7 +44,7 @@ class AppRouterService {
   static const String userChatHome = 'main_chat';
   static const String userChatPage = "chat";
   static const String userProfile = 'user_profile';
-  static const String userProfileAdvanceFormScreen = '/advance_form';
+  static const String userProfileAdvanceFormScreen = 'advance_form';
   static const String userProfileBasicFormScreen = '/basic_form';
   static const String userRequest = 'request';
   static const String settings = 'settings';
@@ -115,6 +115,10 @@ class AppRouterService {
                     showRequestDialog: showDialog,
                   );
                 },
+              ),
+              AppRoute(
+                userProfileAdvanceFormScreen,
+                (_) => const UserProfileAdvanceForm(),
               ),
               AppRoute(
                 subletDetail,
@@ -210,7 +214,7 @@ class AppRouterService {
             (_) => const SplashPage(),
           ),
           AppRoute(
-            userProfileAdvanceFormScreen,
+            "/$userProfileAdvanceFormScreen",
             (_) => const UserProfileAdvanceForm(),
           ),
           AppRoute(

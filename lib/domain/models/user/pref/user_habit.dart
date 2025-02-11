@@ -78,6 +78,13 @@ enum UserHabit {
         return 'having an unknown smoking habit';
     }
   }
+
+  String? toSafeString() {
+    if (this == UserHabit.UNKNOWN) {
+      return null;
+    }
+    return toString();
+  }
 }
 
 enum UserFoodHabit {
@@ -151,6 +158,13 @@ enum UserFoodHabit {
         return 'having an unknown food habit';
     }
   }
+
+  String? toSafeString() {
+    if (this == UserFoodHabit.UNKNOWN) {
+      return null;
+    }
+    return toString();
+  }
 }
 
 enum UserCookingSkill {
@@ -198,6 +212,13 @@ enum UserCookingSkill {
       default:
         return 'having an unknown drinking habit';
     }
+  }
+
+  String? toSafeString() {
+    if (this == UserCookingSkill.UNKNOWN) {
+      return null;
+    }
+    return toString();
   }
 }
 
@@ -252,5 +273,12 @@ enum UserCleanlinessHabit {
       default:
         return 'having an unknown cleanliness habit';
     }
+  }
+
+  String? toSafeString() {
+    if (this == UserCleanlinessHabit.UNKNOWN) {
+      return null;
+    }
+    return toString();
   }
 }

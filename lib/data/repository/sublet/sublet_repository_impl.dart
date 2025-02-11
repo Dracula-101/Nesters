@@ -36,7 +36,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
@@ -108,7 +108,7 @@ class SubletRepositoryImpl implements SubletRepository {
     try {
       final response = await _supabaseClient
           .from('sublets')
-          .select("* sublet_likes!sublet_likes_sublet_id_fkey!left(*)")
+          .select("*, sublet_likes!sublet_likes_sublet_id_fkey!left(*)")
           .neq("user_id", userId)
           .eq("is_available", true)
           .range(paginationKey, paginationKey + range)
@@ -117,7 +117,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
@@ -171,7 +171,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
@@ -293,7 +293,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
@@ -317,7 +317,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
@@ -345,7 +345,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
@@ -374,7 +374,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
@@ -400,7 +400,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
@@ -431,7 +431,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
@@ -458,7 +458,7 @@ class SubletRepositoryImpl implements SubletRepository {
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,
-        e.details.toString(),
+        '${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();

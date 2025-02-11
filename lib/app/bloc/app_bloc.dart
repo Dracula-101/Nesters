@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:get_it/get_it.dart';
@@ -18,6 +19,7 @@ import 'package:nesters/data/repository/network/network_checker_repository.dart'
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
@@ -270,12 +272,13 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   Future<void> _loadUniversities(AppEvent event, Emitter<AppState> emit) async {
-    emit(state.copyWith(isLoadingUniversities: true));
+    emit(state.copyWith(universitiesState: state.universitiesState.loading()));
     final cachedUniversities = _localStorageRepository.getListClass(
         LocalStorageKeys.universityList, (p0) => University.fromJson(p0));
     if (cachedUniversities?.isNotEmpty ?? false) {
       emit(state.copyWith(
-          universities: cachedUniversities, isLoadingUniversities: false));
+          universities: cachedUniversities,
+          universitiesState: state.universitiesState.success()));
     }
     try {
       final universities = await _userRepository.getAllUniversities();
@@ -284,18 +287,22 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         _localStorageRepository.saveListClass(LocalStorageKeys.universityList,
             universities, (p0) => p0?.toJson() ?? {});
       }
-      emit(state.copyWith(isLoadingUniversities: false));
-    } catch (e) {
-      emit(state.copyWith(isLoadingUniversities: false));
+      emit(state.copyWith(
+          universities: universities,
+          universitiesState: state.universitiesState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(
+          universitiesState: state.universitiesState.failure(e)));
     }
   }
 
   Future<void> _loadDegrees(AppEvent event, Emitter<AppState> emit) async {
-    emit(state.copyWith(isLoadingDegrees: true));
+    emit(state.copyWith(degreesState: state.degreesState.loading()));
     final cachedDegrees = _localStorageRepository.getListClass(
         LocalStorageKeys.degreeList, (p0) => Degree.fromJson(p0));
     if (cachedDegrees?.isNotEmpty ?? false) {
-      emit(state.copyWith(degrees: cachedDegrees, isLoadingDegrees: false));
+      emit(state.copyWith(
+          degrees: cachedDegrees, degreesState: state.degreesState.success()));
     }
     try {
       final degrees = await _userRepository.getAllDegrees();
@@ -303,25 +310,25 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       if (degrees.isNotEmpty) {
         _localStorageRepository.saveListClass(
             LocalStorageKeys.degreeList, degrees, (p0) => p0?.toJson() ?? {});
-        emit(state.copyWith(degrees: degrees, isLoadingDegrees: false));
-      } else {
-        emit(state.copyWith(isLoadingDegrees: false));
       }
-    } catch (e) {
-      emit(state.copyWith(isLoadingDegrees: false));
+      emit(state.copyWith(
+          degrees: degrees, degreesState: state.degreesState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(degreesState: state.degreesState.failure(e)));
     }
   }
 
   Future<void> _loadMarketplaceCategories(
       AppEvent event, Emitter<AppState> emit) async {
-    emit(state.copyWith(isLoadingMarketplaceCategory: true));
+    emit(state.copyWith(
+        marketplaceCategoryState: state.marketplaceCategoryState.loading()));
     final cachedMarketplaceCategories = _localStorageRepository.getListClass(
         LocalStorageKeys.marketplaceCategoryList,
         (p0) => MarketplaceCategoryModel.fromJson(p0));
     if (cachedMarketplaceCategories?.isNotEmpty ?? false) {
       emit(state.copyWith(
           marketplaceCategory: cachedMarketplaceCategories,
-          isLoadingMarketplaceCategory: false));
+          marketplaceCategoryState: state.marketplaceCategoryState.success()));
     }
     try {
       final marketplaceCategories =
@@ -332,14 +339,13 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             LocalStorageKeys.marketplaceCategoryList,
             marketplaceCategories,
             (p0) => p0.toJson());
-        emit(state.copyWith(
-            marketplaceCategory: marketplaceCategories,
-            isLoadingMarketplaceCategory: false));
-      } else {
-        emit(state.copyWith(isLoadingMarketplaceCategory: false));
       }
-    } catch (e) {
-      emit(state.copyWith(isLoadingMarketplaceCategory: false));
+      emit(state.copyWith(
+          marketplaceCategory: marketplaceCategories,
+          marketplaceCategoryState: state.marketplaceCategoryState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(
+          marketplaceCategoryState: state.marketplaceCategoryState.failure(e)));
     }
   }
 }
@@ -362,4 +368,5 @@ class ChatNavigationArgs implements NavigationArgs {
   ChatNavigationArgs({required this.chatId, required this.user})
       : route =
             '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$chatId',
-    
+        args = {'chatId': chatId, 'user': user};
+}

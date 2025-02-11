@@ -33,6 +33,11 @@ abstract class UserRepository {
 
   Future<bool?> checkUserCreated(String userId);
 
+  Future<void> updateRoommateFoundStatus({
+    required String id,
+    required bool status,
+  });
+
   Future<List<University>> getUniversities(String? searchString);
 
   Future<List<Degree>> getMastersDegree(String? searchString);

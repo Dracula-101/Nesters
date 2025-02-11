@@ -21,9 +21,9 @@ class EditProfileCubit extends Cubit<EditProfileState> {
   final AppLogger _logger = GetIt.I<AppLogger>();
 
   Future<void> getUserProfile() async {
-    emit(state.copyWith(loadingState: state.loadingState?.loading()));
+    emit(state.copyWith(loadingState: state.loadingState.loading()));
     if (_authRepository.currentUser == null) {
-      emit(state.copyWith(loadingState: state.loadingState?.resetLoading()));
+      emit(state.copyWith(loadingState: state.loadingState.resetLoading()));
       return;
     }
     try {
@@ -32,7 +32,7 @@ class EditProfileCubit extends Cubit<EditProfileState> {
       log("User Profile: $userProfile");
       emit(
         state.copyWith(
-          loadingState: state.loadingState?.success(),
+          loadingState: state.loadingState.success(),
           profileImage: userProfile.profileImage,
           selectedCollegeName: userProfile.selectedCollegeName,
           selectedCourseName: userProfile.selectedCourseName,
@@ -55,12 +55,12 @@ class EditProfileCubit extends Cubit<EditProfileState> {
       _logger.error('Error getting user profile: $error');
       if (error is AppException) {
         emit(
-          state.copyWith(loadingState: state.loadingState?.failure(error)),
+          state.copyWith(loadingState: state.loadingState.failure(error)),
         );
       }
     } finally {
       emit(
-        state.copyWith(loadingState: state.loadingState?.resetLoading()),
+        state.copyWith(loadingState: state.loadingState.resetLoading()),
       );
     }
   }
@@ -111,10 +111,10 @@ class EditProfileCubit extends Cubit<EditProfileState> {
 
   void updateProfileData() async {
     try {
-      emit(state.copyWith(submitState: state.submitState?.loading()));
+      emit(state.copyWith(submitState: state.submitState.loading()));
       if (_authRepository.currentUser == null) {
         emit(state.copyWith(
-            submitState: state.submitState?.failure(UserNotAuthError())));
+            submitState: state.submitState.failure(UserNotAuthError())));
         return;
       }
       final userId = _authRepository.currentUser!.id;
@@ -128,16 +128,19 @@ class EditProfileCubit extends Cubit<EditProfileState> {
         log("Uploaded Image: $imageUrl");
       }
       if (state.userEditProfile == null) {
-        emit(state.copyWith(submitState: state.submitState?.resetLoading()));
+        emit(state.copyWith(submitState: state.submitState.resetLoading()));
         return;
       }
       await _userRepository.updateProfile(state.userEditProfile!, userId);
-      emit(state.copyWith(submitState: state.submitState?.success()));
-      await _authRepository.updateUserInfo();
+      emit(state.copyWith(submitState: state.submitState.success()));
+      await _authRepository.updateUserInfo(
+        _authRepository.currentUserInfo
+            ?.copyWith(profileImage: state.userEditProfile?.profileImage),
+      );
       log("Profile Updated Succesfully");
     } on AppException catch (e) {
       _logger.error('Error updating profile: $e');
-      emit(state.copyWith(submitState: state.submitState?.failure(e)));
+      emit(state.copyWith(submitState: state.submitState.failure(e)));
     }
   }
 }

@@ -6,6 +6,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
+import 'package:nesters/data/repository/marketplace/error/marketplace_error.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
@@ -15,6 +16,7 @@ import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
 import 'package:nesters/features/marketplace/list/view/shimmer_marketplace_list_page.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/context.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
@@ -79,6 +81,9 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
       context.read<MarketplaceBloc>().add(
           MarketplaceEvent.saveMarketplaces(_pagingController.itemList ?? []));
     } on AppException catch (error) {
+      // ignore: use_build_context_synchronously
+      context.logger.error(
+          'Error loading marketplaces: ${(error as MarketplaceError).hint}');
       _pagingController.error = error;
     }
   }
@@ -123,9 +128,11 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
   }
 
   Widget _buildMarketplacePlaceholder() {
-    return const ShowNoInfoWidget(
-      title: "No marketplaces found",
-      subtitle: "There are no marketplaces available for the selected filter",
+    return const SliverFillRemaining(
+      child: ShowNoInfoWidget(
+        title: "No Items Found",
+        subtitle: "Currently, there are no available items.",
+      ),
     );
   }
 
@@ -165,9 +172,8 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
           height: 300,
         ),
         noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
-          title: 'No marketplaces found',
-          subtitle:
-              'There are no marketplaces available at the moment, Please try again later.',
+          title: 'No Items Found',
+          subtitle: 'There are no items at the moment. Please try again later.',
         ),
         noMoreItemsIndicatorBuilder: (_) => const SizedBox(height: 100),
       ),
@@ -452,17 +458,19 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                                                         title:
                                                                             "Select min price",
                                                                       );
-                                                                    }).then((value) {
-                                                                  if (value !=
-                                                                      null) {
-                                                                    setState(
+                                                                    }).then(
+                                                                  (value) {
+                                                                    if (value !=
+                                                                        null) {
+                                                                      setState(
                                                                         () {
-                                                                      minPrice =
-                                                                          double.parse(
-                                                                              value);
-                                                                    });
-                                                                  }
-                                                                });
+                                                                          minPrice =
+                                                                              double.parse(value);
+                                                                        },
+                                                                      );
+                                                                    }
+                                                                  },
+                                                                );
                                                               },
                                                               child: Container(
                                                                 padding:
@@ -485,7 +493,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                                                   (minPrice ==
                                                                           null)
                                                                       ? "Select"
-                                                                      : "\$$minPrice",
+                                                                      : "\$${minPrice?.toInt()}",
                                                                   style: AppTheme
                                                                       .bodySmall,
                                                                 ),
@@ -570,7 +578,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                                                 child: Text(
                                                                   (maxPrice !=
                                                                           null)
-                                                                      ? "\$$maxPrice"
+                                                                      ? "\$${maxPrice?.toInt()}"
                                                                       : "Select",
                                                                   style: AppTheme
                                                                       .bodySmall

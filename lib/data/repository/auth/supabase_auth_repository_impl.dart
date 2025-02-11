@@ -195,14 +195,15 @@ class SupabaseAuthRepository extends AuthRepository {
   }
 
   @override
-  Future<void> updateUserInfo() async {
+  Future<void> updateUserInfo(UserInfo? user) async {
     try {
-      UserInfo? userInfo = await _supabaseClient
-          .from('user_details')
-          .select()
-          .eq('id', _currentUser!.id)
-          .single()
-          .then((value) => UserInfo.fromJson(value));
+      UserInfo? userInfo = user ??
+          (await _supabaseClient
+              .from('user_details')
+              .select()
+              .eq('id', _currentUser!.id)
+              .single()
+              .then((value) => UserInfo.fromJson(value)));
       _userInfo = userInfo;
       _userInfoController.add(_userInfo);
     } catch (error) {}

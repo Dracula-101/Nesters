@@ -168,7 +168,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     try {
       final isProfileSet = await GetIt.I<UserRepository>()
           .setBasicUserProfileData(userBasicProfile);
-      await _authRepository.updateUserInfo();
+      await _authRepository.updateUserInfo(null);
       if (isProfileSet) {
         context.showSuccessSnackBar('Profile created successfully');
         GoRouter.of(context).go(AppRouterService.homeScreen);

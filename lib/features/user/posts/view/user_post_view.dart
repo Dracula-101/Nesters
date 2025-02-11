@@ -11,6 +11,7 @@ import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.
 import 'package:nesters/features/user/posts/cubit/user_post_cubit.dart';
 import 'package:nesters/features/user/posts/cubit/user_post_state.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/widgets/widgets.dart';
 
 class UserPostScreen extends StatelessWidget {
   final PostView view;
@@ -57,17 +58,18 @@ class _UserPostViewState extends State<UserPostView> {
           loading: () => const Center(
             child: CircularProgressIndicator(),
           ),
-          error: (error) => Center(
-            child: Column(
-              children: [
-                Icon(
-                  Icons.error,
-                  color: AppTheme.error,
-                  size: 90,
-                ),
-                Text(error.message),
-              ],
-            ),
+          error: (error) => ShowErrorWidget(
+            error: error,
+            onRetry: () {
+              switch (state.postView) {
+                case PostView.sublet:
+                  context.read<UserPostCubit>().fetchSubletUserPosts();
+                case PostView.marketplace:
+                  context.read<UserPostCubit>().fetchMarketplaceUserPosts();
+                case PostView.apartment:
+                  context.read<UserPostCubit>().fetchApartmentUserPosts();
+              }
+            },
           ),
           data: (sublets, marketplace, apartments, view) => (sublets.isEmpty &&
                   marketplace.isEmpty &&
@@ -82,8 +84,6 @@ class _UserPostViewState extends State<UserPostView> {
                           return "Marketplace";
                         case PostView.apartment:
                           return "Apartment";
-                        default:
-                          return "";
                       }
                     })()} Posts Found",
                     style: AppTheme.titleMedium,
@@ -107,7 +107,6 @@ class _UserPostViewState extends State<UserPostView> {
                       PostView.sublet => sublets[index],
                       PostView.marketplace => marketplace[index],
                       PostView.apartment => apartments[index],
-                      _ => throw Exception("Invalid PostView"),
                     };
 
                     return switch (view) {

@@ -89,8 +89,8 @@ create table public.marketplaces_likes (
   is_liked boolean not null default false,
   constraint marketplace_likes_pkey primary key (id),
   constraint marketplaces_likes_marketplace_id_key unique (marketplace_id),
-  constraint marketplace_likes_marketplace_id_fkey foreign KEY (marketplace_id) references public.marketplaces (id) on update CASCADE on delete CASCADE,
-  constraint marketplace_likes_user_id_fkey foreign KEY (user_id) references public.user_details (id) on update CASCADE on delete CASCADE
+  constraint marketplaces_likes_marketplace_id_fkey foreign KEY (marketplace_id) references public.marketplaces (id) on update CASCADE on delete CASCADE,
+  constraint marketplaces_likes_user_id_fkey foreign KEY (user_id) references public.user_details (id) on update CASCADE on delete CASCADE
 ) TABLESPACE pg_default;
 
 create table public.apartments (
