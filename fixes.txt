@@ -1,11 +1,8 @@
-chat taking too much time and space.(App Check issue)
-
-when new image uploaded still shows old one everywhere in edit form.
-
-notificatiom image.
+detail form, apartment progress indicator.
 ==========
 2]map view,
 shimmer for other pages.
+chat taking too much time and space.(App Check issue)
 =============================================
 images while editing for sublet and marketplace we are not deleting the previous ones.
 

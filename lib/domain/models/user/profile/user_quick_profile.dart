@@ -18,6 +18,7 @@ class UserQuickProfile extends Equatable {
   final LocationState? state;
   final LocationCountry? country;
   final int? workExperience;
+  final bool? hasRoommateFound;
 
   const UserQuickProfile({
     required this.id,
@@ -31,6 +32,7 @@ class UserQuickProfile extends Equatable {
     required this.workExperience,
     required this.intakePeriod,
     required this.intakeYear,
+    required this.hasRoommateFound,
   });
 
   @override
@@ -46,6 +48,7 @@ class UserQuickProfile extends Equatable {
         workExperience,
         intakePeriod,
         intakeYear,
+        hasRoommateFound,
       ];
 
   List<FieldValue> toFieldValues() {
@@ -61,6 +64,7 @@ class UserQuickProfile extends Equatable {
       FieldValue(key: 'work_experience', value: workExperience),
       FieldValue(key: 'intake_period', value: intakePeriod),
       FieldValue(key: 'intake_year', value: intakeYear),
+      FieldValue(key: 'has_roomate_found', value: hasRoommateFound),
     ];
   }
 
@@ -77,6 +81,7 @@ class UserQuickProfile extends Equatable {
       'work_experience': workExperience,
       'intake_period': intakePeriod,
       'intake_year': intakeYear,
+      'has_roommate_found': hasRoommateFound,
     };
   }
 
@@ -98,6 +103,7 @@ class UserQuickProfile extends Equatable {
         workExperience: json['work_experience'] ?? 0,
         intakePeriod: json['intake_period'] ?? '',
         intakeYear: json['intake_year'] ?? DateTime.now().year,
+        hasRoommateFound: json['has_rooommate_found'] ?? true,
       );
     } catch (e) {
       throw Exception('Failed to parse UserQuickProfile: $e');

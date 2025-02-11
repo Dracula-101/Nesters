@@ -27,5 +27,5 @@ abstract class AuthRepository {
   Future<String?> getAccessToken();
 
   // Update user info
-  Future<void> updateUserInfo();
+  Future<void> updateUserInfo(UserInfo? user);
 }

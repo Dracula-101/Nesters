@@ -133,18 +133,18 @@ class _UserListViewState extends State<UserListView> {
       onRefresh: () => Future.sync(
         () => _pagingController.refresh(),
       ),
-      child: CustomScrollView(
-        slivers: [
-          _buildAppBar(),
-          BlocBuilder<HomeBloc, HomeState>(
-            builder: (context, state) {
-              return state.filteredProfiles != null
-                  ? _buildFilteredUserList(state.filteredProfiles!)
-                  : _buildUserList();
-            },
-          ),
-        ],
-      ),
+      child: BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
+        return CustomScrollView(
+          slivers: [
+            _buildAppBar(),
+            state.filteredProfiles != null
+                ? _buildFilteredUserList(state.filteredProfiles!,
+                    isAllowed: state.user?.isUserProfileComplete() ?? false)
+                : _buildUserList(
+                    isAllowed: state.user?.isUserProfileComplete() ?? false)
+          ],
+        );
+      }),
     );
   }
 
@@ -176,7 +176,7 @@ class _UserListViewState extends State<UserListView> {
                     ),
                     foregroundImage:
                         NetworkImage(state.user?.profileImage ?? ""),
-                    child: state.user?.profileImage?.isEmpty == true
+                    child: state.user?.profileImage.isEmpty == true
                         ? const Icon(
                             Icons.person,
                             size: 20,
@@ -352,7 +352,7 @@ class _UserListViewState extends State<UserListView> {
                                         style: AppTheme.titleLarge,
                                       ),
                                     ),
-                                    if (appState.universities.isEmpty)
+                                    if (appState.universitiesState.isLoading)
                                       const Center(
                                         child: CircularProgressIndicator(),
                                       )
@@ -572,7 +572,9 @@ class _UserListViewState extends State<UserListView> {
     );
   }
 
-  Widget _buildUserList() {
+  Widget _buildUserList({
+    required bool isAllowed,
+  }) {
     return PagedSliverList<int, UserQuickProfile>(
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<UserQuickProfile>(
@@ -582,6 +584,7 @@ class _UserListViewState extends State<UserListView> {
         ),
         itemBuilder: (context, item, index) => UserQuickProfileWidget(
           userQuickProfile: item,
+          canNavigate: isAllowed,
         ),
         firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
         firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
@@ -604,11 +607,17 @@ class _UserListViewState extends State<UserListView> {
     );
   }
 
-  Widget _buildFilteredUserList(List<UserQuickProfile> profiles) {
+  Widget _buildFilteredUserList(
+    List<UserQuickProfile> profiles, {
+    required bool isAllowed,
+  }) {
     if (profiles.isEmpty) {
-      return const ShowNoInfoWidget(
-        title: 'No Profiles Found',
-        subtitle: 'There are no profiles matching the filter criteria.',
+      return const SliverFillRemaining(
+        child: ShowNoInfoWidget(
+          title: 'No Profiles Found',
+          subtitle:
+              'There are no profiles matching the filter criteria. Please try again later.',
+        ),
       );
     }
     return SliverList.builder(
@@ -616,6 +625,7 @@ class _UserListViewState extends State<UserListView> {
       itemBuilder: (context, index) {
         return UserQuickProfileWidget(
           userQuickProfile: profiles[index],
+          canNavigate: isAllowed,
         );
       },
     );
@@ -877,7 +887,7 @@ class _UserListViewState extends State<UserListView> {
                                           CustomTextField(
                                             controller: intakeYearController,
                                             hintText: 'Intake Year',
-                                            labelText: '2025',
+                                            labelText: 'Intake Year',
                                             validator: (value) {
                                               if (value.isEmpty) {
                                                 return 'Intake Year';

@@ -4,11 +4,13 @@ class ShowErrorWidget extends StatelessWidget {
   final String? message;
   final Exception? error;
   final double? height;
+  final VoidCallback? onRetry;
   const ShowErrorWidget({
     super.key,
     this.error,
     this.message,
     this.height,
+    this.onRetry,
   });
 
   @override
@@ -63,6 +65,17 @@ class ShowErrorWidget extends StatelessWidget {
                 style: AppTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 10),
+              if (onRetry != null)
+                ElevatedButton(
+                  onPressed: onRetry,
+                  child: Text(
+                    'Retry',
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.onPrimary,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

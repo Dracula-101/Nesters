@@ -11,9 +11,11 @@ class UserQuickProfileWidget extends StatelessWidget {
   final UserQuickProfile userQuickProfile;
   final EdgeInsets? contentPadding;
   final EdgeInsets? marginPadding;
+  final bool canNavigate;
   const UserQuickProfileWidget({
     super.key,
     required this.userQuickProfile,
+    required this.canNavigate,
     this.contentPadding,
     this.marginPadding,
   });
@@ -22,9 +24,20 @@ class UserQuickProfileWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        GoRouter.of(context).go(
-          '${AppRouterService.homeScreen}/${AppRouterService.userProfile}/${userQuickProfile.id}',
-        );
+        if (canNavigate) {
+          GoRouter.of(context).go(
+            '${AppRouterService.homeScreen}/${AppRouterService.userProfile}/${userQuickProfile.id}',
+          );
+        } else {
+          showProfileIncompleteDialog(
+            context,
+            onNavigate: () {
+              GoRouter.of(context).go(
+                '${AppRouterService.homeScreen}/${AppRouterService.userProfileAdvanceFormScreen}',
+              );
+            },
+          );
+        }
       },
       child: Container(
         padding: contentPadding ?? const EdgeInsets.all(12),
@@ -107,10 +120,21 @@ class UserQuickProfileWidget extends StatelessWidget {
                         ),
                         InkWell(
                           onTap: () {
-                            GoRouter.of(context).go(
-                              '${AppRouterService.homeScreen}/${AppRouterService.userProfile}/${userQuickProfile.id}',
-                              extra: true,
-                            );
+                            if (canNavigate) {
+                              GoRouter.of(context).go(
+                                '${AppRouterService.homeScreen}/${AppRouterService.userProfile}/${userQuickProfile.id}',
+                                extra: true,
+                              );
+                            } else {
+                              showProfileIncompleteDialog(
+                                context,
+                                onNavigate: () {
+                                  GoRouter.of(context).go(
+                                    '${AppRouterService.homeScreen}/${AppRouterService.userProfileAdvanceFormScreen}',
+                                  );
+                                },
+                              );
+                            }
                           },
                           child: Icon(
                             FontAwesomeIcons.telegram,
@@ -187,5 +211,34 @@ class UserQuickProfileWidget extends StatelessWidget {
       intakeText = '$intakePeriod $intakeYear';
     }
     return intakeText;
+  }
+
+  void showProfileIncompleteDialog(BuildContext context,
+      {required Function onNavigate}) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Profile Incomplete'),
+          content: const Text(
+              'Please complete your profile to view this user profile.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                onNavigate();
+                Navigator.of(context).pop();
+              },
+              child: const Text('Complete Profile'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

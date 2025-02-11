@@ -38,17 +38,15 @@ class CustomBottomNavigationBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<MarketplaceFormCubit, MarketplaceFormState>(
       listener: (context, state) {
-        if (state.submitState?.exception != null) {
+        if (state.submitState.exception != null) {
           context.showErrorSnackBar(
-            state.submitState?.exception?.message ?? 'An error occurred',
+            state.submitState.exception?.message ?? 'An error occurred',
           );
         }
-        if (state.submitState?.isSuccess ?? false) {
-          Future.delayed(1.sec).then((value) {
-            context.showSuccessSnackBar(
-                'Item submitted successfully in marketplace');
-            Navigator.of(context).pop();
-          });
+        if (state.submitState.isSuccess) {
+          context.showSuccessSnackBar(
+              'Item submitted successfully in marketplace');
+          Navigator.of(context).pop();
         }
       },
       builder: (context, state) {
@@ -65,7 +63,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: DynamicProgressIndicator(
-              currentValue: (state.submitState?.isLoading ?? false)
+              currentValue: (state.submitState.isLoading ?? false)
                   ? 1.0
                   : state.imageUploadTask?.progress ?? 1.0,
               totalValue: 1.0,
@@ -74,7 +72,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
               backgroundColor: AppTheme.primaryShades.shade300,
               progressColor: AppTheme.primaryShades.shade600,
               child: Text(
-                state.submitState?.isLoading ?? false
+                state.submitState.isLoading ?? false
                     ? state.isPreFilled ?? false
                         ? 'Updated'
                         : 'Submitted'

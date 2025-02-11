@@ -61,6 +61,13 @@ enum UserRoomType {
         return 'Unknown';
     }
   }
+
+  String? toSafeString() {
+    if (this == UserRoomType.UNKNOWN) {
+      return null;
+    }
+    return toString();
+  }
 }
 
 enum FlatmateGenderType {
@@ -94,5 +101,12 @@ enum FlatmateGenderType {
       default:
         return 'UNKNOWN';
     }
+  }
+
+  String? toSafeString() {
+    if (this == FlatmateGenderType.UNKNOWN) {
+      return null;
+    }
+    return toString();
   }
 }

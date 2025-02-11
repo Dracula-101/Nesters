@@ -34,11 +34,12 @@ class UserInfo extends Equatable {
   final UserCookingSkill cookingSkill; //changeable
   final UserCleanlinessHabit cleanlinessHabit; //changeable
   final String bio; //changeable
-  final String hobbies; //changeable
-  final String flatmatesGenderPrefs; //changeable
+  final String? hobbies; //changeable
+  final String? flatmatesGenderPrefs; //changeable
   final UserRoomType roomType; //changeable
   final String? intakePeriod;
   final int? intakeYear;
+  final bool? hasRoommateFound;
 
   const UserInfo({
     required this.id,
@@ -67,7 +68,8 @@ class UserInfo extends Equatable {
     required this.roomType,
     required this.intakePeriod,
     required this.intakeYear,
-    required this.email, // new field
+    required this.email,
+    required this.hasRoommateFound,
   });
 
   @override
@@ -97,7 +99,8 @@ class UserInfo extends Equatable {
         roomType,
         intakePeriod,
         intakeYear,
-        email, // new field
+        email,
+        hasRoommateFound,
       ];
 
   List<FieldValue> toFieldValues() {
@@ -127,7 +130,8 @@ class UserInfo extends Equatable {
       FieldValue(key: 'room_type', value: roomType),
       FieldValue(key: 'intake_period', value: intakePeriod),
       FieldValue(key: 'intake_year', value: intakeYear),
-      FieldValue(key: 'email', value: email), // new field
+      FieldValue(key: 'email', value: email),
+      FieldValue(key: 'has_roommate_found', value: hasRoommateFound),
     ];
   }
 
@@ -158,7 +162,8 @@ class UserInfo extends Equatable {
       'room_type': roomType.toString(),
       'intake_period': intakePeriod,
       'intake_year': intakeYear,
-      'email': email, // new field
+      'email': email,
+      'has_roommate_found': hasRoommateFound,
     };
   }
 
@@ -211,7 +216,8 @@ class UserInfo extends Equatable {
             : UserRoomType.UNKNOWN,
         intakePeriod: json['intake_period'] ?? '',
         intakeYear: json['intake_year'] ?? DateTime.now().year,
-        email: json['email'] ?? '', // new field
+        email: json['email'] ?? '',
+        hasRoommateFound: json['has_roommate_found'] ?? false,
       );
     } on Exception catch (e) {
       throw Exception('Error parsing user profile: $e');
@@ -231,6 +237,7 @@ class UserInfo extends Equatable {
       workExperience: workExperience,
       intakePeriod: intakePeriod,
       intakeYear: intakeYear,
+      hasRoommateFound: hasRoommateFound,
     );
   }
 
@@ -289,6 +296,7 @@ class UserInfo extends Equatable {
     String? intakePeriod,
     int? intakeYear,
     String? email,
+    bool? hasRoommateFound,
   }) {
     return UserInfo(
       id: id ?? this.id,
@@ -318,6 +326,24 @@ class UserInfo extends Equatable {
       intakePeriod: intakePeriod ?? this.intakePeriod,
       intakeYear: intakeYear ?? this.intakeYear,
       email: email ?? this.email,
+      hasRoommateFound: hasRoommateFound ?? this.hasRoommateFound,
     );
+  }
+
+  bool isUserProfileComplete() {
+    List<String?> requiredFields = [
+      personType?.toSafeString(),
+      primaryLang?.name,
+      smokingHabit.toSafeString(),
+      drinkingHabit.toSafeString(),
+      foodHabit.toSafeString(),
+      cookingSkill.toSafeString(),
+      cleanlinessHabit.toSafeString(),
+      bio,
+      roomType.toSafeString(),
+      flatmatesGenderPrefs,
+    ];
+    return requiredFields
+        .every((element) => (element != null) && element.isNotEmpty);
   }
 }

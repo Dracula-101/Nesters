@@ -85,38 +85,56 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<List<MarketplaceModel>> getMarketplaceData() async {
-    return await _databaseRepository.getData(
-      "marketplace",
-      orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
-    ).then((event) => event.map((e) => MarketplaceModel.fromJson(e)).toList());
+    try {
+      return await _databaseRepository.getData(
+        "marketplace",
+        orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
+      ).then(
+          (event) => event.map((e) => MarketplaceModel.fromJson(e)).toList());
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting marketplace data');
+    }
   }
 
   @override
   Future<List<University?>> getAllUniversities() async {
-    return await _databaseRepository.getData(
-      "universities",
-      orderBy: [OrderByKey(key: 'title', isDescending: false)],
-    ).then((event) => event.map((e) => University.fromJson(e)).toList());
+    try {
+      return await _databaseRepository.getData(
+        "universities",
+        orderBy: [OrderByKey(key: 'title', isDescending: false)],
+      ).then((event) => event.map((e) => University.fromJson(e)).toList());
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting universities');
+    }
   }
 
   @override
   Future<List<Degree?>> getAllDegrees() async {
-    return await _databaseRepository
-        .searchDataFromFuture(
-          masterDegreeCollection,
-          FieldValue(key: 'title', value: ''),
-        )
-        .then((event) => event.map((e) => Degree.fromJson(e)).toList());
+    try {
+      return await _databaseRepository.getData(
+        "masters",
+        orderBy: [OrderByKey(key: 'title', isDescending: false)],
+      ).then((event) => event.map((e) => Degree.fromJson(e)).toList());
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting degrees');
+    }
   }
 
   @override
   Future<List<CityInfo>> searchCities({required String searchQuery}) async {
-    String baseUrl =
-        "https://api.thecompaniesapi.com/v2/locations/cities?search=$searchQuery";
-    http.Response response = await http.get(Uri.parse(baseUrl));
-    CityInfoResponse cityInfoResponse =
-        CityInfoResponse.fromJson(jsonDecode(response.body));
-    return CityInfo.fromResponse(cityInfoResponse);
+    try {
+      String baseUrl =
+          "https://api.thecompaniesapi.com/v2/locations/cities?search=$searchQuery";
+      http.Response response = await http.get(Uri.parse(baseUrl));
+      if (response.statusCode != 200) {
+        throw GetUserInfoError(message: 'Error in getting cities');
+      }
+      CityInfoResponse cityInfoResponse =
+          CityInfoResponse.fromJson(jsonDecode(response.body));
+      return CityInfo.fromResponse(cityInfoResponse);
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting cities');
+    }
   }
 
   @override
@@ -226,6 +244,36 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<void> updateRoommateFoundStatus(
+      {required String id, required bool status}) {
+    try {
+      return _databaseRepository.updateData(
+        userDetailCollection,
+        UpdateData(
+          columnId: "id",
+          columnValue: id,
+          fields: [
+            UpdateFieldValue(
+              fieldName: "has_roommate_found",
+              newValue: status,
+            ),
+          ],
+        ),
+      );
+    } on SocketException {
+      throw NoNetworkError();
+    } on DatabaseError {
+      throw UserBasicInfoError(
+        message: 'Error updating roommate found status',
+      );
+    } catch (e) {
+      throw UserBasicInfoError(
+        message: 'Error updating roommate found status',
+      );
+    }
+  }
+
+  @override
   Stream<List<LocationCity>> getCites(String searchQuery) {
     try {
       return _databaseRepository
@@ -304,6 +352,10 @@ class UserRepositoryImpl implements UserRepository {
             key: 'user_deleted',
             value: true,
           ),
+          FieldValue(
+            key: 'has_roommate_found',
+            value: true,
+          ),
         ],
       ).then(
           (event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
@@ -373,6 +425,10 @@ class UserRepositoryImpl implements UserRepository {
           ),
           FieldValue(
             key: 'user_deleted',
+            value: true,
+          ),
+          FieldValue(
+            key: 'has_roommate_found',
             value: true,
           ),
         ],
@@ -510,6 +566,10 @@ class UserRepositoryImpl implements UserRepository {
           ),
           FieldValue(
             key: 'user_deleted',
+            value: true,
+          ),
+          FieldValue(
+            key: 'has_roommate_found',
             value: true,
           ),
         ],

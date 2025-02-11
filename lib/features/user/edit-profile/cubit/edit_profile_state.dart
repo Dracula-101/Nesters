@@ -5,131 +5,24 @@ import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/utils/bloc_state.dart';
 
-class EditProfileSubmitState extends BlocState {
-  EditProfileSubmitState({
-    bool? isLoading,
-    AppException? exception,
-    bool? isSuccess,
-  }) : super(
-          isLoading: isLoading ?? false,
-          exception: exception,
-          isSuccess: isSuccess ?? false,
-        );
-
-  @override
-  EditProfileSubmitState copyWith(
-      {bool? isLoading, AppException? error, bool? isSuccess}) {
-    return EditProfileSubmitState(
-      isLoading: isLoading ?? this.isLoading,
-      exception: error ?? exception,
-      isSuccess: isSuccess ?? this.isSuccess,
-    );
-  }
-
-  @override
-  EditProfileSubmitState failure(AppException error) {
-    return EditProfileSubmitState(
-      isLoading: false,
-      exception: error,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  EditProfileSubmitState loading() {
-    return EditProfileSubmitState(
-      isLoading: true,
-      exception: null,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  EditProfileSubmitState resetLoading() {
-    return copyWith(isLoading: false);
-  }
-
-  @override
-  EditProfileSubmitState success() {
-    return EditProfileSubmitState(
-      isLoading: false,
-      exception: null,
-      isSuccess: true,
-    );
-  }
-}
-
-class EditProfileLoadingState extends BlocState {
-  EditProfileLoadingState({
-    bool? isLoading,
-    AppException? exception,
-    bool? isSuccess,
-  }) : super(
-          isLoading: isLoading ?? false,
-          exception: exception,
-          isSuccess: isSuccess ?? false,
-        );
-
-  @override
-  EditProfileLoadingState copyWith(
-      {bool? isLoading, AppException? error, bool? isSuccess}) {
-    return EditProfileLoadingState(
-      isLoading: isLoading ?? this.isLoading,
-      exception: error ?? exception,
-      isSuccess: isSuccess ?? this.isSuccess,
-    );
-  }
-
-  @override
-  EditProfileLoadingState failure(AppException error) {
-    return EditProfileLoadingState(
-      isLoading: false,
-      exception: error,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  EditProfileLoadingState loading() {
-    return EditProfileLoadingState(
-      isLoading: true,
-      exception: null,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  EditProfileLoadingState resetLoading() {
-    return copyWith(isLoading: false);
-  }
-
-  @override
-  EditProfileLoadingState success() {
-    return EditProfileLoadingState(
-      isLoading: false,
-      exception: null,
-      isSuccess: true,
-    );
-  }
-}
 
 class EditProfileState extends Equatable {
   final UserEditProfile? userEditProfile;
-  final EditProfileLoadingState? loadingState;
-  final EditProfileSubmitState? submitState;
+  final BlocState loadingState;
+  final BlocState submitState;
   final String? imagePath;
 
   const EditProfileState({
     this.userEditProfile,
-    this.loadingState,
-    this.submitState,
+    this.loadingState = const BlocState(),
+    this.submitState = const BlocState(isLoading: false),
     this.imagePath,
   });
 
   EditProfileState copyWith({
     String? imagePath,
-    EditProfileLoadingState? loadingState,
-    EditProfileSubmitState? submitState,
+    BlocState? loadingState,
+    BlocState? submitState,
     String? profileImage,
     String? selectedCollegeName,
     String? selectedCourseName,

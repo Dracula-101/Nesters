@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/view/app_scaffold.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
-import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/apartment/detail/view/apartment_detail_page.dart';
 import 'package:nesters/features/apartment/form/view/apartment_form_page.dart';
@@ -47,7 +44,7 @@ class AppRouterService {
   static const String userChatHome = 'main_chat';
   static const String userChatPage = "chat";
   static const String userProfile = 'user_profile';
-  static const String userProfileAdvanceFormScreen = '/advance_form';
+  static const String userProfileAdvanceFormScreen = 'advance_form';
   static const String userProfileBasicFormScreen = '/basic_form';
   static const String userRequest = 'request';
   static const String settings = 'settings';
@@ -118,6 +115,10 @@ class AppRouterService {
                     showRequestDialog: showDialog,
                   );
                 },
+              ),
+              AppRoute(
+                userProfileAdvanceFormScreen,
+                (_) => const UserProfileAdvanceForm(),
               ),
               AppRoute(
                 subletDetail,
@@ -213,7 +214,7 @@ class AppRouterService {
             (_) => const SplashPage(),
           ),
           AppRoute(
-            userProfileAdvanceFormScreen,
+            "/$userProfileAdvanceFormScreen",
             (_) => const UserProfileAdvanceForm(),
           ),
           AppRoute(

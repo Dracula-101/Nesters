@@ -1,7 +1,7 @@
 part of 'chat_bloc.dart';
 
 class ChatState {
-  final ChatLoadingState? chatState;
+  final BlocState? chatState;
   final String? chatId;
   final String? senderId;
   final String? receiverId;
@@ -20,7 +20,7 @@ class ChatState {
   });
 
   ChatState copyWith({
-    ChatLoadingState? chatState,
+    BlocState? chatState,
     String? chatId,
     String? senderId,
     String? receiverId,

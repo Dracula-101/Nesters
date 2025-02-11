@@ -38,6 +38,7 @@ class UserProfile extends Equatable {
   final UserRoomType roomType; //changeable
   final String? intakePeriod;
   final int? intakeYear;
+  final bool? hasRoommateFound;
 
   const UserProfile({
     required this.id,
@@ -66,6 +67,7 @@ class UserProfile extends Equatable {
     required this.roomType,
     required this.intakePeriod,
     required this.intakeYear,
+    required this.hasRoommateFound,
   });
 
   @override
@@ -124,6 +126,7 @@ class UserProfile extends Equatable {
       FieldValue(key: 'room_type', value: roomType),
       FieldValue(key: 'intake_period', value: intakePeriod),
       FieldValue(key: 'intake_year', value: intakeYear),
+      FieldValue(key: 'has_roommate_found', value: hasRoommateFound),
     ];
   }
 
@@ -154,6 +157,7 @@ class UserProfile extends Equatable {
       'room_type': roomType.toString(),
       'intake_period': intakePeriod,
       'intake_year': intakeYear,
+      'has_roommate_found': hasRoommateFound,
     };
   }
 
@@ -207,6 +211,7 @@ class UserProfile extends Equatable {
         intakePeriod: json['intake_period'] ?? '',
         // current year take
         intakeYear: json['intake_year'] ?? DateTime.now().year,
+        hasRoommateFound: json['has_roommate_found'] ?? true,
       );
     } on Exception catch (e) {
       throw Exception('Error parsing user profile: $e');
@@ -226,6 +231,7 @@ class UserProfile extends Equatable {
       workExperience: workExperience,
       intakePeriod: intakePeriod,
       intakeYear: intakeYear,
+      hasRoommateFound: hasRoommateFound,
     );
   }
 
@@ -236,8 +242,7 @@ class UserProfile extends Equatable {
       email: '',
       photoUrl: profileImage ?? '',
       accessToken: '',
-      isProfileCompleted: true,
-      isProfileCreated: true,
+      isProfileCreated: false,
     );
   }
 

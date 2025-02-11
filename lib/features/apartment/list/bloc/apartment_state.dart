@@ -1,63 +1,9 @@
 part of 'apartment_bloc.dart';
 
-class ApartmentLoadingState extends BlocState {
-  ApartmentLoadingState({
-    required bool isLoading,
-    required AppException? exception,
-    required bool isSuccess,
-  }) : super(
-          isLoading: isLoading,
-          exception: exception,
-          isSuccess: isSuccess,
-        );
-
-  @override
-  ApartmentLoadingState copyWith(
-      {bool? isLoading, AppException? error, bool? isSuccess}) {
-    return ApartmentLoadingState(
-      isLoading: isLoading ?? this.isLoading,
-      exception: error ?? exception,
-      isSuccess: isSuccess ?? this.isSuccess,
-    );
-  }
-
-  @override
-  ApartmentLoadingState failure(AppException error) {
-    return ApartmentLoadingState(
-      isLoading: false,
-      exception: error,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  ApartmentLoadingState loading() {
-    return ApartmentLoadingState(
-      isLoading: true,
-      exception: null,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  ApartmentLoadingState resetLoading() {
-    return copyWith(isLoading: false);
-  }
-
-  @override
-  ApartmentLoadingState success() {
-    return ApartmentLoadingState(
-      isLoading: false,
-      exception: null,
-      isSuccess: true,
-    );
-  }
-}
-
 class ApartmentState {
   final List<ApartmentModel>? apartmentList;
   final List<ApartmentModel>? filteredApartmentList;
-  final ApartmentLoadingState? loadingState;
+  final BlocState loadingState;
   // Single category of apartment filtering
   final SingleApartmentFilter? singleApartmentFilter;
   final ApartmentFilter? apartmentFilter;
@@ -66,14 +12,14 @@ class ApartmentState {
     this.apartmentList,
     this.filteredApartmentList,
     this.singleApartmentFilter,
-    this.loadingState,
+    this.loadingState = const BlocState(),
     this.apartmentFilter,
   });
 
   ApartmentState copyWith({
     List<ApartmentModel>? apartmentList,
     List<ApartmentModel>? filteredApartmentList,
-    ApartmentLoadingState? loadingState,
+    BlocState? loadingState,
     SingleApartmentFilter? singleApartmentFilter,
     ApartmentFilter? apartmentFilter,
   }) {

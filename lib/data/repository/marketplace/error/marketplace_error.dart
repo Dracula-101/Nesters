@@ -7,10 +7,12 @@ abstract class MarketplaceError extends AppException {
 
   @override
   String message;
+  String? hint;
 
   MarketplaceError({
     required this.code,
     required this.message,
+    this.hint,
   });
 }
 
@@ -37,179 +39,165 @@ enum MarketplaceErrorCode {
 }
 
 class CreateMarketplaceError extends MarketplaceError {
-  String extra;
-
-  CreateMarketplaceError({required this.extra})
+  CreateMarketplaceError({required String hint})
       : super(
           code: MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
           message: 'Failed to create marketplace',
+          hint: hint,
         );
 }
 
 class UploadImagesError extends MarketplaceError {
-  String extra;
-
-  UploadImagesError({required this.extra})
+  UploadImagesError({required String hint})
       : super(
           code: MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
           message: 'Failed to upload images',
+          hint: hint,
         );
 }
 
 class UpdateMarketplaceError extends MarketplaceError {
-  String extra;
-
-  UpdateMarketplaceError({required this.extra})
+  UpdateMarketplaceError({required String hint})
       : super(
           code: MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR,
           message: 'Failed to update marketplace',
+          hint: hint,
         );
 }
 
 class GetMarketplacesError extends MarketplaceError {
-  String extra;
-
-  GetMarketplacesError({required this.extra})
+  GetMarketplacesError({required String hint})
       : super(
           code: MarketplaceErrorCode.GET_MARKETPLACES_ERR,
           message: 'Failed to get marketplaces',
+          hint: hint,
         );
 }
 
 class GetMarketplaceCategoriesError extends MarketplaceError {
-  String extra;
-
-  GetMarketplaceCategoriesError({required this.extra})
+  GetMarketplaceCategoriesError({required String hint})
       : super(
           code: MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR,
           message: 'Failed to get marketplace categories',
+          hint: hint,
         );
 }
 
 class GetSingleFilteredMarketplacesError extends MarketplaceError {
-  String extra;
-
-  GetSingleFilteredMarketplacesError({required this.extra})
+  GetSingleFilteredMarketplacesError({required String hint})
       : super(
           code: MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR,
           message: 'Failed to get single filtered marketplaces',
+          hint: hint,
         );
 }
 
 class GetMultipleFilteredMarketplacesError extends MarketplaceError {
-  String extra;
-
-  GetMultipleFilteredMarketplacesError({required this.extra})
+  GetMultipleFilteredMarketplacesError({required String hint})
       : super(
           code: MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
           message: 'Failed to get multiple filtered marketplaces',
+          hint: hint,
         );
 }
 
 class GetUserMarketplacesError extends MarketplaceError {
-  String extra;
-
-  GetUserMarketplacesError({required this.extra})
+  GetUserMarketplacesError({required String hint})
       : super(
           code: MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR,
           message: 'Failed to get user marketplaces',
+          hint: hint,
         );
 }
 
 class UpdateLikeStatusError extends MarketplaceError {
-  String extra;
-
-  UpdateLikeStatusError({required this.extra})
+  UpdateLikeStatusError({required String hint})
       : super(
           code: MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR,
           message: 'Failed to update like status',
+          hint: hint,
         );
 }
 
 class GetUserLikedMarketplacesError extends MarketplaceError {
-  String extra;
-
-  GetUserLikedMarketplacesError({required this.extra})
+  GetUserLikedMarketplacesError({required String hint})
       : super(
           code: MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR,
           message: 'Failed to get user liked marketplaces',
+          hint: hint,
         );
 }
 
 class ChangeAvailabilityStatusError extends MarketplaceError {
-  String extra;
-
-  ChangeAvailabilityStatusError({required this.extra})
+  ChangeAvailabilityStatusError({required String hint})
       : super(
           code: MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR,
           message: 'Failed to change availability status',
+          hint: hint,
         );
 }
 
 class DeleteUserMarketplaceError extends MarketplaceError {
-  String extra;
-
-  DeleteUserMarketplaceError({required this.extra})
+  DeleteUserMarketplaceError({required String hint})
       : super(
           code: MarketplaceErrorCode.DELETE_MARKETPLACE_ERR,
           message: 'Failed to delete user marketplace',
+          hint: hint,
         );
 }
 
 class MarketplaceDBError extends MarketplaceError {
-  String extra;
-
-  MarketplaceDBError({required this.extra})
+  MarketplaceDBError({required String hint})
       : super(
           code: MarketplaceErrorCode.DB_ERR,
           message: 'Error occurred while processing the request',
+          hint: hint,
         );
 }
 
 class UnknownMarketplaceError extends MarketplaceError {
-  String extra;
-
-  UnknownMarketplaceError({required this.extra})
+  UnknownMarketplaceError({required String hint})
       : super(
           code: MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
           message: 'Unknown marketplace error',
+          hint: hint,
         );
 }
 
 class MarketplaceErrorFactory {
   static MarketplaceError fromCode(
     MarketplaceErrorCode code, {
-    String extra = '',
+    String hint = '',
   }) {
     switch (code) {
       case MarketplaceErrorCode.DB_ERR:
-        return MarketplaceDBError(extra: extra);
+        return MarketplaceDBError(hint: hint);
       case MarketplaceErrorCode.CREATE_MARKETPLACE_ERR:
-        return CreateMarketplaceError(extra: extra);
+        return CreateMarketplaceError(hint: hint);
       case MarketplaceErrorCode.UPLOAD_IMAGES_ERR:
-        return UploadImagesError(extra: extra);
+        return UploadImagesError(hint: hint);
       case MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR:
-        return UpdateMarketplaceError(extra: extra);
+        return UpdateMarketplaceError(hint: hint);
       case MarketplaceErrorCode.GET_MARKETPLACES_ERR:
-        return GetMarketplacesError(extra: extra);
+        return GetMarketplacesError(hint: hint);
       case MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR:
-        return GetMarketplaceCategoriesError(extra: extra);
+        return GetMarketplaceCategoriesError(hint: hint);
       case MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR:
-        return GetSingleFilteredMarketplacesError(extra: extra);
+        return GetSingleFilteredMarketplacesError(hint: hint);
       case MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR:
-        return GetMultipleFilteredMarketplacesError(extra: extra);
+        return GetMultipleFilteredMarketplacesError(hint: hint);
       case MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR:
-        return GetUserMarketplacesError(extra: extra);
+        return GetUserMarketplacesError(hint: hint);
       case MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR:
-        return UpdateLikeStatusError(extra: extra);
+        return UpdateLikeStatusError(hint: hint);
       case MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR:
-        return GetUserLikedMarketplacesError(extra: extra);
+        return GetUserLikedMarketplacesError(hint: hint);
       case MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR:
-        return ChangeAvailabilityStatusError(extra: extra);
+        return ChangeAvailabilityStatusError(hint: hint);
       case MarketplaceErrorCode.DELETE_MARKETPLACE_ERR:
-        return DeleteUserMarketplaceError(extra: extra);
+        return DeleteUserMarketplaceError(hint: hint);
       default:
-        return UnknownMarketplaceError(extra: extra);
+        return UnknownMarketplaceError(hint: hint);
     }
   }
 }

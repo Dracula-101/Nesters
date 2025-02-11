@@ -272,9 +272,7 @@ class _ProfileViewState extends State<ProfileView> {
                 ? const ShimmerProfile()
                 : state.userProfile != null
                     ? _buildProfile(state.userProfile!)
-                    : const Center(
-                        child: Text('No user profile found!'),
-                      );
+                    : const ShimmerProfile();
       },
     );
   }

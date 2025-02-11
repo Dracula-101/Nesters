@@ -124,7 +124,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   void _addUserInfo() {
     _authRepository.userInfo.asBroadcastStream().doOnData((event) {
       log("User Info Got: $event");
-      add(LoadProfileEvent(event!));
+      if (event != null && !isClosed) {
+        add(LoadProfileEvent(event));
+      }
     }).listen(null);
   }
 }

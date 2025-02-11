@@ -107,7 +107,8 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
     try {
       final response = await _supabaseClient
           .from('apartments')
-          .select("* apartment_likes!apartment_likes_apartment_id_fkey!left(*)")
+          .select(
+              "*, apartment_likes!apartment_likes_apartment_id_fkey!left(*)")
           .neq("user_id", userId)
           .eq("is_available", true)
           .range(paginationKey, paginationKey + range)

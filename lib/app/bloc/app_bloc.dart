@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:get_it/get_it.dart';
@@ -18,13 +19,14 @@ import 'package:nesters/data/repository/network/network_checker_repository.dart'
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
-import 'package:rxdart/rxdart.dart';
 
 part 'app_state.dart';
 part 'app_event.dart';
@@ -44,6 +46,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             await _loadMarketplaceCategories(event, emit),
       );
     });
+    add(const AppEvent.loadDegrees());
+    add(const AppEvent.loadUniversities());
+    add(const AppEvent.loadMarketplaceCategories());
     add(const AppEvent.load());
     _addNetworkListener();
   }
@@ -267,76 +272,80 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   }
 
   Future<void> _loadUniversities(AppEvent event, Emitter<AppState> emit) async {
-    emit(state.copyWith(isLoadingUniversities: true));
+    emit(state.copyWith(universitiesState: state.universitiesState.loading()));
     final cachedUniversities = _localStorageRepository.getListClass(
         LocalStorageKeys.universityList, (p0) => University.fromJson(p0));
     if (cachedUniversities?.isNotEmpty ?? false) {
       emit(state.copyWith(
-          universities: cachedUniversities, isLoadingUniversities: false));
+          universities: cachedUniversities,
+          universitiesState: state.universitiesState.success()));
     }
     try {
       final universities = await _userRepository.getAllUniversities();
+      log('Got universities: ${universities.length}');
       if (universities.isNotEmpty) {
         _localStorageRepository.saveListClass(LocalStorageKeys.universityList,
             universities, (p0) => p0?.toJson() ?? {});
-        emit(state.copyWith(
-            universities: universities, isLoadingUniversities: false));
-      } else {
-        emit(state.copyWith(isLoadingUniversities: false));
       }
-    } catch (e) {
-      emit(state.copyWith(isLoadingUniversities: false));
+      emit(state.copyWith(
+          universities: universities,
+          universitiesState: state.universitiesState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(
+          universitiesState: state.universitiesState.failure(e)));
     }
   }
 
   Future<void> _loadDegrees(AppEvent event, Emitter<AppState> emit) async {
-    emit(state.copyWith(isLoadingDegrees: true));
+    emit(state.copyWith(degreesState: state.degreesState.loading()));
     final cachedDegrees = _localStorageRepository.getListClass(
         LocalStorageKeys.degreeList, (p0) => Degree.fromJson(p0));
     if (cachedDegrees?.isNotEmpty ?? false) {
-      emit(state.copyWith(degrees: cachedDegrees, isLoadingDegrees: false));
+      emit(state.copyWith(
+          degrees: cachedDegrees, degreesState: state.degreesState.success()));
     }
     try {
       final degrees = await _userRepository.getAllDegrees();
+      log('Got degrees: ${degrees.length}');
       if (degrees.isNotEmpty) {
         _localStorageRepository.saveListClass(
             LocalStorageKeys.degreeList, degrees, (p0) => p0?.toJson() ?? {});
-        emit(state.copyWith(degrees: degrees, isLoadingDegrees: false));
-      } else {
-        emit(state.copyWith(isLoadingDegrees: false));
       }
-    } catch (e) {
-      emit(state.copyWith(isLoadingDegrees: false));
+      emit(state.copyWith(
+          degrees: degrees, degreesState: state.degreesState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(degreesState: state.degreesState.failure(e)));
     }
   }
 
   Future<void> _loadMarketplaceCategories(
       AppEvent event, Emitter<AppState> emit) async {
-    emit(state.copyWith(isLoadingMarketplaceCategory: true));
+    emit(state.copyWith(
+        marketplaceCategoryState: state.marketplaceCategoryState.loading()));
     final cachedMarketplaceCategories = _localStorageRepository.getListClass(
         LocalStorageKeys.marketplaceCategoryList,
         (p0) => MarketplaceCategoryModel.fromJson(p0));
     if (cachedMarketplaceCategories?.isNotEmpty ?? false) {
       emit(state.copyWith(
           marketplaceCategory: cachedMarketplaceCategories,
-          isLoadingMarketplaceCategory: false));
+          marketplaceCategoryState: state.marketplaceCategoryState.success()));
     }
     try {
       final marketplaceCategories =
           await _marketplaceRepository.getMarketplaceCategories();
+      log('Got marketplace categories: ${marketplaceCategories.length}');
       if (marketplaceCategories.isNotEmpty) {
         _localStorageRepository.saveListClass(
             LocalStorageKeys.marketplaceCategoryList,
             marketplaceCategories,
             (p0) => p0.toJson());
-        emit(state.copyWith(
-            marketplaceCategory: marketplaceCategories,
-            isLoadingMarketplaceCategory: false));
-      } else {
-        emit(state.copyWith(isLoadingMarketplaceCategory: false));
       }
-    } catch (e) {
-      emit(state.copyWith(isLoadingMarketplaceCategory: false));
+      emit(state.copyWith(
+          marketplaceCategory: marketplaceCategories,
+          marketplaceCategoryState: state.marketplaceCategoryState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(
+          marketplaceCategoryState: state.marketplaceCategoryState.failure(e)));
     }
   }
 }

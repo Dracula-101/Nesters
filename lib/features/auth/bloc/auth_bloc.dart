@@ -48,6 +48,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(const AuthState.googleSignInLoading());
       await _authRepository.signInWithGoogle();
     } on AuthException catch (error) {
+      print(error);
       _loggerService.error(error);
       emit(AuthState.error(error));
     }

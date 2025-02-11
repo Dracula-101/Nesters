@@ -18,11 +18,7 @@ part 'request_event.dart';
 part 'request_state.dart';
 
 class RequestBloc extends Bloc<RequestEvent, RequestState> {
-  RequestBloc()
-      : super(RequestState(
-          requestUserState: RequestUserState(),
-          requestSendState: RequestSendState(),
-        )) {
+  RequestBloc(): super(RequestState()) {
     on<RequestEvent>(_onRequestEvent);
     authRepository.user.listen((user) {
       if (user != null) {
@@ -70,7 +66,7 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
         return Future.value();
       },
       clearSentRequestStatus: () {
-        emit(state.copyWith(requestSendState: RequestSendState()));
+        emit(state.copyWith(requestSendState: BlocState()));
         return Future.value();
       },
     );

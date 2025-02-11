@@ -7,19 +7,16 @@ import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
-import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
-import 'package:nesters/data/repository/user/recipient_user/recipient_user_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
-import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
-import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/controllers/chat_controller.dart';
+import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -37,9 +34,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
   // Repositories
   final _loggerService = GetIt.I<AppLogger>();
   final _mediaRepository = GetIt.I<MediaRepository>();
-  final _localStorageRepository = GetIt.I<LocalStorageRepository>();
   final _obxStorageRepository = GetIt.I<ObxStorageRepository>();
-  final _recipientQuickUserRepository = GetIt.I<RecipientUserRepository>();
   final _chatRepository = GetIt.I<RemoteChatRepository>();
   final _userStatusRepository = GetIt.I<UserStatusRepository>();
 
