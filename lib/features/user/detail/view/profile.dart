@@ -1,17 +1,14 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
-import 'package:delightful_toast/toast/components/toast_card.dart';
-import 'package:delightful_toast/delight_toast.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
-import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
@@ -52,7 +49,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
         context.read<CentralChatBloc>().doesChatExists(chatId);
     if (doesChatExists && widget.showRequestDialog) {
       GoRouter.of(context).go(
-        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$chatId',
         extra: otherUserProfile.toUser(),
       );
     } else {
@@ -72,23 +69,6 @@ class _UserProfilePageState extends State<UserProfilePage> {
     }
   }
 
-  void showToast(String title, Color color, IconData icon) {
-    DelightToastBar(
-      autoDismiss: true,
-      snackbarDuration: const Duration(seconds: 2),
-      builder: (context) {
-        return ToastCard(
-          title: Text(title, style: AppTheme.bodyMedium),
-          leading: Icon(
-            icon,
-            color: color,
-          ),
-          shadowColor: AppTheme.blackShades.shade100,
-        );
-      },
-    ).show(context);
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -101,7 +81,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 FontAwesomeIcons.telegram,
               ),
               onPressed: () {
-                if (state.isLoading) return;
+                if (state.profileStatus?.isLoading ?? false) return;
                 _handleOuterRequest(widget.id, state.userProfile!);
               },
             );
@@ -110,17 +90,14 @@ class _UserProfilePageState extends State<UserProfilePage> {
         resizeToAvoidBottomInset: true,
         body: BlocListener<RequestBloc, RequestState>(
           listener: (context, state) {
-            if (state.requestSentError) {
-              showToast(
-                'Failed to send request!',
-                AppTheme.errorColor,
-                FontAwesomeIcons.circleXmark,
+            if (state.requestSendState.exception != null) {
+              context.showErrorSnackBar(
+                state.requestSendState.exception!.message,
+                subtitle: "REQ_SEND_FAIL_ERR",
               );
-            } else if (state.requestSentSuccess) {
-              showToast(
-                'Request sent successfully!',
-                AppTheme.success,
-                FontAwesomeIcons.circleCheck,
+            } else if (state.requestSendState.isSuccess) {
+              context.showSuccessSnackBar(
+                'Request Sent Successfully',
               );
             }
           },
@@ -289,13 +266,15 @@ class _ProfileViewState extends State<ProfileView> {
         }
       },
       builder: (context, state) {
-        return state.isLoading
-            ? const ShimmerProfile()
-            : state.userProfile != null
-                ? _buildProfile(state.userProfile!)
-                : const Center(
-                    child: Text('No user profile found!'),
-                  );
+        return state.profileStatus?.exception != null
+            ? _buildProfileError(state.profileStatus!.exception!)
+            : state.profileStatus?.isLoading ?? false
+                ? const ShimmerProfile()
+                : state.userProfile != null
+                    ? _buildProfile(state.userProfile!)
+                    : const Center(
+                        child: Text('No user profile found!'),
+                      );
       },
     );
   }
@@ -329,7 +308,7 @@ class _ProfileViewState extends State<ProfileView> {
           _buildSizedBox(91),
           Center(
             child: Text(
-              userProfile.fullName.capitalizeEachWord,
+              userProfile.fullName.toTitleCase,
               style: AppTheme.headlineSmall.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -356,7 +335,8 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           _buildCard(
             userProfile.selectedCourseName ?? '',
-            '@${userProfile.selectedCollegeName}',
+            _buildCollegeNameString(userProfile.selectedCollegeName,
+                userProfile.intakePeriod, userProfile.intakeYear),
             Icons.school,
           ),
           userProfile.bio != ""
@@ -446,10 +426,47 @@ class _ProfileViewState extends State<ProfileView> {
     );
   }
 
+  String _buildCollegeNameString(
+      String? collegeName, String? intakePeriod, int? intakeYear) {
+    String collegeText = "";
+    String intakeText = "";
+    if (collegeName != null && collegeName != "") {
+      collegeText = collegeName.toTitleCase;
+    }
+    if (intakePeriod != null && intakePeriod != "" && intakeYear != null) {
+      intakeText = '$intakePeriod $intakeYear';
+    }
+    if (collegeText != "" && intakeText != "") {
+      return '@ $collegeText\n# $intakeText';
+    } else if (collegeText != "") {
+      return '@ $collegeText';
+    } else if (intakeText != "") {
+      return '# $intakeText';
+    } else {
+      return '';
+    }
+  }
+
   SliverAppBar _buildSliverAppBar(String profileUrl) {
     return SliverAppBar(
       expandedHeight: 175,
       flexibleSpace: _buildProfileBanner(profileUrl),
+    );
+  }
+
+  Widget _buildProfileError(AppException error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.error_outline,
+            size: 90,
+          ),
+          const SizedBox(height: 16),
+          Text(error.message, style: AppTheme.bodyMedium),
+        ],
+      ),
     );
   }
 
@@ -514,15 +531,15 @@ class _ProfileViewState extends State<ProfileView> {
     if (smokingHabit != UserHabit.UNKNOWN &&
         drinkingHabit != UserHabit.UNKNOWN) {
       return 'I\'m ${(smokingHabit ?? UserHabit.UNKNOWN).toSmokingHabitText()} and ${(drinkingHabit ?? UserHabit.UNKNOWN).toDrinkingHabitText()}'
-          .capitalizeEachWord;
+          .toTitleCase;
     }
     if (smokingHabit != UserHabit.UNKNOWN) {
       return 'I\'m ${(smokingHabit ?? UserHabit.UNKNOWN).toSmokingHabitText()}'
-          .capitalizeEachWord;
+          .toTitleCase;
     }
     if (drinkingHabit != UserHabit.UNKNOWN) {
       return 'I\'m ${(drinkingHabit ?? UserHabit.UNKNOWN).toDrinkingHabitText()}'
-          .capitalizeEachWord;
+          .toTitleCase;
     }
     return 'I\'m Not A Smoker or A Drinker';
   }
@@ -533,7 +550,7 @@ class _ProfileViewState extends State<ProfileView> {
 
   String _getSubtitleTextCleanlinessHabit(
       UserCleanlinessHabit? cleanlinessHabit) {
-    return 'I\'m All About ${(cleanlinessHabit ?? UserCleanlinessHabit.UNKNOWN).toUserFriendlyString().capitalizeEachWord}';
+    return 'I\'m All About ${(cleanlinessHabit ?? UserCleanlinessHabit.UNKNOWN).toUserFriendlyString().toTitleCase}';
   }
 
   String _getSubtitleTextCollegeAndWorkExp(
@@ -547,11 +564,11 @@ class _ProfileViewState extends State<ProfileView> {
       workExperienceText = 'I have $workExperience years of work experience';
     }
     if (collegeText != "" && workExperienceText != "") {
-      return '${collegeText.capitalizeEachWord} and ${workExperienceText.capitalizeEachWord}';
+      return '${collegeText.toTitleCase} and ${workExperienceText.toTitleCase}';
     } else if (collegeText != "") {
-      return collegeText.capitalizeEachWord;
+      return collegeText.toTitleCase;
     } else if (workExperienceText != "") {
-      return workExperienceText.capitalizeEachWord;
+      return workExperienceText.toTitleCase;
     } else {
       return '';
     }
@@ -589,7 +606,7 @@ class _ProfileViewState extends State<ProfileView> {
       roomSubtitle =
           'Hmm, my flatmates gender preferences and room type are quite simple!';
     }
-    return roomSubtitle.capitalizeEachWord;
+    return roomSubtitle.toTitleCase;
   }
 
   Stack _buildProfileBanner(String photoUrl) {

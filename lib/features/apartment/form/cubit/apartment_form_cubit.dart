@@ -1,19 +1,21 @@
-import 'dart:developer';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
-import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
+import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/apartment/lease_period.dart';
-import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/user/location.dart';
+import 'package:nesters/features/apartment/form/cubit/apartment_error.dart';
+import 'package:nesters/features/auth/bloc/auth_error.dart';
+import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'apartment_form_state.dart';
@@ -95,16 +97,19 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
   }
 
   Future<void> createApartment() async {
-    if (state.isSubmitting ?? false) return;
+    if (state.submitState?.isLoading ?? false) return;
     try {
-      emit(state.copyWith(isSubmitting: true));
+      emit(state.copyWith(submitState: state.submitState?.loading()));
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
-        emit(state.copyWith(submitError: Exception('User ID is null')));
+        emit(state.copyWith(
+            submitState: state.submitState?.failure(UserNotAuthError())));
         return;
       }
       if (state.pickedImages.isEmpty) {
-        emit(state.copyWith(submitError: Exception('No images selected')));
+        emit(state.copyWith(
+            submitState:
+                state.submitState?.failure(UserNoPhotosUploadError())));
         return;
       }
       Stream<ApartmentImageUploadTask> uploadImageStream =
@@ -122,7 +127,9 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
         _logger.info('Uploading: ${value.progress}');
       }
       if (uploadedImagesUrl.isEmpty) {
-        emit(state.copyWith(submitError: Exception('No images uploaded')));
+        emit(state.copyWith(
+            submitState:
+                state.submitState?.failure(UserNoPhotosUploadError())));
         return;
       }
       ApartmentModel? model =
@@ -132,28 +139,26 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
         apartment: model!,
       );
       emit(state.copyWith(
-        submitError: null,
         imageUploadTask: null,
-        isSubmitting: false,
-        isSubmitComplete: true,
+        submitState: state.submitState?.success(),
       ));
-    } on Exception catch (e) {
+    } on AppException catch (e) {
       _logger.error('Error creating apartment: $e');
       emit(state.copyWith(
-          submitError: e,
-          isSubmitting: false,
-          isSubmitComplete: false,
-          imageUploadTask: null));
+        submitState: state.submitState?.failure(e),
+        imageUploadTask: null,
+      ));
     }
   }
 
   Future<void> updateApartment() async {
-    if (state.isSubmitting ?? false) return;
+    if (state.submitState?.isLoading ?? false) return;
     try {
-      emit(state.copyWith(isSubmitting: true));
+      emit(state.copyWith(submitState: state.submitState?.loading()));
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
-        emit(state.copyWith(submitError: Exception('User ID is null')));
+        emit(state.copyWith(
+            submitState: state.submitState?.failure(UserNotAuthError())));
         return;
       }
       List<String> uploadedImagesUrl = [];
@@ -186,19 +191,15 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
       );
       emit(
         state.copyWith(
-          submitError: null,
           imageUploadTask: null,
-          isSubmitting: false,
-          isSubmitComplete: true,
+          submitState: state.submitState?.success(),
         ),
       );
-    } on Exception catch (e) {
+    } on AppException catch (e) {
       _logger.error('Error updating apartment: $e');
       emit(
         state.copyWith(
-          submitError: e,
-          isSubmitting: false,
-          isSubmitComplete: false,
+          submitState: state.submitState?.failure(e),
           imageUploadTask: null,
         ),
       );

@@ -5,27 +5,28 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/constants/app_assets.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
-import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/view/widgets/chat_user_widget.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 
 class ChatHomePage extends StatelessWidget {
   const ChatHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Messages',
-            style: AppTheme.titleLarge,
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Messages',
+          style: AppTheme.titleLarge,
         ),
-        body: const ChatHomeView(),
+      ),
+      body: const SafeArea(
+        child: ChatHomeView(),
       ),
     );
   }
@@ -38,40 +39,20 @@ class ChatHomeView extends StatefulWidget {
   State<ChatHomeView> createState() => _ChatHomeViewState();
 }
 
-class _ChatHomeViewState extends State<ChatHomeView>
-    with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    context.read<CentralChatBloc>().add(
-          CentralChatEvent.updateUserStatus(
-            state == AppLifecycleState.resumed ? Status.ONLINE : Status.OFFLINE,
-          ),
-        );
-  }
-
+class _ChatHomeViewState extends State<ChatHomeView> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CentralChatBloc, CentralChatState>(
       builder: (context, state) {
-        return state.isLoading
-            ? const Center(
-                child: CircularProgressIndicator(),
-              )
-            : state.chatStates.isNotEmpty
-                ? _buildChatsView(state.chatStates)
-                : _buildNoChatsView();
+        return state.chatState?.exception != null
+            ? _buildChatErrorView(state.chatState!.exception!)
+            : state.chatState?.isLoading == true
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : state.chatStates.isNotEmpty
+                    ? _buildChatsView(state.chatStates)
+                    : _buildNoChatsView();
       },
     );
   }
@@ -126,15 +107,14 @@ class _ChatHomeViewState extends State<ChatHomeView>
                       const Spacer(),
                       BlocBuilder<RequestBloc, RequestState>(
                         builder: (context, state) {
-                          int count = state.requestReceivedUsers?.fold(0,
-                                  (previousValue, element) {
-                                if (!element.isAccepted && !element.isBanned) {
-                                  return (previousValue ?? 0) + 1;
-                                } else {
-                                  return previousValue;
-                                }
-                              }) ??
-                              0;
+                          int count = state.requestReceivedUsers.fold(0,
+                              (previousValue, element) {
+                            if (!element.isAccepted && !element.isBanned) {
+                              return (previousValue) + 1;
+                            } else {
+                              return previousValue;
+                            }
+                          });
                           if (count != 0) {
                             return Container(
                               padding: const EdgeInsets.all(8.0),
@@ -185,13 +165,20 @@ class _ChatHomeViewState extends State<ChatHomeView>
                       .read<CentralChatBloc>()
                       .getChatController(chatUser.chatId!)
                       .newMessageCount,
+                  isDeleted: chatUser.isUserDeleted ?? false,
                   onTap: () {
-                    String route =
-                        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatUser.chatId}';
-                    GoRouter.of(context).go(
-                      route,
-                      extra: chatUser.toUser(),
-                    );
+                    if (chatUser.isUserDeleted ?? false) {
+                      context.showErrorSnackBar(
+                        'User has deleted their account',
+                      );
+                    } else {
+                      String route =
+                          '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatUser.chatId}';
+                      GoRouter.of(context).go(
+                        route,
+                        extra: chatUser.toUser(),
+                      );
+                    }
                   },
                 );
               },
@@ -224,6 +211,30 @@ class _ChatHomeViewState extends State<ChatHomeView>
             'Send a request to chat with someone',
             style: AppTheme.bodyMediumLightVariant,
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatErrorView(AppException error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.error_outline_rounded,
+            size: 120,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Error",
+            style: AppTheme.titleMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            error.message,
+            style: AppTheme.bodyMedium,
           ),
         ],
       ),

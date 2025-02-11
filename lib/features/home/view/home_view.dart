@@ -1,24 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
-import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
+import 'package:nesters/constants/app_assets.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
-import 'package:nesters/features/apartment/list/bloc/apartment_bloc.dart';
+import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/features/apartment/list/view/apartment_list_page.dart';
-import 'package:nesters/features/auth/bloc/auth_bloc.dart';
-import 'package:nesters/features/home/home.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/home_page_tutorial.dart';
 import 'package:nesters/features/home/view/pages/user_list_view_page.dart';
-import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/marketplace_list_page.dart';
-import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 import 'package:nesters/features/sublet/list/view/sublet_list_page.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
-import 'package:nesters/features/user/chat/view/chat_home_view.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:tutorial_coach_mark/tutorial_coach_mark.dart';
 
@@ -85,67 +80,58 @@ class _HomeScaffoldState extends State<HomeScaffold> {
     ).then((value) => setState(() => _isNetworkDisabled = false));
   }
 
+  late final AppLifecycleListener _listener;
+  final AuthRepository authRepository = GetIt.I<AuthRepository>();
+
   @override
   void initState() {
     super.initState();
     if (mounted) {
-      String userId = context.read<AuthBloc>().state.maybeWhen(
-            authenticated: (user) => user.id,
-            orElse: () => throw Exception('User Not Authenticated'),
-          );
-      context
-          .read<CentralChatBloc>()
-          .add(CentralChatEvent.initalizeUserStatusSocket(userId));
+      context.read<CentralChatBloc>().add(
+          CentralChatEvent.initalizeUserStatusSocket(
+              authRepository.currentUser!.id));
       context
           .read<CentralChatBloc>()
           .add(const CentralChatEvent.loadProfiles());
       SystemChannels.textInput.invokeMethod('TextInput.hide');
+      _listener = AppLifecycleListener(
+        onStateChange: (state) {
+          context.read<CentralChatBloc>().add(
+                CentralChatEvent.updateUserStatus(
+                  state == AppLifecycleState.resumed
+                      ? Status.ONLINE
+                      : Status.OFFLINE,
+                ),
+              );
+        },
+      );
     }
   }
 
   @override
+  void dispose() {
+    _listener.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => HomeBloc(),
-        ),
-        BlocProvider(
-          create: (context) => UserBloc(
-            context.read<AuthBloc>().state.maybeWhen(
-                  authenticated: (user) => user,
-                  orElse: () => throw Exception('User Not Authenticated'),
-                ),
-          ),
-        ),
-        BlocProvider(
-          create: (context) => SubletBloc(),
-        ),
-        BlocProvider(
-          create: (context) => ApartmentBloc(),
-        ),
-        BlocProvider(
-          create: (context) => MarketplaceBloc(),
-        )
-      ],
-      child: BlocListener<AppBloc, AppState>(
-        listenWhen: (previous, current) =>
-            previous.isOnline != current.isOnline,
-        listener: (context, state) {
-          if (state.isOnline) {
-            if (_isNetworkDisabled) {
-              if (Navigator.canPop(context)) {
-                Navigator.pop(context);
-              }
-            }
-          } else {
-            if (!_isNetworkDisabled) {
-              showNetworkDisabledBottomSheet();
+    return BlocListener<AppBloc, AppState>(
+      listenWhen: (previous, current) => previous.isOnline != current.isOnline,
+      listener: (context, state) {
+        if (state.isOnline) {
+          if (_isNetworkDisabled) {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
             }
           }
-        },
-        child: HomeView(initialIndex: widget.initialIndex),
-      ),
+        } else {
+          if (!_isNetworkDisabled) {
+            showNetworkDisabledBottomSheet();
+          }
+        }
+      },
+      child: HomeView(initialIndex: widget.initialIndex),
     );
   }
 }
@@ -221,12 +207,28 @@ class _HomeViewState extends State<HomeView> {
                 key: _bottomNavFirstIconKey,
                 tooltip: 'Network',
                 label: 'Network',
+                selectedIcon: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: SvgPicture.asset(
+                    AppVectorImages.userGroupFilled,
+                    colorFilter: ColorFilter.mode(
+                      AppTheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Icon(
-                    FontAwesomeIcons.userGroup,
-                    color: AppTheme.primary,
-                    size: 22,
+                  child: SvgPicture.asset(
+                    AppVectorImages.userGroupOutlined,
+                    colorFilter: ColorFilter.mode(
+                      AppTheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    height: 24,
+                    width: 24,
                   ),
                 ),
               ),
@@ -234,12 +236,28 @@ class _HomeViewState extends State<HomeView> {
                 key: _bottomNavSecondIconKey,
                 tooltip: 'Sublet',
                 label: 'Sublet',
+                selectedIcon: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: SvgPicture.asset(
+                    AppVectorImages.bedFilled,
+                    colorFilter: ColorFilter.mode(
+                      AppTheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Icon(
-                    FontAwesomeIcons.bed,
-                    color: AppTheme.primary,
-                    size: 22,
+                  child: SvgPicture.asset(
+                    AppVectorImages.bedOutlined,
+                    colorFilter: ColorFilter.mode(
+                      AppTheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    height: 24,
+                    width: 24,
                   ),
                 ),
               ),
@@ -247,12 +265,28 @@ class _HomeViewState extends State<HomeView> {
                 key: _bottomNavThirdIconKey,
                 tooltip: 'Apartments',
                 label: 'Apartments',
+                selectedIcon: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: SvgPicture.asset(
+                    AppVectorImages.houseFilled,
+                    colorFilter: ColorFilter.mode(
+                      AppTheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Icon(
-                    FontAwesomeIcons.house,
-                    color: AppTheme.primary,
-                    size: 22,
+                  child: SvgPicture.asset(
+                    AppVectorImages.houseOutlined,
+                    colorFilter: ColorFilter.mode(
+                      AppTheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    height: 24,
+                    width: 24,
                   ),
                 ),
               ),
@@ -260,12 +294,28 @@ class _HomeViewState extends State<HomeView> {
                 key: _bottomNavFourthIconKey,
                 tooltip: 'Marketplace',
                 label: 'Marketplace',
+                selectedIcon: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: SvgPicture.asset(
+                    AppVectorImages.storeFilled,
+                    colorFilter: ColorFilter.mode(
+                      AppTheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    height: 24,
+                    width: 24,
+                  ),
+                ),
                 icon: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: Icon(
-                    FontAwesomeIcons.store,
-                    color: AppTheme.primary,
-                    size: 22,
+                  child: SvgPicture.asset(
+                    AppVectorImages.storeOutlined,
+                    colorFilter: ColorFilter.mode(
+                      AppTheme.primary,
+                      BlendMode.srcIn,
+                    ),
+                    height: 24,
+                    width: 24,
                   ),
                 ),
               ),
@@ -286,29 +336,21 @@ class _HomeViewState extends State<HomeView> {
         },
       ),
       body: SafeArea(
-        child: BlocBuilder<UserBloc, UserState>(
-          builder: (context, state) {
-            return BlocBuilder<HomeBloc, HomeState>(
-              builder: (context, state) {
-                return ValueListenableBuilder(
-                  valueListenable: _selectedIndex,
-                  builder: (context, value, child) {
-                    return IndexedStack(
-                      index: value,
-                      children: [
-                        UserListPage(
-                          chatIconKey: _chatIconKey,
-                          requestIconKey: _requestIconKey,
-                          settingsIconKey: _settingsIconKey,
-                        ),
-                        const SubletListPage(),
-                        const ApartmentListPage(),
-                        const MarketplacePage(),
-                      ],
-                    );
-                  },
-                );
-              },
+        child: ValueListenableBuilder(
+          valueListenable: _selectedIndex,
+          builder: (context, value, child) {
+            return IndexedStack(
+              index: value,
+              children: [
+                UserListPage(
+                  chatIconKey: _chatIconKey,
+                  requestIconKey: _requestIconKey,
+                  settingsIconKey: _settingsIconKey,
+                ),
+                const SubletListPage(),
+                const ApartmentListPage(),
+                const MarketplacePage(),
+              ],
             );
           },
         ),

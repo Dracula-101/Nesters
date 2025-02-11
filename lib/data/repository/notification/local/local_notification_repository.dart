@@ -53,7 +53,7 @@ class LocalNotificationRepository {
         // check if the current route is not the chat screen
         if (!currentRoute.contains(chatId)) {
           appRouterService.appRouter.push(
-            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/$chatId',
+            '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$chatId',
             extra: userProfile,
           );
         }

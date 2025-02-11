@@ -1,53 +1,73 @@
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
-import 'package:cross_file/src/types/interface.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/features/auth/bloc/auth_error.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 import 'edit_profile_state.dart';
 
 class EditProfileCubit extends Cubit<EditProfileState> {
-  EditProfileCubit() : super(const EditProfileState());
+  EditProfileCubit() : super(const EditProfileState()) {
+    emit(state.copyWith(
+      loadingState: EditProfileLoadingState(),
+      submitState: EditProfileSubmitState(),
+    ));
+  }
 
   final UserRepository _userRepository = GetIt.I<UserRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
   final AppLogger _logger = GetIt.I<AppLogger>();
 
-  void getUserProfile() {
-    emit(state.copyWith(isLoading: true));
+  Future<void> getUserProfile() async {
+    emit(state.copyWith(loadingState: state.loadingState?.loading()));
     if (_authRepository.currentUser == null) {
-      emit(state.copyWith(isLoading: false));
+      emit(state.copyWith(loadingState: state.loadingState?.resetLoading()));
       return;
     }
-    _userRepository
-        .getUserProfile(_authRepository.currentUser!.id)
-        .then((user) {
+    try {
+      final userProfile =
+          await _userRepository.getUserProfile(_authRepository.currentUser!.id);
+      log("User Profile: $userProfile");
       emit(
         state.copyWith(
-          isLoading: false,
-          profileImage: user.profileImage,
-          selectedCollegeName: user.selectedCollegeName,
-          selectedCourseName: user.selectedCourseName,
-          personType: user.personType,
-          workExperience: user.workExperience,
-          smokingHabit: user.smokingHabit,
-          drinkingHabit: user.drinkingHabit,
-          foodHabit: user.foodHabit,
-          cookingSkill: user.cookingSkill,
-          cleanlinessHabit: user.cleanlinessHabit,
-          bio: user.bio,
-          hobbies: user.hobbies,
-          flatmatesGenderPrefs: user.flatmatesGenderPrefs,
-          roomType: user.roomType,
+          loadingState: state.loadingState?.success(),
+          profileImage: userProfile.profileImage,
+          selectedCollegeName: userProfile.selectedCollegeName,
+          selectedCourseName: userProfile.selectedCourseName,
+          personType: userProfile.personType,
+          workExperience: userProfile.workExperience,
+          smokingHabit: userProfile.smokingHabit,
+          drinkingHabit: userProfile.drinkingHabit,
+          foodHabit: userProfile.foodHabit,
+          cookingSkill: userProfile.cookingSkill,
+          cleanlinessHabit: userProfile.cleanlinessHabit,
+          bio: userProfile.bio,
+          hobbies: userProfile.hobbies,
+          flatmatesGenderPrefs: userProfile.flatmatesGenderPrefs,
+          roomType: userProfile.roomType,
+          intakePeriod: userProfile.intakePeriod,
+          intakeYear: userProfile.intakeYear,
         ),
       );
-    });
+    } catch (error) {
+      _logger.error('Error getting user profile: $error');
+      if (error is AppException) {
+        emit(
+          state.copyWith(loadingState: state.loadingState?.failure(error)),
+        );
+      }
+    } finally {
+      emit(
+        state.copyWith(loadingState: state.loadingState?.resetLoading()),
+      );
+    }
   }
 
   void updateProfileImage(String imagePath) {
@@ -69,6 +89,8 @@ class EditProfileCubit extends Cubit<EditProfileState> {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
+    String? intakePeriod,
+    int? intakeYear,
   }) {
     emit(
       state.copyWith(
@@ -86,15 +108,18 @@ class EditProfileCubit extends Cubit<EditProfileState> {
         hobbies: hobbies,
         flatmatesGenderPrefs: flatmatesGenderPrefs,
         roomType: roomType,
+        intakePeriod: intakePeriod,
+        intakeYear: intakeYear,
       ),
     );
   }
 
   void updateProfileData() async {
     try {
-      emit(state.copyWith(isSubmitting: true));
+      emit(state.copyWith(submitState: state.submitState?.loading()));
       if (_authRepository.currentUser == null) {
-        emit(state.copyWith(isSubmitting: false));
+        emit(state.copyWith(
+            submitState: state.submitState?.failure(UserNotAuthError())));
         return;
       }
       final userId = _authRepository.currentUser!.id;
@@ -102,20 +127,22 @@ class EditProfileCubit extends Cubit<EditProfileState> {
         final imageUrl = await _userRepository.uploadProfileImage(
           state.imagePath!,
           userId,
+          previousImageUrl: _authRepository.currentUser!.photoUrl,
         );
         emit(state.copyWith(profileImage: imageUrl));
+        log("Uploaded Image: $imageUrl");
       }
       if (state.userEditProfile == null) {
-        emit(state.copyWith(isSubmitting: false));
+        emit(state.copyWith(submitState: state.submitState?.resetLoading()));
         return;
       }
       await _userRepository.updateProfile(state.userEditProfile!, userId);
-      emit(state.copyWith(isSuccessful: true));
-    } catch (e) {
+      emit(state.copyWith(submitState: state.submitState?.success()));
+      await _authRepository.updateUserInfo();
+      log("Profile Updated Succesfully");
+    } on AppException catch (e) {
       _logger.error('Error updating profile: $e');
-      emit(state.copyWith(isFailure: true));
-    } finally {
-      emit(state.copyWith(isSubmitting: false));
+      emit(state.copyWith(submitState: state.submitState?.failure(e)));
     }
   }
 }

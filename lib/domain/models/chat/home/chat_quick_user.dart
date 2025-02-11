@@ -6,6 +6,7 @@ class QuickChatUser {
   final String? userId;
   final String? token;
   final String? chatId;
+  final bool? isUserDeleted;
 
   QuickChatUser({
     this.fullName,
@@ -13,6 +14,7 @@ class QuickChatUser {
     this.userId,
     this.token,
     this.chatId,
+    this.isUserDeleted,
   });
 
   QuickChatUser copyWith({
@@ -21,6 +23,7 @@ class QuickChatUser {
     String? userId,
     String? token,
     String? chatId,
+    bool? isUserDeleted,
   }) {
     return QuickChatUser(
       fullName: fullName ?? this.fullName,
@@ -28,6 +31,7 @@ class QuickChatUser {
       userId: userId ?? this.userId,
       token: token ?? this.token,
       chatId: chatId ?? this.chatId,
+      isUserDeleted: isUserDeleted ?? this.isUserDeleted,
     );
   }
 
@@ -38,6 +42,7 @@ class QuickChatUser {
       'userId': userId,
       'token': token,
       'chatId': chatId,
+      'isUserDeleted': isUserDeleted,
     };
   }
 
@@ -48,6 +53,7 @@ class QuickChatUser {
       userId: map['userId'],
       token: map['token'],
       chatId: map['chatId'] ?? '',
+      isUserDeleted: map['isDeleted'],
     );
   }
 

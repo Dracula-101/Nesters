@@ -5,17 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_cubit.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
-import 'package:nesters/utils/widgets/custom_flat_button.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class EditProfileScreen extends StatelessWidget {
@@ -29,16 +28,8 @@ class EditProfileScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text('Edit Profile', style: AppTheme.bodyLarge),
         ),
-        body: BlocProvider(
-          create: (context) => UserBloc(
-            context.read<AuthBloc>().state.maybeWhen(
-                  authenticated: (user) => user,
-                  orElse: () => throw Exception('User not authenticated'),
-                ),
-          ),
-          child: const SafeArea(
-            child: EditProfileView(),
-          ),
+        body: const SafeArea(
+          child: EditProfileView(),
         ),
       ),
     );
@@ -75,6 +66,10 @@ class _EditProfileViewState extends State<EditProfileView> {
   final TextEditingController flatmateGenderController =
       TextEditingController();
   final TextEditingController roomTypeController = TextEditingController();
+  final TextEditingController intakeYearController = TextEditingController();
+  final TextEditingController intakePeriodController =
+      TextEditingController(text: "Not Selected");
+  DateTime selectedYear = DateTime.now();
 
   @override
   void dispose() {
@@ -91,6 +86,8 @@ class _EditProfileViewState extends State<EditProfileView> {
     hobbiesController.dispose();
     flatmateGenderController.dispose();
     roomTypeController.dispose();
+    intakeYearController.dispose();
+    intakePeriodController.dispose();
     super.dispose();
   }
 
@@ -98,15 +95,19 @@ class _EditProfileViewState extends State<EditProfileView> {
   Widget build(BuildContext context) {
     return BlocConsumer<EditProfileCubit, EditProfileState>(
       listener: (context, state) {
-        if (state.userEditProfile != null) {
-          if (state.isSuccessful) {
-            context.showSuccessSnackBar('Profile updated successfully');
-            if (GoRouter.of(context).canPop()) {
-              GoRouter.of(context).pop();
-            }
-          } else if (state.isFailure) {
-            context.showErrorSnackBar('Could not update profile');
+        if (state.submitState?.exception != null) {
+          context.showErrorSnackBar(
+            state.submitState!.exception!.message,
+          );
+        }
+        if (state.submitState?.isSuccess ?? false) {
+          context.showSuccessSnackBar('Profile updated successfully');
+          if (GoRouter.of(context).canPop()) {
+            GoRouter.of(context).pop();
           }
+          return;
+        }
+        if (state.userEditProfile != null) {
           collegeNameController.text =
               state.userEditProfile!.selectedCollegeName ?? '';
           degreeNameController.text =
@@ -133,300 +134,413 @@ class _EditProfileViewState extends State<EditProfileView> {
                   ? "No Preference"
                   : state.userEditProfile!.flatmatesGenderPrefs;
           roomTypeController.text = state.userEditProfile!.roomType.toUI();
+          intakeYearController.text =
+              state.userEditProfile!.intakeYear.toString();
+          intakePeriodController.text =
+              state.userEditProfile!.intakePeriod ?? "Not Selected";
+          selectedYear = DateTime(
+              state.userEditProfile!.intakeYear ?? DateTime.now().year);
         }
       },
       builder: (context, state) {
-        return state.userEditProfile != null && !state.isLoading
-            ? BlocBuilder<UserBloc, UserState>(
-                builder: (context, userState) {
-                  return RawScrollbar(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    thumbColor: AppTheme.primary,
-                    padding: const EdgeInsets.only(right: 4),
-                    thumbVisibility: true,
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
+        return state.loadingState?.exception != null
+            ? ShowErrorWidget(
+                error: state.loadingState!.exception,
+              )
+            : (state.loadingState?.isLoading == true)
+                ? const Center(child: CircularProgressIndicator())
+                : (state.userEditProfile != null)
+                    ? BlocBuilder<AppBloc, AppState>(
+                        builder: (context, userState) {
+                          return RawScrollbar(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            thumbColor: AppTheme.primary,
+                            padding: const EdgeInsets.only(right: 4),
+                            thumbVisibility: true,
                             child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if (state.userEditProfile!.profileImage != null)
-                                  _buildProfileImage(
-                                    imageUrl:
-                                        state.userEditProfile!.profileImage!,
-                                    state: state,
-                                  ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Your University',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        if (state.userEditProfile!
+                                                .profileImage !=
+                                            null)
+                                          _buildProfileImage(
+                                            imageUrl: state
+                                                .userEditProfile!.profileImage!,
+                                            state: state,
+                                          ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Your University',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomSearchableDropDownField(
+                                          controller: collegeNameController,
+                                          asyncItems: (query) async {
+                                            return userState.universities
+                                                .where((element) =>
+                                                    element?.title
+                                                        ?.toLowerCase()
+                                                        .contains(query
+                                                            .toLowerCase()) ??
+                                                    false)
+                                                .toList();
+                                          },
+                                          hintText: 'Search for your college',
+                                          filterFn: (item, query) =>
+                                              item?.title
+                                                  ?.toLowerCase()
+                                                  .contains(
+                                                      query.toLowerCase()) ??
+                                              false,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Your Degree',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomSearchableDropDownField(
+                                          controller: degreeNameController,
+                                          asyncItems: (query) async {
+                                            return userState.degrees
+                                                .where((element) =>
+                                                    element?.name
+                                                        .toLowerCase()
+                                                        .contains(query
+                                                            .toLowerCase()) ??
+                                                    false)
+                                                .toList();
+                                          },
+                                          hintText: 'Search for your degree',
+                                          filterFn: (item, query) =>
+                                              item?.name
+                                                  ?.toLowerCase()
+                                                  .contains(
+                                                      query.toLowerCase()) ??
+                                              false,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Intake Period',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        _buildIntakePeriodField(),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Intake Year',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        _buildYearPicker(context),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Person Type',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomDropdownField(
+                                          controller: personTypeController,
+                                          items: PersonType.values
+                                              .map((e) => e.toTextFieldValue())
+                                              .toList(),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Flatmate Gender Preference',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomDropdownField(
+                                          controller: flatmateGenderController,
+                                          items: const [
+                                            "Male",
+                                            "Female",
+                                            "Mixed",
+                                            "No Preference",
+                                          ],
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Room Type',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomDropdownField(
+                                          controller: roomTypeController,
+                                          items: UserRoomType.values
+                                              .map((e) => e.toUI())
+                                              .toList(),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Work Experience (in yrs)',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomTextField(
+                                          controller: workExperienceController,
+                                          hintText:
+                                              'Enter your work experience',
+                                          keyboardType: TextInputType.number,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Smoking Habit',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomDropdownField(
+                                          controller: smokingHabitController,
+                                          items: UserHabit.values
+                                              .map((e) => e.toString())
+                                              .toList(),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Drinking Habit',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomDropdownField(
+                                          controller: drinkingHabitController,
+                                          items: UserHabit.values
+                                              .map((e) => e.toString())
+                                              .toList(),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Food Habit',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomDropdownField(
+                                          controller: foodHabitController,
+                                          items: UserFoodHabit.values
+                                              .map((e) => e.toString())
+                                              .toList(),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Cooking Skill',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomDropdownField(
+                                          controller: cookingSkillController,
+                                          items: UserCookingSkill.values
+                                              .map((e) => e.toString())
+                                              .toList(),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Cleaning Habit',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomDropdownField(
+                                          controller: cleaningHabitController,
+                                          items: UserCleanlinessHabit.values
+                                              .map((e) => e.toString())
+                                              .toList(),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Hobbies',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomTextField(
+                                          controller: hobbiesController,
+                                          hintText: 'Enter your hobbies',
+                                          maxLines: 5,
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          'Bio',
+                                          style: AppTheme.bodyLarge.copyWith(
+                                            color: AppTheme.primary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        CustomTextField(
+                                          controller: bioController,
+                                          hintText: 'Enter your bio',
+                                          maxLines: 5,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(height: 8),
-                                CustomSearchableDropDownField(
-                                  controller: collegeNameController,
-                                  asyncItems: (query) async {
-                                    return userState.universities
-                                        .where((element) =>
-                                            element?.title
-                                                ?.toLowerCase()
-                                                .contains(
-                                                    query.toLowerCase()) ??
-                                            false)
-                                        .toList();
+                                SaveButton(
+                                  isLoading:
+                                      state.submitState?.isLoading ?? false,
+                                  onPressed: () {
+                                    if (state.submitState?.isLoading == true) {
+                                      return;
+                                    }
+                                    int? workExperience = int.tryParse(
+                                      workExperienceController.text,
+                                    );
+                                    if (workExperience == null) {
+                                      context.showSnackBar(
+                                        'Please enter a valid work experience',
+                                      );
+                                      return;
+                                    } else if (workExperience < 0) {
+                                      context.showSnackBar(
+                                        'Work experience cannot be negative',
+                                      );
+                                      return;
+                                    }
+                                    context
+                                        .read<EditProfileCubit>()
+                                        .loadProfileData(
+                                          selectedCollegeName:
+                                              collegeNameController.text,
+                                          selectedCourseName:
+                                              degreeNameController.text,
+                                          personType: PersonType.fromString(
+                                            personTypeController.text,
+                                          ),
+                                          workExperience: int.parse(
+                                            workExperienceController.text,
+                                          ),
+                                          smokingHabit: UserHabit.fromString(
+                                            smokingHabitController.text,
+                                          ),
+                                          drinkingHabit: UserHabit.fromString(
+                                            drinkingHabitController.text,
+                                          ),
+                                          foodHabit: UserFoodHabit.fromString(
+                                            foodHabitController.text,
+                                          ),
+                                          cookingSkill:
+                                              UserCookingSkill.fromString(
+                                            cookingSkillController.text,
+                                          ),
+                                          cleanlinessHabit:
+                                              UserCleanlinessHabit.fromString(
+                                            cleaningHabitController.text,
+                                          ),
+                                          bio: bioController.text,
+                                          hobbies: hobbiesController.text,
+                                          flatmatesGenderPrefs:
+                                              flatmateGenderController.text,
+                                          roomType: UserRoomType.fromString(
+                                            roomTypeController.text,
+                                          ),
+                                          intakeYear: int.parse(
+                                            intakeYearController.text,
+                                          ),
+                                          intakePeriod:
+                                              intakePeriodController.text,
+                                        );
+                                    context
+                                        .read<EditProfileCubit>()
+                                        .updateProfileData();
                                   },
-                                  hintText: 'Search for your college',
-                                  filterFn: (item, query) =>
-                                      item?.title
-                                          ?.toLowerCase()
-                                          .contains(query.toLowerCase()) ??
-                                      false,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Your Degree',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomSearchableDropDownField(
-                                  controller: degreeNameController,
-                                  asyncItems: (query) async {
-                                    return userState.degrees
-                                        .where((element) =>
-                                            element?.name
-                                                .toLowerCase()
-                                                .contains(
-                                                    query.toLowerCase()) ??
-                                            false)
-                                        .toList();
-                                  },
-                                  hintText: 'Search for your degree',
-                                  filterFn: (item, query) =>
-                                      item?.name
-                                          ?.toLowerCase()
-                                          .contains(query.toLowerCase()) ??
-                                      false,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Person Type',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                CustomDropdownField(
-                                  controller: personTypeController,
-                                  items: PersonType.values
-                                      .map((e) => e.toTextFieldValue())
-                                      .toList(),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Flatmate Gender Preference',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomDropdownField(
-                                  controller: flatmateGenderController,
-                                  items: const [
-                                    "Male",
-                                    "Female",
-                                    "Mixed",
-                                    "No Preference",
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Room Type',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomDropdownField(
-                                  controller: roomTypeController,
-                                  items: UserRoomType.values
-                                      .map((e) => e.toUI())
-                                      .toList(),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Work Experience (in yrs)',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomTextField(
-                                  controller: workExperienceController,
-                                  hintText: 'Enter your work experience',
-                                  keyboardType: TextInputType.number,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Smoking Habit',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomDropdownField(
-                                  controller: smokingHabitController,
-                                  items: UserHabit.values
-                                      .map((e) => e.toString())
-                                      .toList(),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Drinking Habit',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomDropdownField(
-                                  controller: drinkingHabitController,
-                                  items: UserHabit.values
-                                      .map((e) => e.toString())
-                                      .toList(),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Food Habit',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomDropdownField(
-                                  controller: foodHabitController,
-                                  items: UserFoodHabit.values
-                                      .map((e) => e.toString())
-                                      .toList(),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Cooking Skill',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomDropdownField(
-                                  controller: cookingSkillController,
-                                  items: UserCookingSkill.values
-                                      .map((e) => e.toString())
-                                      .toList(),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Cleaning Habit',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomDropdownField(
-                                  controller: cleaningHabitController,
-                                  items: UserCleanlinessHabit.values
-                                      .map((e) => e.toString())
-                                      .toList(),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Hobbies',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomTextField(
-                                  controller: hobbiesController,
-                                  hintText: 'Enter your hobbies',
-                                  maxLines: 5,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Bio',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: AppTheme.primary,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                CustomTextField(
-                                  controller: bioController,
-                                  hintText: 'Enter your bio',
-                                  maxLines: 5,
-                                ),
+                                )
                               ],
                             ),
-                          ),
-                        ),
-                        SaveButton(
-                          isLoading: state.isSubmitting,
-                          onPressed: () {
-                            if (state.isSubmitting) return;
-                            int? workExperience =
-                                int.tryParse(workExperienceController.text);
-                            if (workExperience == null) {
-                              context.showSnackBar(
-                                'Please enter a valid work experience',
-                              );
-                              return;
-                            } else if (workExperience < 0) {
-                              context.showSnackBar(
-                                'Work experience cannot be negative',
-                              );
-                              return;
-                            }
-                            context.read<EditProfileCubit>().loadProfileData(
-                                  selectedCollegeName:
-                                      collegeNameController.text,
-                                  selectedCourseName: degreeNameController.text,
-                                  personType: PersonType.fromString(
-                                      personTypeController.text),
-                                  workExperience:
-                                      int.parse(workExperienceController.text),
-                                  smokingHabit: UserHabit.fromString(
-                                      smokingHabitController.text),
-                                  drinkingHabit: UserHabit.fromString(
-                                      drinkingHabitController.text),
-                                  foodHabit: UserFoodHabit.fromString(
-                                      foodHabitController.text),
-                                  cookingSkill: UserCookingSkill.fromString(
-                                      cookingSkillController.text),
-                                  cleanlinessHabit:
-                                      UserCleanlinessHabit.fromString(
-                                          cleaningHabitController.text),
-                                  bio: bioController.text,
-                                  hobbies: hobbiesController.text,
-                                  flatmatesGenderPrefs:
-                                      flatmateGenderController.text,
-                                  roomType: UserRoomType.fromString(
-                                      roomTypeController.text),
-                                );
-                            context
-                                .read<EditProfileCubit>()
-                                .updateProfileData();
-                          },
-                        )
-                      ],
-                    ),
-                  );
-                },
-              )
-            : const Center(child: CircularProgressIndicator());
+                          );
+                        },
+                      )
+                    : const ShowWarningWidget(
+                        message: "No Profile Data Found",
+                        subtitle:
+                            "Couldn't get your profile data, Please contact support for this issue",
+                      );
       },
+    );
+  }
+
+  Widget _buildYearPicker(BuildContext context) {
+    return CustomTextField(
+      controller: intakeYearController,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'Intake Year';
+        }
+        return null;
+      },
+      enabled: false,
+      onTap: () async {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Select Year"),
+              content: SizedBox(
+                width: 300,
+                height: 300,
+                child: YearPicker(
+                  firstDate: DateTime(DateTime.now().year - 100, 1),
+                  lastDate: DateTime(DateTime.now().year + 100, 1),
+                  selectedDate: selectedYear,
+                  onChanged: (DateTime dateTime) {
+                    Navigator.pop(context);
+                    intakeYearController.text = dateTime.year.toString();
+                    selectedYear = dateTime;
+                  },
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildIntakePeriodField() {
+    return CustomDropdownField(
+      validatorText: 'Please Select Your Intake Period',
+      controller: intakePeriodController,
+      items: const [
+        'Fall',
+        'Spring',
+        'Summer',
+        'Winter',
+        'Not Selected',
+      ],
     );
   }
 
@@ -435,80 +549,83 @@ class _EditProfileViewState extends State<EditProfileView> {
     required EditProfileState state,
   }) {
     return Center(
-        child: Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        CircleAvatar(
-          radius: 60,
-          backgroundImage: state.imagePath != null
-              ? Image.file(File(state.imagePath!)).image
-              : NetworkImage(imageUrl),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () {
-            showModalBottomSheet(
-              context: context,
-              builder: (_) {
-                return Container(
-                  width: MediaQuery.of(context).size.width,
-                  padding: const EdgeInsets.all(
-                    16.0,
-                  ),
-                  child: Wrap(
-                    alignment: WrapAlignment.start,
-                    children: <Widget>[
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: <Widget>[
-                          _buildOptionItem(
-                            Icons.photo,
-                            'Gallery',
-                            () {
-                              Navigator.pop(context);
-                              _mediaRepository
-                                  .getImageFromGallery()
-                                  .then((value) {
-                                if (value != null) {
-                                  setState(() {
-                                    context
-                                        .read<EditProfileCubit>()
-                                        .updateProfileImage(value.path);
-                                  });
-                                }
-                              });
-                            },
-                          ),
-                          _buildOptionItem(
-                            Icons.camera_alt,
-                            'Camera',
-                            () {
-                              Navigator.pop(context);
-                              _mediaRepository
-                                  .getImageFromGallery()
-                                  .then((value) {
-                                if (value != null) {
-                                  context
-                                      .read<EditProfileCubit>()
-                                      .updateProfileImage(value.path);
-                                }
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                      // Add more Row widgets for additional options as needed
-                    ],
-                  ),
-                );
-              },
-            );
-          },
-          child: const Text('Change Profile Image'),
-        ),
-      ],
-    ));
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircleAvatar(
+            radius: 60,
+            backgroundImage: state.imagePath != null
+                ? Image.file(File(state.imagePath!)).image
+                : NetworkImage(imageUrl),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (_) {
+                  return Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: const EdgeInsets.all(
+                      16.0,
+                    ),
+                    child: Wrap(
+                      alignment: WrapAlignment.start,
+                      children: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            _buildOptionItem(
+                              Icons.photo,
+                              'Gallery',
+                              () {
+                                Navigator.pop(context);
+                                _mediaRepository.getImageFromGallery().then(
+                                  (value) {
+                                    if (value != null) {
+                                      setState(
+                                        () {
+                                          context
+                                              .read<EditProfileCubit>()
+                                              .updateProfileImage(value.path);
+                                        },
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                            _buildOptionItem(
+                              Icons.camera_alt,
+                              'Camera',
+                              () {
+                                Navigator.pop(context);
+                                _mediaRepository.getImageFromCamera().then(
+                                  (value) {
+                                    if (value != null) {
+                                      context
+                                          .read<EditProfileCubit>()
+                                          .updateProfileImage(value.path);
+                                    }
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        // Add more Row widgets for additional options as needed
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+            child: const Text('Change Profile Image'),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildOptionItem(IconData icon, String label, VoidCallback onTap) {
@@ -534,8 +651,11 @@ class _EditProfileViewState extends State<EditProfileView> {
 class SaveButton extends StatefulWidget {
   final VoidCallback onPressed;
   final bool isLoading;
-  const SaveButton(
-      {super.key, required this.onPressed, required this.isLoading});
+  const SaveButton({
+    super.key,
+    required this.onPressed,
+    required this.isLoading,
+  });
 
   @override
   State<SaveButton> createState() => _SaveButtonState();
@@ -549,14 +669,18 @@ class _SaveButtonState extends State<SaveButton> {
         return Container(
           width: double.infinity,
           height: 80,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(
+            16,
+          ),
           child: CustomFlatButton(
             isLoading: widget.isLoading,
             onPressed: () {
               widget.onPressed();
             },
             text: 'Save',
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(
+              16,
+            ),
           ),
         );
       },

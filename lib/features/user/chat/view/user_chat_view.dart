@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:firebase_database/firebase_database.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
@@ -52,6 +51,7 @@ class _ChatViewState extends State<ChatView> {
   final ValueNotifier<bool> _isInputMessageEmpty = ValueNotifier<bool>(true);
   ChatUser? _currentChatUser, _otherChatUser;
   bool isInputMessageEmpty = true;
+  bool isOtherChatUserDeleted = false;
 
   @override
   void initState() {
@@ -97,7 +97,7 @@ class _ChatViewState extends State<ChatView> {
           listener: (context, state) {},
           builder: (context, state) {
             return SafeArea(
-              child: state.isLoading
+              child: state.chatState?.isLoading ?? false
                   ? const Center(
                       child: CircularProgressIndicator(),
                     )
@@ -145,7 +145,7 @@ class _ChatViewState extends State<ChatView> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(widget.receiverProf.fullName.capitalizeEachWord,
+              Text(widget.receiverProf.fullName.toTitleCase,
                   style: AppTheme.labelLarge),
               StreamBuilder<UserStatus?>(
                 stream: context.read<ChatBloc>().userStatus,
@@ -165,6 +165,14 @@ class _ChatViewState extends State<ChatView> {
             ],
           ),
         ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          color: AppTheme.greyShades.shade200,
+          height: 1,
+          width: double.infinity,
+        ),
       ),
     );
   }
@@ -427,7 +435,8 @@ class _ChatViewState extends State<ChatView> {
                   child: IconButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
-                          AppTheme.greyShades.shade100),
+                        AppTheme.greyShades.shade100,
+                      ),
                     ),
                     icon: Icon(
                       Icons.download,
@@ -440,7 +449,8 @@ class _ChatViewState extends State<ChatView> {
                               () {
                                 Navigator.of(dialogContext).pop();
                                 dialogContext.showSuccessSnackBar(
-                                    'File downloaded successfully');
+                                  'File downloaded successfully',
+                                );
                               },
                             ),
                           );

@@ -6,6 +6,8 @@ class UserFilter {
   // Filters
   String? universityName;
   String? branchName;
+  String? intakePeriod;
+  int? intakeYear;
   UserFoodHabit? foodHabit;
   UserHabit? smokingHabit;
   UserHabit? drinkingHabit;
@@ -16,6 +18,8 @@ class UserFilter {
   UserFilter({
     this.universityName,
     this.branchName,
+    this.intakePeriod,
+    this.intakeYear,
     this.drinkingHabit,
     this.foodHabit,
     this.smokingHabit,
@@ -28,6 +32,8 @@ class UserFilter {
   UserFilter copyWith({
     String? universityName,
     String? branchName,
+    String? intakePeriod,
+    int? intakeYear,
     String? gender,
     UserFoodHabit? foodHabit,
     UserHabit? smokingHabit,
@@ -39,6 +45,8 @@ class UserFilter {
     return UserFilter(
       universityName: universityName ?? this.universityName,
       branchName: branchName ?? this.branchName,
+      intakePeriod: intakePeriod ?? this.intakePeriod,
+      intakeYear: intakeYear ?? this.intakeYear,
       foodHabit: foodHabit ?? this.foodHabit,
       smokingHabit: smokingHabit ?? this.smokingHabit,
       drinkingHabit: drinkingHabit ?? this.drinkingHabit,

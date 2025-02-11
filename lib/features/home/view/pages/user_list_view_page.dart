@@ -2,11 +2,12 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
@@ -16,7 +17,6 @@ import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
@@ -26,8 +26,9 @@ import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.d
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/widgets/widgets.dart';
 
-class UserListPage extends StatefulWidget {
+class UserListPage extends StatelessWidget {
   final GlobalKey chatIconKey;
   final GlobalKey requestIconKey;
   final GlobalKey settingsIconKey;
@@ -38,19 +39,54 @@ class UserListPage extends StatefulWidget {
       required this.settingsIconKey});
 
   @override
-  State<UserListPage> createState() => _UserListPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => HomeBloc(
+        authRepository: GetIt.I<AuthRepository>(),
+      ),
+      child: Scaffold(
+        body: SafeArea(
+          child: UserListView(
+            requestIconKey: requestIconKey,
+            chatIconKey: chatIconKey,
+            settingsIconKey: settingsIconKey,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _UserListPageState extends State<UserListPage> {
+class UserListView extends StatefulWidget {
+  final GlobalKey chatIconKey;
+  final GlobalKey requestIconKey;
+  final GlobalKey settingsIconKey;
+  const UserListView(
+      {super.key,
+      required this.chatIconKey,
+      required this.requestIconKey,
+      required this.settingsIconKey});
+  @override
+  State<UserListView> createState() => _UserListViewState();
+}
+
+class _UserListViewState extends State<UserListView> {
   final UserRepository userRepository = GetIt.I<UserRepository>();
   final PagingController<int, UserQuickProfile> _pagingController =
       PagingController(firstPageKey: 0);
   final int _pageSize = 20;
-
+  final TextEditingController intakeYearController = TextEditingController();
   @override
   void initState() {
     _addPageListener();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _pagingController.dispose();
+    intakeYearController.dispose();
+    super.dispose();
   }
 
   void _addPageListener() {
@@ -85,11 +121,8 @@ class _UserListPageState extends State<UserListPage> {
             .read<HomeBloc>()
             .add(LoadProfileCompleteEvent(_pagingController.itemList ?? []));
       }
-    } on Exception catch (error) {
+    } catch (error) {
       _pagingController.error = error;
-      if (mounted) {
-        context.read<HomeBloc>().add(LoadProfileErrorEvent(error));
-      }
     }
   }
 
@@ -116,7 +149,7 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   Widget _buildAppBar() {
-    return BlocBuilder<UserBloc, UserState>(
+    return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, state) {
         return SliverPadding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -141,8 +174,9 @@ class _UserListPageState extends State<UserListPage> {
                     backgroundImage: const AssetImage(
                       'assets/images/user/user_placeholder.png',
                     ),
-                    foregroundImage: NetworkImage(state.user.photoUrl),
-                    child: state.user.photoUrl.isEmpty
+                    foregroundImage:
+                        NetworkImage(state.user?.profileImage ?? ""),
+                    child: state.user?.profileImage?.isEmpty == true
                         ? const Icon(
                             Icons.person,
                             size: 20,
@@ -160,7 +194,7 @@ class _UserListPageState extends State<UserListPage> {
                         style: AppTheme.bodyLarge,
                       ),
                       Text(
-                        state.user.fullName.capitalizeEachWord,
+                        state.user?.fullName.toTitleCase ?? '',
                         style: AppTheme.bodySmallLightVariant,
                       ),
                     ],
@@ -172,23 +206,24 @@ class _UserListPageState extends State<UserListPage> {
             actions: [
               BlocBuilder<RequestBloc, RequestState>(
                 builder: (context, state) {
-                  int count = state.requestReceivedUsers?.fold(0,
-                          (previousValue, element) {
-                        if (!element.isAccepted && !element.isBanned) {
-                          return (previousValue ?? 0) + 1;
-                        } else {
-                          return previousValue;
-                        }
-                      }) ??
-                      0;
+                  int count = state.requestReceivedUsers.fold(0,
+                      (previousValue, element) {
+                    if (!element.isAccepted && !element.isBanned) {
+                      return (previousValue) + 1;
+                    } else {
+                      return previousValue;
+                    }
+                  });
                   return Stack(
                     alignment: Alignment.topRight,
                     children: [
                       IconButton(
                         key: widget.requestIconKey,
-                        icon: const Icon(
-                          Icons.notifications,
-                          size: 30,
+                        icon: Icon(
+                          (count > 0)
+                              ? Icons.notifications_active
+                              : Icons.notifications_none_outlined,
+                          size: 26,
                         ),
                         onPressed: () {
                           GoRouter.of(context).go(
@@ -212,33 +247,31 @@ class _UserListPageState extends State<UserListPage> {
                   );
                 },
               ),
-              const SizedBox(
-                width: 10,
-              ),
               StreamBuilder(
                 stream: context
                     .read<CentralChatBloc>()
                     .showMessageNotificationStream(),
                 builder: (context, snapshot) {
-                  return GestureDetector(
-                    onTap: () {
+                  return IconButton(
+                    onPressed: () {
                       GoRouter.of(context).go(
                           '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}');
                     },
-                    child: Badge.count(
+                    icon: Badge.count(
                       key: widget.chatIconKey,
                       count: snapshot.data ?? 0,
                       isLabelVisible:
                           snapshot.data != 0 && snapshot.data != null,
-                      textStyle: AppTheme.labelSmall,
+                      textStyle: AppTheme.labelSmall.copyWith(
+                        fontSize: 10,
+                      ),
                       offset: const Offset(10, -4),
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 4.0),
-                        child: Icon(
-                          FontAwesomeIcons.solidMessage,
-                          // weight: 10,
-                          size: 25,
-                        ),
+                      child: Icon(
+                        (snapshot.data != 0 && snapshot.data != null)
+                            ? Icons.chat
+                            : Icons.chat_outlined,
+                        // weight: 10,
+                        size: 24,
                       ),
                     ),
                   );
@@ -246,7 +279,7 @@ class _UserListPageState extends State<UserListPage> {
               ),
               //add some space to its right
               const SizedBox(
-                width: 35,
+                width: 10,
               ),
             ],
             bottom: PreferredSize(
@@ -265,8 +298,8 @@ class _UserListPageState extends State<UserListPage> {
   Widget _buildTopActionsBar() {
     return BlocBuilder<HomeBloc, HomeState>(
       builder: (context, homeState) {
-        return BlocBuilder<UserBloc, UserState>(
-          builder: (context, userState) {
+        return BlocBuilder<AppBloc, AppState>(
+          builder: (context, appState) {
             return ListView(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               scrollDirection: Axis.horizontal,
@@ -275,7 +308,7 @@ class _UserListPageState extends State<UserListPage> {
                   icon: Icons.filter,
                   title: 'Filter',
                   onPressed: () {
-                    showFilterDialog(context, homeState, userState);
+                    showFilterDialog(context, homeState, appState);
                   },
                   isActive: homeState.userFilter != null,
                   closeIcon: false,
@@ -319,7 +352,7 @@ class _UserListPageState extends State<UserListPage> {
                                         style: AppTheme.titleLarge,
                                       ),
                                     ),
-                                    if (userState.universities.isEmpty)
+                                    if (appState.universities.isEmpty)
                                       const Center(
                                         child: CircularProgressIndicator(),
                                       )
@@ -328,18 +361,17 @@ class _UserListPageState extends State<UserListPage> {
                                         child: ListView.builder(
                                           controller: scrollController,
                                           itemCount:
-                                              userState.universities.length,
+                                              appState.universities.length,
                                           itemBuilder: (context, index) {
                                             return UniversityFilterTile(
                                               isSelected: false,
                                               onTap: () {
                                                 Navigator.of(context).pop(
-                                                  userState
-                                                      .universities[index]!,
+                                                  appState.universities[index]!,
                                                 );
                                               },
-                                              university: userState
-                                                  .universities[index]!,
+                                              university:
+                                                  appState.universities[index]!,
                                             );
                                           },
                                         ),
@@ -372,10 +404,10 @@ class _UserListPageState extends State<UserListPage> {
                             .read<HomeBloc>()
                             .add(SingleRemoveFilterProfileEvent());
                       } else {
-                        if (userState.degrees.isEmpty) {
+                        if (appState.degrees.isEmpty) {
                           context
-                              .read<UserBloc>()
-                              .add(const UserEvent.loadDegrees());
+                              .read<AppBloc>()
+                              .add(const AppEvent.loadDegrees());
                         }
                         // open a modal bottom sheet
                         showModalBottomSheet(
@@ -402,7 +434,7 @@ class _UserListPageState extends State<UserListPage> {
                                         style: AppTheme.titleLarge,
                                       ),
                                     ),
-                                    if (userState.degrees.isEmpty)
+                                    if (appState.degrees.isEmpty)
                                       const Center(
                                         child: CircularProgressIndicator(),
                                       )
@@ -410,16 +442,16 @@ class _UserListPageState extends State<UserListPage> {
                                       Expanded(
                                         child: ListView.builder(
                                           controller: scrollController,
-                                          itemCount: userState.degrees.length,
+                                          itemCount: appState.degrees.length,
                                           itemBuilder: (context, index) {
                                             return DegreeFilterTile(
                                               isSelected: false,
                                               onTap: () {
                                                 Navigator.of(context).pop(
-                                                  userState.degrees[index]!,
+                                                  appState.degrees[index]!,
                                                 );
                                               },
-                                              degree: userState.degrees[index]!,
+                                              degree: appState.degrees[index]!,
                                             );
                                           },
                                         ),
@@ -432,8 +464,12 @@ class _UserListPageState extends State<UserListPage> {
                         ).then((value) {
                           if (value != null && value is Degree) {
                             context.read<HomeBloc>().add(
-                                SingleAddFilterProfileEvent(
-                                    BranchFilter(value.name)));
+                                  SingleAddFilterProfileEvent(
+                                    BranchFilter(
+                                      value.name,
+                                    ),
+                                  ),
+                                );
                           }
                         });
                       }
@@ -541,44 +577,40 @@ class _UserListPageState extends State<UserListPage> {
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<UserQuickProfile>(
         animateTransitions: true,
-        transitionDuration: const Duration(milliseconds: 500),
+        transitionDuration: const Duration(
+          milliseconds: 500,
+        ),
         itemBuilder: (context, item, index) => UserQuickProfileWidget(
           userQuickProfile: item,
         ),
-        firstPageErrorIndicatorBuilder: (_) => Container(
-          height: 100,
-          child: const Center(
-            child: Text('First Page Error'),
-          ),
-        ),
-        newPageErrorIndicatorBuilder: (_) => Container(
-          height: 100,
-          child: const Center(
-            child: Text('New Page Error'),
-          ),
-        ),
         firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
-        newPageProgressIndicatorBuilder: (_) => Container(
-          height: 100,
-          child: const Center(
-            child: CircularProgressIndicator(),
-          ),
+        firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
         ),
-        noItemsFoundIndicatorBuilder: (_) => Container(
-          child: const Center(
-            child: Text('No items found'),
-          ),
+        newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
         ),
-        noMoreItemsIndicatorBuilder: (_) => Container(
-          child: const Center(
-            child: Text('No more items'),
-          ),
+        newPageProgressIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+          height: 300,
         ),
+        noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
+          title: 'No Profiles Found',
+          subtitle:
+              'There are no profiles at the moment, Please try again later.',
+        ),
+        noMoreItemsIndicatorBuilder: (_) => const SizedBox(height: 100),
       ),
     );
   }
 
   Widget _buildFilteredUserList(List<UserQuickProfile> profiles) {
+    if (profiles.isEmpty) {
+      return const ShowNoInfoWidget(
+        title: 'No Profiles Found',
+        subtitle: 'There are no profiles matching the filter criteria.',
+      );
+    }
     return SliverList.builder(
       itemCount: profiles.length,
       itemBuilder: (context, index) {
@@ -590,10 +622,11 @@ class _UserListPageState extends State<UserListPage> {
   }
 
   void showFilterDialog(
-      BuildContext context, HomeState state, UserState userState) {
+      BuildContext context, HomeState state, AppState appState) {
     UserFilterTypes userFilterTypeSelected = UserFilterTypes.University;
     String selectedUniversity = state.userFilter?.universityName ?? '';
     String selectedBranch = state.userFilter?.branchName ?? '';
+    String selectedIntakePeriod = state.userFilter?.intakePeriod ?? '';
     String selectedGender = state.userFilter?.flatmateGenderPref ?? '';
     UserFoodHabit selectedEatingHabit =
         state.userFilter?.foodHabit ?? UserFoodHabit.UNKNOWN;
@@ -603,8 +636,8 @@ class _UserListPageState extends State<UserListPage> {
         state.userFilter?.drinkingHabit ?? UserHabit.UNKNOWN;
     UserRoomType selectedRoomType =
         state.userFilter?.roomType ?? UserRoomType.UNKNOWN;
-    final TextEditingController _searchController = TextEditingController();
-    List<University?> filterUniversities = userState.universities;
+    List<University?> filterUniversities = appState.universities;
+    DateTime selectedYearDateTime = DateTime.now();
     showDialog(
       context: context,
       builder: (ctx) {
@@ -666,9 +699,11 @@ class _UserListPageState extends State<UserListPage> {
                                             isSelected:
                                                 e == userFilterTypeSelected,
                                             onTap: () {
-                                              setState(() {
-                                                userFilterTypeSelected = e;
-                                              });
+                                              setState(
+                                                () {
+                                                  userFilterTypeSelected = e;
+                                                },
+                                              );
                                             },
                                           ),
                                         ),
@@ -686,7 +721,7 @@ class _UserListPageState extends State<UserListPage> {
                                           ),
                                         ),
                                       ),
-                                      child: Container(
+                                      child: SizedBox(
                                           child: switch (
                                               userFilterTypeSelected) {
                                         UserFilterTypes.University => Column(
@@ -709,21 +744,24 @@ class _UserListPageState extends State<UserListPage> {
                                                   if (value == "") {
                                                     setState(() {
                                                       filterUniversities =
-                                                          userState
-                                                              .universities;
+                                                          appState.universities;
                                                     });
                                                   } else {
-                                                    setState(() {
-                                                      filterUniversities = userState
-                                                          .universities
-                                                          .where((element) =>
-                                                              element?.title
-                                                                  ?.toLowerCase()
-                                                                  .contains(value
-                                                                      .toLowerCase()) ??
-                                                              false)
-                                                          .toList();
-                                                    });
+                                                    setState(
+                                                      () {
+                                                        filterUniversities = appState
+                                                            .universities
+                                                            .where((element) =>
+                                                                element?.title
+                                                                    ?.toLowerCase()
+                                                                    .contains(
+                                                                      value
+                                                                          .toLowerCase(),
+                                                                    ) ??
+                                                                false)
+                                                            .toList();
+                                                      },
+                                                    );
                                                   }
                                                 },
                                               ),
@@ -764,21 +802,128 @@ class _UserListPageState extends State<UserListPage> {
                                         UserFilterTypes.Branch =>
                                           ListView.builder(
                                             shrinkWrap: true,
-                                            itemCount: userState.degrees.length,
+                                            itemCount: appState.degrees.length,
                                             itemBuilder: (context, index) {
                                               return DegreeFilterTile(
                                                 isSelected: selectedBranch ==
-                                                    userState
+                                                    appState
                                                         .degrees[index]!.name,
                                                 isDense: true,
                                                 onTap: () {
                                                   setState(() {
-                                                    selectedBranch = userState
+                                                    selectedBranch = appState
                                                         .degrees[index]!.name;
                                                   });
                                                 },
                                                 degree:
-                                                    userState.degrees[index]!,
+                                                    appState.degrees[index]!,
+                                              );
+                                            },
+                                          ),
+                                        UserFilterTypes.IntakePeriod =>
+                                          ListView(
+                                            children: [
+                                              FilterTile(
+                                                title: 'Fall',
+                                                isSelected:
+                                                    selectedIntakePeriod ==
+                                                        'Fall',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedIntakePeriod =
+                                                        'Fall';
+                                                  });
+                                                },
+                                              ),
+                                              FilterTile(
+                                                title: 'Spring',
+                                                isSelected:
+                                                    selectedIntakePeriod ==
+                                                        'Spring',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedIntakePeriod =
+                                                        'Spring';
+                                                  });
+                                                },
+                                              ),
+                                              FilterTile(
+                                                title: 'Summer',
+                                                isSelected:
+                                                    selectedIntakePeriod ==
+                                                        'Summer',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedIntakePeriod =
+                                                        'Summer';
+                                                  });
+                                                },
+                                              ),
+                                              FilterTile(
+                                                title: 'Winter',
+                                                isSelected:
+                                                    selectedIntakePeriod ==
+                                                        'Winter',
+                                                onTap: () {
+                                                  setState(() {
+                                                    selectedIntakePeriod =
+                                                        'Winter';
+                                                  });
+                                                },
+                                              ),
+                                            ],
+                                          ),
+                                        UserFilterTypes.IntakeYear =>
+                                          CustomTextField(
+                                            controller: intakeYearController,
+                                            hintText: 'Intake Year',
+                                            labelText: '2025',
+                                            validator: (value) {
+                                              if (value.isEmpty) {
+                                                return 'Intake Year';
+                                              }
+                                              return null;
+                                            },
+                                            enabled: false,
+                                            onTap: () async {
+                                              showDialog(
+                                                context: context,
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return AlertDialog(
+                                                    title: const Text(
+                                                        "Select Year"),
+                                                    content: SizedBox(
+                                                      width: 300,
+                                                      height: 300,
+                                                      child: YearPicker(
+                                                        firstDate: DateTime(
+                                                            DateTime.now()
+                                                                    .year -
+                                                                100,
+                                                            1),
+                                                        lastDate: DateTime(
+                                                            DateTime.now()
+                                                                    .year +
+                                                                100,
+                                                            1),
+                                                        selectedDate:
+                                                            selectedYearDateTime,
+                                                        onChanged: (DateTime
+                                                            dateTime) {
+                                                          Navigator.pop(
+                                                              context);
+                                                          intakeYearController
+                                                                  .text =
+                                                              dateTime.year
+                                                                  .toString();
+                                                          selectedYearDateTime =
+                                                              dateTime;
+                                                        },
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
                                               );
                                             },
                                           ),
@@ -923,10 +1068,19 @@ class _UserListPageState extends State<UserListPage> {
                                       flatmateGenderPref: selectedGender,
                                       roomType: selectedRoomType,
                                       smokingHabit: selectedSmokingHabit,
+                                      intakePeriod: selectedIntakePeriod,
+                                      intakeYear:
+                                          intakeYearController.text == ""
+                                              ? null
+                                              : int.parse(
+                                                  intakeYearController.text,
+                                                ),
                                     );
-                                    context
-                                        .read<HomeBloc>()
-                                        .add(AddFilterProfileEvent(filter));
+                                    context.read<HomeBloc>().add(
+                                          AddFilterProfileEvent(
+                                            filter,
+                                          ),
+                                        );
                                     Navigator.of(ctx).pop();
                                   },
                                   child: Text(
@@ -1003,6 +1157,13 @@ class UniversityFilterTile extends StatelessWidget {
                           child: Image.network(
                             university.logo ?? '',
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Icon(
+                                Icons.error_outline_rounded,
+                                color: AppTheme.error,
+                                size: 16,
+                              );
+                            },
                           ),
                         ),
                       )),
@@ -1111,6 +1272,8 @@ class DegreeFilterTile extends StatelessWidget {
 enum UserFilterTypes {
   University,
   Branch,
+  IntakePeriod,
+  IntakeYear,
   Gender,
   EatingHabits,
   SmokingHabits,
@@ -1135,6 +1298,10 @@ enum UserFilterTypes {
         return 'Drinking Habits';
       case UserFilterTypes.RoomType:
         return 'Room Type';
+      case UserFilterTypes.IntakePeriod:
+        return 'Intake Period';
+      case UserFilterTypes.IntakeYear:
+        return 'Intake Year';
     }
   }
 }

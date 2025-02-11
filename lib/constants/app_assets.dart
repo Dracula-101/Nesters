@@ -14,6 +14,17 @@ class AppVectorImages {
   static const String noInternet = '$_mainFolder/no_internet.svg';
 
   static const String appleLogo = '$_mainFolder/apple_logo.svg';
+
+  static const String userGroupOutlined =
+      '$_mainFolder/icons/user_group_outlined.svg';
+  static const String userGroupFilled =
+      '$_mainFolder/icons/user_group_filled.svg';
+  static const String houseOutlined = '$_mainFolder/icons/house_outlined.svg';
+  static const String houseFilled = '$_mainFolder/icons/house_filled.svg';
+  static const String bedOutlined = '$_mainFolder/icons/bed_outlined.svg';
+  static const String bedFilled = '$_mainFolder/icons/bed_filled.svg';
+  static const String storeOutlined = '$_mainFolder/icons/store_outlined.svg';
+  static const String storeFilled = '$_mainFolder/icons/store_filled.svg';
 }
 
 class AppRasterImages {
@@ -23,6 +34,8 @@ class AppRasterImages {
   static const String roommatesImage1 = '$_mainFolder/user/roommates.jpg';
   static const String roommatesImage2 = '$_mainFolder/user/roommates1.jpg';
   static const String googleIcon = '$_mainFolder/icons/google.png';
+  static const String emptyIcon = '$_mainFolder/icons/empty-folder.png';
+  static const String errorIcon = '$_mainFolder/icons/error-mark.png';
   static const String userProfileBackgroundBanner =
       '$_mainFolder/user/profile/background.png';
   static const String noInternetImage = '$_mainFolder/user/no_internet.png';

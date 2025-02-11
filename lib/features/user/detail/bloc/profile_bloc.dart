@@ -1,10 +1,10 @@
-import 'dart:developer';
-
 import 'package:bloc/bloc.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
+import 'package:nesters/utils/bloc_state.dart';
 
 part 'profile_event.dart';
 part 'profile_state.dart';
@@ -24,7 +24,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 
   Future<void> _loadUserProfile(String userId, Emitter<ProfileState> emit) {
-    emit(state.copyWith(isLoading: true));
+    emit(state.copyWith(profileStatus: state.profileStatus?.loading()));
     return _userRepository.getUserProfile(userId).then(
       (userProfile) {
         emit(
@@ -35,19 +35,9 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       },
     ).catchError(
       (error) {
-        if (error is Exception) {
+        if (error is AppException) {
           emit(
-            state.copyWith(
-              error: error,
-            ),
-          );
-        } else {
-          emit(
-            state.copyWith(
-              error: Exception(
-                'An error occurred',
-              ),
-            ),
+            state.copyWith(profileStatus: state.profileStatus?.failure(error)),
           );
         }
       },
@@ -55,7 +45,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       () {
         emit(
           state.copyWith(
-            isLoading: false,
+            profileStatus: state.profileStatus?.resetLoading(),
           ),
         );
       },

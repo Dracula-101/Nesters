@@ -145,6 +145,13 @@ class _SubletPhotoFormState extends State<SubletPhotoForm>
                     child: Image.network(
                       image,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.error_outline_rounded,
+                          color: AppTheme.error,
+                          size: 16,
+                        );
+                      },
                     ),
                   ),
                 for (final image in state.pickedImages)

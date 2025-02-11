@@ -15,7 +15,11 @@ class GetStorageRepository extends LocalStorageRepository {
 
   @override
   Future<void> clear() async {
-    await _getStorage.erase();
+    try {
+      await _getStorage.erase();
+    } catch (e) {
+      throw LocalStorageClearError();
+    }
   }
 
   @override
@@ -27,8 +31,8 @@ class GetStorageRepository extends LocalStorageRepository {
             double, value.runtimeType);
       }
       return value;
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      throw LocalStorageGetKeyError(key);
     }
   }
 
@@ -50,8 +54,8 @@ class GetStorageRepository extends LocalStorageRepository {
             String, value.runtimeType);
       }
       return value;
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      throw LocalStorageGetKeyError(key);
     }
   }
 
@@ -73,8 +77,8 @@ class GetStorageRepository extends LocalStorageRepository {
             bool, value.runtimeType);
       }
       return value;
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      throw LocalStorageGetKeyError(key);
     }
   }
 
@@ -96,8 +100,8 @@ class GetStorageRepository extends LocalStorageRepository {
             int, value.runtimeType);
       }
       return value;
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      throw LocalStorageGetKeyError(key);
     }
   }
 
@@ -119,8 +123,8 @@ class GetStorageRepository extends LocalStorageRepository {
             double, value.runtimeType);
       }
       return value;
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      throw LocalStorageGetKeyError(key);
     }
   }
 
@@ -142,8 +146,8 @@ class GetStorageRepository extends LocalStorageRepository {
             List<Object>, value.runtimeType);
       }
       return value;
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      throw LocalStorageGetKeyError(key);
     }
   }
 
@@ -156,8 +160,8 @@ class GetStorageRepository extends LocalStorageRepository {
             Map<Object?, Object?>, value.runtimeType);
       }
       return value;
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      throw LocalStorageGetKeyError(key);
     }
   }
 
@@ -179,8 +183,8 @@ class GetStorageRepository extends LocalStorageRepository {
             Map<String, dynamic>, value.runtimeType);
       }
       return fromJson(value);
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      throw LocalStorageGetKeyError(key);
     }
   }
 
@@ -202,8 +206,8 @@ class GetStorageRepository extends LocalStorageRepository {
       if (value == null) return null;
       final decodedList = jsonDecode(value) as List;
       return decodedList.map((e) => fromJson(e)).toList();
-    } catch (e) {
-      rethrow;
+    } catch (_) {
+      throw LocalStorageGetKeyError(key);
     }
   }
 

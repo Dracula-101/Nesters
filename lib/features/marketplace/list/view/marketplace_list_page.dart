@@ -3,17 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
+import 'package:nesters/features/marketplace/list/view/shimmer_marketplace_list_page.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/logger/logger.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
@@ -22,18 +24,21 @@ class MarketplacePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        heroTag: 'marketplace_fab',
-        onPressed: () {
-          GoRouter.of(context).go(
-            '${AppRouterService.homeScreen}/${AppRouterService.marketplaceForm}',
-          );
-        },
-        child: const Icon(Icons.post_add),
-      ),
-      body: const SafeArea(
-        child: MarketplaceListView(),
+    return BlocProvider(
+      create: (context) => MarketplaceBloc(),
+      child: Scaffold(
+        floatingActionButton: FloatingActionButton(
+          heroTag: 'marketplace_fab',
+          onPressed: () {
+            GoRouter.of(context).go(
+              '${AppRouterService.homeScreen}/${AppRouterService.marketplaceForm}',
+            );
+          },
+          child: const Icon(Icons.post_add),
+        ),
+        body: const SafeArea(
+          child: MarketplaceListView(),
+        ),
       ),
     );
   }
@@ -73,7 +78,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
       // ignore: use_build_context_synchronously
       context.read<MarketplaceBloc>().add(
           MarketplaceEvent.saveMarketplaces(_pagingController.itemList ?? []));
-    } catch (error) {
+    } on AppException catch (error) {
       _pagingController.error = error;
     }
   }
@@ -117,26 +122,10 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
     );
   }
 
-  Widget _buildLoadingIndicator() {
-    return const Center(
-      child: CircularProgressIndicator(),
-    );
-  }
-
-  Widget _buildErrorIndicator(Exception error) {
-    return Center(
-      child: Text('Error: $error'),
-    );
-  }
-
   Widget _buildMarketplacePlaceholder() {
-    return SliverFillRemaining(
-      child: Center(
-        child: Text(
-          "No marketplaces found",
-          style: AppTheme.titleLarge,
-        ),
-      ),
+    return const ShowNoInfoWidget(
+      title: "No marketplaces found",
+      subtitle: "There are no marketplaces available for the selected filter",
     );
   }
 
@@ -144,10 +133,6 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
     return PagedSliverList(
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<MarketplaceModel>(
-        firstPageProgressIndicatorBuilder: (context) =>
-            _buildLoadingIndicator(),
-        firstPageErrorIndicatorBuilder: (context) =>
-            _buildErrorIndicator(_pagingController.error),
         itemBuilder: (context, marketplace, index) {
           return MarketplaceModelWidget(
             onPressed: () {
@@ -159,13 +144,32 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
             onFavourite: (isFavourite) {
               final userId = _authRepository.currentUser?.id;
               return _marketplaceRepository.updateLikeStatus(
-                  userId: userId!,
-                  itemId: marketplace.id,
-                  isLiked: isFavourite);
+                userId: userId!,
+                itemId: marketplace.id,
+                isLiked: isFavourite,
+              );
             },
             marketplace: marketplace,
           );
         },
+        firstPageProgressIndicatorBuilder: (context) =>
+            const ShimmerMarketplacetPage(),
+        firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+        ),
+        newPageProgressIndicatorBuilder: (_) => ShowErrorWidget(
+          error: _pagingController.error,
+          height: 300,
+        ),
+        noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
+          title: 'No marketplaces found',
+          subtitle:
+              'There are no marketplaces available at the moment, Please try again later.',
+        ),
+        noMoreItemsIndicatorBuilder: (_) => const SizedBox(height: 100),
       ),
     );
   }
@@ -203,8 +207,8 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
           height: 50,
           child: BlocBuilder<MarketplaceBloc, MarketplaceState>(
             builder: (context, marketplaceState) {
-              return BlocBuilder<UserBloc, UserState>(
-                builder: (context, userState) {
+              return BlocBuilder<AppBloc, AppState>(
+                builder: (context, appState) {
                   return ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     scrollDirection: Axis.horizontal,
@@ -239,9 +243,9 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                   const MarketplaceEvent.removeSingleFilter());
                             } else {
                               // open a modal bottom sheet
-                              if (userState.marketplaceCategory.isEmpty) {
-                                context.read<UserBloc>().add(const UserEvent
-                                    .loadMarketplaceCategories());
+                              if (appState.marketplaceCategory.isEmpty) {
+                                context.read<AppBloc>().add(
+                                    const AppEvent.loadMarketplaceCategories());
                               }
                               showModalBottomSheet(
                                 context: context,
@@ -270,14 +274,14 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                                   "Categories",
                                                   style: AppTheme.titleLarge,
                                                 )),
-                                            if (userState
+                                            if (appState
                                                 .marketplaceCategory.isEmpty)
                                               const Center(
                                                 child:
                                                     CircularProgressIndicator(),
                                               )
                                             else
-                                              ...userState.marketplaceCategory
+                                              ...appState.marketplaceCategory
                                                   .map((category) => ListTile(
                                                         title: Text(
                                                             category.name ??
@@ -325,9 +329,9 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
         return StatefulBuilder(
           builder: (ctx, setState) {
             return BlocProvider.value(
-              value: context.read<UserBloc>(),
-              child: BlocBuilder<UserBloc, UserState>(
-                builder: (ctx, userState) {
+              value: context.read<AppBloc>(),
+              child: BlocBuilder<AppBloc, AppState>(
+                builder: (ctx, appState) {
                   return BlocProvider.value(
                     value: context.read<MarketplaceBloc>(),
                     child: BlocBuilder<MarketplaceBloc, MarketplaceState>(
@@ -589,21 +593,20 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                                   ),
                                                 MarketplaceFilterTypes
                                                       .category =>
-                                                  (userState.marketplaceCategory
+                                                  (appState.marketplaceCategory
                                                           .isEmpty
                                                       ? const Center(
                                                           child:
                                                               CircularProgressIndicator(),
                                                         )
                                                       : ListView.builder(
-                                                          itemCount: userState
+                                                          itemCount: appState
                                                               .marketplaceCategory
                                                               .length,
                                                           itemBuilder:
                                                               (ctx, index) {
                                                             final category =
-                                                                userState
-                                                                        .marketplaceCategory[
+                                                                appState.marketplaceCategory[
                                                                     index];
                                                             return MarketplaceCategoryFilterTab(
                                                               category:

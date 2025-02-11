@@ -18,11 +18,24 @@ class AppState {
   final NetworkData networkData;
   final Exception? error;
 
+  final List<University?> universities;
+  final bool isLoadingUniversities;
+  final List<Degree?> degrees;
+  final bool isLoadingDegrees;
+  final List<MarketplaceCategoryModel> marketplaceCategory;
+  final bool isLoadingMarketplaceCategory;
+
   const AppState({
     this.isLoading = true,
     this.isOnline = true,
     this.networkData = NetworkData.UNKNOWN,
     this.error,
+    this.universities = const [],
+    this.isLoadingUniversities = true,
+    this.degrees = const [],
+    this.isLoadingDegrees = true,
+    this.marketplaceCategory = const [],
+    this.isLoadingMarketplaceCategory = true,
   });
 
   AppState copyWith({
@@ -30,12 +43,26 @@ class AppState {
     bool? isOnline,
     NetworkData? networkData,
     Exception? error,
+    List<University?>? universities,
+    bool? isLoadingUniversities,
+    List<Degree?>? degrees,
+    bool? isLoadingDegrees,
+    List<MarketplaceCategoryModel>? marketplaceCategory,
+    bool? isLoadingMarketplaceCategory,
   }) {
     return AppState(
       isLoading: isLoading ?? this.isLoading,
       isOnline: isOnline ?? this.isOnline,
       networkData: networkData ?? this.networkData,
       error: error ?? this.error,
+      universities: universities ?? this.universities,
+      isLoadingUniversities:
+          isLoadingUniversities ?? this.isLoadingUniversities,
+      degrees: degrees ?? this.degrees,
+      isLoadingDegrees: isLoadingDegrees ?? this.isLoadingDegrees,
+      marketplaceCategory: marketplaceCategory ?? this.marketplaceCategory,
+      isLoadingMarketplaceCategory:
+          isLoadingMarketplaceCategory ?? this.isLoadingMarketplaceCategory,
     );
   }
 

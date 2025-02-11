@@ -5,15 +5,19 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
+import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
-import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
+import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/recipient_user/recipient_user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/user/status/status.dart';
 import 'package:nesters/features/user/chat/bloc/controllers/chat_controller.dart';
-import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
@@ -27,9 +31,9 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   }
 
   final Map<String, ChatController> _chatControllers = {};
-  final Duration _fetchTimeDurationLimit = 4.day;
   StreamSubscription<List<QuickChatUser>>? _recipientUserStreamSubscription;
   late String userId;
+  String? initialChatRoute;
 
   final _logger = GetIt.I<AppLogger>();
   final _localStorage = GetIt.I<LocalStorageRepository>();
@@ -37,6 +41,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   final _recipientUserRepository = GetIt.I<RecipientUserRepository>();
   final _chatRepository = GetIt.I<RemoteChatRepository>();
   final _appSecretsRepository = GetIt.I<AppSecretsRepository>();
+  final _rNotificationRepository = GetIt.I<RemoteNotificationRepository>();
 
   // Socket
   late IO.Socket? socket;
@@ -61,6 +66,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
         await _forceLoadProfiles(emit);
       },
       loadChats: () async {
+        _loadInitialChatRoute();
         await _loadChats();
       },
       initalizeUserStatusSocket: (userId) {
@@ -84,6 +90,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
     );
     socket?.connect();
     socket?.onConnect((data) => _logger.info('Connected to socket'));
+    socket?.onDisconnect((data) => _logger.info('Disconnected from socket'));
   }
 
   Stream<int> showMessageNotificationStream() {
@@ -105,8 +112,8 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
         'update',
         {'user_status': status == Status.ONLINE},
       );
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e));
+    } on Exception catch (_) {
+      //skip this error
     }
   }
 
@@ -116,7 +123,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
 
   FutureOr<void> _loadProfiles(Emitter<CentralChatState> emit) async {
     try {
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(chatState: state.chatState?.loading()));
       // ================== Load from local storage ==================
       List<QuickChatUser> chatUsers =
           _obxStorageRepository.getChatUserProfiles();
@@ -153,7 +160,8 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
                   ))
               .toList();
           _updateChatController(chatStates);
-          return state.copyWith(chatStates: chatStates, isLoading: false);
+          return state.copyWith(
+              chatStates: chatStates, chatState: state.chatState?.success());
         },
       );
       emit(
@@ -163,8 +171,8 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
         ),
       );
       add(const CentralChatEvent.loadChats());
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e));
+    } on AppException catch (e) {
+      emit(state.copyWith(chatState: state.chatState?.failure(e)));
     }
   }
 
@@ -173,16 +181,21 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   Future<void> _forceLoadProfiles(Emitter<CentralChatState> emit) async {
     try {
       // ================== Load from remote (force) ==================
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(chatState: state.chatState?.loading()));
       List<ChatInfo> chatStates = [];
       List<ChatController> chatControllers = await _fetchRemoteRecipientUsers();
       for (ChatController chatHandler in chatControllers) {
         chatStates.add(chatHandler.toChatInfo());
       }
       _updateChatController(chatStates);
-      emit(state.copyWith(chatStates: chatStates, isLoading: false));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e));
+      emit(state.copyWith(
+          chatStates: chatStates, chatState: state.chatState?.success()));
+      if (initialChatRoute != null) {
+        GoRouter.maybeOf(AppRouterService.navigatorKey.currentContext!)?.push(
+            "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$initialChatRoute");
+      }
+    } on AppException catch (e) {
+      emit(state.copyWith(chatState: state.chatState?.failure(e)));
     }
   }
 
@@ -269,12 +282,20 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
     return null;
   }
 
+  void _loadInitialChatRoute() {
+    _rNotificationRepository.getInitialChatRoute().then((value) {
+      log("Initial Chat Route: $value");
+      initialChatRoute = value;
+    });
+  }
+
   @override
   Future<void> close() {
     _recipientUserStreamSubscription?.cancel();
     for (ChatController chatHandler in _chatControllers.values) {
       chatHandler.closeChat();
     }
+    socket?.disconnect();
     return super.close();
   }
 }

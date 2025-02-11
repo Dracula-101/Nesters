@@ -4,7 +4,10 @@ abstract class HomeEvent {
   const HomeEvent();
 }
 
-class LoadProfileEvent extends HomeEvent {}
+class LoadProfileEvent extends HomeEvent {
+  final UserInfo user;
+  LoadProfileEvent(this.user);
+}
 
 class LoadProfileCompleteEvent extends HomeEvent {
   final List<UserQuickProfile> profiles;

@@ -2,68 +2,146 @@
 
 part of 'request_bloc.dart';
 
-class RequestState {
-  final RequestScreen currentScreen;
-  final bool isLoading;
-  final List<Request>? requestSentUsers;
-  final List<Request>? requestReceivedUsers;
-  final Exception? error;
-  final bool requestSentSuccess;
-  final bool requestSentError;
+class RequestUserState extends BlocState {
+  RequestUserState({
+    bool isLoading = false,
+    AppException? error,
+    bool isSuccess = false,
+  }) : super(
+          isLoading: isLoading,
+          exception: error,
+          isSuccess: isSuccess,
+        );
 
-  RequestState({
-    this.currentScreen = RequestScreen.RECEIVED,
-    this.isLoading = false,
-    this.requestSentUsers,
-    this.requestReceivedUsers,
-    this.error,
-    this.requestSentSuccess = false,
-    this.requestSentError = false,
-  });
-
-  RequestState copyWith({
-    RequestScreen? currentScreen,
+  @override
+  RequestUserState copyWith({
     bool? isLoading,
-    List<Request>? requestSentUsers,
-    List<Request>? requestReceivedUsers,
-    Exception? error,
-    bool? requestSentSuccess,
-    bool? requestSentError,
+    AppException? error,
+    bool? isSuccess,
   }) {
-    return RequestState(
-      currentScreen: currentScreen ?? this.currentScreen,
+    return RequestUserState(
       isLoading: isLoading ?? this.isLoading,
-      requestSentUsers: requestSentUsers ?? this.requestSentUsers,
-      requestReceivedUsers: requestReceivedUsers ?? this.requestReceivedUsers,
-      error: error ?? this.error,
-      requestSentSuccess: requestSentSuccess ?? this.requestSentSuccess,
-      requestSentError: requestSentError ?? this.requestSentError,
+      error: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
     );
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is RequestState &&
-        other.currentScreen == currentScreen &&
-        other.isLoading == isLoading &&
-        listEquals(other.requestSentUsers, requestSentUsers) &&
-        listEquals(other.requestReceivedUsers, requestReceivedUsers) &&
-        other.error == error &&
-        other.requestSentSuccess == requestSentSuccess &&
-        other.requestSentError == requestSentError;
+  RequestUserState loading() {
+    return RequestUserState(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+    );
   }
 
   @override
-  int get hashCode =>
-      currentScreen.hashCode ^
-      isLoading.hashCode ^
-      requestSentUsers.hashCode ^
-      requestReceivedUsers.hashCode ^
-      error.hashCode ^
-      requestSentSuccess.hashCode ^
-      requestSentError.hashCode;
+  RequestUserState resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  @override
+  RequestUserState failure(AppException error) {
+    return RequestUserState(
+      isLoading: false,
+      error: error,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  RequestUserState success() {
+    return RequestUserState(
+      isLoading: false,
+      error: null,
+      isSuccess: true,
+    );
+  }
+}
+
+class RequestSendState extends BlocState {
+  RequestSendState({
+    bool isLoading = false,
+    AppException? error,
+    bool isSuccess = false,
+  }) : super(
+          isLoading: isLoading,
+          exception: error,
+          isSuccess: isSuccess,
+        );
+
+  @override
+  RequestSendState copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return RequestSendState(
+      isLoading: isLoading ?? this.isLoading,
+      error: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
+
+  @override
+  RequestSendState failure(AppException error) {
+    return copyWith(
+      isLoading: false,
+      error: error,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  RequestSendState loading() {
+    return copyWith(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  RequestSendState resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  RequestSendState success() {
+    return copyWith(
+      isLoading: false,
+      error: null,
+      isSuccess: true,
+    );
+  }
+}
+
+class RequestState {
+  final RequestScreen currentScreen;
+  final List<Request> requestSentUsers;
+  final List<Request> requestReceivedUsers;
+  final RequestUserState requestUserState;
+  final RequestSendState requestSendState;
+
+  RequestState({
+    this.currentScreen = RequestScreen.RECEIVED,
+    this.requestSentUsers = const [],
+    this.requestReceivedUsers = const [],
+    required this.requestUserState,
+    required this.requestSendState,
+  });
+
+  RequestState copyWith({
+    RequestScreen? currentScreen,
+    List<Request>? requestSentUsers,
+    List<Request>? requestReceivedUsers,
+    RequestUserState? requestUserState,
+    RequestSendState? requestSendState,
+  }) {
+    return RequestState(
+      currentScreen: currentScreen ?? this.currentScreen,
+      requestSentUsers: requestSentUsers ?? this.requestSentUsers,
+      requestReceivedUsers: requestReceivedUsers ?? this.requestReceivedUsers,
+      requestUserState: requestUserState ?? this.requestUserState,
+      requestSendState: requestSendState ?? this.requestSendState,
+    );
+  }
 }
 
 enum RequestScreen {

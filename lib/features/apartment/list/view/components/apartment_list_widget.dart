@@ -135,7 +135,7 @@ class ApartmentModelWidget extends StatelessWidget {
               color: AppTheme.onSurface.withOpacity(0.6),
             ),
             child: Text(
-              'Posted ${DateTime.fromMillisecondsSinceEpoch(apartment.id).toUIDate().capitalizeEachWord}',
+              'Posted ${DateTime.fromMillisecondsSinceEpoch(apartment.id).toUIDate().toTitleCase}',
               style: AppTheme.labelMedium.copyWith(color: AppTheme.surface),
             ),
           ),
@@ -177,7 +177,7 @@ class ApartmentModelWidget extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(
           child: Text(
-            apartment.location?.address.capitalizeEachWord ?? '',
+            apartment.location?.address.toTitleCase ?? '',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),

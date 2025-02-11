@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:nesters/constants/app_assets.dart';
+import 'package:nesters/data/repository/auth/error/auth_error.dart';
 import 'package:nesters/features/auth/auth.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
@@ -92,8 +93,28 @@ class _AuthViewState extends State<AuthView> {
     return BlocConsumer<AuthBloc, AuthState>(
       listener: (context, state) {
         state.maybeWhen(
-          error: (message) {
-            context.showErrorSnackBar(message);
+          error: (error) {
+            if (error is AuthException) {
+              context.showErrorSnackBar(
+                error.message,
+                subtitle: error.authErrorCode.toString(),
+              );
+            } else {
+              context.showErrorSnackBar(
+                error.message,
+              );
+            }
+          },
+          logInSuccess: (bool fromGoogleSignIn, bool fromAppleSignIn) {
+            if (fromGoogleSignIn) {
+              context.showSuccessSnackBar(
+                'Successfully signed in with Google',
+              );
+            } else if (fromAppleSignIn) {
+              context.showSuccessSnackBar(
+                'Successfully signed in with Apple',
+              );
+            }
           },
           orElse: () {},
         );

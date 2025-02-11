@@ -13,6 +13,8 @@ class UserBasicProfile extends Equatable {
   final String city;
   final String? state;
   final String? country;
+  final String? intakePeriod;
+  final int? intakeYear;
 
   const UserBasicProfile({
     required this.userId,
@@ -26,6 +28,8 @@ class UserBasicProfile extends Equatable {
     required this.city,
     required this.state,
     required this.country,
+    required this.intakePeriod,
+    required this.intakeYear,
   });
 
   //tojson
@@ -41,6 +45,8 @@ class UserBasicProfile extends Equatable {
       'city': city,
       'state': state,
       'country': country,
+      'intake_period': intakePeriod,
+      'intake_year': intakeYear,
     };
   }
 
@@ -56,6 +62,8 @@ class UserBasicProfile extends Equatable {
         city,
         state,
         country,
+        intakePeriod,
+        intakeYear,
       ];
 
   List<FieldValue> toFieldValues({bool includeUserDeleteUpdate = false}) {
@@ -76,6 +84,8 @@ class UserBasicProfile extends Equatable {
       FieldValue(key: 'city', value: city),
       FieldValue(key: 'state', value: state),
       FieldValue(key: 'country', value: country),
+      FieldValue(key: 'intake_period', value: intakePeriod),
+      FieldValue(key: 'intake_year', value: intakeYear),
       if (includeUserDeleteUpdate)
         FieldValue(key: 'user_deleted', value: false),
       if (includeUserDeleteUpdate)
@@ -107,6 +117,12 @@ class UserBasicProfile extends Equatable {
       state: fieldValues.firstWhere((element) => element.key == 'state').value,
       country:
           fieldValues.firstWhere((element) => element.key == 'country').value,
+      intakePeriod: fieldValues
+          .firstWhere((element) => element.key == 'intake_period')
+          .value,
+      intakeYear: fieldValues
+          .firstWhere((element) => element.key == 'intake_year')
+          .value,
     );
   }
 }

@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:nesters/theme/theme.dart';
+part of 'widgets.dart';
 
 class CustomFlatButton extends StatelessWidget {
   final String text;

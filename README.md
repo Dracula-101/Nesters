@@ -31,16 +31,18 @@ To set up the project locally, follow these steps:
 
 3. **Set up Firebase**:
 
-   - Follow the instructions to set up Firebase for your Flutter project: [Firebase Setup](https://firebase.flutter.dev/docs/overview)
-   - Add your `google-services.json` and `GoogleService-Info.plist` files to the respective directories.
+   - Follow the instructions to set up [Firebase](docs/FIREBASE_SETUP.md) for the project.
+   - Add the `google-services.json` file to the `android/app` directory.
+   - Add the `GoogleService-Info.plist` file to the `ios/Runner` directory.
 
-4. **Set up the .env file**:
+4. **Set up Supabase**:
 
-   - Create a `.env` file in the root directory of the project.
-   - Add the necessary environment variables as specified in the `.env.example` file.
+   - Follow the instructions to set up [Supabase](docs/SUPABASE_SETUP.md) for the project.
+   - Copy the `.env.example` file to `.env` and add the necessary environment variables.
 
 5. **Run the project**:
    ```sh
+   flutter pub run build_runner build --delete-conflicting-outputs
    flutter run
    ```
 

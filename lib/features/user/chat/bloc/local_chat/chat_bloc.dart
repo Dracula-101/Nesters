@@ -10,13 +10,15 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
-import 'package:nesters/data/repository/user/chat/user_chat_repository.dart';
+import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/recipient_user/recipient_user_repository.dart';
 import 'package:nesters/data/repository/user/status/user_status_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/user/status/user_status.dart';
+import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/controllers/chat_controller.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:rxdart/rxdart.dart';
@@ -81,50 +83,27 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   Future<void> _checkChat(
       String senderId, String receiverId, Emitter<ChatState> emit) async {
-    emit(
-      state.copyWith(
-          isLoading: true, senderId: senderId, receiverId: receiverId),
-    );
+    emit(state.copyWith(
+      senderId: senderId,
+      receiverId: receiverId,
+      chatState: state.chatState?.loading(),
+    ));
     try {
       log("ChatId: ${controller.chatId}");
-      bool chatExists =
-          _localStorageRepository.getBool(controller.chatId) ?? false;
 
-      // if (!chatExists) {
-      //   bool chatExistsRemote =
-      //       await _chatRepository.doesChatExist(controller.chatId);
-      //   if (!chatExistsRemote) {
-      //     await _chatRepository.createChat(
-      //       controller.chatId,
-      //       senderId: senderId,
-      //       receiverId: receiverId,
-      //     );
-      //     unawaited(saveReceipentDetails());
-      //   }
-      // }
-      // socket = IO.io(
-      //   'wss://${_appSecretsRepository.getSecret(AppSecretsKeys.USER_STATUS_SOCKET_URL)}',
-      //   IO.OptionBuilder().setTransports(
-      //     ['websocket'],
-      //   ).setExtraHeaders({
-      //     'userid': senderId,
-      //   }).build(),
-      // );
-      // socket?.connect();
-      // socket?.onConnect(
-      //   (_) => _loggerService.log('User status socket connected'),
-      // );
       emit(
         state.copyWith(
-            doesChatExist: true, chatId: controller.chatId, isLoading: false),
+            doesChatExist: true,
+            chatId: controller.chatId,
+            chatState: state.chatState?.success()),
       );
       controller.clearNewMessages();
       _listenUserStatus(controller.chatId, emit);
-    } on Exception catch (e) {
+    } on AppException catch (e) {
       emit(
         state.copyWith(
-          isLoading: false,
-          error: e,
+          doesChatExist: false,
+          chatState: state.chatState?.failure(e),
         ),
       );
     }
@@ -154,8 +133,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       String messageId =
           await _chatRepository.sendMessage(state.chatId!, message);
       _loggerService.log('Message sent: $messageId');
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e));
+    } on AppException catch (e) {
+      emit(state.copyWith(chatState: state.chatState?.failure(e)));
     }
   }
 
@@ -194,8 +173,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         }
       }
       emit(state.copyWith(uploadTask: null));
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e));
+    } on AppException catch (e) {
+      emit(state.copyWith(chatState: state.chatState?.failure(e)));
     }
   }
 
@@ -206,29 +185,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       if (message != null) {
         onComplete();
       } else {
-        emit(state.copyWith(error: Exception('Failed to download document')));
+        return;
       }
-    } on Exception catch (e) {
-      emit(state.copyWith(error: e));
-    }
-  }
-
-  Future<void> saveReceipentDetails() async {
-    //store details in local database
-    try {
-      QuickChatUser? receiptUser = await _recipientQuickUserRepository
-          .getRecipientUser(state.receiverId!);
-      receiptUser = receiptUser?.copyWith(
-        chatId: state.chatId,
-      );
-      log("Recipient User: $receiptUser");
-      if (receiptUser != null) {
-        log('Saving recipient user: $receiptUser');
-        await _obxStorageRepository.saveRecipientUser(receiptUser);
-      }
-      await _localStorageRepository.saveBool(state.chatId!, true);
-    } on Exception {
-      rethrow;
+    } on AppException catch (e) {
+      emit(state.copyWith(chatState: state.chatState?.failure(e)));
     }
   }
 

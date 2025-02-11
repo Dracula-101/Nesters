@@ -7,7 +7,6 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/features/apartment/components/amenities_details.dart';
-import 'package:nesters/features/apartment/components/amenities_sheet.dart';
 import 'package:nesters/features/apartment/detail/cubit/apartment_detail_cubit.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
@@ -84,7 +83,7 @@ class ApartmentContactButton extends StatelessWidget {
               context.read<CentralChatBloc>().checkChatExists(ownerId);
           if (chatInfo != null) {
             GoRouter.of(context).go(
-              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatInfo.chatId}",
+              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatInfo.chatId}",
               extra: chatInfo.recipientUser.toUser(),
             );
           } else {
@@ -337,7 +336,7 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.apartment.location?.address.capitalizeEachWord ?? '',
+              widget.apartment.location?.address.toTitleCase ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],
@@ -412,9 +411,14 @@ class _HeroCarouselState extends State<HeroCarousel> {
   }
 
   Future<void> preloadImages() async {
-    await Future.wait(
-      widget.images.map((photo) => precacheImage(NetworkImage(photo), context)),
-    );
+    try {
+      await Future.wait(
+        widget.images
+            .map((photo) => precacheImage(NetworkImage(photo), context)),
+      );
+    } catch (e) {
+      // ignore: avoid_print
+    }
   }
 
   @override

@@ -1,5 +1,63 @@
 part of 'sublet_form_cubit.dart';
 
+class SubletSubmitState extends BlocState {
+  SubletSubmitState({
+    required bool isLoading,
+    required AppException? exception,
+    required bool isSuccess,
+  }) : super(
+          isLoading: isLoading,
+          exception: exception,
+          isSuccess: isSuccess,
+        );
+
+  @override
+  SubletSubmitState copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return SubletSubmitState(
+      isLoading: isLoading ?? this.isLoading,
+      exception: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
+
+  @override
+  SubletSubmitState failure(AppException error) {
+    return copyWith(
+      isLoading: false,
+      error: error,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  SubletSubmitState loading() {
+    return copyWith(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  SubletSubmitState resetLoading() {
+    return copyWith(
+      isLoading: false,
+      error: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  SubletSubmitState success() {
+    return copyWith(
+      isLoading: false,
+      error: null,
+      isSuccess: true,
+    );
+  }
+}
+
 class SubletFormState extends Equatable {
   final SubletModel? sublet;
   final bool? isPreFilled;
@@ -8,9 +66,7 @@ class SubletFormState extends Equatable {
   final bool hasSecondPageAccess;
   final bool hasThirdPageAccess;
   final bool isValidating;
-  final bool? isSubmitting;
-  final bool? isSubmitComplete;
-  final Exception? submitError;
+  final SubletSubmitState? submitState;
   final SubletImageUploadTask? imageUploadTask;
   final List<File> pickedImages;
 
@@ -22,9 +78,7 @@ class SubletFormState extends Equatable {
     this.hasSecondPageAccess = false,
     this.hasThirdPageAccess = false,
     this.isValidating = false,
-    this.isSubmitting,
-    this.isSubmitComplete,
-    this.submitError,
+    this.submitState,
     this.imageUploadTask,
     this.pickedImages = const [],
   });
@@ -37,9 +91,7 @@ class SubletFormState extends Equatable {
     bool? hasSecondPageAccess,
     bool? hasThirdPageAccess,
     bool? isValidating,
-    bool? isSubmitting,
-    bool? isSubmitComplete,
-    Exception? submitError,
+    SubletSubmitState? submitState,
     SubletImageUploadTask? imageUploadTask,
     List<File>? pickedImages,
   }) {
@@ -51,9 +103,7 @@ class SubletFormState extends Equatable {
       hasSecondPageAccess: hasSecondPageAccess ?? this.hasSecondPageAccess,
       hasThirdPageAccess: hasThirdPageAccess ?? this.hasThirdPageAccess,
       isValidating: isValidating ?? this.isValidating,
-      isSubmitting: isSubmitting ?? this.isSubmitting,
-      isSubmitComplete: isSubmitComplete ?? this.isSubmitComplete,
-      submitError: submitError ?? this.submitError,
+      submitState: submitState ?? this.submitState,
       imageUploadTask: imageUploadTask ?? this.imageUploadTask,
       pickedImages: pickedImages ?? this.pickedImages,
     );
@@ -68,9 +118,7 @@ class SubletFormState extends Equatable {
         hasSecondPageAccess,
         hasThirdPageAccess,
         isValidating,
-        isSubmitting,
-        isSubmitComplete,
-        submitError,
+        submitState,
         imageUploadTask,
         pickedImages,
       ];

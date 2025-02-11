@@ -1,40 +1,77 @@
 part of 'central_chat_bloc.dart';
 
-class CentralChatState {
-  final List<ChatInfo> chatStates;
-  final Exception? error;
-  final bool isLoading;
+class ChatLoadingState extends BlocState {
+  ChatLoadingState({
+    bool isLoading = false,
+    AppException? error,
+    bool isSuccess = false,
+  }) : super(
+          isLoading: isLoading,
+          exception: error,
+          isSuccess: isSuccess,
+        );
 
-  const CentralChatState({
-    this.chatStates = const [],
-    this.error,
-    this.isLoading = true,
-  });
-
-  CentralChatState copyWith({
-    List<ChatInfo>? chatStates,
-    Exception? error,
-    bool? isLoading,
-  }) {
-    return CentralChatState(
-      chatStates: chatStates ?? this.chatStates,
-      error: error ?? this.error,
+  @override
+  ChatLoadingState copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return ChatLoadingState(
       isLoading: isLoading ?? this.isLoading,
+      error: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
     );
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is CentralChatState &&
-        listEquals(other.chatStates, chatStates) &&
-        other.error == error &&
-        other.isLoading == isLoading;
+  ChatLoadingState failure(AppException error) {
+    return ChatLoadingState(
+      isLoading: false,
+      error: error,
+      isSuccess: false,
+    );
   }
 
   @override
-  int get hashCode => chatStates.hashCode ^ error.hashCode ^ isLoading.hashCode;
+  ChatLoadingState loading() {
+    return ChatLoadingState(
+      isLoading: true,
+      error: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  ChatLoadingState resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  @override
+  ChatLoadingState success() {
+    return ChatLoadingState(
+      isLoading: false,
+      error: null,
+      isSuccess: true,
+    );
+  }
+}
+
+class CentralChatState {
+  final List<ChatInfo> chatStates;
+  final ChatLoadingState? chatState;
+
+  const CentralChatState({
+    this.chatStates = const [],
+    this.chatState,
+  });
+
+  CentralChatState copyWith({
+    List<ChatInfo>? chatStates,
+    ChatLoadingState? chatState,
+  }) {
+    return CentralChatState(
+      chatStates: chatStates ?? this.chatStates,
+      chatState: chatState ?? this.chatState,
+    );
+  }
 }
 
 class ChatInfo {

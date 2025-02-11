@@ -71,59 +71,65 @@ class MarketplaceContactButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 70,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 8,
-      ),
-      decoration: BoxDecoration(
-        color: AppTheme.surface,
-      ),
-      child: ElevatedButton(
-        onPressed: () {
-          ChatInfo? chatInfo =
-              context.read<CentralChatBloc>().checkChatExists(ownerId);
-          if (chatInfo != null) {
-            GoRouter.of(context).go(
-              "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${chatInfo.chatId}",
-              extra: chatInfo.recipientUser.toUser(),
-            );
-          } else {
-            showDialog(
-              context: context,
-              builder: (ctx) => AlertDialog.adaptive(
-                title: Text('Contact Owner', style: AppTheme.titleLarge),
-                content: Text(
-                  'First, send a connection request to the owner. Would you like to proceed?',
-                  style: AppTheme.bodyMediumLightVariant,
+    return BlocListener<RequestBloc, RequestState>(
+      listener: (context, state) {
+        if (state.requestSendState.exception != null) {
+          context.showErrorSnackBar(state.requestSendState.exception!.message);
+        } else if (state.requestSendState.isSuccess) {
+          context.showSuccessSnackBar('Request sent successfully');
+        }
+      },
+      child: Container(
+        height: 70,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+        ),
+        child: ElevatedButton(
+          onPressed: () {
+            ChatInfo? chatInfo =
+                context.read<CentralChatBloc>().checkChatExists(ownerId);
+            if (chatInfo != null) {
+              GoRouter.of(context).go(
+                "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatInfo.chatId}",
+                extra: chatInfo.recipientUser.toUser(),
+              );
+            } else {
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog.adaptive(
+                  title: Text('Contact Owner', style: AppTheme.titleLarge),
+                  content: Text(
+                    'First, send a connection request to the owner. Would you like to proceed?',
+                    style: AppTheme.bodyMediumLightVariant,
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop();
+                      },
+                      child: const Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        context
+                            .read<RequestBloc>()
+                            .add(RequestEvent.sendRequest(ownerId));
+                      },
+                      child: const Text('Send'),
+                    ),
+                  ],
                 ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(ctx).pop();
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      context.read<RequestBloc>().add(
-                            RequestEvent.sendRequest(ownerId),
-                          );
-                      Navigator.of(ctx).pop();
-                      context.showSuccessSnackBar(
-                          "Request sent successfully to the owner");
-                    },
-                    child: const Text('Send'),
-                  ),
-                ],
-              ),
-            );
-          }
-        },
-        child: Text(
-          'Contact Owner',
-          style: AppTheme.titleLarge.copyWith(color: AppTheme.surface),
+              );
+            }
+          },
+          child: Text(
+            'Contact Owner',
+            style: AppTheme.titleLarge.copyWith(color: AppTheme.surface),
+          ),
         ),
       ),
     );
@@ -300,7 +306,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.marketplace.location?.address.capitalizeEachWord ?? '',
+              widget.marketplace.location?.address.toTitleCase ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],
@@ -329,7 +335,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.marketplace.name.capitalizeEachWord ?? '',
+                  widget.marketplace.name.toTitleCase,
                   style: AppTheme.titleLarge,
                 ),
                 const SizedBox(height: 4),
@@ -397,7 +403,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
           ),
           const SizedBox(height: 8),
           Text(
-            widget.marketplace.description.capitalize ?? '',
+            widget.marketplace.description.capitalize,
             style: AppTheme.bodyMediumLightVariant,
           ),
           const SizedBox(height: 8),

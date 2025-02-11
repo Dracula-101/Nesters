@@ -1,31 +1,135 @@
+import 'package:equatable/equatable.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
-import 'package:nesters/domain/models/user/profile/user_profile.dart';
+import 'package:nesters/utils/bloc_state.dart';
 
-class EditProfileState {
+class EditProfileSubmitState extends BlocState {
+  EditProfileSubmitState({
+    bool? isLoading,
+    AppException? exception,
+    bool? isSuccess,
+  }) : super(
+          isLoading: isLoading ?? false,
+          exception: exception,
+          isSuccess: isSuccess ?? false,
+        );
+
+  @override
+  EditProfileSubmitState copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return EditProfileSubmitState(
+      isLoading: isLoading ?? this.isLoading,
+      exception: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
+
+  @override
+  EditProfileSubmitState failure(AppException error) {
+    return EditProfileSubmitState(
+      isLoading: false,
+      exception: error,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  EditProfileSubmitState loading() {
+    return EditProfileSubmitState(
+      isLoading: true,
+      exception: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  EditProfileSubmitState resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  @override
+  EditProfileSubmitState success() {
+    return EditProfileSubmitState(
+      isLoading: false,
+      exception: null,
+      isSuccess: true,
+    );
+  }
+}
+
+class EditProfileLoadingState extends BlocState {
+  EditProfileLoadingState({
+    bool? isLoading,
+    AppException? exception,
+    bool? isSuccess,
+  }) : super(
+          isLoading: isLoading ?? false,
+          exception: exception,
+          isSuccess: isSuccess ?? false,
+        );
+
+  @override
+  EditProfileLoadingState copyWith(
+      {bool? isLoading, AppException? error, bool? isSuccess}) {
+    return EditProfileLoadingState(
+      isLoading: isLoading ?? this.isLoading,
+      exception: error ?? exception,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
+
+  @override
+  EditProfileLoadingState failure(AppException error) {
+    return EditProfileLoadingState(
+      isLoading: false,
+      exception: error,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  EditProfileLoadingState loading() {
+    return EditProfileLoadingState(
+      isLoading: true,
+      exception: null,
+      isSuccess: false,
+    );
+  }
+
+  @override
+  EditProfileLoadingState resetLoading() {
+    return copyWith(isLoading: false);
+  }
+
+  @override
+  EditProfileLoadingState success() {
+    return EditProfileLoadingState(
+      isLoading: false,
+      exception: null,
+      isSuccess: true,
+    );
+  }
+}
+
+class EditProfileState extends Equatable {
   final UserEditProfile? userEditProfile;
-  final bool isLoading;
+  final EditProfileLoadingState? loadingState;
+  final EditProfileSubmitState? submitState;
   final String? imagePath;
-  final bool isSubmitting;
-  final bool isSuccessful;
-  final bool isFailure;
 
   const EditProfileState({
     this.userEditProfile,
-    this.isLoading = true,
+    this.loadingState,
+    this.submitState,
     this.imagePath,
-    this.isSubmitting = false,
-    this.isSuccessful = false,
-    this.isFailure = false,
   });
 
   EditProfileState copyWith({
-    bool? isLoading,
     String? imagePath,
-    bool? isSubmitting,
-    bool? isSuccessful,
-    bool? isFailure,
+    EditProfileLoadingState? loadingState,
+    EditProfileSubmitState? submitState,
     String? profileImage,
     String? selectedCollegeName,
     String? selectedCourseName,
@@ -40,13 +144,13 @@ class EditProfileState {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
+    String? intakePeriod,
+    int? intakeYear,
   }) {
     return EditProfileState(
-      isLoading: isLoading ?? this.isLoading,
       imagePath: imagePath ?? this.imagePath,
-      isSubmitting: isSubmitting ?? this.isSubmitting,
-      isSuccessful: isSuccessful ?? this.isSuccessful,
-      isFailure: isFailure ?? this.isFailure,
+      loadingState: loadingState ?? this.loadingState,
+      submitState: submitState ?? this.submitState,
       userEditProfile: UserEditProfile(
         profileImage: profileImage ?? userEditProfile?.profileImage,
         selectedCollegeName:
@@ -73,14 +177,25 @@ class EditProfileState {
         flatmatesGenderPrefs:
             flatmatesGenderPrefs ?? userEditProfile?.flatmatesGenderPrefs ?? '',
         roomType: roomType ?? userEditProfile?.roomType ?? UserRoomType.UNKNOWN,
+        intakePeriod: intakePeriod ?? userEditProfile?.intakePeriod ?? '',
+        intakeYear:
+            intakeYear ?? userEditProfile?.intakeYear ?? DateTime.now().year,
       ),
     );
   }
 
   @override
   String toString() {
-    return 'EditProfileState(userEditProfile: $userEditProfile, isLoading: $isLoading, isSubmitting: $isSubmitting)';
+    return 'EditProfileState(userEditProfile: $userEditProfile), loadingState: $loadingState, imagePath: $imagePath, submitState: $submitState)';
   }
+
+  @override
+  List<Object?> get props => [
+        userEditProfile,
+        loadingState,
+        imagePath,
+        submitState,
+      ];
 }
 
 class UserEditProfile {
@@ -98,6 +213,8 @@ class UserEditProfile {
   final String hobbies;
   final String flatmatesGenderPrefs;
   final UserRoomType roomType;
+  final String? intakePeriod;
+  final int? intakeYear;
 
   const UserEditProfile({
     required this.profileImage,
@@ -114,6 +231,8 @@ class UserEditProfile {
     required this.hobbies,
     required this.flatmatesGenderPrefs,
     required this.roomType,
+    required this.intakePeriod,
+    required this.intakeYear,
   });
 
   UserEditProfile copyWith({
@@ -131,6 +250,8 @@ class UserEditProfile {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
+    String? intakePeriod,
+    int? intakeYear,
   }) {
     return UserEditProfile(
       profileImage: profileImage ?? this.profileImage,
@@ -147,11 +268,13 @@ class UserEditProfile {
       hobbies: hobbies ?? this.hobbies,
       flatmatesGenderPrefs: flatmatesGenderPrefs ?? this.flatmatesGenderPrefs,
       roomType: roomType ?? this.roomType,
+      intakePeriod: intakePeriod ?? this.intakePeriod,
+      intakeYear: intakeYear ?? this.intakeYear,
     );
   }
 
   @override
   String toString() {
-    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollegeName, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType)';
+    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollegeName, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType, intakePeriod: $intakePeriod, intakeYear: $intakeYear)';
   }
 }

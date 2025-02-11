@@ -12,6 +12,8 @@ class UserQuickProfile extends Equatable {
   final String? profileImage;
   final String? selectedCourseName;
   final String? selectedCollegeName;
+  final String? intakePeriod;
+  final int? intakeYear;
   final LocationCity? city;
   final LocationState? state;
   final LocationCountry? country;
@@ -27,6 +29,8 @@ class UserQuickProfile extends Equatable {
     required this.state,
     required this.country,
     required this.workExperience,
+    required this.intakePeriod,
+    required this.intakeYear,
   });
 
   @override
@@ -40,6 +44,8 @@ class UserQuickProfile extends Equatable {
         state,
         country,
         workExperience,
+        intakePeriod,
+        intakeYear,
       ];
 
   List<FieldValue> toFieldValues() {
@@ -53,6 +59,8 @@ class UserQuickProfile extends Equatable {
       FieldValue(key: 'state', value: state),
       FieldValue(key: 'country', value: country),
       FieldValue(key: 'work_experience', value: workExperience),
+      FieldValue(key: 'intake_period', value: intakePeriod),
+      FieldValue(key: 'intake_year', value: intakeYear),
     ];
   }
 
@@ -67,6 +75,8 @@ class UserQuickProfile extends Equatable {
       'state': state,
       'country': country,
       'work_experience': workExperience,
+      'intake_period': intakePeriod,
+      'intake_year': intakeYear,
     };
   }
 
@@ -86,6 +96,8 @@ class UserQuickProfile extends Equatable {
             ? LocationCountry(name: json['country'])
             : null,
         workExperience: json['work_experience'] ?? 0,
+        intakePeriod: json['intake_period'] ?? '',
+        intakeYear: json['intake_year'] ?? DateTime.now().year,
       );
     } catch (e) {
       throw Exception('Failed to parse UserQuickProfile: $e');
@@ -104,13 +116,13 @@ class UserQuickProfile extends Equatable {
   String toUserLocation() {
     String location = '';
     if (city?.name != null && city?.name.isEmpty == false) {
-      location = '${city?.name.capitalizeEachWord}, ';
+      location = '${city?.name.toTitleCase}, ';
     }
     if (state?.name != null && state?.name.isEmpty == false) {
-      location += state?.name.capitalizeEachWord ?? '';
+      location += state?.name.toTitleCase ?? '';
     }
     if (country?.name != null && country?.name.isEmpty == false) {
-      location += ', ${country?.name.capitalizeEachWord}';
+      location += ', ${country?.name.toTitleCase}';
     }
     if (location.isEmpty) {
       location = 'Location Not Available';

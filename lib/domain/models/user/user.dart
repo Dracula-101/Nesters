@@ -20,7 +20,7 @@ class User extends Equatable {
   final bool isProfileCompleted;
 
   @override
-  List<Object?> get props => [id, fullName, email, photoUrl];
+  List<Object?> get props => [id, fullName, email, photoUrl, accessToken];
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -59,6 +59,7 @@ class User extends Equatable {
     String? photoUrl,
     bool? isProfileCreated,
     bool? isProfileCompleted,
+    String? profileUrl,
   }) {
     return User(
       id: id ?? this.id,
@@ -69,5 +70,10 @@ class User extends Equatable {
       isProfileCreated: isProfileCreated ?? this.isProfileCreated,
       isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
     );
+  }
+
+  @override
+  String toString() {
+    return 'User { id: $id, fullName: $fullName, email: $email, photoUrl: $photoUrl}';
   }
 }

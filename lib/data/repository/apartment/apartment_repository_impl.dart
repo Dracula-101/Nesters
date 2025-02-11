@@ -1,6 +1,8 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
+import 'package:nesters/data/repository/apartment/error/apartment_error.dart';
+import 'package:nesters/data/repository/database/remote/error/database_error.dart';
 import 'package:nesters/domain/models/apartment/apartment_filter.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/features/apartment/list/bloc/apartment_bloc.dart';
@@ -29,8 +31,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
           .upsert(apartment.copyWith(userId: userId).toMap());
       _logger.info('Apartment created successfully with id: ${apartment.id}');
       return apartment.id.toString();
-    } catch (e) {
-      throw Exception('Failed to create apartment: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.DB_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.CREATE_APARTMENT_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -71,8 +83,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
           progress: (index++ / imagePaths.length).clamp(0.1, 1.0),
         );
       }
-    } catch (e) {
-      throw Exception('Failed to upload images: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.UPLOAD_IMAGES_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.UPLOAD_IMAGES_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -91,8 +113,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
           .range(paginationKey, paginationKey + range)
           .order("id", ascending: false);
       return response.map((e) => ApartmentModel.fromMap(e)).toList();
-    } catch (e) {
-      throw Exception('Failed to get apartments: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.GET_APARTMENTS_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.GET_APARTMENTS_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -133,8 +165,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       }
       return response.order("id", ascending: false).select().then(
           (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
-    } catch (e) {
-      throw Exception('Failed to get apartments: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.FILTER_APARTMENT_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.FILTER_APARTMENT_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -233,8 +275,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       queryBuilder = queryBuilder.neq("user_id", userId);
       return queryBuilder.order("id").then(
           (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
-    } catch (e) {
-      throw Exception('Failed to get apartments: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.FILTER_APARTMENT_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.FILTER_APARTMENT_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -249,8 +301,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
           .then(
               (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
       return apartments;
-    } catch (e) {
-      throw Exception('Failed to get apartments: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.GET_APARTMENTS_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.GET_APARTMENTS_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -268,8 +330,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
           .eq('user_id', userId);
       _logger.info('Apartment updated successfully with id: $apartmentId');
       return apartments;
-    } catch (e) {
-      throw Exception('Failed to update apartment: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.UPDATE_APARTMENT_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.UPDATE_APARTMENT_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -287,8 +359,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       }, onConflict: 'apartment_id');
       _logger.info(
           'Like status updated successfully for apartment: $apartmentId -> ${isLiked ? '❤️' : '💔'}');
-    } catch (e) {
-      throw Exception('Failed to like apartment: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.UPDATE_LIKE_STATUS_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.UPDATE_LIKE_STATUS_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -305,8 +387,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
           .then(
               (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
       return likedApartments;
-    } catch (e) {
-      throw Exception('Failed to get liked apartments: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.GET_USER_LIKED_APARTMENTS_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.GET_USER_LIKED_APARTMENTS_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -326,8 +418,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
           .eq('user_id', userId);
       _logger.info(
           'Apartment ${isAvailable ? 'Shown' : 'Hidden'} successfully with id: $apartmentId');
-    } catch (e) {
-      throw Exception('Failed to hide apartment: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.CHANGE_APARTMENT_AVAILABILITY_STATUS_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.CHANGE_APARTMENT_AVAILABILITY_STATUS_ERR,
+        e.toString(),
+      );
     }
   }
 
@@ -343,8 +445,18 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
           .eq('id', apartmentId)
           .eq('user_id', userId);
       _logger.info('Apartment deleted successfully with id: $apartmentId');
-    } catch (e) {
-      throw Exception('Failed to delete apartment: $e');
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.DELETE_APARTMENT_ERR,
+        e.message,
+      );
+    } on Exception catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.DELETE_APARTMENT_ERR,
+        e.toString(),
+      );
     }
   }
 }

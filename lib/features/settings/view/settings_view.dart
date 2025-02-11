@@ -1,11 +1,15 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/domain/models/user/profile/user_info.dart';
+import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
-import 'package:nesters/features/home/user/user_bloc.dart';
 import 'package:nesters/features/settings/bloc/settings_bloc.dart';
 import 'package:nesters/features/user/posts/cubit/user_post_state.dart';
 import 'package:nesters/theme/theme.dart';
@@ -19,15 +23,9 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SettingsBloc, SettingsState>(
       builder: (context, state) {
-        return BlocProvider<UserBloc>(
-          create: (context) => UserBloc(
-            context.read<AuthBloc>().state.maybeWhen(
-                  authenticated: (user) => user,
-                  orElse: () => throw Exception('User not authenticated'),
-                ),
-          ),
-          child: const Scaffold(
-            body: SettingsView(),
+        return Scaffold(
+          body: SettingsView(
+            state: state,
           ),
         );
       },
@@ -36,7 +34,8 @@ class SettingsPage extends StatelessWidget {
 }
 
 class SettingsView extends StatefulWidget {
-  const SettingsView({super.key});
+  final SettingsState state;
+  const SettingsView({super.key, required this.state});
 
   @override
   State<SettingsView> createState() => _SettingsViewState();
@@ -76,7 +75,7 @@ class _SettingsViewState extends State<SettingsView> {
           floating: true,
           snap: true,
         ),
-        _buildProfile(),
+        if (widget.state.user != null) _buildProfile(widget.state.user!),
         _buildProfileSettings(isSwitched),
         _buildUserPostSettings(),
         _buildAppInfoSettings(),
@@ -96,35 +95,33 @@ class _SettingsViewState extends State<SettingsView> {
     );
   }
 
-  Widget _buildProfile() {
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: NetworkImage(state.user.photoUrl),
+  Widget _buildProfile(UserInfo user) {
+    return Builder(builder: (context) {
+      return SliverPadding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
+        sliver: SliverToBoxAdapter(
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundImage: NetworkImage(user.profileImage),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                user.fullName,
+                style: AppTheme.headlineVerySmall.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  state.user.fullName,
-                  style: AppTheme.headlineVerySmall.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  '${state.user.email.split('@').first.substring(0, 5)}*****@${state.user.email.split('@').last}',
-                  style: AppTheme.bodyMediumLightVariant,
-                )
-              ],
-            ),
+              ),
+              Text(
+                '${user.email.split('@').first.substring(0, 5)}*****@${user.email.split('@').last}',
+                style: AppTheme.bodyMediumLightVariant,
+              )
+            ],
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
   }
 
   Widget _buildProfileSettings(bool isSwitched) {
@@ -149,7 +146,7 @@ class _SettingsViewState extends State<SettingsView> {
                 subtitle: 'Update your profile information',
                 icon: Icons.person,
                 onTap: () {
-                  GoRouter.of(context).go(
+                  GoRouter.of(context).push(
                       "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.editProfile}");
                 },
               ),

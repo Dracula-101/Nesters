@@ -1,27 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
+import 'package:nesters/data/repository/user/error/user_profile_error.dart';
+import 'package:nesters/data/repository/user/profile/user_chat_profile_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/user/request/request.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:http/http.dart' as http;
 
-abstract class UserChatRepository {
-  final AppSecretsRepository _appSecretsRepository;
-  UserChatRepository({required AppSecretsRepository appSecretsRepository})
-      : _appSecretsRepository = appSecretsRepository;
-
-  Future<QuickChatUser?> getUserNameAndProfile(String userId);
-  Stream<List<Request>> getSentUserRequests(User currentUser);
-  Stream<List<Request>> getReceivedUserRequests(User currentUser);
-  Future<void> sendRequest(String currentUserId, String recipientUserId);
-  Future<void> acceptRequest(String currentUserId, String recipientUserId);
-  Future<void> rejectRequest(String currentUserId, String recipientUserId);
-
-  createChatRoom(String senderId, String receiverId) {}
-}
-
-class FirebaseChatUserRepository implements UserChatRepository {
+class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
   final FirebaseFirestore _store = FirebaseFirestore.instance;
   final String _userCollectionName = 'users';
   final String _userIdKey = 'userId';
@@ -46,7 +33,10 @@ class FirebaseChatUserRepository implements UserChatRepository {
         return null;
       }
     } on Exception {
-      rethrow;
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.GET_PROFILE_ERR,
+        'Get User Name And Profile Error',
+      );
     }
   }
 
@@ -76,7 +66,10 @@ class FirebaseChatUserRepository implements UserChatRepository {
         return requests;
       });
     } on Exception {
-      rethrow;
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.GET_RECEIVED_REQ_ERR,
+        'Get Received User Requests Error',
+      );
     }
   }
 
@@ -106,7 +99,10 @@ class FirebaseChatUserRepository implements UserChatRepository {
         return requests;
       });
     } on Exception {
-      rethrow;
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.GET_SENT_REQ_ERR,
+        'Get Sent User Requests Error',
+      );
     }
   }
 
@@ -132,7 +128,10 @@ class FirebaseChatUserRepository implements UserChatRepository {
         receiverCollection.doc(currentUserId).set(data.toSenderMap())
       ]);
     } on Exception {
-      rethrow;
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.SEND_REQ_ERR,
+        'Send Request Error',
+      );
     }
   }
 
@@ -156,7 +155,10 @@ class FirebaseChatUserRepository implements UserChatRepository {
             .update({_acceptedRequestKey: true, _bannedRequestKey: false})
       ]);
     } on Exception {
-      rethrow;
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.ACCEPT_REQ_ERR,
+        'Accept Request Error',
+      );
     }
   }
 
@@ -180,7 +182,10 @@ class FirebaseChatUserRepository implements UserChatRepository {
             .update({_acceptedRequestKey: false, _bannedRequestKey: true})
       ]);
     } on Exception {
-      rethrow;
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.REJECT_REQ_ERR,
+        'Reject Request Error',
+      );
     }
   }
 
@@ -197,11 +202,27 @@ class FirebaseChatUserRepository implements UserChatRepository {
         },
       );
     } on Exception {
-      rethrow;
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERR,
+        'Create Chat Room Error',
+      );
     }
   }
 
   @override
+  Future<void> deleteUser(String userId) async {
+    try {
+      await _store.collection(_userCollectionName).doc(userId).update({
+        'isDeleted': true,
+      });
+    } on Exception {
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.DELETE_USER_ERR,
+        'Delete User Error',
+      );
+    }
+  }
+
   AppSecretsRepository get _appSecretsRepository =>
       GetIt.instance.get<AppSecretsRepository>();
 }
