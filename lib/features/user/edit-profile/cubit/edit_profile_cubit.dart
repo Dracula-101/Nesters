@@ -14,12 +14,7 @@ import 'package:nesters/utils/logger/logger.dart';
 import 'edit_profile_state.dart';
 
 class EditProfileCubit extends Cubit<EditProfileState> {
-  EditProfileCubit() : super(const EditProfileState()) {
-    emit(state.copyWith(
-      loadingState: EditProfileLoadingState(),
-      submitState: EditProfileSubmitState(),
-    ));
-  }
+  EditProfileCubit() : super(const EditProfileState());
 
   final UserRepository _userRepository = GetIt.I<UserRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
