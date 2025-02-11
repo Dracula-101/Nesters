@@ -22,9 +22,9 @@ import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
-import 'package:rxdart/rxdart.dart';
 
 part 'app_state.dart';
 part 'app_event.dart';
@@ -44,6 +44,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
             await _loadMarketplaceCategories(event, emit),
       );
     });
+    add(const AppEvent.loadDegrees());
+    add(const AppEvent.loadUniversities());
+    add(const AppEvent.loadMarketplaceCategories());
     add(const AppEvent.load());
     _addNetworkListener();
   }
@@ -276,14 +279,12 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
     try {
       final universities = await _userRepository.getAllUniversities();
+      log('Got universities: ${universities.length}');
       if (universities.isNotEmpty) {
         _localStorageRepository.saveListClass(LocalStorageKeys.universityList,
             universities, (p0) => p0?.toJson() ?? {});
-        emit(state.copyWith(
-            universities: universities, isLoadingUniversities: false));
-      } else {
-        emit(state.copyWith(isLoadingUniversities: false));
       }
+      emit(state.copyWith(isLoadingUniversities: false));
     } catch (e) {
       emit(state.copyWith(isLoadingUniversities: false));
     }
@@ -298,6 +299,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     }
     try {
       final degrees = await _userRepository.getAllDegrees();
+      log('Got degrees: ${degrees.length}');
       if (degrees.isNotEmpty) {
         _localStorageRepository.saveListClass(
             LocalStorageKeys.degreeList, degrees, (p0) => p0?.toJson() ?? {});
@@ -324,6 +326,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     try {
       final marketplaceCategories =
           await _marketplaceRepository.getMarketplaceCategories();
+      log('Got marketplace categories: ${marketplaceCategories.length}');
       if (marketplaceCategories.isNotEmpty) {
         _localStorageRepository.saveListClass(
             LocalStorageKeys.marketplaceCategoryList,
@@ -359,5 +362,4 @@ class ChatNavigationArgs implements NavigationArgs {
   ChatNavigationArgs({required this.chatId, required this.user})
       : route =
             '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$chatId',
-        args = {'chatId': chatId, 'user': user};
-}
+    

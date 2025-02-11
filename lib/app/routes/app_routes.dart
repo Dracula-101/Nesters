@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/view/app_scaffold.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
-import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/apartment/detail/view/apartment_detail_page.dart';
 import 'package:nesters/features/apartment/form/view/apartment_form_page.dart';

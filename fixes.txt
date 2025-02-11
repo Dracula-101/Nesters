@@ -1,8 +1,12 @@
+detail form
+
 chat taking too much time and space.(App Check issue)
+image uploading progress bar/
+filter user list page, university, branch, 
+filter sublet not opening
+filter apartments,
+filter marketpace,
 
-when new image uploaded still shows old one everywhere in edit form.
-
-notificatiom image.
 ==========
 2]map view,
 shimmer for other pages.

@@ -352,7 +352,7 @@ class _UserListViewState extends State<UserListView> {
                                         style: AppTheme.titleLarge,
                                       ),
                                     ),
-                                    if (appState.universities.isEmpty)
+                                    if (appState.isLoadingUniversities)
                                       const Center(
                                         child: CircularProgressIndicator(),
                                       )
