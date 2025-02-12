@@ -86,7 +86,7 @@ List<TargetFocus> addTargetHomePage({
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Help others & save them from crazy broker fees—list your apartment before you move! 🚀🏡',
+                  'Get broker-free apartments by connecting with students who are moving out 🚀🏡',
                   style: AppTheme.headlineVerySmall.copyWith(
                       color: AppTheme.surface, fontWeight: FontWeight.bold),
                 ),
