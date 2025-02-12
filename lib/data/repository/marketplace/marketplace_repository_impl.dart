@@ -144,7 +144,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .select(
               "*, marketplaces_likes!marketplaces_likes_marketplace_id_fkey!left(*)")
           .neq('user_id', userId)
-          .order('created_at', ascending: false)
+          .order('id', ascending: false)
           .range(paginationKey, paginationKey + range);
       return response.map((e) => MarketplaceModel.fromJson(e)).toList();
     } on supabase.PostgrestException catch (e) {
@@ -240,17 +240,13 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       if (filter.keyword != null) {
         queryBuilder = queryBuilder.contains('title', filter.keyword!);
       }
-      return queryBuilder
-          .neq("user_id", userId)
-          .order(
-            "created_at",
-            ascending: false,
-          )
-          .select()
-          .then(
-            (response) =>
-                response.map((e) => MarketplaceModel.fromJson(e)).toList(),
-          );
+      supabase.PostgrestTransformBuilder<List<Map<String, dynamic>>>
+          transformBuilder = queryBuilder.neq("user_id", userId);
+      if (filter.minPrice != null) {
+        transformBuilder = transformBuilder.order('price', ascending: true);
+      }
+      return transformBuilder.order("id", ascending: false).then((response) =>
+          response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
@@ -273,7 +269,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           .from('marketplaces')
           .select()
           .eq('user_id', userId)
-          .order('created_at', ascending: false)
+          .order('id', ascending: false)
           .then((response) =>
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } on supabase.PostgrestException catch (e) {
@@ -329,6 +325,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
               "*, marketplaces_likes!marketplaces_likes_marketplace_id_fkey!inner(*)")
           .eq('marketplaces_likes.user_id', userId)
           .eq('marketplaces_likes.is_liked', true)
+          .order('id', ascending: false)
           .then((response) =>
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } on supabase.PostgrestException catch (e) {

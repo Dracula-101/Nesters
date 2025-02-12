@@ -6,6 +6,7 @@ import 'package:nesters/domain/models/location/location_country.dart';
 import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/user.dart';
@@ -37,7 +38,7 @@ class UserInfo extends Equatable {
   final String? hobbies; //changeable
   final String? flatmatesGenderPrefs; //changeable
   final UserRoomType roomType; //changeable
-  final String? intakePeriod;
+  final UserIntake? intakePeriod;
   final int? intakeYear;
   final bool? hasRoommateFound;
 
@@ -214,7 +215,9 @@ class UserInfo extends Equatable {
         roomType: json['room_type'] != null
             ? UserRoomType.fromString(json['room_type'])
             : UserRoomType.UNKNOWN,
-        intakePeriod: json['intake_period'] ?? '',
+        intakePeriod: json['intake_period'] != null
+            ? UserIntake.fromString(json['intake_period'])
+            : null,
         intakeYear: json['intake_year'] ?? DateTime.now().year,
         email: json['email'] ?? '',
         hasRoommateFound: json['has_roommate_found'] ?? false,
@@ -293,7 +296,7 @@ class UserInfo extends Equatable {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
-    String? intakePeriod,
+    UserIntake? intakePeriod,
     int? intakeYear,
     String? email,
     bool? hasRoommateFound,

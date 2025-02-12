@@ -34,6 +34,8 @@ class _HomeScaffoldState extends State<HomeScaffold> {
       context: context,
       backgroundColor: AppTheme.background,
       isDismissible: false,
+      enableDrag: false,
+      routeSettings: const RouteSettings(name: 'NetworkDisabledBottomSheet'),
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
@@ -205,9 +206,9 @@ class UserQuickProfileWidget extends StatelessWidget {
     );
   }
 
-  String _buildIntakeString(String? intakePeriod, int? intakeYear) {
+  String _buildIntakeString(UserIntake? intakePeriod, int? intakeYear) {
     String intakeText = "";
-    if (intakePeriod != null && intakePeriod != "" && intakeYear != null) {
+    if (intakePeriod != null && intakeYear != null) {
       intakeText = '$intakePeriod $intakeYear';
     }
     return intakeText;

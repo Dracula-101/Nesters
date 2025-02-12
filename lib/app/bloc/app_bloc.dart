@@ -284,8 +284,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       final universities = await _userRepository.getAllUniversities();
       log('Got universities: ${universities.length}');
       if (universities.isNotEmpty) {
-        _localStorageRepository.saveListClass(LocalStorageKeys.universityList,
-            universities, (p0) => p0?.toJson() ?? {});
+        _localStorageRepository.saveListClass(
+            LocalStorageKeys.universityList, universities, (p0) => p0.toJson());
       }
       emit(state.copyWith(
           universities: universities,
@@ -309,7 +309,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       log('Got degrees: ${degrees.length}');
       if (degrees.isNotEmpty) {
         _localStorageRepository.saveListClass(
-            LocalStorageKeys.degreeList, degrees, (p0) => p0?.toJson() ?? {});
+            LocalStorageKeys.degreeList, degrees, (p0) => p0.toJson());
       }
       emit(state.copyWith(
           degrees: degrees, degreesState: state.degreesState.success()));

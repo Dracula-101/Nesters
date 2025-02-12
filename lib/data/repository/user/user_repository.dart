@@ -25,9 +25,9 @@ abstract class UserRepository {
 
   Future<List<MarketplaceModel>> getMarketplaceData();
 
-  Future<List<University?>> getAllUniversities();
+  Future<List<University>> getAllUniversities();
 
-  Future<List<Degree?>> getAllDegrees();
+  Future<List<Degree>> getAllDegrees();
 
   Future<List<CityInfo>> searchCities({required String searchQuery});
 

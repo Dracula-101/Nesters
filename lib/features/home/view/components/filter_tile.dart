@@ -14,27 +14,29 @@ class FilterTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: AppTheme.onSurface.withOpacity(0.1),
-            width: 1,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: AppTheme.onSurface.withOpacity(0.1),
+              width: 1,
+            ),
           ),
         ),
-      ),
-      child: InkWell(
-        onTap: onTap,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
           children: [
             Transform.scale(
               scale: 0.8,
               child: CupertinoCheckbox(
                 activeColor: AppTheme.primary,
                 value: isSelected,
-                onChanged: (value) {},
+                onChanged: (value) {
+                  onTap();
+                },
               ),
             ),
             Flexible(
