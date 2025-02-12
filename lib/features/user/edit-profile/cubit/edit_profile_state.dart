@@ -3,8 +3,8 @@ import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/utils/bloc_state.dart';
-
 
 class EditProfileState extends Equatable {
   final UserEditProfile? userEditProfile;
@@ -37,7 +37,7 @@ class EditProfileState extends Equatable {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
-    String? intakePeriod,
+    UserIntake? intakePeriod,
     int? intakeYear,
   }) {
     return EditProfileState(
@@ -70,7 +70,7 @@ class EditProfileState extends Equatable {
         flatmatesGenderPrefs:
             flatmatesGenderPrefs ?? userEditProfile?.flatmatesGenderPrefs ?? '',
         roomType: roomType ?? userEditProfile?.roomType ?? UserRoomType.UNKNOWN,
-        intakePeriod: intakePeriod ?? userEditProfile?.intakePeriod ?? '',
+        intakePeriod: intakePeriod ?? userEditProfile?.intakePeriod,
         intakeYear:
             intakeYear ?? userEditProfile?.intakeYear ?? DateTime.now().year,
       ),
@@ -106,7 +106,7 @@ class UserEditProfile {
   final String hobbies;
   final String flatmatesGenderPrefs;
   final UserRoomType roomType;
-  final String? intakePeriod;
+  final UserIntake? intakePeriod;
   final int? intakeYear;
 
   const UserEditProfile({
@@ -143,7 +143,7 @@ class UserEditProfile {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
-    String? intakePeriod,
+    UserIntake? intakePeriod,
     int? intakeYear,
   }) {
     return UserEditProfile(

@@ -3,6 +3,7 @@ import 'package:nesters/data/repository/database/remote/database_repository.dart
 import 'package:nesters/domain/models/location/location_city.dart';
 import 'package:nesters/domain/models/location/location_country.dart';
 import 'package:nesters/domain/models/location/location_state.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 
@@ -12,7 +13,7 @@ class UserQuickProfile extends Equatable {
   final String? profileImage;
   final String? selectedCourseName;
   final String? selectedCollegeName;
-  final String? intakePeriod;
+  final UserIntake? intakePeriod;
   final int? intakeYear;
   final LocationCity? city;
   final LocationState? state;
@@ -101,7 +102,9 @@ class UserQuickProfile extends Equatable {
             ? LocationCountry(name: json['country'])
             : null,
         workExperience: json['work_experience'] ?? 0,
-        intakePeriod: json['intake_period'] ?? '',
+        intakePeriod: json['intake_period'] != null
+            ? UserIntake.fromString(json['intake_period'])
+            : UserIntake.FALL,
         intakeYear: json['intake_year'] ?? DateTime.now().year,
         hasRoommateFound: json['has_rooommate_found'] ?? true,
       );

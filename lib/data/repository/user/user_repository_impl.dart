@@ -97,7 +97,7 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<List<University?>> getAllUniversities() async {
+  Future<List<University>> getAllUniversities() async {
     try {
       return await _databaseRepository.getData(
         "universities",
@@ -109,7 +109,7 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<List<Degree?>> getAllDegrees() async {
+  Future<List<Degree>> getAllDegrees() async {
     try {
       return await _databaseRepository.getData(
         "masters",

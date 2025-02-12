@@ -1,16 +1,16 @@
 part of 'marketplace_bloc.dart';
 
-class MarketplaceState {
+class MarketplaceState extends Equatable {
   final List<MarketplaceModel>? marketplaceList;
   final List<MarketplaceModel>? marketplaceListFiltered;
-  final Exception? error;
+  final BlocState filterState;
   final MarketplaceSingleFilter? singleFilter;
   final MarketplaceAdvancedFilter? advancedFilter;
 
   const MarketplaceState({
     this.marketplaceList,
     this.marketplaceListFiltered,
-    this.error,
+    this.filterState = const BlocState(isLoading: false),
     this.singleFilter,
     this.advancedFilter,
   });
@@ -18,7 +18,7 @@ class MarketplaceState {
   MarketplaceState copyWith({
     List<MarketplaceModel>? marketplaceList,
     List<MarketplaceModel>? marketplaceListFiltered,
-    Exception? error,
+    BlocState? filterState,
     MarketplaceSingleFilter? filter,
     MarketplaceAdvancedFilter? advancedFilter,
   }) {
@@ -26,26 +26,20 @@ class MarketplaceState {
       marketplaceList: marketplaceList ?? this.marketplaceList,
       marketplaceListFiltered:
           marketplaceListFiltered ?? this.marketplaceListFiltered,
-      error: error ?? this.error,
+      filterState: filterState ?? this.filterState,
       singleFilter: filter,
       advancedFilter: advancedFilter,
     );
   }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is MarketplaceState &&
-        listEquals(other.marketplaceList, marketplaceList) &&
-        listEquals(other.marketplaceListFiltered, marketplaceListFiltered) &&
-        other.error == error &&
-        other.singleFilter == singleFilter &&
-        other.advancedFilter == advancedFilter;
-  }
-
-  @override
-  int get hashCode => marketplaceList.hashCode ^ error.hashCode;
+  List<Object?> get props => [
+        marketplaceList,
+        marketplaceListFiltered,
+        filterState,
+        singleFilter,
+        advancedFilter,
+      ];
 }
 
 enum MarketplaceFilterTypes {

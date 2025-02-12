@@ -18,6 +18,7 @@ import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/location/city_info.dart';
 import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/theme/theme.dart';
@@ -668,13 +669,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       labelText: 'Intake Period',
       validatorText: 'Please select your intake period',
       controller: _intakePeriodController,
-      items: const [
-        'Fall',
-        'Spring',
-        'Summer',
-        'Winter',
-        'Not Selected',
-      ],
+      items: UserIntake.values.map((e) => e.toString()).toList(),
     );
   }
 

@@ -17,6 +17,7 @@ import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
+import 'package:nesters/features/home/view/components/filter_page.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
@@ -75,7 +76,7 @@ class _UserListViewState extends State<UserListView> {
   final PagingController<int, UserQuickProfile> _pagingController =
       PagingController(firstPageKey: 0);
   final int _pageSize = 20;
-  final TextEditingController intakeYearController = TextEditingController();
+
   @override
   void initState() {
     _addPageListener();
@@ -85,18 +86,11 @@ class _UserListViewState extends State<UserListView> {
   @override
   void dispose() {
     _pagingController.dispose();
-    intakeYearController.dispose();
     super.dispose();
   }
 
   void _addPageListener() {
-    _pagingController.addPageRequestListener(
-      (pageKey) {
-        _fetchPage(
-          pageKey,
-        );
-      },
-    );
+    _pagingController.addPageRequestListener((pageKey) => _fetchPage(pageKey));
   }
 
   Future<void> _fetchPage(int pageKey) async {
@@ -133,18 +127,27 @@ class _UserListViewState extends State<UserListView> {
       onRefresh: () => Future.sync(
         () => _pagingController.refresh(),
       ),
-      child: BlocBuilder<HomeBloc, HomeState>(builder: (context, state) {
-        return CustomScrollView(
-          slivers: [
-            _buildAppBar(),
-            state.filteredProfiles != null
-                ? _buildFilteredUserList(state.filteredProfiles!,
-                    isAllowed: state.user?.isUserProfileComplete() ?? false)
-                : _buildUserList(
-                    isAllowed: state.user?.isUserProfileComplete() ?? false)
-          ],
-        );
-      }),
+      child: BlocConsumer<HomeBloc, HomeState>(
+        listener: (context, state) {
+          if (state.filterState.exception != null) {
+            context.showErrorSnackBar(state.filterState.exception!.message);
+          }
+        },
+        builder: (context, state) {
+          return CustomScrollView(
+            slivers: [
+              _buildAppBar(),
+              state.userFilter != null || state.singleUserFilter != null
+                  ? _buildFilteredUserList(
+                      isAllowed: state.user?.isUserProfileComplete() ?? false,
+                    )
+                  : _buildUserList(
+                      isAllowed: state.user?.isUserProfileComplete() ?? false,
+                    )
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -296,10 +299,10 @@ class _UserListViewState extends State<UserListView> {
   }
 
   Widget _buildTopActionsBar() {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, homeState) {
-        return BlocBuilder<AppBloc, AppState>(
-          builder: (context, appState) {
+    return BlocBuilder<AppBloc, AppState>(
+      builder: (context, appState) {
+        return BlocBuilder<HomeBloc, HomeState>(
+          builder: (context, homeState) {
             return ListView(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               scrollDirection: Axis.horizontal,
@@ -336,49 +339,51 @@ class _UserListViewState extends State<UserListView> {
                           isDismissible: true,
                           scrollControlDisabledMaxHeightRatio: 0.5,
                           useSafeArea: true,
-                          builder: (context) {
-                            return DraggableScrollableSheet(
-                              expand: false,
-                              builder: (context, scrollController) {
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 12, bottom: 16),
-                                      child: Text(
-                                        "Universities",
-                                        style: AppTheme.titleLarge,
-                                      ),
-                                    ),
-                                    if (appState.universitiesState.isLoading)
-                                      const Center(
-                                        child: CircularProgressIndicator(),
-                                      )
-                                    else
-                                      Expanded(
-                                        child: ListView.builder(
-                                          controller: scrollController,
-                                          itemCount:
-                                              appState.universities.length,
-                                          itemBuilder: (context, index) {
-                                            return UniversityFilterTile(
-                                              isSelected: false,
-                                              onTap: () {
-                                                Navigator.of(context).pop(
-                                                  appState.universities[index]!,
-                                                );
-                                              },
-                                              university:
-                                                  appState.universities[index]!,
-                                            );
-                                          },
+                          builder: (ctx) {
+                            return BlocProvider.value(
+                              value: context.read<AppBloc>(),
+                              child: DraggableScrollableSheet(
+                                expand: false,
+                                builder: (ctx, scrollController) {
+                                  return Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 12, bottom: 16),
+                                        child: Text(
+                                          "Universities",
+                                          style: AppTheme.titleLarge,
                                         ),
                                       ),
-                                  ],
-                                );
-                              },
+                                      UniversitiesLoader(
+                                        builder: (BuildContext context,
+                                            List<University> universities) {
+                                          return Expanded(
+                                            child: ListView.builder(
+                                              controller: scrollController,
+                                              itemCount: universities.length,
+                                              itemBuilder: (context, index) {
+                                                return UniversityFilterTile(
+                                                  isSelected: false,
+                                                  onTap: () {
+                                                    Navigator.of(context).pop(
+                                                        universities[index]);
+                                                  },
+                                                  university:
+                                                      universities[index],
+                                                );
+                                              },
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    ],
+                                  );
+                                },
+                              ),
                             );
                           },
                         ).then((value) {
@@ -404,12 +409,6 @@ class _UserListViewState extends State<UserListView> {
                             .read<HomeBloc>()
                             .add(SingleRemoveFilterProfileEvent());
                       } else {
-                        if (appState.degrees.isEmpty) {
-                          context
-                              .read<AppBloc>()
-                              .add(const AppEvent.loadDegrees());
-                        }
-                        // open a modal bottom sheet
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true,
@@ -418,45 +417,49 @@ class _UserListViewState extends State<UserListView> {
                           isDismissible: true,
                           scrollControlDisabledMaxHeightRatio: 0.5,
                           useSafeArea: true,
-                          builder: (context) {
+                          builder: (ctx) {
                             return DraggableScrollableSheet(
                               expand: false,
-                              builder: (context, scrollController) {
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                          left: 12, bottom: 16),
-                                      child: Text(
-                                        "Branches",
-                                        style: AppTheme.titleLarge,
-                                      ),
-                                    ),
-                                    if (appState.degrees.isEmpty)
-                                      const Center(
-                                        child: CircularProgressIndicator(),
-                                      )
-                                    else
-                                      Expanded(
-                                        child: ListView.builder(
-                                          controller: scrollController,
-                                          itemCount: appState.degrees.length,
-                                          itemBuilder: (context, index) {
-                                            return DegreeFilterTile(
-                                              isSelected: false,
-                                              onTap: () {
-                                                Navigator.of(context).pop(
-                                                  appState.degrees[index]!,
-                                                );
-                                              },
-                                              degree: appState.degrees[index]!,
-                                            );
-                                          },
+                              builder: (ctx, scrollController) {
+                                return BlocProvider.value(
+                                  value: context.read<AppBloc>(),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                            left: 12, bottom: 16),
+                                        child: Text(
+                                          "Branches",
+                                          style: AppTheme.titleLarge,
                                         ),
                                       ),
-                                  ],
+                                      DegreesLoader(
+                                        builder: (BuildContext context,
+                                            List<Degree> degrees) {
+                                          return Expanded(
+                                            child: ListView.builder(
+                                              controller: scrollController,
+                                              itemCount: degrees.length,
+                                              itemBuilder: (context, index) {
+                                                return DegreeFilterTile(
+                                                  isSelected: false,
+                                                  onTap: () {
+                                                    Navigator.of(context).pop(
+                                                      degrees[index],
+                                                    );
+                                                  },
+                                                  degree: degrees[index],
+                                                );
+                                              },
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 );
                               },
                             );
@@ -607,505 +610,68 @@ class _UserListViewState extends State<UserListView> {
     );
   }
 
-  Widget _buildFilteredUserList(
-    List<UserQuickProfile> profiles, {
+  Widget _buildFilteredUserList({
     required bool isAllowed,
   }) {
-    if (profiles.isEmpty) {
-      return const SliverFillRemaining(
-        child: ShowNoInfoWidget(
-          title: 'No Profiles Found',
-          subtitle:
-              'There are no profiles matching the filter criteria. Please try again later.',
-        ),
-      );
-    }
-    return SliverList.builder(
-      itemCount: profiles.length,
-      itemBuilder: (context, index) {
-        return UserQuickProfileWidget(
-          userQuickProfile: profiles[index],
-          canNavigate: isAllowed,
-        );
+    return BlocBuilder<HomeBloc, HomeState>(
+      builder: (context, state) {
+        return state.filterState.isLoading
+            ? const SliverFillRemaining(
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            : state.filterState.exception != null
+                ? SliverFillRemaining(
+                    child: ShowErrorWidget(
+                      error: state.filterState.exception,
+                    ),
+                  )
+                : state.filterState.isSuccess &&
+                        state.filteredProfiles != null &&
+                        (state.filteredProfiles?.isNotEmpty == true)
+                    ? SliverList.builder(
+                        itemCount: state.filteredProfiles!.length,
+                        itemBuilder: (context, index) {
+                          return UserQuickProfileWidget(
+                            userQuickProfile: state.filteredProfiles![index],
+                            canNavigate: isAllowed,
+                          );
+                        },
+                      )
+                    : const SliverFillRemaining(
+                        child: ShowNoInfoWidget(
+                          title: 'No Profiles Found',
+                          subtitle:
+                              'There are no profiles matching the filter criteria. Please try again later.',
+                        ),
+                      );
       },
     );
   }
 
   void showFilterDialog(
       BuildContext context, HomeState state, AppState appState) {
-    UserFilterTypes userFilterTypeSelected = UserFilterTypes.University;
-    String selectedUniversity = state.userFilter?.universityName ?? '';
-    String selectedBranch = state.userFilter?.branchName ?? '';
-    String selectedIntakePeriod = state.userFilter?.intakePeriod ?? '';
-    String selectedGender = state.userFilter?.flatmateGenderPref ?? '';
-    UserFoodHabit selectedEatingHabit =
-        state.userFilter?.foodHabit ?? UserFoodHabit.UNKNOWN;
-    UserHabit selectedSmokingHabit =
-        state.userFilter?.smokingHabit ?? UserHabit.UNKNOWN;
-    UserHabit selectedDrinkingHabit =
-        state.userFilter?.drinkingHabit ?? UserHabit.UNKNOWN;
-    UserRoomType selectedRoomType =
-        state.userFilter?.roomType ?? UserRoomType.UNKNOWN;
-    List<University?> filterUniversities = appState.universities;
-    DateTime selectedYearDateTime = DateTime.now();
     showDialog(
       context: context,
       builder: (ctx) {
         return StatefulBuilder(
-          builder: (ctx, setState) {
+          builder: (ctx, updateState) {
             return BlocProvider.value(
               value: context.read<HomeBloc>(),
               child: BlocBuilder<HomeBloc, HomeState>(
                 builder: (context, homeState) {
-                  return SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    child: Material(
-                      color: AppTheme.surface,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(
-                                top: 4, left: 16, right: 16),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Filters',
-                                  style: AppTheme.titleLarge.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.close),
-                                  iconSize: 20,
-                                  onPressed: () {
-                                    Navigator.of(ctx).pop();
-                                  },
-                                )
-                              ],
-                            ),
-                          ),
-                          const Divider(
-                            height: 1,
-                            thickness: 1,
-                          ),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.topCenter,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width *
-                                        0.35,
-                                    child: ListView(
-                                      shrinkWrap: true,
-                                      children: [
-                                        ...UserFilterTypes.values.map(
-                                          (e) => FilterTab(
-                                            title: e.toString(),
-                                            isSelected:
-                                                e == userFilterTypeSelected,
-                                            onTap: () {
-                                              setState(
-                                                () {
-                                                  userFilterTypeSelected = e;
-                                                },
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width *
-                                        0.65,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          left: BorderSide(
-                                            color: AppTheme.greyShades.shade300,
-                                          ),
-                                        ),
-                                      ),
-                                      child: SizedBox(
-                                          child: switch (
-                                              userFilterTypeSelected) {
-                                        UserFilterTypes.University => Column(
-                                            children: [
-                                              TextField(
-                                                decoration: InputDecoration(
-                                                  hintText: 'Search University',
-                                                  hintStyle: AppTheme.bodySmall,
-                                                  prefixIcon: Icon(
-                                                    Icons.search,
-                                                    color: AppTheme
-                                                        .greyShades.shade800,
-                                                  ),
-                                                  border: InputBorder.none,
-                                                  contentPadding:
-                                                      const EdgeInsets.all(8),
-                                                  isDense: true,
-                                                ),
-                                                onChanged: (value) {
-                                                  if (value == "") {
-                                                    setState(() {
-                                                      filterUniversities =
-                                                          appState.universities;
-                                                    });
-                                                  } else {
-                                                    setState(
-                                                      () {
-                                                        filterUniversities = appState
-                                                            .universities
-                                                            .where((element) =>
-                                                                element?.title
-                                                                    ?.toLowerCase()
-                                                                    .contains(
-                                                                      value
-                                                                          .toLowerCase(),
-                                                                    ) ??
-                                                                false)
-                                                            .toList();
-                                                      },
-                                                    );
-                                                  }
-                                                },
-                                              ),
-                                              const Divider(
-                                                height: 1,
-                                                thickness: 1,
-                                              ),
-                                              Expanded(
-                                                  child: ListView.builder(
-                                                shrinkWrap: true,
-                                                itemCount:
-                                                    filterUniversities.length,
-                                                itemBuilder: (context, index) {
-                                                  return UniversityFilterTile(
-                                                    isSelected:
-                                                        selectedUniversity ==
-                                                            filterUniversities[
-                                                                    index]
-                                                                ?.title,
-                                                    isDense: true,
-                                                    onTap: () {
-                                                      setState(() {
-                                                        selectedUniversity =
-                                                            filterUniversities[
-                                                                        index]
-                                                                    ?.title ??
-                                                                '';
-                                                      });
-                                                    },
-                                                    university:
-                                                        filterUniversities[
-                                                            index]!,
-                                                  );
-                                                },
-                                              ))
-                                            ],
-                                          ),
-                                        UserFilterTypes.Branch =>
-                                          ListView.builder(
-                                            shrinkWrap: true,
-                                            itemCount: appState.degrees.length,
-                                            itemBuilder: (context, index) {
-                                              return DegreeFilterTile(
-                                                isSelected: selectedBranch ==
-                                                    appState
-                                                        .degrees[index]!.name,
-                                                isDense: true,
-                                                onTap: () {
-                                                  setState(() {
-                                                    selectedBranch = appState
-                                                        .degrees[index]!.name;
-                                                  });
-                                                },
-                                                degree:
-                                                    appState.degrees[index]!,
-                                              );
-                                            },
-                                          ),
-                                        UserFilterTypes.IntakePeriod =>
-                                          ListView(
-                                            children: [
-                                              FilterTile(
-                                                title: 'Fall',
-                                                isSelected:
-                                                    selectedIntakePeriod ==
-                                                        'Fall',
-                                                onTap: () {
-                                                  setState(() {
-                                                    selectedIntakePeriod =
-                                                        'Fall';
-                                                  });
-                                                },
-                                              ),
-                                              FilterTile(
-                                                title: 'Spring',
-                                                isSelected:
-                                                    selectedIntakePeriod ==
-                                                        'Spring',
-                                                onTap: () {
-                                                  setState(() {
-                                                    selectedIntakePeriod =
-                                                        'Spring';
-                                                  });
-                                                },
-                                              ),
-                                              FilterTile(
-                                                title: 'Summer',
-                                                isSelected:
-                                                    selectedIntakePeriod ==
-                                                        'Summer',
-                                                onTap: () {
-                                                  setState(() {
-                                                    selectedIntakePeriod =
-                                                        'Summer';
-                                                  });
-                                                },
-                                              ),
-                                              FilterTile(
-                                                title: 'Winter',
-                                                isSelected:
-                                                    selectedIntakePeriod ==
-                                                        'Winter',
-                                                onTap: () {
-                                                  setState(() {
-                                                    selectedIntakePeriod =
-                                                        'Winter';
-                                                  });
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        UserFilterTypes.IntakeYear =>
-                                          CustomTextField(
-                                            controller: intakeYearController,
-                                            hintText: 'Intake Year',
-                                            labelText: 'Intake Year',
-                                            validator: (value) {
-                                              if (value.isEmpty) {
-                                                return 'Intake Year';
-                                              }
-                                              return null;
-                                            },
-                                            enabled: false,
-                                            onTap: () async {
-                                              showDialog(
-                                                context: context,
-                                                builder:
-                                                    (BuildContext context) {
-                                                  return AlertDialog(
-                                                    title: const Text(
-                                                        "Select Year"),
-                                                    content: SizedBox(
-                                                      width: 300,
-                                                      height: 300,
-                                                      child: YearPicker(
-                                                        firstDate: DateTime(
-                                                            DateTime.now()
-                                                                    .year -
-                                                                100,
-                                                            1),
-                                                        lastDate: DateTime(
-                                                            DateTime.now()
-                                                                    .year +
-                                                                100,
-                                                            1),
-                                                        selectedDate:
-                                                            selectedYearDateTime,
-                                                        onChanged: (DateTime
-                                                            dateTime) {
-                                                          Navigator.pop(
-                                                              context);
-                                                          intakeYearController
-                                                                  .text =
-                                                              dateTime.year
-                                                                  .toString();
-                                                          selectedYearDateTime =
-                                                              dateTime;
-                                                        },
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              );
-                                            },
-                                          ),
-                                        UserFilterTypes.Gender => ListView(
-                                            children: [
-                                              FilterTile(
-                                                title: 'Male',
-                                                isSelected:
-                                                    selectedGender == 'Male',
-                                                onTap: () {
-                                                  setState(() {
-                                                    selectedGender = 'Male';
-                                                  });
-                                                },
-                                              ),
-                                              FilterTile(
-                                                title: 'Female',
-                                                isSelected:
-                                                    selectedGender == 'Female',
-                                                onTap: () {
-                                                  setState(() {
-                                                    selectedGender = 'Female';
-                                                  });
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                        UserFilterTypes.EatingHabits =>
-                                          ListView(
-                                            children: [
-                                              ...UserFoodHabit.toList().map(
-                                                (e) => FilterTile(
-                                                  title: e
-                                                      .toUserFriendlyString()
-                                                      .capitalize,
-                                                  isSelected:
-                                                      selectedEatingHabit == e,
-                                                  onTap: () {
-                                                    setState(() {
-                                                      selectedEatingHabit = e;
-                                                    });
-                                                  },
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        UserFilterTypes.SmokingHabits =>
-                                          ListView(
-                                            children: [
-                                              ...UserHabit.toList().map(
-                                                (e) => FilterTile(
-                                                  title:
-                                                      e.toString().capitalize,
-                                                  isSelected:
-                                                      selectedSmokingHabit == e,
-                                                  onTap: () {
-                                                    setState(() {
-                                                      selectedSmokingHabit = e;
-                                                    });
-                                                  },
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        UserFilterTypes.DrinkingHabits =>
-                                          ListView(
-                                            children: [
-                                              ...UserHabit.toList().map(
-                                                (e) => FilterTile(
-                                                  title:
-                                                      e.toString().capitalize,
-                                                  isSelected:
-                                                      selectedDrinkingHabit ==
-                                                          e,
-                                                  onTap: () {
-                                                    setState(() {
-                                                      selectedDrinkingHabit = e;
-                                                    });
-                                                  },
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        UserFilterTypes.RoomType => ListView(
-                                            children: [
-                                              ...UserRoomType.toList().map(
-                                                (e) => FilterTile(
-                                                  title: e.toUI(),
-                                                  isSelected:
-                                                      selectedRoomType == e,
-                                                  onTap: () {
-                                                    setState(() {
-                                                      selectedRoomType = e;
-                                                    });
-                                                  },
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                      }),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ),
-                          ),
-                          const Divider(
-                            height: 1,
-                            thickness: 1,
-                          ),
-                          Container(
-                            width: MediaQuery.of(context).size.width,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () {
-                                    context
-                                        .read<HomeBloc>()
-                                        .add(RemoveFilterProfileEvent());
-                                    Navigator.of(ctx).pop();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppTheme.error,
-                                  ),
-                                  child: Text(
-                                    'Reset',
-                                    style: AppTheme.bodyMedium.copyWith(
-                                      color: AppTheme.onError,
-                                    ),
-                                  ),
-                                ),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    final filter = UserFilter(
-                                      universityName: selectedUniversity,
-                                      branchName: selectedBranch,
-                                      drinkingHabit: selectedDrinkingHabit,
-                                      foodHabit: selectedEatingHabit,
-                                      flatmateGenderPref: selectedGender,
-                                      roomType: selectedRoomType,
-                                      smokingHabit: selectedSmokingHabit,
-                                      intakePeriod: selectedIntakePeriod,
-                                      intakeYear:
-                                          intakeYearController.text == ""
-                                              ? null
-                                              : int.parse(
-                                                  intakeYearController.text,
-                                                ),
-                                    );
-                                    context.read<HomeBloc>().add(
-                                          AddFilterProfileEvent(
-                                            filter,
-                                          ),
-                                        );
-                                    Navigator.of(ctx).pop();
-                                  },
-                                  child: Text(
-                                    'Apply',
-                                    style: AppTheme.bodyMedium.copyWith(
-                                      color: AppColor.white,
-                                    ),
-                                  ),
-                                )
-                              ],
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
+                  return UserFilterPage(
+                    initialFilter: homeState.userFilter,
+                    universities: appState.universities,
+                    onApply: (filter) {
+                      context
+                          .read<HomeBloc>()
+                          .add(AddFilterProfileEvent(filter));
+                    },
+                    onReset: () {
+                      context.read<HomeBloc>().add(RemoveFilterProfileEvent());
+                    },
                   );
                 },
               ),

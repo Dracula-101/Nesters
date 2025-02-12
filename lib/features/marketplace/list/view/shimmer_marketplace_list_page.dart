@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nesters/features/marketplace/list/view/components/shimmer_marketplace_list_widget.dart';
 
-class ShimmerMarketplacetPage extends StatelessWidget {
-  const ShimmerMarketplacetPage({super.key});
+class ShimmerMarketplacePage extends StatelessWidget {
+  const ShimmerMarketplacePage({super.key});
 
   @override
   Widget build(BuildContext context) {

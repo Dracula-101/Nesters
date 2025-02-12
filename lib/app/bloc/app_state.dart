@@ -6,8 +6,8 @@ class AppState extends Equatable {
   final NetworkData networkData;
   final Exception? error;
 
-  final List<University?> universities;
-  final List<Degree?> degrees;
+  final List<University> universities;
+  final List<Degree> degrees;
   final List<MarketplaceCategoryModel> marketplaceCategory;
   final BlocState universitiesState;
   final BlocState degreesState;
@@ -31,8 +31,8 @@ class AppState extends Equatable {
     bool? isOnline,
     NetworkData? networkData,
     Exception? error,
-    List<University?>? universities,
-    List<Degree?>? degrees,
+    List<University>? universities,
+    List<Degree>? degrees,
     List<MarketplaceCategoryModel>? marketplaceCategory,
     BlocState? universitiesState,
     BlocState? degreesState,

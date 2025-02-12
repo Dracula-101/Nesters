@@ -6,9 +6,11 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/network/network_checker_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_info.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
+import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -35,73 +37,80 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     if (event is LoadProfileEvent) {
       emit(state.copyWith(user: event.user));
     } else if (event is FetchNextPageEvent) {
-      emit(state.copyWith(isLoading: true));
+      emit(state.copyWith(filterState: state.filterState.loading()));
     } else if (event is LoadProfileCompleteEvent) {
       emit(
-        state.copyWith(
-          profiles: event.profiles,
-          isLoading: false,
-        ),
+        state.copyWith(filterState: state.filterState.success()),
       );
     } else if (event is LoadProfileErrorEvent) {
       emit(
-        state.copyWith(
-          error: event.error,
-          isLoading: false,
-        ),
+        state.copyWith(filterState: state.filterState.failure(event.error)),
       );
     } else if (event is SingleAddFilterProfileEvent) {
       emit(
         state.copyWith(
-          userFilter: null,
-          isLoading: true,
-        ),
-      );
-      final filteredUser = await _userRepository.getSingleFilteredQuickProfiles(
-        event.filter,
-      );
-      emit(
-        state.copyWith(
-          filteredProfiles: filteredUser,
-          isLoading: false,
           singleUserFilter: event.filter,
+          filterState: state.filterState.loading(),
         ),
       );
+      try {
+        final filteredUser = await _userRepository
+            .getSingleFilteredQuickProfiles(event.filter)
+            .timeout(const Duration(minutes: 1));
+        emit(
+          state.copyWith(
+            filteredProfiles: filteredUser,
+            filterState: state.filterState.success(),
+            singleUserFilter: event.filter,
+          ),
+        );
+      } on AppException catch (e) {
+        emit(
+          state.copyWith(
+            filterState: state.filterState.failure(e),
+            singleUserFilter: null,
+          ),
+        );
+      }
     } else if (event is SingleRemoveFilterProfileEvent) {
       emit(
-        state.copyWith(
-          singleUserFilter: null,
-          filteredProfiles: null,
-        ),
+        state.copyWith(singleUserFilter: null, filteredProfiles: null),
       );
     } else if (event is AddFilterProfileEvent) {
-      emit(
-        state.copyWith(
-          isLoading: true,
-        ),
-      );
       if (event.filter == null) {
         emit(
           state.copyWith(
             userFilter: null,
             singleUserFilter: null,
             filteredProfiles: null,
-            isLoading: false,
+            filterState: state.filterState.success(),
           ),
         );
         return;
       }
-      final filteredUser =
-          await _userRepository.getMultipleFilteredQuickProfiles(event.filter!);
-      _logger.debug(
-          "Filtered User: ${filteredUser.length} with filter: ${event.filter}");
-      emit(
-        state.copyWith(
-          filteredProfiles: filteredUser,
-          isLoading: false,
-          userFilter: event.filter,
-        ),
-      );
+      emit(state.copyWith(
+        filterState: state.filterState.loading(),
+        userFilter: event.filter,
+      ));
+      try {
+        final filteredUser = await _userRepository
+            .getMultipleFilteredQuickProfiles(event.filter!)
+            .timeout(const Duration(minutes: 1));
+        _logger.debug(
+            "Filtered User: ${filteredUser.length} with filter: ${event.filter}");
+        emit(
+          state.copyWith(
+            filteredProfiles: filteredUser,
+            filterState: state.filterState.success(),
+            userFilter: event.filter,
+          ),
+        );
+      } on AppException catch (e) {
+        emit(
+          state.copyWith(
+              filterState: state.filterState.failure(e), userFilter: null),
+        );
+      }
     } else if (event is RemoveFilterProfileEvent) {
       emit(
         state.copyWith(

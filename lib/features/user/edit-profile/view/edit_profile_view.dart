@@ -10,6 +10,7 @@ import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_cubit.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
@@ -137,7 +138,8 @@ class _EditProfileViewState extends State<EditProfileView> {
           intakeYearController.text =
               state.userEditProfile!.intakeYear.toString();
           intakePeriodController.text =
-              state.userEditProfile!.intakePeriod ?? "Not Selected";
+              (state.userEditProfile!.intakePeriod ?? UserIntake.UNKNOWN)
+                  .toString();
           selectedYear = DateTime(
               state.userEditProfile!.intakeYear ?? DateTime.now().year);
         }
@@ -471,8 +473,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                                           intakeYear: int.parse(
                                             intakeYearController.text,
                                           ),
-                                          intakePeriod:
-                                              intakePeriodController.text,
+                                          intakePeriod: UserIntake.fromString(
+                                            intakePeriodController.text,
+                                          ),
                                         );
                                     context
                                         .read<EditProfileCubit>()
@@ -534,13 +537,7 @@ class _EditProfileViewState extends State<EditProfileView> {
     return CustomDropdownField(
       validatorText: 'Please Select Your Intake Period',
       controller: intakePeriodController,
-      items: const [
-        'Fall',
-        'Spring',
-        'Summer',
-        'Winter',
-        'Not Selected',
-      ],
+      items: UserIntake.values.map((e) => e.toString()).toList(),
     );
   }
 

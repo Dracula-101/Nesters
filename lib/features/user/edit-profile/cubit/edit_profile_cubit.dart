@@ -8,6 +8,7 @@ import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/features/auth/bloc/auth_error.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -84,7 +85,7 @@ class EditProfileCubit extends Cubit<EditProfileState> {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
-    String? intakePeriod,
+    UserIntake? intakePeriod,
     int? intakeYear,
   }) {
     emit(

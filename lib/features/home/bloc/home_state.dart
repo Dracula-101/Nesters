@@ -3,8 +3,7 @@ part of 'home_bloc.dart';
 class HomeState extends Equatable {
   final List<UserQuickProfile>? profiles;
   final List<UserQuickProfile>? filteredProfiles;
-  final Exception? error;
-  final bool isLoading;
+  final BlocState filterState;
   final UserInfo? user;
   final UserFilter? userFilter;
   // Single category of user filtering
@@ -14,8 +13,7 @@ class HomeState extends Equatable {
     this.user,
     this.profiles,
     this.filteredProfiles,
-    this.error,
-    this.isLoading = true,
+    this.filterState = const BlocState(),
     this.userFilter,
     this.singleUserFilter,
   });
@@ -24,8 +22,7 @@ class HomeState extends Equatable {
   List<Object?> get props => [
         profiles,
         filteredProfiles,
-        error,
-        isLoading,
+        filterState,
         user,
         userFilter,
         singleUserFilter,
@@ -34,8 +31,7 @@ class HomeState extends Equatable {
   HomeState copyWith({
     List<UserQuickProfile>? profiles,
     List<UserQuickProfile>? filteredProfiles,
-    Exception? error,
-    bool? isLoading,
+    BlocState? filterState,
     UserInfo? user,
     UserFilter? userFilter,
     SingleUserFilter? singleUserFilter,
@@ -43,8 +39,7 @@ class HomeState extends Equatable {
     return HomeState(
       profiles: profiles ?? this.profiles,
       filteredProfiles: filteredProfiles,
-      error: error ?? this.error,
-      isLoading: isLoading ?? this.isLoading,
+      filterState: filterState ?? this.filterState,
       userFilter: userFilter,
       user: user ?? this.user,
       singleUserFilter: singleUserFilter,
@@ -52,19 +47,22 @@ class HomeState extends Equatable {
   }
 
   R when<R>({
-    required R Function(
-            List<UserQuickProfile>? profiles, Exception? error, bool isLoading)
-        loaded,
     required R Function() initial,
     required R Function() loading,
+    required R Function(AppException) error,
+    required R Function(List<UserQuickProfile>? profiles) loaded,
     required R Function(List<UserQuickProfile>? profiles) fetchNextPage,
     required R Function(UserFilter? userFilter) filterUsers,
     required R Function(SingleUserFilter? userFilter) filterSingle,
   }) {
-    if (isLoading) {
+    if (filterState.isLoading) {
       return loading();
+    } else if (filterState.exception != null) {
+      return error(filterState.exception!);
     } else if (profiles != null) {
-      return loaded(profiles, error, isLoading);
+      return loaded(
+        profiles,
+      );
     } else if (userFilter != null) {
       return filterUsers(userFilter);
     } else {
@@ -73,20 +71,21 @@ class HomeState extends Equatable {
   }
 
   R maybeWhen<R>({
-    R Function(
-            List<UserQuickProfile>? profiles, Exception? error, bool isLoading)?
-        loaded,
     R Function()? initial,
     R Function()? loading,
+    R Function(AppException)? error,
+    R Function(List<UserQuickProfile>? profiles)? loaded,
     R Function(List<UserQuickProfile>? profiles)? fetchNextPage,
     R Function(UserFilter? userFilter)? filterUsers,
     R Function(SingleUserFilter? userFilter)? filterSingle,
     required R Function() orElse,
   }) {
-    if (isLoading) {
+    if (filterState.isLoading) {
       return loading?.call() ?? orElse.call();
+    } else if (filterState.exception != null) {
+      return error?.call(filterState.exception!) ?? orElse.call();
     } else if (profiles != null) {
-      return loaded?.call(profiles, error, isLoading) ?? orElse.call();
+      return loaded?.call(profiles) ?? orElse.call();
     } else if (userFilter != null) {
       return filterUsers?.call(userFilter) ?? orElse.call();
     } else if (singleUserFilter != null) {
@@ -97,15 +96,18 @@ class HomeState extends Equatable {
   }
 
   R map<R>({
-    required R Function(HomeState) loaded,
     required R Function(HomeState) initial,
     required R Function(HomeState) loading,
+    required R Function(HomeState) error,
+    required R Function(HomeState) loaded,
     required R Function(HomeState) fetchNextPage,
     required R Function(HomeState) filterUsers,
     required R Function(HomeState) singleFilter,
   }) {
-    if (isLoading) {
+    if (filterState.isLoading) {
       return loading(this);
+    } else if (filterState.exception != null) {
+      return error(this);
     } else if (profiles != null) {
       return loaded(this);
     } else if (userFilter != null) {
@@ -118,16 +120,19 @@ class HomeState extends Equatable {
   }
 
   R maybeMap<R>({
-    R Function(HomeState)? loaded,
     R Function(HomeState)? initial,
     R Function(HomeState)? loading,
+    R Function(HomeState)? error,
+    R Function(HomeState)? loaded,
     R Function(HomeState)? fetchNextPage,
     R Function(HomeState)? filterUsers,
     R Function(HomeState)? singleFilter,
     required R Function(HomeState) orElse,
   }) {
-    if (isLoading) {
+    if (filterState.isLoading) {
       return loading?.call(this) ?? orElse.call(this);
+    } else if (filterState.exception != null) {
+      return error?.call(this) ?? orElse.call(this);
     } else if (profiles != null) {
       return loaded?.call(this) ?? orElse.call(this);
     } else if (userFilter != null) {

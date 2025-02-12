@@ -12,6 +12,7 @@ import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
@@ -425,13 +426,13 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   String _buildCollegeNameString(
-      String? collegeName, String? intakePeriod, int? intakeYear) {
+      String? collegeName, UserIntake? intakePeriod, int? intakeYear) {
     String collegeText = "";
     String intakeText = "";
     if (collegeName != null && collegeName != "") {
       collegeText = collegeName.toTitleCase;
     }
-    if (intakePeriod != null && intakePeriod != "" && intakeYear != null) {
+    if (intakePeriod != null && intakeYear != null) {
       intakeText = '$intakePeriod $intakeYear';
     }
     if (collegeText != "" && intakeText != "") {

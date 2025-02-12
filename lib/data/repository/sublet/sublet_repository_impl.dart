@@ -151,7 +151,6 @@ class SubletRepositoryImpl implements SubletRepository {
         queryBuilder =
             queryBuilder.eq("room_type", filter.apartmentType.toString());
       } else if (filter is ApartmentSizeFilter) {
-        log("Filter Apartment Size: ${filter.apartmentSize.beds} Beds, ${filter.apartmentSize.baths} Baths");
         queryBuilder = queryBuilder
             .gte("beds", filter.apartmentSize.beds ?? 0)
             .gte("baths", filter.apartmentSize.baths ?? 0);
@@ -166,7 +165,6 @@ class SubletRepositoryImpl implements SubletRepository {
       }
       return response
           .order("id", ascending: false)
-          .select()
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
@@ -287,8 +285,18 @@ class SubletRepositoryImpl implements SubletRepository {
             filter.leasePeriod!.startDate!.millisecondsSinceEpoch);
       }
       queryBuilder = queryBuilder.neq("user_id", userId);
-      return queryBuilder
-          .order("id")
+      PostgrestTransformBuilder<List<Map<String, dynamic>>> response =
+          queryBuilder;
+      if (filter.apartmentSize != null) {
+        response = response
+            .order("beds", ascending: true)
+            .order("baths", ascending: true);
+      }
+      if (filter.startRent != null) {
+        response = response.order("rent", ascending: true);
+      }
+      return response
+          .order("id", ascending: false)
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
@@ -312,6 +320,7 @@ class SubletRepositoryImpl implements SubletRepository {
           .from('sublets')
           .select()
           .eq('user_id', userId)
+          .order('id')
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
       return sublets;
     } on supabase.PostgrestException catch (e) {

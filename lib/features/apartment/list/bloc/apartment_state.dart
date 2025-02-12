@@ -1,9 +1,9 @@
 part of 'apartment_bloc.dart';
 
-class ApartmentState {
+class ApartmentState extends Equatable {
   final List<ApartmentModel>? apartmentList;
   final List<ApartmentModel>? filteredApartmentList;
-  final BlocState loadingState;
+  final BlocState filterState;
   // Single category of apartment filtering
   final SingleApartmentFilter? singleApartmentFilter;
   final ApartmentFilter? apartmentFilter;
@@ -12,14 +12,14 @@ class ApartmentState {
     this.apartmentList,
     this.filteredApartmentList,
     this.singleApartmentFilter,
-    this.loadingState = const BlocState(),
+    this.filterState = const BlocState(isLoading: false),
     this.apartmentFilter,
   });
 
   ApartmentState copyWith({
     List<ApartmentModel>? apartmentList,
     List<ApartmentModel>? filteredApartmentList,
-    BlocState? loadingState,
+    BlocState? filterState,
     SingleApartmentFilter? singleApartmentFilter,
     ApartmentFilter? apartmentFilter,
   }) {
@@ -27,45 +27,23 @@ class ApartmentState {
       apartmentList: apartmentList ?? this.apartmentList,
       filteredApartmentList:
           filteredApartmentList ?? this.filteredApartmentList,
-      loadingState: loadingState ?? this.loadingState,
+      filterState: filterState ?? this.filterState,
       singleApartmentFilter: singleApartmentFilter,
       apartmentFilter: apartmentFilter,
     );
-  }
-
-  R when<R>({
-    required R Function(List<ApartmentModel>? apartmentList, Exception? error)
-        loaded,
-    required R Function() loading,
-    required R Function(AppException error) error,
-  }) {
-    if (loadingState?.exception != null) {
-      return error(loadingState!.exception!);
-    } else if (loadingState?.isLoading == true) {
-      return loading();
-    } else {
-      return loaded(apartmentList, loadingState?.exception);
-    }
-  }
-
-  R maybeWhen<R>({
-    R Function(List<ApartmentModel>? apartmentList, Exception? error)? loaded,
-    R Function()? initial,
-    required R Function() orElse,
-  }) {
-    if (loadingState?.exception != null) {
-      return orElse();
-    } else if (loadingState?.isLoading == true) {
-      return initial != null ? initial() : orElse();
-    } else {
-      return loaded != null
-          ? loaded(apartmentList, loadingState?.exception)
-          : orElse();
-    }
   }
 
   @override
   String toString() {
     return 'ApartmentState(apartmentList: $apartmentList)';
   }
+
+  @override
+  List<Object?> get props => [
+        apartmentList,
+        filteredApartmentList,
+        filterState,
+        singleApartmentFilter,
+        apartmentFilter,
+      ];
 }
