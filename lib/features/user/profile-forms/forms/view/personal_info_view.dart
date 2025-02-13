@@ -37,9 +37,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   final TextEditingController personTypeController = TextEditingController();
   final TextEditingController primaryLangController = TextEditingController();
   final TextEditingController otherLangController = TextEditingController();
-  final TextEditingController locationContoller = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
-  final TextEditingController stateController = TextEditingController();
   final TextEditingController bioController = TextEditingController();
   final ValueNotifier<int> maxLines = ValueNotifier<int>(1);
 
@@ -53,9 +50,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     personTypeController.dispose();
     primaryLangController.dispose();
     otherLangController.dispose();
-    locationContoller.dispose();
-    cityController.dispose();
-    stateController.dispose();
     bioController.dispose();
     maxLines.dispose();
     super.dispose();
@@ -86,8 +80,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
             _buildPrimaryLangField(),
             _buildSpacing(),
             _buildOtherLangField(),
-            _buildSpacing(),
-            _buildCityField(),
             _buildSpacing(),
             _buildBioField(),
           ],
@@ -120,8 +112,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
               personType: personTypeController.text,
               primaryLang: primaryLangController.text,
               secondaryLang: otherLangController.text,
-              city: cityController.text,
-              indianState: stateController.text,
               bio: bioController.text,
             );
       },
@@ -130,13 +120,13 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
 
   Widget _buildPrimaryLangField() {
     return CustomSearchableDropDownField(
-      controller: stateController,
+      controller: primaryLangController,
       hintText: 'Primate Langauge',
       labelText: 'Primary Language',
       prefixIcon: const Icon(
         Icons.language,
       ),
-      itemAsString: (language) => language.name as String,
+      itemAsString: (language) => language.name,
       asyncItems: getLanguages,
       filterFn: (state, searchQuery) {
         return (state as Language)
@@ -160,8 +150,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
               personType: personTypeController.text,
               primaryLang: primaryLangController.text,
               secondaryLang: otherLangController.text,
-              city: cityController.text,
-              indianState: stateController.text,
               bio: bioController.text,
             );
       },
@@ -169,64 +157,34 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   }
 
   Widget _buildOtherLangField() {
-    return CustomBottomSheetDropdownField(
+    return CustomSearchableDropDownField(
       controller: otherLangController,
       hintText: 'Other Language',
       labelText: 'Other Language',
       prefixIcon: const Icon(
         Icons.language,
       ),
-      isMultiSelect: true,
-      items: PersonType.values,
-      validator: (value) {
-        if (value == null) {
-          return 'Please select a other language';
-        }
-        return null;
+      itemAsString: (language) => language.name,
+      asyncItems: getLanguages,
+      filterFn: (state, searchQuery) {
+        return (state as Language)
+            .name
+            .toLowerCase()
+            .contains(searchQuery.toLowerCase());
+      },
+      itemBuilder: (context, state, isSelected) {
+        return ListTile(
+          title: Text(state.name),
+        );
       },
       onEditingComplete: () {
         context.read<FormCubit>().checkFirstStage(
               personType: personTypeController.text,
               primaryLang: primaryLangController.text,
               secondaryLang: otherLangController.text,
-              city: cityController.text,
-              indianState: stateController.text,
               bio: bioController.text,
             );
       },
-    );
-  }
-
-  Widget _buildCityField() {
-    return CustomDynamicSearchableDropDropField(
-      controller: locationContoller,
-      labelText: 'City',
-      prefixIcon: Icon(
-        Icons.location_on,
-        color: AppTheme.primary,
-      ),
-      asyncSearchItems: (value) => Stream.fromFuture(
-        GetIt.I<UserRepository>()
-            .searchCities(searchQuery: value.isEmpty ? "Aa" : value),
-      ),
-      searchText: "Search City",
-      hintText: 'Search for your city',
-      validator: (value) {
-        if (value == null) {
-          return 'Please select your city';
-        }
-        return null;
-      },
-      onItemClick: (value) {
-        userCityInfo = value;
-      },
-      itemBuilder: (context, value) {
-        return ListTile(
-          title: Text(value.cityName ?? ''),
-          subtitle: Text("${value.stateName}, ${value.countryName}"),
-        );
-      },
-      itemAsString: (value) => "${value.cityName}, ${value.countryName}",
     );
   }
 
@@ -258,8 +216,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
                   personType: personTypeController.text,
                   primaryLang: primaryLangController.text,
                   secondaryLang: otherLangController.text,
-                  city: cityController.text,
-                  indianState: stateController.text,
                   bio: bioController.text,
                 );
           },

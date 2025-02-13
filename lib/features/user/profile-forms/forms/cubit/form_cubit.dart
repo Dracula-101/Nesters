@@ -17,21 +17,12 @@ class FormCubit extends Cubit<CurrentFormState> {
     String? personType,
     String? primaryLang,
     String? secondaryLang,
-    String? city,
-    String? indianState,
     String? bio,
   }) {
-    List<String?> questions = [
-      personType,
-      primaryLang,
-      secondaryLang,
-      city,
-      indianState,
-      bio
-    ];
+    List<String?> questions = [personType, primaryLang, secondaryLang, bio];
     int inCompleteQuestions = checkVariables(questions);
     GetIt.I<AppLogger>().info(
-        'personType: $personType, primaryLang: $primaryLang, secondaryLang: $secondaryLang, city: $city, indianState: $indianState, bio: $bio');
+        'personType: $personType, primaryLang: $primaryLang, secondaryLang: $secondaryLang, bio: $bio');
     emit(state.copyWith(
       questionsComplete: questions.length - inCompleteQuestions,
     ));
