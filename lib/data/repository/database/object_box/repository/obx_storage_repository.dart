@@ -2,7 +2,10 @@ import 'dart:async';
 
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
-import 'package:nesters/domain/models/chat/message_type.dart';
+import 'package:nesters/domain/models/college/degree.dart';
+import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/language.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class ObxStorageRepository {
@@ -10,6 +13,21 @@ abstract class ObxStorageRepository {
   Future<void> init();
   void close();
   Future<void> reset();
+
+  // Universities
+  List<University> getUniversities();
+  Future<void> saveUniversities(List<University> universities);
+  //Degree
+  List<Degree> getDegrees();
+  Future<void> saveDegrees(List<Degree> degrees);
+  //Marketplace categories
+  List<MarketplaceCategoryModel> getMarketplaceCategories();
+  Future<void> saveMarketplaceCategories(
+      List<MarketplaceCategoryModel> categories);
+
+  //Language
+  List<Language> getLanguages();
+  Future<void> saveLanguages(List<Language> languages);
 
   Stream<List<QuickChatUser>> getChatUsersStream();
   List<QuickChatUser> getChatUserProfiles();

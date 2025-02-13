@@ -42,15 +42,13 @@ abstract class UserRepository {
 
   Future<List<Degree>> getMastersDegree(String? searchString);
 
+  Future<List<Language>> getLanguage(String? searchQuery);
+
+  Future<List<Language>> getLanguages();
+
   Future<bool> setBasicUserProfileData(UserBasicProfile userProfile);
 
   Future<bool> hasUserDeletedAccount({required String email});
-
-  Stream<List<LocationCity>> getCites(String searchQuery);
-
-  Future<List<LocationState>> getIndianStates(String? searchQuery);
-
-  Future<List<Language>> getLanguage(String? searchQuery);
 
   Future<List<UserQuickProfile>> getUserQuickProfiles(
       int offset, int limit, String userId);

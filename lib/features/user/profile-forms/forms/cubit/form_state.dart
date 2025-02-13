@@ -7,8 +7,6 @@ class CurrentFormState {
   final String? bio;
   final String? primaryLang;
   final String? otherLang;
-  final String? city;
-  final String? state;
   final String? undergradCollegeName;
   final int? workExperience;
   final String? foodHabit;
@@ -27,8 +25,6 @@ class CurrentFormState {
     required this.bio,
     required this.primaryLang,
     required this.otherLang,
-    required this.city,
-    required this.state,
     required this.undergradCollegeName,
     required this.workExperience,
     required this.foodHabit,
@@ -48,8 +44,6 @@ class CurrentFormState {
         bio: '',
         primaryLang: '',
         otherLang: '',
-        city: '',
-        state: '',
         undergradCollegeName: '',
         workExperience: 0,
         foodHabit: '',
@@ -69,8 +63,6 @@ class CurrentFormState {
     String? bio,
     String? primaryLang,
     String? otherLang,
-    String? city,
-    String? state,
     String? undergradCollegeName,
     int? workExperience,
     String? foodHabit,
@@ -89,8 +81,6 @@ class CurrentFormState {
       bio: bio ?? this.bio,
       primaryLang: primaryLang ?? this.primaryLang,
       otherLang: otherLang ?? this.otherLang,
-      city: city ?? this.city,
-      state: state ?? this.state,
       undergradCollegeName: undergradCollegeName ?? this.undergradCollegeName,
       workExperience: workExperience ?? this.workExperience,
       foodHabit: foodHabit ?? this.foodHabit,

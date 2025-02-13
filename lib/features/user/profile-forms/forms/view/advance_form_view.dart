@@ -20,8 +20,6 @@ class _UserProfileAdvanceFormState extends State<UserProfileAdvanceForm> {
     return BlocProvider(
       create: (context) => FormCubit(),
       child: const Scaffold(
-        resizeToAvoidBottomInset: true,
-        bottomNavigationBar: SubmitButton(),
         body: SafeArea(child: AdvancedFormViewPage()),
       ),
     );
@@ -71,6 +69,7 @@ class _AdvancedFormViewPageState extends State<AdvancedFormViewPage>
           _buildHeaderText(),
           _buildSpacing(20),
           _buildPageViewContent(),
+          _buildNextButton(),
         ],
       ),
     );
@@ -166,14 +165,11 @@ class _AdvancedFormViewPageState extends State<AdvancedFormViewPage>
 
   Widget _buildPageViewContent() {
     return SizedBox(
-      height: MediaQuery.of(context).size.height * 1.3,
+      height: MediaQuery.of(context).size.height * 0.675,
       child: PageView(
         controller: _pageController,
         children: [
-          PersonalInformationPage(
-            formKey: _personalInfoKey,
-            onSubmit: (p0, p1, p2, p3, p4) {},
-          ),
+          PersonalInformationPage(formKey: _personalInfoKey),
           LifeStyleInfoPage(
             formKey: _lifeStyleInfoKey,
             onContinue: () {},
@@ -185,6 +181,10 @@ class _AdvancedFormViewPageState extends State<AdvancedFormViewPage>
         ],
       ),
     );
+  }
+
+  Widget _buildNextButton() {
+    return const SubmitButton();
   }
 }
 
@@ -198,19 +198,22 @@ class SubmitButton extends StatefulWidget {
 class _SubmitButtonState extends State<SubmitButton> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      margin: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 18.0),
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: AppTheme.primary,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        'Next',
-        style: AppTheme.titleLarge.copyWith(
-          color: AppTheme.surface,
-          fontWeight: FontWeight.w600,
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        height: 60,
+        margin: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 18.0),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppTheme.primary,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          'Next',
+          style: AppTheme.titleLarge.copyWith(
+            color: AppTheme.surface,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

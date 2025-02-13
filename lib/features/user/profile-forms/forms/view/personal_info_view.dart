@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/location/city_info.dart';
@@ -15,10 +16,10 @@ import 'package:nesters/utils/widgets/widgets.dart';
 
 class PersonalInformationPage extends StatefulWidget {
   final GlobalKey<FormState> formKey;
-  final Function(PersonType, String String, LocationCity, LocationState, String)
-      onSubmit;
-  const PersonalInformationPage(
-      {super.key, required this.formKey, required this.onSubmit});
+  const PersonalInformationPage({
+    super.key,
+    required this.formKey,
+  });
 
   @override
   State<PersonalInformationPage> createState() =>
@@ -26,13 +27,6 @@ class PersonalInformationPage extends StatefulWidget {
 }
 
 class _PersonalInformationPageState extends State<PersonalInformationPage> {
-  // personType
-  // primaryLang
-  // otherLang
-  // city
-  // state
-  // bio
-  CityInfo? userCityInfo;
   final UserRepository userRepository = GetIt.I<UserRepository>();
   final TextEditingController personTypeController = TextEditingController();
   final TextEditingController primaryLangController = TextEditingController();
@@ -55,34 +49,26 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     super.dispose();
   }
 
-  // Stream<List<LocationCity>> getCities(String searchQuery) {
-  //   return userRepository.getCites(searchQuery);
-  // }
-
-  // Future<List<LocationState>> getStates(String? searchQuery) async {
-  //   return await userRepository.getIndianStates(searchQuery);
-  // }
-
-  Future<List<Language>> getLanguages(String? searchQuery) async {
-    return await userRepository.getLanguage(searchQuery);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18.0),
       child: Form(
         key: widget.formKey,
-        child: Column(
-          children: [
-            _buildPersonTypeField(),
-            _buildSpacing(),
-            _buildPrimaryLangField(),
-            _buildSpacing(),
-            _buildOtherLangField(),
-            _buildSpacing(),
-            _buildBioField(),
-          ],
+        child: BlocBuilder<AppBloc, AppState>(
+          builder: (context, state) {
+            return Column(
+              children: [
+                _buildPersonTypeField(),
+                _buildSpacing(),
+                _buildPrimaryLangField(state.languages),
+                _buildSpacing(),
+                _buildOtherLangField(state.languages),
+                _buildSpacing(),
+                _buildBioField(),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -118,8 +104,8 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     );
   }
 
-  Widget _buildPrimaryLangField() {
-    return CustomSearchableDropDownField(
+  Widget _buildPrimaryLangField(List<Language> languages) {
+    return CustomDynamicSearchableDropDropField(
       controller: primaryLangController,
       hintText: 'Primate Langauge',
       labelText: 'Primary Language',
@@ -127,23 +113,30 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
         Icons.language,
       ),
       itemAsString: (language) => language.name,
-      asyncItems: getLanguages,
-      filterFn: (state, searchQuery) {
-        return (state as Language)
-            .name
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase());
-      },
-      itemBuilder: (context, state, isSelected) {
+      itemBuilder: (context, language) {
         return ListTile(
-          title: Text(state.name),
+          title: Text(language.name),
+          subtitle: Text(language.nativeName),
+          dense: true,
         );
       },
+      asyncStaticItems: userRepository.getLanguages(),
       validator: (value) {
         if (value == null) {
           return 'Please select a language';
         }
         return null;
+      },
+      emptyBuilder: (context) {
+        return ShowInfoWidget(
+          icon: Icons.language,
+          message: primaryLangController.text.isEmpty
+              ? 'Search'
+              : 'No language found',
+          subtitle: primaryLangController.text.isEmpty
+              ? 'Search for a language'
+              : 'No language found for the search query ${primaryLangController.text}',
+        );
       },
       onEditingComplete: () {
         context.read<FormCubit>().checkFirstStage(
@@ -156,8 +149,8 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     );
   }
 
-  Widget _buildOtherLangField() {
-    return CustomSearchableDropDownField(
+  Widget _buildOtherLangField(List<Language> languages) {
+    return CustomDynamicSearchableDropDropField(
       controller: otherLangController,
       hintText: 'Other Language',
       labelText: 'Other Language',
@@ -165,16 +158,23 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
         Icons.language,
       ),
       itemAsString: (language) => language.name,
-      asyncItems: getLanguages,
-      filterFn: (state, searchQuery) {
-        return (state as Language)
-            .name
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase());
-      },
-      itemBuilder: (context, state, isSelected) {
+      itemBuilder: (context, language) {
         return ListTile(
-          title: Text(state.name),
+          title: Text(language.name),
+          subtitle: Text(language.nativeName),
+          dense: true,
+        );
+      },
+      asyncStaticItems: userRepository.getLanguages(),
+      emptyBuilder: (context) {
+        return ShowInfoWidget(
+          icon: Icons.language,
+          message: primaryLangController.text.isEmpty
+              ? 'Search'
+              : 'No language found',
+          subtitle: primaryLangController.text.isEmpty
+              ? 'Search for a language'
+              : 'No language found for the search query ${primaryLangController.text}',
         );
       },
       onEditingComplete: () {

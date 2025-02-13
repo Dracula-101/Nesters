@@ -4,11 +4,19 @@ import 'dart:io';
 
 import 'package:nesters/data/repository/database/object_box/models/chat/chat_entity.dart';
 import 'package:nesters/data/repository/database/object_box/models/chat/message/message_entity.dart';
+import 'package:nesters/data/repository/database/object_box/models/user/degree_entity.dart';
+import 'package:nesters/data/repository/database/object_box/models/user/language_entity.dart';
+import 'package:nesters/data/repository/database/object_box/models/user/marketplace_category_entity.dart';
+import 'package:nesters/data/repository/database/object_box/models/user/university_entity.dart';
 import 'package:nesters/data/repository/database/object_box/repository/error/obx_storage_error.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
+import 'package:nesters/domain/models/college/degree.dart';
+import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/language.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/objectbox.g.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:rxdart/rxdart.dart';
@@ -16,6 +24,10 @@ import 'package:rxdart/src/subjects/subject.dart';
 
 class ObjectBoxStorageRepository extends ObxStorageRepository {
   late Store store;
+  late Box<UniversityEntity> universityEntityBox;
+  late Box<DegreeEntity> degreeEntityBox;
+  late Box<LanguageEntity> languageEntityBox;
+  late Box<MarketplaceCategoryEntity> marketplaceCategoriesEntityBox;
   late Box<ChatEntity> chatEntityBox;
   late Box<MessageEntity> messageEntityBox;
   static String objectBoxDirectory = 'objectbox';
@@ -34,6 +46,10 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
   void _initBox() {
     chatEntityBox = store.box<ChatEntity>();
     messageEntityBox = store.box<MessageEntity>();
+    universityEntityBox = store.box<UniversityEntity>();
+    degreeEntityBox = store.box<DegreeEntity>();
+    languageEntityBox = store.box<LanguageEntity>();
+    marketplaceCategoriesEntityBox = store.box<MarketplaceCategoryEntity>();
   }
 
   @override
@@ -209,6 +225,116 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       return chatEntity?.toQuickChatUser();
     } catch (e) {
       throw ObxStorageValueGetError('chatEntityBox');
+    }
+  }
+
+  @override
+  List<Degree> getDegrees() {
+    try {
+      return degreeEntityBox.getAll().map((e) => e.toModel()).toList();
+    } catch (e) {
+      log(e.toString());
+      throw ObxStorageValueGetError('degreeEntityBox');
+    }
+  }
+
+  @override
+  List<Language> getLanguages() {
+    try {
+      return languageEntityBox.getAll().map((e) => e.toModel()).toList();
+    } catch (e) {
+      log(e.toString());
+      throw ObxStorageValueGetError('languageEntityBox');
+    }
+  }
+
+  @override
+  List<MarketplaceCategoryModel> getMarketplaceCategories() {
+    try {
+      return marketplaceCategoriesEntityBox
+          .getAll()
+          .map((e) => e.toModel())
+          .toList();
+    } catch (e) {
+      log(e.toString());
+      throw ObxStorageValueGetError('marketplaceCategoriesEntityBox');
+    }
+  }
+
+  @override
+  List<University> getUniversities() {
+    try {
+      return universityEntityBox.getAll().map((e) => e.toModel()).toList();
+    } catch (e) {
+      throw ObxStorageValueGetError('universityEntityBox');
+    }
+  }
+
+  @override
+  Future<void> saveDegrees(List<Degree> degrees) {
+    try {
+      degreeEntityBox.removeAll();
+      for (Degree degree in degrees) {
+        DegreeEntity degreeEntity = DegreeEntity(title: degree.name);
+        degreeEntityBox.put(degreeEntity);
+      }
+      return Future.value();
+    } catch (e) {
+      throw ObxStorageValueSaveError('degreeEntityBox');
+    }
+  }
+
+  @override
+  Future<void> saveLanguages(List<Language> languages) {
+    try {
+      languageEntityBox.removeAll();
+      for (Language language in languages) {
+        LanguageEntity languageEntity = LanguageEntity(name: language.name);
+        languageEntityBox.put(languageEntity);
+      }
+      return Future.value();
+    } catch (e) {
+      throw ObxStorageValueSaveError('languageEntityBox');
+    }
+  }
+
+  @override
+  Future<void> saveMarketplaceCategories(
+      List<MarketplaceCategoryModel> categories) {
+    try {
+      marketplaceCategoriesEntityBox.removeAll();
+      for (MarketplaceCategoryModel category in categories) {
+        MarketplaceCategoryEntity categoryEntity = MarketplaceCategoryEntity(
+          modelId: category.id ?? 0,
+          name: category.name ?? '',
+        );
+        marketplaceCategoriesEntityBox.put(categoryEntity);
+      }
+      return Future.value();
+    } catch (e) {
+      throw ObxStorageValueSaveError('marketplaceCategoriesEntityBox');
+    }
+  }
+
+  @override
+  Future<void> saveUniversities(List<University> universities) {
+    try {
+      universityEntityBox.removeAll();
+      for (University university in universities) {
+        UniversityEntity universityEntity = UniversityEntity(
+          title: university.title ?? '',
+          country: university.country ?? '',
+          city: university.city ?? '',
+          logo: university.logo ?? '',
+          rankDisplay: university.rankDisplay ?? '',
+          region: university.region ?? '',
+          score: university.score ?? "",
+        );
+        universityEntityBox.put(universityEntity);
+      }
+      return Future.value();
+    } catch (e) {
+      throw ObxStorageValueSaveError('universityEntityBox');
     }
   }
 }

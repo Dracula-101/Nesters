@@ -84,7 +84,7 @@ jobs:
 
       - name: Build Object Box
         if: steps.objectbox-cache.outputs.cache-hit != 'true'
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Setup Config
         run: |
@@ -164,7 +164,7 @@ jobs:
 
       - name: Build Object Box
         if: steps.objectbox-cache.outputs.cache-hit != 'true'
-        run: flutter pub run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Setup Config
         run: |

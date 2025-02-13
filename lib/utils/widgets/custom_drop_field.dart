@@ -541,7 +541,7 @@ class _CustomDynamicSearchableDropDropFieldState
   Stream<List<dynamic>>? _searchItems;
   List<dynamic>? _items = [];
   List<dynamic>? _filteredItems = [];
-  GlobalKey _rebuildKey = GlobalKey();
+  final GlobalKey _rebuildKey = GlobalKey();
 
   @override
   void initState() {
@@ -660,14 +660,14 @@ class _CustomDynamicSearchableDropDropFieldState
                 color: Colors.transparent,
                 child: AlertDialog.adaptive(
                   clipBehavior: Clip.none,
+                  actionsAlignment: MainAxisAlignment.center,
                   actions: [
-                    if (Platform.isIOS)
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Close'),
-                      ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Close'),
+                    ),
                   ],
                   actionsPadding: const EdgeInsets.all(0),
                   content: SingleChildScrollView(

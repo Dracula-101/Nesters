@@ -51,12 +51,10 @@ class UserRepositoryImpl implements UserRepository {
   final AppLogger _logger;
   final SupabaseStorageClient _storageClient = Supabase.instance.client.storage;
 
-  String universityCollection = "universities";
+  String universityCollection = 'universities';
   String masterDegreeCollection = "masters";
-  String indianCitiesCollection = "indian_cities";
-  String indianStatesCollection = "indian_states";
   String userDetailCollection = "user_details";
-  String indianLanguagesCollection = "indian_languages";
+  String languagesCollection = "languages";
 
   @override
   Future<void> setOnBoardingComplete() async {
@@ -169,6 +167,29 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<List<Language>> getLanguage(String? searchQuery) async {
+    try {
+      return await _databaseRepository
+          .searchDataFromFuture(
+            languagesCollection,
+            FieldValue(key: 'name', value: searchQuery ?? ''),
+          )
+          .then((event) => event.map((e) => Language.fromJson(e)).toList());
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting languages');
+    }
+  }
+
+  @override
+  Future<List<Language>> getLanguages() {
+    return _databaseRepository
+        .getData(languagesCollection)
+        .then((event) => event.map((e) => Language.fromJson(e)).toList());
+  }
+
+  @override
   Future<List<Degree>> getMastersDegree(String? searchString) async {
     return await _databaseRepository
         .searchDataFromFuture(
@@ -270,55 +291,6 @@ class UserRepositoryImpl implements UserRepository {
       throw UserBasicInfoError(
         message: 'Error updating roommate found status',
       );
-    }
-  }
-
-  @override
-  Stream<List<LocationCity>> getCites(String searchQuery) {
-    try {
-      return _databaseRepository
-          .searchDataFromFuture(
-            indianCitiesCollection,
-            FieldValue(key: 'name', value: searchQuery),
-          )
-          .asStream()
-          .map((event) => event.map((e) => LocationCity.fromJson(e)).toList());
-    } catch (e) {
-      _logger.error('Error in getting cities: $e');
-      return Stream.value([]);
-    }
-  }
-
-  @override
-  Future<List<LocationState>> getIndianStates(String? searchQuery) async {
-    try {
-      return await _databaseRepository
-          .searchDataFromFuture(
-            indianStatesCollection,
-            FieldValue(key: 'name', value: searchQuery ?? ''),
-          )
-          .then(
-              (event) => event.map((e) => LocationState.fromJson(e)).toList());
-    } on AppException {
-      rethrow;
-    } catch (e) {
-      throw GetUserInfoError(message: 'Error in getting states');
-    }
-  }
-
-  @override
-  Future<List<Language>> getLanguage(String? searchQuery) async {
-    try {
-      return await _databaseRepository
-          .searchDataFromFuture(
-            indianLanguagesCollection,
-            FieldValue(key: 'name', value: searchQuery ?? ''),
-          )
-          .then((event) => event.map((e) => Language.fromJson(e)).toList());
-    } on AppException {
-      rethrow;
-    } catch (e) {
-      throw GetUserInfoError(message: 'Error in getting languages');
     }
   }
 

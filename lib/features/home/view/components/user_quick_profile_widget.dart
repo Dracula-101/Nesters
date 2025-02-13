@@ -236,7 +236,7 @@ class UserQuickProfileWidget extends StatelessWidget {
                 alignment: Alignment.topCenter,
                 children: [
                   Container(
-                    height: 270 - iconSize / 2,
+                    height: 250 - iconSize / 2,
                     padding: EdgeInsets.only(
                         left: 10,
                         right: 10,
@@ -257,7 +257,7 @@ class UserQuickProfileWidget extends StatelessWidget {
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          'Please complete your profile to view this user\'s profile. Do you want to complete it?',
+                          'Please complete your profile to view this user\'s profile.',
                           style: AppTheme.bodyMediumLightVariant,
                           textAlign: TextAlign.center,
                         ),
@@ -265,18 +265,23 @@ class UserQuickProfileWidget extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
+                            OutlinedButton(
+                              onPressed: () {
+                                Navigator.of(buildContext).pop();
+                              },
+                              style: OutlinedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text('Cancel'),
+                            ),
                             ElevatedButton(
                               onPressed: () {
                                 Navigator.of(buildContext).pop();
                                 onNavigate();
                               },
-                              child: const Text('Complete'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(buildContext).pop();
-                              },
-                              child: const Text('Cancel'),
+                              child: const Text('Proceed'),
                             ),
                           ],
                         ),

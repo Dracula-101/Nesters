@@ -15,6 +15,7 @@ class AppEvent {
   const factory AppEvent.loadDegrees() = _LoadDegrees;
   const factory AppEvent.loadMarketplaceCategories() =
       _LoadMarketplaceCategories;
+  const factory AppEvent.loadLanguages() = _LoadLanguages;
 
   Future<void> when<R>({
     required Future<void> Function() load,
@@ -23,6 +24,7 @@ class AppEvent {
     required Future<void> Function() loadUniversities,
     required Future<void> Function() loadDegrees,
     required Future<void> Function() loadMarketplaceCategories,
+    required Future<void> Function() loadLanguages,
   }) {
     if (this is _Load) {
       return load();
@@ -40,6 +42,8 @@ class AppEvent {
       return loadDegrees();
     } else if (this is _LoadMarketplaceCategories) {
       return loadMarketplaceCategories();
+    } else if (this is _LoadLanguages) {
+      return loadLanguages();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -52,6 +56,7 @@ class AppEvent {
     R Function()? loadUniversities,
     R Function()? loadDegrees,
     R Function()? loadMarketplaceCategories,
+    R Function()? loadLanguages,
     required R Function() orElse,
   }) {
     if (this is _Load) {
@@ -74,6 +79,8 @@ class AppEvent {
       return loadMarketplaceCategories != null
           ? loadMarketplaceCategories()
           : orElse();
+    } else if (this is _LoadLanguages) {
+      return loadLanguages != null ? loadLanguages() : orElse();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -86,6 +93,7 @@ class AppEvent {
     R Function()? loadUniversities,
     R Function()? loadDegrees,
     R Function()? loadMarketplaceCategories,
+    R Function()? loadLanguages,
     required R Function() orElse,
   }) {
     if (this is _Load) {
@@ -108,6 +116,8 @@ class AppEvent {
       return loadMarketplaceCategories != null
           ? loadMarketplaceCategories()
           : orElse();
+    } else if (this is _LoadLanguages) {
+      return loadLanguages != null ? loadLanguages() : orElse();
     } else {
       throw Exception('Unknown event: $this');
     }
@@ -172,4 +182,8 @@ class _LoadDegrees extends AppEvent {
 
 class _LoadMarketplaceCategories extends AppEvent {
   const _LoadMarketplaceCategories();
+}
+
+class _LoadLanguages extends AppEvent {
+  const _LoadLanguages();
 }

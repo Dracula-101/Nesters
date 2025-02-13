@@ -1,32 +1,15 @@
 import 'package:bloc/bloc.dart';
 
-import 'package:get_it/get_it.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/user.dart';
-import 'package:nesters/utils/logger/logger.dart';
 
 part 'form_state.dart';
 
 class FormCubit extends Cubit<CurrentFormState> {
   FormCubit() : super(CurrentFormState.initial());
 
-  int totalQuestions = 17;
-
-  void checkFirstStage({
-    String? personType,
-    String? primaryLang,
-    String? secondaryLang,
-    String? bio,
-  }) {
-    List<String?> questions = [personType, primaryLang, secondaryLang, bio];
-    int inCompleteQuestions = checkVariables(questions);
-    GetIt.I<AppLogger>().info(
-        'personType: $personType, primaryLang: $primaryLang, secondaryLang: $secondaryLang, bio: $bio');
-    emit(state.copyWith(
-      questionsComplete: questions.length - inCompleteQuestions,
-    ));
-  }
+  int totalQuestions = 15;
 
   int checkVariables(List<String?> variables) {
     int count = 0;
@@ -38,13 +21,58 @@ class FormCubit extends Cubit<CurrentFormState> {
     return count;
   }
 
-  // 1st stage - personal info
-  void setPersonalInfo(
-    PersonType personType,
-    String primaryLang,
-    List<String> secondaryLangs,
-  ) {}
+  void checkFirstStage({
+    String? personType,
+    String? primaryLang,
+    String? secondaryLang,
+    String? bio,
+  }) {
+    List<String?> questions = [personType, primaryLang, secondaryLang, bio];
+    int inCompleteQuestions = checkVariables(questions);
+    emit(state.copyWith(
+      questionsComplete: questions.length - inCompleteQuestions,
+    ));
+  }
 
-  // 2nd stage - lifestyle
-  // 3rd stage - background
+  void checkSecondStage({
+    String? userHabit,
+    String? userHabit2,
+    String? userHabit3,
+    String? userHabit4,
+    String? userHabit5,
+  }) {
+    List<String?> questions = [
+      userHabit,
+      userHabit2,
+      userHabit3,
+      userHabit4,
+      userHabit5,
+    ];
+    int inCompleteQuestions = checkVariables(questions);
+    emit(state.copyWith(
+      questionsComplete: questions.length - inCompleteQuestions,
+    ));
+  }
+
+  void checkThirdStage({
+    String? userHabit6,
+    String? userHabit7,
+    String? userHabit8,
+    String? userHabit9,
+    String? userHabit10,
+  }) {
+    List<String?> questions = [
+      userHabit6,
+      userHabit7,
+      userHabit8,
+      userHabit9,
+      userHabit10,
+    ];
+    int inCompleteQuestions = checkVariables(questions);
+    emit(state.copyWith(
+      questionsComplete: questions.length - inCompleteQuestions,
+    ));
+  }
+
+  void validatePage() {}
 }

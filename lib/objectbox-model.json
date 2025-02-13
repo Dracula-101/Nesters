@@ -93,9 +93,125 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "4:1998074398492765731",
+      "lastPropertyId": "2:1899099316826380824",
+      "name": "DegreeEntity",
+      "properties": [
+        {
+          "id": "1:848774177194738477",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1899099316826380824",
+          "name": "title",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:8480283995282045178",
+      "lastPropertyId": "3:6631171658627498433",
+      "name": "LanguageEntity",
+      "properties": [
+        {
+          "id": "1:1584166279301718120",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:6840391083197881057",
+          "name": "name",
+          "type": 9
+        },
+        {
+          "id": "3:6631171658627498433",
+          "name": "nativeName",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "6:3446334145238591745",
+      "lastPropertyId": "3:1601540043377883032",
+      "name": "MarketplaceCategoryEntity",
+      "properties": [
+        {
+          "id": "1:6271738995293105725",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:6020510964927170161",
+          "name": "modelId",
+          "type": 6
+        },
+        {
+          "id": "3:1601540043377883032",
+          "name": "name",
+          "type": 9
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "7:6097212864037965260",
+      "lastPropertyId": "8:8471436194926133236",
+      "name": "UniversityEntity",
+      "properties": [
+        {
+          "id": "1:5795453916216934288",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:5375932387634764866",
+          "name": "title",
+          "type": 9
+        },
+        {
+          "id": "3:6874995625509045804",
+          "name": "country",
+          "type": 9
+        },
+        {
+          "id": "4:9060928551044209474",
+          "name": "city",
+          "type": 9
+        },
+        {
+          "id": "5:1036956792488727833",
+          "name": "logo",
+          "type": 9
+        },
+        {
+          "id": "6:7669229848165524867",
+          "name": "score",
+          "type": 9
+        },
+        {
+          "id": "7:248900916058355960",
+          "name": "rankDisplay",
+          "type": 9
+        },
+        {
+          "id": "8:8471436194926133236",
+          "name": "region",
+          "type": 9
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "3:7507918739234249973",
+  "lastEntityId": "7:6097212864037965260",
   "lastIndexId": "1:4054268718528892224",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
