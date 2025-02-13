@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get_it/get_it.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/constants/app_assets.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
