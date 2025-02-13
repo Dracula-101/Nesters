@@ -94,7 +94,7 @@ class _OnboardingViewState extends State<OnboardingView> {
             height: MediaQuery.of(context).size.height * 0.1,
             child: Text(
               // short description
-              "Effortlessly connect with potential roommates who share your interests and lifestyle preferences.",
+              "Find your perfect roommate or just vibe with peers & seniors—your way! 🎯",
               style: AppTheme.labelLargeLightVariant,
               textAlign: TextAlign.justify,
             ),
@@ -127,7 +127,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.1,
             child: Text(
-              "Easily find someone to take over your lease when a room is available in the apartment.",
+              "Moving out for a few months? 💸 Sublet your place & make some extra cash!",
               style: AppTheme.labelLargeLightVariant,
               textAlign: TextAlign.justify,
             ),
@@ -152,7 +152,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           ),
           const SizedBox(height: 20),
           Text(
-            "Sell Before You Leave",
+            "Student Marketplace",
             style: AppTheme.displaySmall,
             textAlign: TextAlign.center,
           ),
@@ -160,7 +160,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.1,
             child: Text(
-              "Prepare for your move with ease by selling your items conveniently beforehand.",
+              "Shop smart, sell easy! 💸 Buy & sell second-hand student essentials hassle-free.",
               style: AppTheme.labelLargeLightVariant,
               textAlign: TextAlign.justify,
             ),
@@ -185,7 +185,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           ),
           const SizedBox(height: 20),
           Text(
-            'College Community',
+            'Looking for an Apartment?',
             style: AppTheme.displaySmall,
             textAlign: TextAlign.center,
           ),
@@ -193,7 +193,7 @@ class _OnboardingViewState extends State<OnboardingView> {
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.1,
             child: Text(
-              "Engage and Connect with Fellow Students and Batchmates",
+              "Get broker-free apartments by connecting with students who are moving out! 🏡",
               style: AppTheme.labelLargeLightVariant,
               textAlign: TextAlign.justify,
             ),
