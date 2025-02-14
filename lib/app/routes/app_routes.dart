@@ -214,10 +214,6 @@ class AppRouterService {
             (_) => const SplashPage(),
           ),
           AppRoute(
-            "/$userProfileAdvanceFormScreen",
-            (_) => const UserProfileAdvanceForm(),
-          ),
-          AppRoute(
             userProfileBasicFormScreen,
             (_) => const UserProfileBasicForm(),
           ),

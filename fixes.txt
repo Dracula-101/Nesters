@@ -1,11 +1,9 @@
-detail form, apartment progress indicator.
-==========
 2]map view,
-shimmer for other pages.
 chat taking too much time and space.(App Check issue)
 =============================================
 images while editing for sublet and marketplace we are not deleting the previous ones.
 
+shimmer for other pages.
 
 in chat i send other person request, other person send me request, then both  accepted each other scenario.,
 

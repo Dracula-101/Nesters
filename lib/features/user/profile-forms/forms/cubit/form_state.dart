@@ -1,96 +1,185 @@
 part of 'form_cubit.dart';
 
 class CurrentFormState {
-  final User? user;
-  final String? id;
+  final UserFormProfile userFormProfile;
+  final int currentPage;
+  final bool firstPageComplete;
+  final bool secondPageComplete;
+  final bool thirdPageComplete;
+  final BlocState validationState;
+  final BlocState submitState;
+
+  CurrentFormState({
+    required this.userFormProfile,
+    this.currentPage = 0,
+    this.firstPageComplete = false,
+    this.secondPageComplete = false,
+    this.thirdPageComplete = false,
+    this.validationState = const BlocState(isLoading: false),
+    this.submitState = const BlocState(isLoading: false),
+  });
+
+  factory CurrentFormState.initial() =>
+      CurrentFormState(userFormProfile: UserFormProfile());
+
+  CurrentFormState copyWith({
+    UserFormProfile? userFormProfile,
+    int? currentPage,
+    bool? isValidating,
+    bool? firstPageComplete,
+    bool? secondPageComplete,
+    bool? thirdPageComplete,
+    BlocState? validationState,
+    BlocState? submitState,
+  }) {
+    return CurrentFormState(
+      userFormProfile: userFormProfile ?? this.userFormProfile,
+      currentPage: currentPage ?? this.currentPage,
+      firstPageComplete: firstPageComplete ?? this.firstPageComplete,
+      secondPageComplete: secondPageComplete ?? this.secondPageComplete,
+      thirdPageComplete: thirdPageComplete ?? this.thirdPageComplete,
+      validationState: validationState ?? this.validationState,
+      submitState: submitState ?? this.submitState,
+    );
+  }
+
+  @override
+  String toString() {
+    return userFormProfile.toString();
+  }
+}
+
+class UserFormProfile {
   final PersonType? personType;
   final String? bio;
   final String? primaryLang;
-  final String? otherLang;
+  final String? secondaryLang;
   final String? undergradCollegeName;
   final int? workExperience;
-  final String? foodHabit;
-  final String? cookingSkill;
+  final UserFoodHabit? foodHabit;
+  final UserCookingSkill? cookingSkill;
   final UserHabit? drinkingHabit;
   final UserHabit? smokingHabit;
-  final String? cleanlinessHabit;
+  final UserCleanlinessHabit? cleanlinessHabit;
   final String? hobbies;
-  final String? roomType;
-  final int? questionsComplete;
+  final String? flatmateGenderPrefs;
+  final UserRoomType? roomType;
 
-  CurrentFormState({
-    required this.user,
-    required this.id,
-    required this.personType,
-    required this.bio,
-    required this.primaryLang,
-    required this.otherLang,
-    required this.undergradCollegeName,
-    required this.workExperience,
-    required this.foodHabit,
-    required this.cookingSkill,
-    required this.drinkingHabit,
-    required this.smokingHabit,
-    required this.cleanlinessHabit,
-    required this.hobbies,
-    required this.roomType,
-    required this.questionsComplete,
+  UserFormProfile({
+    this.personType,
+    this.bio,
+    this.primaryLang,
+    this.secondaryLang,
+    this.undergradCollegeName,
+    this.workExperience,
+    this.foodHabit,
+    this.cookingSkill,
+    this.drinkingHabit,
+    this.smokingHabit,
+    this.flatmateGenderPrefs,
+    this.cleanlinessHabit,
+    this.hobbies,
+    this.roomType,
   });
 
-  factory CurrentFormState.initial() => CurrentFormState(
-        user: User.empty(),
-        id: '',
-        personType: PersonType.AMBIVERT,
-        bio: '',
-        primaryLang: '',
-        otherLang: '',
-        undergradCollegeName: '',
-        workExperience: 0,
-        foodHabit: '',
-        cookingSkill: '',
-        drinkingHabit: UserHabit.NEVER,
-        smokingHabit: UserHabit.NEVER,
-        cleanlinessHabit: '',
-        hobbies: '',
-        roomType: '',
-        questionsComplete: 0,
-      );
-
-  CurrentFormState copyWith({
-    User? user,
-    String? id,
+  //copy with
+  UserFormProfile copyWith({
     PersonType? personType,
     String? bio,
     String? primaryLang,
-    String? otherLang,
+    String? secondaryLang,
     String? undergradCollegeName,
     int? workExperience,
-    String? foodHabit,
-    String? cookingSkill,
+    UserFoodHabit? foodHabit,
+    UserCookingSkill? cookingSkill,
     UserHabit? drinkingHabit,
     UserHabit? smokingHabit,
-    String? cleanlinessHabit,
+    String? flatmateGenderPrefs,
+    UserCleanlinessHabit? cleanlinessHabit,
     String? hobbies,
-    String? roomType,
-    int? questionsComplete,
+    UserRoomType? roomType,
   }) {
-    return CurrentFormState(
-      user: user ?? this.user,
-      id: id ?? this.id,
+    return UserFormProfile(
       personType: personType ?? this.personType,
       bio: bio ?? this.bio,
       primaryLang: primaryLang ?? this.primaryLang,
-      otherLang: otherLang ?? this.otherLang,
+      secondaryLang: secondaryLang ?? this.secondaryLang,
       undergradCollegeName: undergradCollegeName ?? this.undergradCollegeName,
       workExperience: workExperience ?? this.workExperience,
       foodHabit: foodHabit ?? this.foodHabit,
       cookingSkill: cookingSkill ?? this.cookingSkill,
       drinkingHabit: drinkingHabit ?? this.drinkingHabit,
+      flatmateGenderPrefs: flatmateGenderPrefs ?? this.flatmateGenderPrefs,
       smokingHabit: smokingHabit ?? this.smokingHabit,
       cleanlinessHabit: cleanlinessHabit ?? this.cleanlinessHabit,
       hobbies: hobbies ?? this.hobbies,
       roomType: roomType ?? this.roomType,
-      questionsComplete: questionsComplete ?? this.questionsComplete,
     );
+  }
+
+  @override
+  String toString() {
+    return 'UserFormProfile{personType: $personType, bio: $bio, primaryLang: $primaryLang, secondaryLang: $secondaryLang, undergradCollegeName: $undergradCollegeName, workExperience: $workExperience, foodHabit: $foodHabit, cookingSkill: $cookingSkill, drinkingHabit: $drinkingHabit, smokingHabit: $smokingHabit, cleanlinessHabit: $cleanlinessHabit, hobbies: $hobbies, flatmateGenderPrefs: $flatmateGenderPrefs, roomType: $roomType}';
+  }
+
+  List<FieldValue> toFieldValues() {
+    return [
+      FieldValue(
+        key: 'person_type',
+        value: personType?.toSafeString(),
+      ),
+      FieldValue(
+        key: 'bio',
+        value: bio,
+      ),
+      FieldValue(
+        key: 'primary_lang',
+        value: primaryLang,
+      ),
+      FieldValue(
+        key: 'other_lang',
+        value: secondaryLang,
+      ),
+      FieldValue(
+        key: 'undergrad_college_name',
+        value: undergradCollegeName,
+      ),
+      FieldValue(
+        key: 'work_experience',
+        value: workExperience,
+      ),
+      FieldValue(
+        key: 'food_habit',
+        value: foodHabit?.toSafeString(),
+      ),
+      FieldValue(
+        key: 'cooking_skill',
+        value: cookingSkill?.toSafeString(),
+      ),
+      FieldValue(
+        key: 'drinking_habit',
+        value: drinkingHabit?.toSafeString(),
+      ),
+      FieldValue(
+        key: 'smoking_habit',
+        value: smokingHabit?.toSafeString(),
+      ),
+      FieldValue(
+        key: 'cleanliness_habit',
+        value: cleanlinessHabit?.toSafeString(),
+      ),
+      FieldValue(
+        key: 'hobbies',
+        value: hobbies,
+      ),
+      FieldValue(
+        key: 'flatmates_gender_prefs',
+        value: flatmateGenderPrefs,
+      ),
+      FieldValue(
+        key: 'room_type',
+        value: roomType?.toSafeString(),
+      ),
+    ];
   }
 }

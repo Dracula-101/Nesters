@@ -30,6 +30,7 @@ import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
+import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -183,8 +184,8 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<List<Language>> getLanguages() {
-    return _databaseRepository
+  Future<List<Language>> getLanguages() async {
+    return await _databaseRepository
         .getData(languagesCollection)
         .then((event) => event.map((e) => Language.fromJson(e)).toList());
   }
@@ -236,9 +237,9 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<bool> hasUserDeletedAccount({required String email}) {
+  Future<bool> hasUserDeletedAccount({required String email}) async {
     try {
-      return _databaseRepository.checkExistsData(
+      return await _databaseRepository.checkExistsData(
         userDetailCollection,
         [
           FieldValue(
@@ -266,18 +267,15 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<void> updateRoommateFoundStatus(
-      {required String id, required bool status}) {
+      {required String id, required bool status}) async {
     try {
-      return _databaseRepository.updateData(
+      return await _databaseRepository.updateData(
         userDetailCollection,
         UpdateData(
           columnId: "id",
           columnValue: id,
           fields: [
-            UpdateFieldValue(
-              fieldName: "has_roommate_found",
-              newValue: status,
-            ),
+            FieldValue(key: "has_roommate_found", value: status),
           ],
         ),
       );
@@ -557,13 +555,13 @@ class UserRepositoryImpl implements UserRepository {
     }
   }
 
-  Future<UserInfo> getUserInfoProfile() {
+  Future<UserInfo> getUserInfoProfile() async {
     try {
       final userId = _authRepository.currentUser?.id;
       if (userId == null) {
         throw Exception('User not found');
       }
-      return _databaseRepository
+      return await _databaseRepository
           .getDataWithId(
             userDetailCollection,
             FieldValue(key: 'id', value: userId),
@@ -579,9 +577,9 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<UserProfile> getUserProfile(String userId) {
+  Future<UserProfile> getUserProfile(String userId) async {
     try {
-      return _databaseRepository
+      return await _databaseRepository
           .getDataWithId(
             userDetailCollection,
             FieldValue(key: 'id', value: userId),
@@ -597,9 +595,9 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<UserAdvanceProfile> getUserFullProfile(String userId) {
+  Future<UserAdvanceProfile> getUserFullProfile(String userId) async {
     try {
-      return _databaseRepository
+      return await _databaseRepository
           .getDataWithId(
             userDetailCollection,
             FieldValue(key: 'id', value: userId),
@@ -615,78 +613,41 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<void> updateProfile(UserEditProfile profile, String userId) async {
+  Future<void> completeProfileInfo(UserFormProfile profile) async {
     try {
+      final userId = _authRepository.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User not found');
+      }
       return await _databaseRepository.updateData(
         userDetailCollection,
         UpdateData(
           columnId: "id",
           columnValue: userId,
           fields: [
-            UpdateFieldValue(
-              fieldName: "profile_image",
-              newValue: profile.profileImage,
-            ),
-            UpdateFieldValue(
-              fieldName: "selected_college_name",
-              newValue: profile.selectedCollegeName,
-            ),
-            UpdateFieldValue(
-              fieldName: "selected_course_name",
-              newValue: profile.selectedCourseName,
-            ),
-            UpdateFieldValue(
-              fieldName: "person_type",
-              newValue: profile.personType.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "work_experience",
-              newValue: profile.workExperience,
-            ),
-            UpdateFieldValue(
-              fieldName: "smoking_habit",
-              newValue: profile.smokingHabit.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "drinking_habit",
-              newValue: profile.drinkingHabit.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "food_habit",
-              newValue: profile.foodHabit.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "cooking_skill",
-              newValue: profile.cookingSkill.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "cleanliness_habit",
-              newValue: profile.cleanlinessHabit.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "bio",
-              newValue: profile.bio,
-            ),
-            UpdateFieldValue(
-              fieldName: "hobbies",
-              newValue: profile.hobbies,
-            ),
-            UpdateFieldValue(
-                fieldName: "flatmates_gender_prefs",
-                newValue: profile.flatmatesGenderPrefs),
-            UpdateFieldValue(
-              fieldName: "room_type",
-              newValue: profile.roomType.toUI(),
-            ),
-            UpdateFieldValue(
-              fieldName: "intake_period",
-              newValue: profile.intakePeriod,
-            ),
-            UpdateFieldValue(
-              fieldName: "intake_year",
-              newValue: profile.intakeYear,
-            ),
+            ...profile.toFieldValues(),
+            FieldValue(key: 'user_data_completed', value: true),
           ],
+        ),
+      );
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw UpdateUserInfoError(message: 'Error in updating user profile');
+    }
+  }
+
+  @override
+  Future<void> editProfile(UserEditProfile profile, String userId) async {
+    try {
+      return await _databaseRepository.updateData(
+        userDetailCollection,
+        UpdateData(
+          columnId: "id",
+          columnValue: userId,
+          fields: profile.toFieldValues(),
         ),
       );
     } on SocketException {
@@ -747,10 +708,10 @@ class UserRepositoryImpl implements UserRepository {
           columnId: "id",
           columnValue: userId,
           fields: [
-            UpdateFieldValue(fieldName: "user_deleted", newValue: true),
-            UpdateFieldValue(
-                fieldName: "user_deleted_date",
-                newValue: DateTime.now().toIso8601String()),
+            FieldValue(key: "user_deleted", value: true),
+            FieldValue(
+                key: "user_deleted_date",
+                value: DateTime.now().toIso8601String()),
           ],
         ),
       );

@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class LifeStyleInfoPage extends StatefulWidget {
   final GlobalKey<FormState> formKey;
-  final VoidCallback onContinue;
-  final Function(UserFoodHabit, UserCookingSkill, UserHabit, UserHabit,
-      UserCleanlinessHabit, UserRoomType) onSaved;
+  final CurrentFormState currentFormState;
   const LifeStyleInfoPage(
-      {super.key,
-      required this.formKey,
-      required this.onSaved,
-      required this.onContinue});
+      {super.key, required this.formKey, required this.currentFormState});
 
   @override
   State<LifeStyleInfoPage> createState() => _LifeStyleInfoPageState();
@@ -37,24 +34,44 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18.0),
-      child: Form(
-        key: widget.formKey,
-        child: Column(
-          children: [
-            _buildFoodPreferenceField(),
-            _buildSpacing(),
-            _buildCookingProficiencyField(),
-            _buildSpacing(),
-            _buildDrinkingHabitField(),
-            _buildSpacing(),
-            _buildSmokingHabitField(),
-            _buildSpacing(),
-            _buildCleanlinessHabitField(),
-            _buildSpacing(),
-            _buildHobbiesField(),
-          ],
+    return BlocListener<FormCubit, CurrentFormState>(
+      listener: (context, state) {
+        if (state.validationState.isLoading) {
+          print(
+              '${foodHabitController.text}, ${cookingSkillController.text}, ${drinkingHabitController.text}, ${smokingHabitController.text}, ${cleanlinessHabitController.text}, ${hobbiesController.text}');
+          context.read<FormCubit>().addData(
+                foodHabit: UserFoodHabit.fromString(foodHabitController.text),
+                cookingSkill:
+                    UserCookingSkill.fromString(cookingSkillController.text),
+                drinkingHabit:
+                    UserHabit.fromString(drinkingHabitController.text),
+                smokingHabit: UserHabit.fromString(smokingHabitController.text),
+                cleanlinessHabit: UserCleanlinessHabit.fromString(
+                    cleanlinessHabitController.text),
+                hobbies: hobbiesController.text,
+              );
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+        child: Form(
+          key: widget.formKey,
+          child: SingleChildScrollView(
+              child: Column(
+            children: [
+              _buildFoodPreferenceField(),
+              _buildSpacing(),
+              _buildCookingProficiencyField(),
+              _buildSpacing(),
+              _buildDrinkingHabitField(),
+              _buildSpacing(),
+              _buildSmokingHabitField(),
+              _buildSpacing(),
+              _buildCleanlinessHabitField(),
+              _buildSpacing(),
+              _buildHobbiesField(),
+            ],
+          )),
         ),
       ),
     );
@@ -93,7 +110,7 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
   CustomBottomSheetDropdownField<UserCleanlinessHabit>
       _buildCleanlinessHabitField() {
     return CustomBottomSheetDropdownField(
-      controller: foodHabitController,
+      controller: cleanlinessHabitController,
       hintText: 'Cleanliness Habit',
       labelText: 'Cleanliness Habit',
       prefixIcon: const Icon(
@@ -106,12 +123,17 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
         }
         return null;
       },
+      onEditingComplete: (value) {
+        context.read<FormCubit>().addData(
+              cleanlinessHabit: UserCleanlinessHabit.fromString(value),
+            );
+      },
     );
   }
 
   CustomBottomSheetDropdownField<UserHabit> _buildSmokingHabitField() {
     return CustomBottomSheetDropdownField(
-      controller: foodHabitController,
+      controller: smokingHabitController,
       hintText: 'Smoking Habit',
       labelText: 'Smoking Habit',
       prefixIcon: const Icon(
@@ -124,12 +146,17 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
         }
         return null;
       },
+      onEditingComplete: (value) {
+        context.read<FormCubit>().addData(
+              smokingHabit: UserHabit.fromString(value),
+            );
+      },
     );
   }
 
   CustomBottomSheetDropdownField<UserHabit> _buildDrinkingHabitField() {
     return CustomBottomSheetDropdownField(
-      controller: foodHabitController,
+      controller: drinkingHabitController,
       hintText: 'Drinking Habit',
       labelText: 'Drinking Habit',
       prefixIcon: const Icon(
@@ -142,13 +169,18 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
         }
         return null;
       },
+      onEditingComplete: (value) {
+        context.read<FormCubit>().addData(
+              drinkingHabit: UserHabit.fromString(value),
+            );
+      },
     );
   }
 
   CustomBottomSheetDropdownField<UserCookingSkill>
       _buildCookingProficiencyField() {
     return CustomBottomSheetDropdownField(
-      controller: foodHabitController,
+      controller: cookingSkillController,
       hintText: 'Cooking Proficiency',
       labelText: 'Cooking Proficiency',
       prefixIcon: const Icon(
@@ -160,6 +192,11 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
           return 'Please select a cooking proficiency';
         }
         return null;
+      },
+      onEditingComplete: (value) {
+        context.read<FormCubit>().addData(
+              cookingSkill: UserCookingSkill.fromString(value),
+            );
       },
     );
   }
@@ -182,6 +219,11 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
           return 'Please select a food preference';
         }
         return null;
+      },
+      onEditingComplete: (value) {
+        context.read<FormCubit>().addData(
+              foodHabit: UserFoodHabit.fromString(value),
+            );
       },
     );
   }

@@ -201,7 +201,7 @@ class UpdateFieldValue {
 class UpdateData {
   final String columnId;
   final String columnValue;
-  final List<UpdateFieldValue> fields;
+  final List<FieldValue> fields;
 
   UpdateData({
     required this.columnId,
@@ -212,7 +212,7 @@ class UpdateData {
   Map<String, dynamic> toMap() {
     Map<String, dynamic> map = {};
     for (var element in fields) {
-      map[element.fieldName] = element.newValue;
+      map[element.key] = element.value;
     }
     return map;
   }

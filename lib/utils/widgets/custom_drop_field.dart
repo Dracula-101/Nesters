@@ -334,8 +334,8 @@ class CustomSearchableDropDownFieldState<T>
 class CustomBottomSheetDropdownField<T> extends StatefulWidget {
   final List<T> items;
   final TextEditingController controller;
-  final VoidCallback? onEditingComplete;
-  final Function(T?) validator;
+  final void Function(dynamic)? onEditingComplete;
+  final String? Function(dynamic) validator;
   final String? hintText;
   final String? bottomSheetTitle;
   final Widget? prefixIcon;
@@ -363,6 +363,20 @@ class CustomBottomSheetDropdownField<T> extends StatefulWidget {
 class _CustomBottomSheetDropdownFieldState<T>
     extends State<CustomBottomSheetDropdownField> {
   T? _selectedItem;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.controller.text.isNotEmpty) {
+      for (var item in widget.items) {
+        if (widget.controller.text == item.toString()) {
+          setState(() {
+            _selectedItem = item;
+          });
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -432,7 +446,7 @@ class _CustomBottomSheetDropdownFieldState<T>
           });
           if (widget.onEditingComplete != null && _selectedItem == null) {
             GetIt.I<AppLogger>().debug('Editing complete called');
-            widget.onEditingComplete!();
+            widget.onEditingComplete!(_selectedItem);
           }
         },
       ),

@@ -6,19 +6,17 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/language.dart';
-import 'package:nesters/domain/models/location/city_info.dart';
-import 'package:nesters/domain/models/location/location_city.dart';
-import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
-import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class PersonalInformationPage extends StatefulWidget {
   final GlobalKey<FormState> formKey;
+  final CurrentFormState currentFormState;
   const PersonalInformationPage({
     super.key,
     required this.formKey,
+    required this.currentFormState,
   });
 
   @override
@@ -37,6 +35,25 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   @override
   void initState() {
     super.initState();
+    if (widget.currentFormState.userFormProfile.personType != null) {
+      personTypeController.text =
+          widget.currentFormState.userFormProfile.personType!.name;
+    }
+    if (widget.currentFormState.userFormProfile.primaryLang != null) {
+      primaryLangController.text =
+          widget.currentFormState.userFormProfile.primaryLang!;
+    }
+    if (widget.currentFormState.userFormProfile.secondaryLang != null) {
+      otherLangController.text =
+          widget.currentFormState.userFormProfile.secondaryLang!;
+    }
+    if (widget.currentFormState.userFormProfile.bio != null) {
+      bioController.text = widget.currentFormState.userFormProfile.bio!;
+    }
+    if (bioController.text.isNotEmpty) {
+      int expectedLines = (bioController.text.length / 25).ceil();
+      maxLines.value = expectedLines;
+    }
   }
 
   @override
@@ -55,19 +72,33 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       padding: const EdgeInsets.symmetric(horizontal: 18.0),
       child: Form(
         key: widget.formKey,
-        child: BlocBuilder<AppBloc, AppState>(
+        child: BlocConsumer<FormCubit, CurrentFormState>(
+          listener: (context, state) {
+            if (state.validationState.isLoading) {
+              context.read<FormCubit>().addData(
+                    personType: personTypeController.text,
+                    primaryLang: primaryLangController.text,
+                    secondaryLang: otherLangController.text,
+                    bio: bioController.text,
+                  );
+            }
+          },
           builder: (context, state) {
-            return Column(
-              children: [
-                _buildPersonTypeField(),
-                _buildSpacing(),
-                _buildPrimaryLangField(state.languages),
-                _buildSpacing(),
-                _buildOtherLangField(state.languages),
-                _buildSpacing(),
-                _buildBioField(),
-              ],
-            );
+            return BlocBuilder<AppBloc, AppState>(builder: (context, appState) {
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildPersonTypeField(),
+                    _buildSpacing(),
+                    _buildPrimaryLangField(appState.languages),
+                    _buildSpacing(),
+                    _buildOtherLangField(appState.languages),
+                    _buildSpacing(),
+                    _buildBioField(),
+                  ],
+                ),
+              );
+            });
           },
         ),
       ),
@@ -92,14 +123,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
           return 'Please select a person type';
         }
         return null;
-      },
-      onEditingComplete: () {
-        context.read<FormCubit>().checkFirstStage(
-              personType: personTypeController.text,
-              primaryLang: primaryLangController.text,
-              secondaryLang: otherLangController.text,
-              bio: bioController.text,
-            );
       },
     );
   }
@@ -138,14 +161,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
               : 'No language found for the search query ${primaryLangController.text}',
         );
       },
-      onEditingComplete: () {
-        context.read<FormCubit>().checkFirstStage(
-              personType: personTypeController.text,
-              primaryLang: primaryLangController.text,
-              secondaryLang: otherLangController.text,
-              bio: bioController.text,
-            );
-      },
     );
   }
 
@@ -177,14 +192,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
               : 'No language found for the search query ${primaryLangController.text}',
         );
       },
-      onEditingComplete: () {
-        context.read<FormCubit>().checkFirstStage(
-              personType: personTypeController.text,
-              primaryLang: primaryLangController.text,
-              secondaryLang: otherLangController.text,
-              bio: bioController.text,
-            );
-      },
     );
   }
 
@@ -210,14 +217,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
             } else {
               maxLines.value = 1;
             }
-          },
-          onFieldSaved: () {
-            context.read<FormCubit>().checkFirstStage(
-                  personType: personTypeController.text,
-                  primaryLang: primaryLangController.text,
-                  secondaryLang: otherLangController.text,
-                  bio: bioController.text,
-                );
           },
           alignLabelWithHint: true,
           maxLines: 5,

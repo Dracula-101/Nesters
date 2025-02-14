@@ -1,78 +1,114 @@
 import 'package:bloc/bloc.dart';
+import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
+import 'package:nesters/data/repository/database/remote/database_repository.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
+import 'package:nesters/domain/models/language.dart';
+import 'package:nesters/domain/models/room/room_type.dart';
 
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
-import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/utils/bloc_state.dart';
+import 'package:nesters/utils/logger/logger.dart';
 
 part 'form_state.dart';
 
 class FormCubit extends Cubit<CurrentFormState> {
   FormCubit() : super(CurrentFormState.initial());
 
-  int totalQuestions = 15;
+  AppLogger logger = GetIt.I<AppLogger>();
+  UserRepository userRepository = GetIt.I<UserRepository>();
+  AuthRepository authRepository = GetIt.I<AuthRepository>();
 
-  int checkVariables(List<String?> variables) {
-    int count = 0;
-    for (String? variable in variables) {
-      if (variable == null || variable.isEmpty == true) {
-        count++;
-      }
-    }
-    return count;
+  void validatePage() {
+    emit(state.copyWith(
+      validationState: state.validationState.loading(),
+    ));
   }
 
-  void checkFirstStage({
+  void confirmPage(int page) {
+    emit(state.copyWith(
+      firstPageComplete: page == 0,
+      secondPageComplete: page == 1,
+      thirdPageComplete: page == 2,
+      currentPage: page,
+      validationState: state.validationState.success(),
+    ));
+  }
+
+  void addData({
     String? personType,
     String? primaryLang,
     String? secondaryLang,
     String? bio,
+    UserFoodHabit? foodHabit,
+    UserCookingSkill? cookingSkill,
+    UserHabit? drinkingHabit,
+    UserHabit? smokingHabit,
+    UserCleanlinessHabit? cleanlinessHabit,
+    String? hobbies,
+    UserRoomType? roomType,
+    String? flatmateGenderPrefs,
+    String? underGradCollegeName,
+    int? workExp,
   }) {
-    List<String?> questions = [personType, primaryLang, secondaryLang, bio];
-    int inCompleteQuestions = checkVariables(questions);
-    emit(state.copyWith(
-      questionsComplete: questions.length - inCompleteQuestions,
-    ));
+    emit(
+      state.copyWith(
+        userFormProfile: state.userFormProfile.copyWith(
+          personType:
+              personType == null ? null : PersonType.fromString(personType),
+          primaryLang: primaryLang,
+          secondaryLang: secondaryLang,
+          bio: bio,
+          foodHabit: foodHabit,
+          cookingSkill: cookingSkill,
+          drinkingHabit: drinkingHabit,
+          smokingHabit: smokingHabit,
+          cleanlinessHabit: cleanlinessHabit,
+          hobbies: hobbies,
+          roomType: roomType,
+          flatmateGenderPrefs: flatmateGenderPrefs,
+          undergradCollegeName: underGradCollegeName,
+          workExperience: workExp,
+        ),
+        validationState: const BlocState(isLoading: false),
+      ),
+    );
+    logger.info('User form profile updated: ${state.userFormProfile}');
   }
 
-  void checkSecondStage({
-    String? userHabit,
-    String? userHabit2,
-    String? userHabit3,
-    String? userHabit4,
-    String? userHabit5,
-  }) {
-    List<String?> questions = [
-      userHabit,
-      userHabit2,
-      userHabit3,
-      userHabit4,
-      userHabit5,
-    ];
-    int inCompleteQuestions = checkVariables(questions);
-    emit(state.copyWith(
-      questionsComplete: questions.length - inCompleteQuestions,
-    ));
+  Future<void> submitForm() async {
+    try {
+      if (state.submitState.isLoading) return;
+      emit(state.copyWith(
+        submitState: state.submitState.loading(),
+      ));
+      await userRepository.completeProfileInfo(state.userFormProfile);
+      await authRepository.updateUserInfo(
+        authRepository.currentUserInfo?.copyWith(
+          roomType: state.userFormProfile.roomType,
+          primaryLang: Language(name: state.userFormProfile.primaryLang ?? ''),
+          otherLang: Language(name: state.userFormProfile.secondaryLang ?? ''),
+          bio: state.userFormProfile.bio,
+          foodHabit: state.userFormProfile.foodHabit,
+          cookingSkill: state.userFormProfile.cookingSkill,
+          drinkingHabit: state.userFormProfile.drinkingHabit,
+          smokingHabit: state.userFormProfile.smokingHabit,
+          cleanlinessHabit: state.userFormProfile.cleanlinessHabit,
+          hobbies: state.userFormProfile.hobbies,
+          flatmatesGenderPrefs: state.userFormProfile.flatmateGenderPrefs,
+          undergradCollegeName: state.userFormProfile.undergradCollegeName,
+          workExperience: state.userFormProfile.workExperience,
+        ),
+      );
+      emit(state.copyWith(
+        submitState: state.submitState.success(),
+      ));
+    } on AppException catch (e) {
+      emit(state.copyWith(
+        submitState: state.submitState.failure(e),
+      ));
+    }
   }
-
-  void checkThirdStage({
-    String? userHabit6,
-    String? userHabit7,
-    String? userHabit8,
-    String? userHabit9,
-    String? userHabit10,
-  }) {
-    List<String?> questions = [
-      userHabit6,
-      userHabit7,
-      userHabit8,
-      userHabit9,
-      userHabit10,
-    ];
-    int inCompleteQuestions = checkVariables(questions);
-    emit(state.copyWith(
-      questionsComplete: questions.length - inCompleteQuestions,
-    ));
-  }
-
-  void validatePage() {}
 }

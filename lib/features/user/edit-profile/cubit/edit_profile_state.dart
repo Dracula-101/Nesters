@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
+import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/pref/user_intake.dart';
+import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/utils/bloc_state.dart';
 
 class EditProfileState extends Equatable {
@@ -169,5 +171,71 @@ class UserEditProfile {
   @override
   String toString() {
     return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollegeName, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType, intakePeriod: $intakePeriod, intakeYear: $intakeYear)';
+  }
+
+  List<FieldValue> toFieldValues() {
+    return [
+      FieldValue(
+        key: "profile_image",
+        value: profileImage,
+      ),
+      FieldValue(
+        key: "selected_college_name",
+        value: selectedCollegeName,
+      ),
+      FieldValue(
+        key: "selected_course_name",
+        value: selectedCourseName,
+      ),
+      FieldValue(
+        key: "person_type",
+        value: personType?.toSafeString(),
+      ),
+      FieldValue(
+        key: "work_experience",
+        value: workExperience,
+      ),
+      FieldValue(
+        key: "smoking_habit",
+        value: smokingHabit.toSafeString(),
+      ),
+      FieldValue(
+        key: "drinking_habit",
+        value: drinkingHabit.toSafeString(),
+      ),
+      FieldValue(
+        key: "food_habit",
+        value: foodHabit.toSafeString(),
+      ),
+      FieldValue(
+        key: "cooking_skill",
+        value: cookingSkill.toSafeString(),
+      ),
+      FieldValue(
+        key: "cleanliness_habit",
+        value: cleanlinessHabit.toSafeString(),
+      ),
+      FieldValue(
+        key: "bio",
+        value: bio,
+      ),
+      FieldValue(
+        key: "hobbies",
+        value: hobbies,
+      ),
+      FieldValue(key: "flatmates_gender_prefs", value: flatmatesGenderPrefs),
+      FieldValue(
+        key: "room_type",
+        value: roomType.toSafeString(),
+      ),
+      FieldValue(
+        key: "intake_period",
+        value: intakePeriod.toString(),
+      ),
+      FieldValue(
+        key: "intake_year",
+        value: intakeYear,
+      ),
+    ];
   }
 }

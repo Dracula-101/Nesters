@@ -96,12 +96,12 @@ class _EditProfileViewState extends State<EditProfileView> {
   Widget build(BuildContext context) {
     return BlocConsumer<EditProfileCubit, EditProfileState>(
       listener: (context, state) {
-        if (state.submitState?.exception != null) {
+        if (state.submitState.exception != null) {
           context.showErrorSnackBar(
             state.submitState!.exception!.message,
           );
         }
-        if (state.submitState?.isSuccess ?? false) {
+        if (state.submitState.isSuccess ?? false) {
           context.showSuccessSnackBar('Profile updated successfully');
           if (GoRouter.of(context).canPop()) {
             GoRouter.of(context).pop();
@@ -145,11 +145,11 @@ class _EditProfileViewState extends State<EditProfileView> {
         }
       },
       builder: (context, state) {
-        return state.loadingState?.exception != null
+        return state.loadingState.exception != null
             ? ShowErrorWidget(
                 error: state.loadingState!.exception,
               )
-            : (state.loadingState?.isLoading == true)
+            : (state.loadingState.isLoading == true)
                 ? const Center(child: CircularProgressIndicator())
                 : (state.userEditProfile != null)
                     ? BlocBuilder<AppBloc, AppState>(
@@ -192,7 +192,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                                           asyncItems: (query) async {
                                             return userState.universities
                                                 .where((element) =>
-                                                    element?.title
+                                                    element.title
                                                         ?.toLowerCase()
                                                         .contains(query
                                                             .toLowerCase()) ??
@@ -220,7 +220,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                                           asyncItems: (query) async {
                                             return userState.degrees
                                                 .where((element) =>
-                                                    element?.name
+                                                    element.name
                                                         .toLowerCase()
                                                         .contains(query
                                                             .toLowerCase()) ??
@@ -413,10 +413,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                                   ),
                                 ),
                                 SaveButton(
-                                  isLoading:
-                                      state.submitState?.isLoading ?? false,
+                                  isLoading: state.submitState.isLoading,
                                   onPressed: () {
-                                    if (state.submitState?.isLoading == true) {
+                                    if (state.submitState.isLoading == true) {
                                       return;
                                     }
                                     int? workExperience = int.tryParse(

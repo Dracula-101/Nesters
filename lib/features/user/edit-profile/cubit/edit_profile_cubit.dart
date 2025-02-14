@@ -132,7 +132,7 @@ class EditProfileCubit extends Cubit<EditProfileState> {
         emit(state.copyWith(submitState: state.submitState.resetLoading()));
         return;
       }
-      await _userRepository.updateProfile(state.userEditProfile!, userId);
+      await _userRepository.editProfile(state.userEditProfile!, userId);
       emit(state.copyWith(submitState: state.submitState.success()));
       await _authRepository.updateUserInfo(
         _authRepository.currentUserInfo

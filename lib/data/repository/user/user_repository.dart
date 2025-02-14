@@ -13,6 +13,7 @@ import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
+import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
 
 abstract class UserRepository {
   Future<void> setOnBoardingComplete();
@@ -63,11 +64,13 @@ abstract class UserRepository {
 
   Future<UserProfile> getUserProfile(String userId);
 
+  Future<void> completeProfileInfo(UserFormProfile profile);
+
+  Future<void> editProfile(UserEditProfile profile, String userId);
+
   Future<UserAdvanceProfile> getUserFullProfile(String userId);
 
   Future<void> softDeleteAccount();
-
-  Future<void> updateProfile(UserEditProfile profile, String userId);
 
   Future<String> uploadProfileImage(
     String profileImagePath,
