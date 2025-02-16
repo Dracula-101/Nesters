@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/constants/app_assets.dart';
-import 'package:nesters/data/repository/database/remote/error/database_error.dart';
+import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';

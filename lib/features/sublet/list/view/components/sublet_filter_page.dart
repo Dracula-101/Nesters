@@ -402,7 +402,7 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
                 children: [
                   ...UserRoomType.toList().map(
                     (e) => FilterTile(
-                      title: e.toUI(),
+                      title: e.toString(),
                       isSelected: subletFilter.roomType == e,
                       onTap: () {
                         setState(() {
@@ -550,7 +550,7 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
                 children: [
                   ...AmenitiesType.values.map(
                     (e) => FilterTile(
-                      title: e.toUi(),
+                      title: e.toString(),
                       isSelected: subletFilter.amenitiesAvailable
                               ?.toMapAmenitiesTypes()
                               .containsKey(e) ??

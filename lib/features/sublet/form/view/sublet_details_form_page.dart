@@ -35,9 +35,9 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
   void initState() {
     super.initState();
     if (widget.sublet != null) {
-      _addressController.text = widget.sublet!.location?.address ?? '';
+      _addressController.text = widget.sublet!.address ?? '';
       _rentPriceController.text = widget.sublet!.rent.toString();
-      _roomTypeContoller.text = widget.sublet!.roomType?.toUI() ?? '';
+      _roomTypeContoller.text = widget.sublet!.roomType?.toString() ?? '';
       _roomateGenderController.text = widget.sublet?.roommateGenderPref ?? '';
       startDate = widget.sublet!.leasePeriod?.startDate;
       endDate = widget.sublet!.leasePeriod?.endDate;
@@ -323,7 +323,7 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
         UserRoomType.PRIVATE,
         UserRoomType.SHARED,
         UserRoomType.FLEX,
-      ].map((e) => e.toUI()).toList(),
+      ].map((e) => e..toString()).toList(),
       validatorText: 'Please select the room type',
     );
   }

@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
@@ -24,7 +25,7 @@ class EditProfileState extends Equatable {
     BlocState? loadingState,
     BlocState? submitState,
     String? profileImage,
-    String? selectedCollegeName,
+    University? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
@@ -46,10 +47,9 @@ class EditProfileState extends Equatable {
       submitState: submitState ?? this.submitState,
       userEditProfile: UserEditProfile(
         profileImage: profileImage ?? userEditProfile?.profileImage,
-        selectedCollegeName:
-            selectedCollegeName ?? userEditProfile?.selectedCollegeName,
         selectedCourseName:
             selectedCourseName ?? userEditProfile?.selectedCourseName,
+        selectedCollege: selectedCollege ?? userEditProfile?.selectedCollege,
         personType: personType ?? userEditProfile?.personType,
         workExperience: workExperience ?? userEditProfile?.workExperience ?? 0,
         smokingHabit:
@@ -93,7 +93,7 @@ class EditProfileState extends Equatable {
 
 class UserEditProfile {
   final String? profileImage;
-  final String? selectedCollegeName;
+  final University? selectedCollege;
   final String? selectedCourseName;
   final PersonType? personType;
   final int workExperience;
@@ -111,7 +111,7 @@ class UserEditProfile {
 
   const UserEditProfile({
     required this.profileImage,
-    required this.selectedCollegeName,
+    required this.selectedCollege,
     required this.selectedCourseName,
     required this.personType,
     required this.workExperience,
@@ -130,7 +130,7 @@ class UserEditProfile {
 
   UserEditProfile copyWith({
     String? profileImage,
-    String? selectedCollegeName,
+    University? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
@@ -148,7 +148,7 @@ class UserEditProfile {
   }) {
     return UserEditProfile(
       profileImage: profileImage ?? this.profileImage,
-      selectedCollegeName: selectedCollegeName ?? this.selectedCollegeName,
+      selectedCollege: selectedCollege ?? this.selectedCollege,
       selectedCourseName: selectedCourseName ?? this.selectedCourseName,
       personType: personType ?? this.personType,
       workExperience: workExperience ?? this.workExperience,
@@ -168,6 +168,27 @@ class UserEditProfile {
 
   @override
   String toString() {
-    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollegeName, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType, intakePeriod: $intakePeriod, intakeYear: $intakeYear)';
+    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollege, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType, intakePeriod: $intakePeriod, intakeYear: $intakeYear)';
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'profileImage': profileImage,
+      'college': selectedCollege?.id,
+      'selectedCourseName': selectedCourseName,
+      'personType': personType?.toSafeString(),
+      'workExperience': workExperience,
+      'smokingHabit': smokingHabit.toSafeString(),
+      'drinkingHabit': drinkingHabit.toSafeString(),
+      'foodHabit': foodHabit.toSafeString(),
+      'cookingSkill': cookingSkill.toSafeString(),
+      'cleanlinessHabit': cleanlinessHabit.toSafeString(),
+      'bio': bio,
+      'hobbies': hobbies,
+      'flatmatesGenderPrefs': flatmatesGenderPrefs,
+      'roomType': roomType.toSafeString(),
+      'intakePeriod': intakePeriod?.toSafeString(),
+      'intakeYear': intakeYear,
+    };
   }
 }

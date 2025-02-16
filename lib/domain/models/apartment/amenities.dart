@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 class Amenities {
   bool? hasDryer;
   bool? hasWashingMachine;
@@ -277,7 +279,8 @@ enum AmenitiesType {
   SemiFurnished,
   Furnished;
 
-  String toUi() {
+  @override
+  String toString() {
     switch (this) {
       case AmenitiesType.Dryer:
         return 'Dryer';

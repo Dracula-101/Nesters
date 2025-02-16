@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:nesters/data/repository/database/remote/error/database_error.dart';
+import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/data/repository/sublet/error/sublet_error.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/domain/models/sublet/sublet_filter.dart';
@@ -40,7 +40,7 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
+    } catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.CREATE_SUBLET_ERR,
         e.toString(),
@@ -91,11 +91,18 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.UPLOAD_IMAGES_ERR,
-        e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.UPLOAD_IMAGES_ERR,
+          e.getException,
+        );
+      } else {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.UPLOAD_IMAGES_ERR,
+          e.toString(),
+        );
+      }
     }
   }
 
@@ -121,11 +128,18 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.GET_SUBLETS_ERR,
-        e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.GET_SUBLETS_ERR,
+          e.getException,
+        );
+      } else {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.GET_SUBLETS_ERR,
+          e.toString(),
+        );
+      }
     }
   }
 
@@ -173,11 +187,18 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.FILTER_SUBLET_ERR,
-        e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.FILTER_SUBLET_ERR,
+          e.getException,
+        );
+      } else {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.FILTER_SUBLET_ERR,
+          e.toString(),
+        );
+      }
     }
   }
 
@@ -305,11 +326,18 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.FILTER_SUBLET_ERR,
-        e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.FILTER_SUBLET_ERR,
+          e.getException,
+        );
+      } else {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.FILTER_SUBLET_ERR,
+          e.toString(),
+        );
+      }
     }
   }
 
@@ -330,11 +358,18 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.GET_SUBLETS_ERR,
-        e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.GET_SUBLETS_ERR,
+          e.getException,
+        );
+      } else {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.GET_SUBLETS_ERR,
+          e.toString(),
+        );
+      }
     }
   }
 
@@ -358,7 +393,7 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
+    } catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.CREATE_SUBLET_ERR,
         e.toString(),
@@ -387,7 +422,7 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
+    } catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.UPDATE_LIKE_STATUS_ERR,
         e.toString(),
@@ -413,11 +448,18 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw SubletErrorFactory.createSubletError(
-        SubletErrorCode.GET_SUBLETS_ERR,
-        e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.GET_SUBLETS_ERR,
+          e.getException,
+        );
+      } else {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.GET_SUBLETS_ERR,
+          e.toString(),
+        );
+      }
     }
   }
 
@@ -444,7 +486,7 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
+    } catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.CHANGE_SUBLET_AVAILABILITY_STATUS_ERR,
         e.toString(),
@@ -471,7 +513,7 @@ class SubletRepositoryImpl implements SubletRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
+    } catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DELETE_SUBLET_ERR,
         e.toString(),

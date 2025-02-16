@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:nesters/data/repository/database/remote/error/database_error.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
+import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
@@ -37,11 +37,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -96,11 +103,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
         MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
         hint: e.error.toString(),
       );
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -124,11 +138,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -154,11 +175,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_MARKETPLACES_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -175,11 +203,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -211,11 +246,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -254,11 +296,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -279,11 +328,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -306,11 +362,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -335,11 +398,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -364,11 +434,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -391,11 +468,18 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.DELETE_MARKETPLACE_ERR,
-        hint: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.DELETE_MARKETPLACE_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.DELETE_MARKETPLACE_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 }

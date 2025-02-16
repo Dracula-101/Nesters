@@ -46,10 +46,6 @@ abstract class UserRepository {
 
   Future<bool> hasUserDeletedAccount({required String email});
 
-  Stream<List<LocationCity>> getCites(String searchQuery);
-
-  Future<List<LocationState>> getIndianStates(String? searchQuery);
-
   Future<List<Language>> getLanguage(String? searchQuery);
 
   Future<List<UserQuickProfile>> getUserQuickProfiles(

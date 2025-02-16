@@ -11,15 +11,10 @@ import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
-import 'package:nesters/domain/models/room/room_type.dart';
-import 'package:nesters/domain/models/user/pref/user_habit.dart';
-import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/view/components/filter_page.dart';
-import 'package:nesters/features/home/view/components/filter_tab.dart';
-import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
@@ -116,6 +111,7 @@ class _UserListViewState extends State<UserListView> {
             .add(LoadProfileCompleteEvent(_pagingController.itemList ?? []));
       }
     } catch (error) {
+      log(error.toString());
       _pagingController.error = error;
     }
   }
@@ -322,7 +318,9 @@ class _UserListViewState extends State<UserListView> {
                     icon: Icons.school,
                     title: homeState.singleUserFilter is UniversityFilter
                         ? (homeState.singleUserFilter as UniversityFilter)
-                            .university
+                                .university
+                                .title ??
+                            ''
                         : "University",
                     isActive: homeState.singleUserFilter is UniversityFilter,
                     onPressed: () async {
@@ -390,7 +388,7 @@ class _UserListViewState extends State<UserListView> {
                           if (value != null && value is University) {
                             context.read<HomeBloc>().add(
                                 SingleAddFilterProfileEvent(
-                                    UniversityFilter(value.title ?? '')));
+                                    UniversityFilter(value)));
                           }
                         });
                       }

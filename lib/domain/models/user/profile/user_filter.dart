@@ -1,3 +1,4 @@
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
@@ -5,7 +6,7 @@ import 'package:nesters/domain/models/user/pref/user_intake.dart';
 
 class UserFilter {
   // Filters
-  String? universityName;
+  University? university;
   String? branchName;
   UserIntake? intakePeriod;
   int? intakeYear;
@@ -17,7 +18,7 @@ class UserFilter {
   String? flatmateGenderPref;
 
   UserFilter({
-    this.universityName,
+    this.university,
     this.branchName,
     this.intakePeriod,
     this.intakeYear,
@@ -31,7 +32,7 @@ class UserFilter {
 
   // copy with
   UserFilter copyWith({
-    String? universityName,
+    University? university,
     String? branchName,
     UserIntake? intakePeriod,
     int? intakeYear,
@@ -44,7 +45,7 @@ class UserFilter {
     String? flatmateGenderPref,
   }) {
     return UserFilter(
-      universityName: universityName,
+      university: university,
       branchName: branchName,
       intakePeriod: intakePeriod,
       intakeYear: intakeYear,

@@ -334,7 +334,7 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           _buildCard(
             userProfile.selectedCourseName ?? '',
-            _buildCollegeNameString(userProfile.selectedCollegeName,
+            _buildCollegeNameString(userProfile.userCollege?.title,
                 userProfile.intakePeriod, userProfile.intakeYear),
             Icons.school,
           ),

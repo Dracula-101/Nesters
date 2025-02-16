@@ -306,7 +306,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.marketplace.location?.address.toTitleCase ?? '',
+              widget.marketplace.address.toTitleCase ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],

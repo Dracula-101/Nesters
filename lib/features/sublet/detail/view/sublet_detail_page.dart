@@ -288,7 +288,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${widget.sublet.roomType!.toUI()} Room',
+                  '${widget.sublet.roomType!..toString()} Room',
                   style: AppTheme.bodyMediumLightVariant,
                 ),
               ],
@@ -373,7 +373,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.sublet.location?.address.toTitleCase ?? '',
+              widget.sublet.address?.toTitleCase ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],

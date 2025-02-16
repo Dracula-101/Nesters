@@ -494,7 +494,7 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
             children: [
               ...AmenitiesType.values.map(
                 (e) => FilterTile(
-                  title: e.toUi(),
+                  title: e.toString(),
                   isSelected: selectedAmenities.containsKey(e),
                   onTap: () {
                     setState(() {

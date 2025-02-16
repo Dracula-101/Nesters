@@ -47,21 +47,6 @@ enum UserRoomType {
         UserRoomType.FLEX,
       ];
 
-  String toUI() {
-    switch (this) {
-      case UserRoomType.PRIVATE:
-        return 'Private';
-      case UserRoomType.SHARED:
-        return 'Shared';
-      case UserRoomType.ANYTHING:
-        return 'Anything';
-      case UserRoomType.FLEX:
-        return 'Flex';
-      default:
-        return 'Unknown';
-    }
-  }
-
   String? toSafeString() {
     if (this == UserRoomType.UNKNOWN) {
       return null;

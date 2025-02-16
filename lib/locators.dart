@@ -2,7 +2,6 @@ import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository_impl.dart';
 import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
-import 'package:nesters/data/repository/database/remote/supadatabase_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository_impl.dart';
 import 'package:nesters/data/repository/media/media_compressor.dart';
@@ -35,7 +34,6 @@ import 'package:nesters/data/repository/auth/supabase_auth_repository_impl.dart'
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/database/local/get_storage_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 
 Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
@@ -52,13 +50,11 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   AppRouterService appRouterService = AppRouterService();
   AuthRepository authRepository =
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
-  DatabaseRepository databaseRepository = SupaDatabaseRepository();
   RemoteChatRepository remoteChatRepository = FirebaseChatRepository();
   RecipientUserRepository firebaseRecipientQuickUserRepository =
       FirebaseRecipientUserRepository();
   UserRepository userRepository = UserRepositoryImpl(
     authRepository: authRepository,
-    databaseRepository: databaseRepository,
     storageRepository: localStorageRepository,
     logger: appLoggerService,
   );
@@ -92,7 +88,6 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   locator.registerSingleton(networkCheckerRepository);
   locator.registerSingleton(mediaRepository);
   locator.registerSingleton(authRepository);
-  locator.registerSingleton(databaseRepository);
   locator.registerSingleton(userRepository);
   locator.registerSingleton(remoteChatRepository);
   locator.registerSingleton(userChatRepository);

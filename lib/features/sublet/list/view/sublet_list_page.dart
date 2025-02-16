@@ -479,7 +479,7 @@ class _SubletListViewState extends State<SubletListView> {
                               ? (subletState.singleSubletFilter
                                       as ApartmentTypeFilter)
                                   .apartmentType
-                                  .toUI()
+                                  .toString()
                               : "Type",
                           onPressed: () async {
                             if (subletState.singleSubletFilter

@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
 import 'package:nesters/data/repository/apartment/error/apartment_error.dart';
-import 'package:nesters/data/repository/database/remote/error/database_error.dart';
+import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/domain/models/apartment/apartment_filter.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/features/apartment/list/bloc/apartment_bloc.dart';
@@ -38,7 +38,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.DB_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.CREATE_APARTMENT_ERR,
         e.toString(),
@@ -90,7 +90,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.UPLOAD_IMAGES_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.UPLOAD_IMAGES_ERR,
         e.toString(),
@@ -121,7 +121,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.GET_APARTMENTS_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.GET_APARTMENTS_ERR,
         e.toString(),
@@ -173,7 +173,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.FILTER_APARTMENT_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.FILTER_APARTMENT_ERR,
         e.toString(),
@@ -283,7 +283,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.FILTER_APARTMENT_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.FILTER_APARTMENT_ERR,
         e.toString(),
@@ -309,7 +309,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.GET_APARTMENTS_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.GET_APARTMENTS_ERR,
         e.toString(),
@@ -338,7 +338,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.UPDATE_APARTMENT_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.UPDATE_APARTMENT_ERR,
         e.toString(),
@@ -367,7 +367,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.UPDATE_LIKE_STATUS_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.UPDATE_LIKE_STATUS_ERR,
         e.toString(),
@@ -395,7 +395,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.GET_USER_LIKED_APARTMENTS_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.GET_USER_LIKED_APARTMENTS_ERR,
         e.toString(),
@@ -426,7 +426,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.CHANGE_APARTMENT_AVAILABILITY_STATUS_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.CHANGE_APARTMENT_AVAILABILITY_STATUS_ERR,
         e.toString(),
@@ -453,7 +453,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         ApartmentErrorCode.DELETE_APARTMENT_ERR,
         e.message,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw ApartmentErrorFactory.createApartmentError(
         ApartmentErrorCode.DELETE_APARTMENT_ERR,
         e.toString(),

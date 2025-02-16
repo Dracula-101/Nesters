@@ -212,19 +212,18 @@ class _UserFilterPageState extends State<UserFilterPage> {
                       itemCount: filterUniversities.length,
                       itemBuilder: (context, index) {
                         return UniversityFilterTile(
-                          isSelected: userFilter.universityName ==
-                              filterUniversities[index].title,
+                          isSelected: userFilter.university?.id ==
+                              filterUniversities[index].id,
                           isDense: true,
                           onTap: () {
                             setState(() {
-                              if (userFilter.universityName ==
-                                  filterUniversities[index].title) {
+                              if (userFilter.university?.id ==
+                                  filterUniversities[index].id) {
                                 userFilter =
-                                    userFilter.copyWith(universityName: null);
+                                    userFilter.copyWith(university: null);
                               } else {
                                 userFilter = userFilter.copyWith(
-                                  universityName:
-                                      filterUniversities[index].title,
+                                  university: filterUniversities[index],
                                 );
                               }
                             });
@@ -453,7 +452,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                 children: [
                   ...UserRoomType.toList().map(
                     (e) => FilterTile(
-                      title: e.toUI(),
+                      title: e.toString(),
                       isSelected: userFilter.roomType == e,
                       onTap: () {
                         setState(() {

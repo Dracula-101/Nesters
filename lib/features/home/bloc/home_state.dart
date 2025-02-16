@@ -148,7 +148,7 @@ class HomeState extends Equatable {
 abstract class SingleUserFilter {}
 
 class UniversityFilter extends SingleUserFilter {
-  final String university;
+  final University university;
 
   UniversityFilter(this.university);
 }

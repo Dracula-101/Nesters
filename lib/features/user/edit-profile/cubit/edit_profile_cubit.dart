@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
@@ -35,7 +36,6 @@ class EditProfileCubit extends Cubit<EditProfileState> {
         state.copyWith(
           loadingState: state.loadingState.success(),
           profileImage: userProfile.profileImage,
-          selectedCollegeName: userProfile.selectedCollegeName,
           selectedCourseName: userProfile.selectedCourseName,
           personType: userProfile.personType,
           workExperience: userProfile.workExperience,
@@ -72,7 +72,7 @@ class EditProfileCubit extends Cubit<EditProfileState> {
 
   void loadProfileData({
     String? profileImage,
-    String? selectedCollegeName,
+    University? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
@@ -91,8 +91,8 @@ class EditProfileCubit extends Cubit<EditProfileState> {
     emit(
       state.copyWith(
         profileImage: profileImage,
-        selectedCollegeName: selectedCollegeName,
         selectedCourseName: selectedCourseName,
+        selectedCollege: selectedCollege,
         personType: personType,
         workExperience: workExperience,
         smokingHabit: smokingHabit,

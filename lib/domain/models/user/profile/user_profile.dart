@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/location/location_city.dart';
 import 'package:nesters/domain/models/location/location_country.dart';
@@ -19,7 +19,7 @@ class UserProfile extends Equatable {
   final LocationCity? city;
   final LocationState? state;
   final LocationCountry? country;
-  final String? selectedCollegeName; //changeable
+  final University? userCollege;
   final String? selectedCourseName; //changeable
   final String? gender;
   final String? undergradCollegeName;
@@ -48,7 +48,7 @@ class UserProfile extends Equatable {
     required this.city,
     required this.state,
     required this.country,
-    required this.selectedCollegeName,
+    required this.userCollege,
     required this.selectedCourseName,
     required this.gender,
     required this.undergradCollegeName,
@@ -78,7 +78,7 @@ class UserProfile extends Equatable {
         profileImage,
         city,
         state,
-        selectedCollegeName,
+        country,
         selectedCourseName,
         gender,
         undergradCollegeName,
@@ -100,37 +100,6 @@ class UserProfile extends Equatable {
         intakeYear,
       ];
 
-  List<FieldValue> toFieldValues() {
-    return [
-      FieldValue(key: 'id', value: id),
-      FieldValue(key: 'full_name', value: fullName),
-      FieldValue(key: 'profile_image', value: profileImage),
-      FieldValue(key: 'city', value: city),
-      FieldValue(key: 'state', value: state),
-      FieldValue(key: 'selected_course_name', value: selectedCourseName),
-      FieldValue(key: 'selected_college_name', value: selectedCollegeName),
-      FieldValue(key: 'gender', value: gender),
-      FieldValue(key: 'undergrad_college_name', value: undergradCollegeName),
-      FieldValue(key: 'birth_date', value: birthDate),
-      FieldValue(key: 'person_type', value: personType),
-      FieldValue(key: 'primary_lang', value: primaryLang),
-      FieldValue(key: 'other_lang', value: otherLang),
-      FieldValue(key: 'work_experience', value: workExperience),
-      FieldValue(key: 'smoking_habit', value: smokingHabit),
-      FieldValue(key: 'drinking_habit', value: drinkingHabit),
-      FieldValue(key: 'food_habit', value: foodHabit),
-      FieldValue(key: 'cooking_skill', value: cookingSkill),
-      FieldValue(key: 'cleanliness_habit', value: cleanlinessHabit),
-      FieldValue(key: 'bio', value: bio),
-      FieldValue(key: 'hobbies', value: hobbies),
-      FieldValue(key: 'flatmates_gender_prefs', value: flatmatesGenderPrefs),
-      FieldValue(key: 'room_type', value: roomType),
-      FieldValue(key: 'intake_period', value: intakePeriod),
-      FieldValue(key: 'intake_year', value: intakeYear),
-      FieldValue(key: 'has_roommate_found', value: hasRoommateFound),
-    ];
-  }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -139,7 +108,7 @@ class UserProfile extends Equatable {
       'city': city.toString(),
       'state': state.toString(),
       'selected_course_name': selectedCourseName,
-      'selected_college_name': selectedCollegeName,
+      'college': userCollege?.id,
       'gender': gender,
       'undergrad_college_name': undergradCollegeName,
       'birth_date': birthDate?.toIso8601String(),
@@ -172,7 +141,10 @@ class UserProfile extends Equatable {
         state: LocationState(name: json['state'] ?? ''),
         country: LocationCountry(name: json['country'] ?? ''),
         selectedCourseName: json['selected_course_name'] ?? '',
-        selectedCollegeName: json['selected_college_name'] ?? '',
+        userCollege: json['universities'] != null
+            ? University.fromJson(json['universities']['id'],
+                json: json['universities'])
+            : null,
         gender: json['gender'] ?? '',
         undergradCollegeName: json['undergrad_college_name'] ?? '',
         birthDate: json['birth_date'] != null
@@ -216,7 +188,7 @@ class UserProfile extends Equatable {
         intakeYear: json['intake_year'] ?? DateTime.now().year,
         hasRoommateFound: json['has_roommate_found'] ?? true,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw Exception('Error parsing user profile: $e');
     }
   }
@@ -228,7 +200,7 @@ class UserProfile extends Equatable {
       city: city,
       state: state,
       country: country,
-      selectedCollegeName: selectedCollegeName,
+      userCollege: userCollege,
       selectedCourseName: selectedCourseName,
       profileImage: profileImage,
       workExperience: workExperience,

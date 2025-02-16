@@ -274,7 +274,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
   Future<void> _loadUniversities(AppEvent event, Emitter<AppState> emit) async {
     emit(state.copyWith(universitiesState: state.universitiesState.loading()));
     final cachedUniversities = _localStorageRepository.getListClass(
-        LocalStorageKeys.universityList, (p0) => University.fromJson(p0));
+        LocalStorageKeys.universityList,
+        (p0) => University.fromJson(p0['id'], json: p0));
     if (cachedUniversities?.isNotEmpty ?? false) {
       emit(state.copyWith(
           universities: cachedUniversities,

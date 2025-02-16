@@ -63,8 +63,8 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
   //   return await userRepository.getIndianStates(searchQuery);
   // }
 
-  Future<List<Language>> getLanguages(String? searchQuery) async {
-    return await userRepository.getLanguage(searchQuery);
+  Future<List<Language>> getLanguages(String? searchQuery) {
+    return userRepository.getLanguage(searchQuery);
   }
 
   @override
@@ -126,7 +126,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       prefixIcon: const Icon(
         Icons.language,
       ),
-      itemAsString: (language) => language.name,
       asyncItems: getLanguages,
       filterFn: (state, searchQuery) {
         return (state as Language)
@@ -164,7 +163,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       prefixIcon: const Icon(
         Icons.language,
       ),
-      itemAsString: (language) => language.name,
       asyncItems: getLanguages,
       filterFn: (state, searchQuery) {
         return (state as Language)

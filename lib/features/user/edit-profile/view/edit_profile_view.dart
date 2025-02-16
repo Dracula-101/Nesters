@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -7,11 +6,11 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/pref/user_intake.dart';
-import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_cubit.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
 import 'package:nesters/theme/theme.dart';
@@ -71,6 +70,7 @@ class _EditProfileViewState extends State<EditProfileView> {
   final TextEditingController intakePeriodController =
       TextEditingController(text: "Not Selected");
   DateTime selectedYear = DateTime.now();
+  University? selectedUniversity;
 
   @override
   void dispose() {
@@ -96,12 +96,12 @@ class _EditProfileViewState extends State<EditProfileView> {
   Widget build(BuildContext context) {
     return BlocConsumer<EditProfileCubit, EditProfileState>(
       listener: (context, state) {
-        if (state.submitState?.exception != null) {
+        if (state.submitState.exception != null) {
           context.showErrorSnackBar(
-            state.submitState!.exception!.message,
+            state.submitState.exception!.message,
           );
         }
-        if (state.submitState?.isSuccess ?? false) {
+        if (state.submitState.isSuccess) {
           context.showSuccessSnackBar('Profile updated successfully');
           if (GoRouter.of(context).canPop()) {
             GoRouter.of(context).pop();
@@ -110,7 +110,7 @@ class _EditProfileViewState extends State<EditProfileView> {
         }
         if (state.userEditProfile != null) {
           collegeNameController.text =
-              state.userEditProfile!.selectedCollegeName ?? '';
+              state.userEditProfile!.selectedCollege?.title ?? '';
           degreeNameController.text =
               state.userEditProfile!.selectedCourseName ?? '';
           personTypeController.text =
@@ -134,7 +134,7 @@ class _EditProfileViewState extends State<EditProfileView> {
               (state.userEditProfile!.flatmatesGenderPrefs == "")
                   ? "No Preference"
                   : state.userEditProfile!.flatmatesGenderPrefs;
-          roomTypeController.text = state.userEditProfile!.roomType.toUI();
+          roomTypeController.text = state.userEditProfile!.roomType.toString();
           intakeYearController.text =
               state.userEditProfile!.intakeYear.toString();
           intakePeriodController.text =
@@ -142,14 +142,16 @@ class _EditProfileViewState extends State<EditProfileView> {
                   .toString();
           selectedYear = DateTime(
               state.userEditProfile!.intakeYear ?? DateTime.now().year);
+          selectedUniversity = state.userEditProfile!.selectedCollege;
+          setState(() {});
         }
       },
       builder: (context, state) {
-        return state.loadingState?.exception != null
+        return state.loadingState.exception != null
             ? ShowErrorWidget(
-                error: state.loadingState!.exception,
+                error: state.loadingState.exception,
               )
-            : (state.loadingState?.isLoading == true)
+            : (state.loadingState.isLoading == true)
                 ? const Center(child: CircularProgressIndicator())
                 : (state.userEditProfile != null)
                     ? BlocBuilder<AppBloc, AppState>(
@@ -189,10 +191,19 @@ class _EditProfileViewState extends State<EditProfileView> {
                                         const SizedBox(height: 8),
                                         CustomSearchableDropDownField(
                                           controller: collegeNameController,
+                                          onEditingComplete: () {
+                                            selectedUniversity = userState
+                                                .universities
+                                                .firstWhere(
+                                              (element) =>
+                                                  element.title ==
+                                                  collegeNameController.text,
+                                            );
+                                          },
                                           asyncItems: (query) async {
                                             return userState.universities
                                                 .where((element) =>
-                                                    element?.title
+                                                    element.title
                                                         ?.toLowerCase()
                                                         .contains(query
                                                             .toLowerCase()) ??
@@ -219,12 +230,10 @@ class _EditProfileViewState extends State<EditProfileView> {
                                           controller: degreeNameController,
                                           asyncItems: (query) async {
                                             return userState.degrees
-                                                .where((element) =>
-                                                    element?.name
-                                                        .toLowerCase()
-                                                        .contains(query
-                                                            .toLowerCase()) ??
-                                                    false)
+                                                .where((element) => element.name
+                                                    .toLowerCase()
+                                                    .contains(
+                                                        query.toLowerCase()))
                                                 .toList();
                                           },
                                           hintText: 'Search for your degree',
@@ -295,7 +304,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                                         CustomDropdownField(
                                           controller: roomTypeController,
                                           items: UserRoomType.values
-                                              .map((e) => e.toUI())
+                                              .map((e) => e..toString())
                                               .toList(),
                                         ),
                                         const SizedBox(height: 16),
@@ -413,10 +422,9 @@ class _EditProfileViewState extends State<EditProfileView> {
                                   ),
                                 ),
                                 SaveButton(
-                                  isLoading:
-                                      state.submitState?.isLoading ?? false,
+                                  isLoading: state.submitState.isLoading,
                                   onPressed: () {
-                                    if (state.submitState?.isLoading == true) {
+                                    if (state.submitState.isLoading == true) {
                                       return;
                                     }
                                     int? workExperience = int.tryParse(
@@ -436,8 +444,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                                     context
                                         .read<EditProfileCubit>()
                                         .loadProfileData(
-                                          selectedCollegeName:
-                                              collegeNameController.text,
+                                          selectedCollege: selectedUniversity,
                                           selectedCourseName:
                                               degreeNameController.text,
                                           personType: PersonType.fromString(
