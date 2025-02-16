@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:nesters/app/app.dart';
@@ -18,6 +20,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupFirebase();
   await initalizeApp();
+  setupCrashlytics();
   setupMessaging();
   Bloc.observer = AppBlocObserver();
   runApp(const RootApp());
@@ -25,6 +28,18 @@ Future<void> main() async {
 
 Future<void> setupFirebase() {
   return Firebase.initializeApp();
+}
+
+void setupCrashlytics() {
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+  FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
 }
 
 Future<void> setupSupabase(AppSecretsRepository appSecrets) {

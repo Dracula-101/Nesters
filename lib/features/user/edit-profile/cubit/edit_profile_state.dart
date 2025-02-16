@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
@@ -190,5 +189,31 @@ class UserEditProfile {
       'intakePeriod': intakePeriod?.toSafeString(),
       'intakeYear': intakeYear,
     };
+  }
+
+  //to map
+  factory UserEditProfile.fromMap(Map<String, dynamic> map) {
+    return UserEditProfile(
+      profileImage: map['profileImage'],
+      selectedCollege: map['universities'] != null
+          ? University.fromJson(map['universities']['id'],
+              json: map['universities'])
+          : null,
+      selectedCourseName: map['selectedCourseName'],
+      personType: PersonType.fromString(map['personType']),
+      workExperience: map['workExperience'],
+      smokingHabit: UserHabit.fromString(map['smokingHabit']),
+      drinkingHabit: UserHabit.fromString(map['drinkingHabit']),
+      foodHabit: UserFoodHabit.fromString(map['foodHabit']),
+      cookingSkill: UserCookingSkill.fromString(map['cookingSkill']),
+      cleanlinessHabit:
+          UserCleanlinessHabit.fromString(map['cleanlinessHabit']),
+      bio: map['bio'],
+      hobbies: map['hobbies'],
+      flatmatesGenderPrefs: map['flatmatesGenderPrefs'],
+      roomType: UserRoomType.fromString(map['roomType']),
+      intakePeriod: UserIntake.fromString(map['intakePeriod']),
+      intakeYear: map['intakeYear'],
+    );
   }
 }

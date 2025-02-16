@@ -304,7 +304,7 @@ class UserInfo extends Equatable {
 
   bool isUserProfileComplete() {
     List<String?> requiredFields = [
-      personType?.toSafeString(),
+      // personType?.toSafeString(),
       primaryLang?.name,
       smokingHabit.toSafeString(),
       drinkingHabit.toSafeString(),

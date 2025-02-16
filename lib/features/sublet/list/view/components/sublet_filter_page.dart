@@ -400,7 +400,7 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
               ),
             SubletFilterTypes.RoomType => ListView(
                 children: [
-                  ...UserRoomType.toList().map(
+                  ...UserRoomType.safeValues.map(
                     (e) => FilterTile(
                       title: e.toString(),
                       isSelected: subletFilter.roomType == e,

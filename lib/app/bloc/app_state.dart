@@ -9,9 +9,11 @@ class AppState extends Equatable {
   final List<University> universities;
   final List<Degree> degrees;
   final List<MarketplaceCategoryModel> marketplaceCategory;
+  final List<Language> languages;
   final BlocState universitiesState;
   final BlocState degreesState;
   final BlocState marketplaceCategoryState;
+  final BlocState languageState;
 
   const AppState({
     this.isLoading = true,
@@ -21,9 +23,11 @@ class AppState extends Equatable {
     this.universities = const [],
     this.degrees = const [],
     this.marketplaceCategory = const [],
+    this.languages = const [],
     this.universitiesState = const BlocState(),
     this.degreesState = const BlocState(),
     this.marketplaceCategoryState = const BlocState(),
+    this.languageState = const BlocState(),
   });
 
   AppState copyWith({
@@ -34,9 +38,11 @@ class AppState extends Equatable {
     List<University>? universities,
     List<Degree>? degrees,
     List<MarketplaceCategoryModel>? marketplaceCategory,
+    List<Language>? languages,
     BlocState? universitiesState,
     BlocState? degreesState,
     BlocState? marketplaceCategoryState,
+    BlocState? languageState,
   }) {
     return AppState(
       isLoading: isLoading ?? this.isLoading,
@@ -46,7 +52,12 @@ class AppState extends Equatable {
       universities: universities ?? this.universities,
       degrees: degrees ?? this.degrees,
       marketplaceCategory: marketplaceCategory ?? this.marketplaceCategory,
+      languages: languages ?? this.languages,
       universitiesState: universitiesState ?? this.universitiesState,
+      degreesState: degreesState ?? this.degreesState,
+      marketplaceCategoryState:
+          marketplaceCategoryState ?? this.marketplaceCategoryState,
+      languageState: languageState ?? this.languageState,
     );
   }
 
@@ -59,8 +70,10 @@ class AppState extends Equatable {
         universities,
         degrees,
         marketplaceCategory,
+        languages,
         universitiesState,
         degreesState,
         marketplaceCategoryState,
+        languageState,
       ];
 }

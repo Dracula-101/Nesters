@@ -29,6 +29,7 @@ import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_error.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
+import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -48,7 +49,7 @@ class UserRepositoryImpl implements UserRepository {
   final SupabaseStorageClient _storageClient = Supabase.instance.client.storage;
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  String universityCollection = "universities";
+  String universityCollection = 'universities';
   String masterDegreeCollection = "masters";
   String userDetailCollection = "user_details";
   String selectUserTableQuery =
@@ -186,6 +187,38 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<List<Language>> getLanguage(String? searchQuery) async {
+    try {
+      return _supabase
+          .from(languageCollection)
+          .select()
+          .then((event) => event.map((e) => Language.fromJson(e)).toList());
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting languages');
+    }
+  }
+
+  @override
+  Future<List<Language>> getLanguages() async {
+    try {
+      return _supabase
+          .from(languageCollection)
+          .select()
+          .then((event) => event.map((e) => Language.fromJson(e)).toList());
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting languages');
+    }
+  }
+
+  @override
   Future<List<Degree>> getMastersDegree(String? searchString) async {
     try {
       return _supabase
@@ -196,22 +229,6 @@ class UserRepositoryImpl implements UserRepository {
       rethrow;
     } on Exception {
       throw GetUserInfoError(message: 'Error in getting degrees');
-    }
-  }
-
-  @override
-  Future<List<Language>> getLanguage(String? searchQuery) {
-    try {
-      return _supabase
-          .from(languageCollection)
-          .select()
-          .then((event) => event.map((e) => Language.fromJson(e)).toList());
-    } on SocketException {
-      throw NoNetworkError();
-    } on AppException {
-      rethrow;
-    } on Exception {
-      throw GetUserInfoError(message: 'Error in getting languages');
     }
   }
 
@@ -239,7 +256,7 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<bool> hasUserDeletedAccount({required String email}) {
+  Future<bool> hasUserDeletedAccount({required String email}) async {
     try {
       final result = _supabase
           .from(userDetailCollection)
@@ -259,7 +276,7 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<void> updateRoommateFoundStatus(
-      {required String id, required bool status}) {
+      {required String id, required bool status}) async {
     try {
       return _supabase.from(userDetailCollection).update({
         'has_roommate_found': status,
@@ -450,17 +467,35 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<void> updateProfile(UserEditProfile profile, String userId) async {
+  Future<void> completeProfileInfo(UserFormProfile profile) async {
     try {
-      return _supabase
-          .from(userDetailCollection)
-          .update(profile.toMap())
-          .eq('id', userId);
+      final userId = _authRepository.currentUser?.id;
+      if (userId == null) throw UserNotAuthError();
+      return _supabase.from(userDetailCollection).upsert({
+        ...profile.toMap(),
+        'id': userId,
+      });
     } on SocketException {
       throw NoNetworkError();
     } on AppException {
       rethrow;
     } on Exception {
+      throw UpdateUserInfoError(message: 'Error in updating user profile');
+    }
+  }
+
+  @override
+  Future<void> editProfile(UserEditProfile profile, String userId) async {
+    try {
+      return _supabase.from(userDetailCollection).upsert({
+        ...profile.toMap(),
+        'id': userId,
+      });
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } catch (e) {
       throw UpdateUserInfoError(message: 'Error in updating user profile');
     }
   }

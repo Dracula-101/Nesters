@@ -410,7 +410,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
               ),
             UserFilterTypes.SmokingHabits => ListView(
                 children: [
-                  ...UserHabit.toList().map(
+                  ...UserHabit.safeValues.map(
                     (e) => FilterTile(
                       title: e.toString().capitalize,
                       isSelected: userFilter.smokingHabit == e,
@@ -430,7 +430,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
               ),
             UserFilterTypes.DrinkingHabits => ListView(
                 children: [
-                  ...UserHabit.toList().map(
+                  ...UserHabit.safeValues.map(
                     (e) => FilterTile(
                       title: e.toString().capitalize,
                       isSelected: userFilter.drinkingHabit == e,
@@ -450,7 +450,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
               ),
             UserFilterTypes.RoomType => ListView(
                 children: [
-                  ...UserRoomType.toList().map(
+                  ...UserRoomType.safeValues.map(
                     (e) => FilterTile(
                       title: e.toString(),
                       isSelected: userFilter.roomType == e,
