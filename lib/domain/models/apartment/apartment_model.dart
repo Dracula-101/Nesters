@@ -53,7 +53,7 @@ class ApartmentModel {
       'photos': photos ?? [],
       'amenities_available': amenitiesAvailable?.toMap() ?? {},
       'address': address ?? '',
-      'location': location?.toPoint() ?? {},
+      'location': location?.toPoint(),
       'is_available': isAvailable ?? true,
       ...apartmentSize?.toMap() ?? {},
       ...leasePeriod?.toMap() ?? {},
@@ -70,6 +70,7 @@ class ApartmentModel {
       leasePeriod: LeasePeriod.fromMap(map),
       amenitiesAvailable: Amenities.fromMap(map['amenities_available'] ?? {}),
       apartmentSize: ApartmentSize.fromMap(map),
+      address: map['address'],
       location: Location.fromPoint(map['location']),
       isAvailable: map['is_available'] ?? true,
       isFavouriteByUser: map['apartment_likes'] == null

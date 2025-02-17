@@ -68,12 +68,12 @@ class UserQuickProfileWidget extends StatelessWidget {
                 flex: 4,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: AspectRatio(
-                    aspectRatio: 1,
-                    child: Stack(
-                      alignment: Alignment.bottomCenter,
-                      children: [
-                        CachedNetworkImage(
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      AspectRatio(
+                        aspectRatio: 1,
+                        child: CachedNetworkImage(
                           imageUrl: userQuickProfile.profileImage ?? '',
                           errorWidget: (context, url, error) => Center(
                             child: Icon(
@@ -82,29 +82,32 @@ class UserQuickProfileWidget extends StatelessWidget {
                               size: 60,
                             ),
                           ),
+                          alignment: Alignment.center,
                           fit: BoxFit.cover,
+                          width: double.infinity,
                           fadeInDuration: 150.ms,
                         ),
-                        if (userQuickProfile.intakePeriod != null &&
-                            userQuickProfile.intakeYear != null)
-                          Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: AppTheme.lightPrimary,
-                            ),
-                            child: Text(
-                              _buildIntakeString(
-                                userQuickProfile.intakePeriod,
-                                userQuickProfile.intakeYear,
-                              ),
-                              style: AppTheme.labelSmall,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                            ),
+                      ),
+                      if (userQuickProfile.intakePeriod != null &&
+                          userQuickProfile.intakeYear != null)
+                        Container(
+                          width: double.infinity,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            color: AppTheme.lightPrimary,
                           ),
-                      ],
-                    ),
+                          child: Text(
+                            _buildIntakeString(
+                              userQuickProfile.intakePeriod,
+                              userQuickProfile.intakeYear,
+                            ),
+                            style: AppTheme.labelSmall,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),

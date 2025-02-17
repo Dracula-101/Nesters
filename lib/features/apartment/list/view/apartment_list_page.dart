@@ -504,7 +504,7 @@ class _ApartmentListViewState extends State<ApartmentListView> {
           builder: (ctx, setState) {
             return BlocProvider.value(
               value: context.read<ApartmentBloc>(),
-              child: const ApartmentFilterDialogPage(),
+              child: ApartmentFilterDialogPage(filter: state.apartmentFilter),
             );
           },
         );

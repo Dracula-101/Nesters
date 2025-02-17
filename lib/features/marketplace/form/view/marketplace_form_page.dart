@@ -50,41 +50,20 @@ class CustomBottomNavigationBar extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        return GestureDetector(
+        return LoadingWidget(
+          isLoading: state.submitState.isLoading,
+          text: state.submitState.isSuccess
+              ? (state.isPreFilled ?? false)
+                  ? 'Updated'
+                  : 'Submitted'
+              : state.submitState.isLoading
+                  ? 'Uploading ${((state.imageUploadTask?.progress ?? 0.01) * 100).toInt()}%'
+                  : state.pageNumber == 0
+                      ? 'Next'
+                      : 'Submit',
           onTap: () {
             context.read<MarketplaceFormCubit>().validatePage();
           },
-          child: Container(
-            height: 60,
-            margin:
-                const EdgeInsets.symmetric(horizontal: 18.0, vertical: 18.0),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: DynamicProgressIndicator(
-              currentValue: (state.submitState.isLoading ?? false)
-                  ? 1.0
-                  : state.imageUploadTask?.progress ?? 1.0,
-              totalValue: 1.0,
-              height: 60,
-              width: double.infinity,
-              backgroundColor: AppTheme.primaryShades.shade300,
-              progressColor: AppTheme.primaryShades.shade600,
-              child: Text(
-                state.submitState.isLoading ?? false
-                    ? state.isPreFilled ?? false
-                        ? 'Updated'
-                        : 'Submitted'
-                    : state.imageUploadTask != null
-                        ? 'Uploading ${((state.imageUploadTask?.progress ?? 0.01) * 100).toInt()}%'
-                        : 'Next',
-                style: AppTheme.titleLarge.copyWith(
-                  color: AppTheme.surface,
-                ),
-              ),
-            ),
-          ),
         );
       },
     );

@@ -288,7 +288,7 @@ class _SubletDetailViewState extends State<SubletDetailView> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${widget.sublet.roomType!..toString()} Room',
+                  '${widget.sublet.roomType!.toString()} Room',
                   style: AppTheme.bodyMediumLightVariant,
                 ),
               ],

@@ -4,6 +4,7 @@ class MarketplaceLoadingState extends BlocState {}
 
 class MarketplaceFormState {
   final MarketplaceModel? item;
+  final String? placeId;
   final Exception? error;
   final int pageNumber;
   final bool hasSecondPageAccess;
@@ -16,6 +17,7 @@ class MarketplaceFormState {
 
   const MarketplaceFormState({
     this.item,
+    this.placeId,
     this.error,
     this.pageNumber = 0,
     this.hasSecondPageAccess = false,
@@ -29,6 +31,7 @@ class MarketplaceFormState {
 
   MarketplaceFormState copyWith({
     MarketplaceModel? item,
+    String? placeId,
     Exception? error,
     int? pageNumber,
     bool? hasSecondPageAccess,
@@ -41,6 +44,7 @@ class MarketplaceFormState {
   }) {
     return MarketplaceFormState(
       item: item ?? this.item,
+      placeId: placeId ?? this.placeId,
       error: error ?? this.error,
       pageNumber: pageNumber ?? this.pageNumber,
       hasSecondPageAccess: hasSecondPageAccess ?? this.hasSecondPageAccess,

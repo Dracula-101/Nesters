@@ -684,6 +684,7 @@ class _CustomDynamicSearchableDropDropFieldState
                     ),
                   ],
                   actionsPadding: const EdgeInsets.all(0),
+                  contentPadding: const EdgeInsets.all(0),
                   content: SingleChildScrollView(
                     child: Column(
                       children: [
@@ -692,6 +693,10 @@ class _CustomDynamicSearchableDropDropFieldState
                             color: widget.backgroundColor ??
                                 AppTheme.greyShades.shade200,
                             borderRadius: BorderRadius.circular(10),
+                          ),
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 12.0,
                           ),
                           child: TextField(
                             autofocus: true,
@@ -735,9 +740,8 @@ class _CustomDynamicSearchableDropDropFieldState
                             },
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const Divider(),
                         SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.5,
                           width: MediaQuery.of(context).size.width * 0.8,
                           child: widget.asyncSearchItems == null
                               ? FutureBuilder(
@@ -750,8 +754,12 @@ class _CustomDynamicSearchableDropDropFieldState
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
+                                      return SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        child: const Center(
+                                            child: CircularProgressIndicator()),
                                       );
                                     } else if (snapshot.hasError) {
                                       return ShowErrorWidget(
@@ -763,6 +771,8 @@ class _CustomDynamicSearchableDropDropFieldState
                                           return ListView.builder(
                                             shrinkWrap: true, //MUST TO ADDED
                                             itemCount: _filteredItems?.length,
+                                            padding: const EdgeInsets.only(
+                                                bottom: 68),
                                             itemBuilder: (context, index) {
                                               return widget.itemBuilder != null
                                                   ? GestureDetector(
@@ -831,8 +841,12 @@ class _CustomDynamicSearchableDropDropFieldState
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
+                                      return SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        child: const Center(
+                                            child: CircularProgressIndicator()),
                                       );
                                     } else if (snapshot.hasError) {
                                       return ShowErrorWidget(
@@ -842,6 +856,8 @@ class _CustomDynamicSearchableDropDropFieldState
                                       return SizedBox(
                                         child: ListView.builder(
                                           shrinkWrap: true, //MUST TO ADDED
+                                          padding:
+                                              const EdgeInsets.only(bottom: 68),
                                           itemCount: snapshot.data?.length,
                                           itemBuilder: (context, index) {
                                             return widget.itemBuilder != null
@@ -869,9 +885,12 @@ class _CustomDynamicSearchableDropDropFieldState
                                                     contentPadding:
                                                         const EdgeInsets.all(0),
                                                     title: Text(
-                                                      widget.itemAsString!(
-                                                          snapshot
-                                                              .data?[index]),
+                                                      widget.itemAsString?.call(
+                                                              snapshot.data?[
+                                                                  index]) ??
+                                                          snapshot.data?[index]
+                                                              .toString() ??
+                                                          '',
                                                     ),
                                                     onTap: () {
                                                       setState(() {
@@ -895,11 +914,12 @@ class _CustomDynamicSearchableDropDropFieldState
                                     } else {
                                       return widget.emptyBuilder != null
                                           ? widget.emptyBuilder!(context)
-                                          : const SizedBox();
+                                          : const Center();
                                     }
                                   },
                                 ),
                         ),
+                        const Divider(),
                       ],
                     ),
                   ),

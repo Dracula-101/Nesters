@@ -164,8 +164,13 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
             .order("beds", ascending: true)
             .order("baths", ascending: true);
       }
-      return response.order("id", ascending: false).select().then(
-          (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
+      if (filter is RentFilter) {
+        response = response.order("rent", ascending: true);
+      }
+      response = response.order("id", ascending: false);
+      return response
+          .select()
+          .then((v) => v.map((e) => ApartmentModel.fromMap(e)).toList());
     } on SocketException {
       throw NoNetworkError();
     } on PostgrestException catch (e) {
@@ -274,7 +279,26 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
             filter.leasePeriod!.startDate!.millisecondsSinceEpoch);
       }
       queryBuilder = queryBuilder.neq("user_id", userId);
-      return queryBuilder.order("id").then(
+      PostgrestTransformBuilder<List<Map<String, dynamic>>> transformBuilder =
+          queryBuilder;
+      if (filter.leasePeriod != null && filter.leasePeriod?.startDate != null) {
+        transformBuilder =
+            transformBuilder.order("start_date", ascending: true);
+      }
+      if (filter.apartmentSize != null &&
+          (filter.apartmentSize?.beds != 0 ||
+              filter.apartmentSize?.baths != 0)) {
+        transformBuilder = transformBuilder
+            .order("beds", ascending: true)
+            .order("baths", ascending: true);
+      }
+      if (filter.startRent != null && filter.startRent != 0) {
+        transformBuilder = transformBuilder.order("rent", ascending: true);
+      }
+      if (filter.endRent != null && filter.endRent != 0) {
+        transformBuilder = transformBuilder.order("rent", ascending: true);
+      }
+      return transformBuilder.order("id", ascending: false).select().then(
           (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
     } on SocketException {
       throw NoNetworkError();
@@ -299,6 +323,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
           .from('apartments')
           .select()
           .eq('user_id', userId)
+          .order('id', ascending: false)
           .then(
               (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
       return apartments;

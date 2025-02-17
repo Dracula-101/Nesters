@@ -356,7 +356,9 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                     value: context.read<MarketplaceBloc>(),
                     child: BlocBuilder<MarketplaceBloc, MarketplaceState>(
                       builder: (context, marketplaceState) {
-                        return const MarketplaceFilterDialogPage();
+                        return MarketplaceFilterDialogPage(
+                          filter: marketplaceState.advancedFilter,
+                        );
                       },
                     ),
                   );

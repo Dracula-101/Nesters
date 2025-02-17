@@ -177,7 +177,7 @@ class ApartmentModelWidget extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(
           child: Text(
-            apartment.address?.toTitleCase ?? '',
+            apartment.address?.toTitleCase ?? 'No Location Provided',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),

@@ -68,7 +68,7 @@ class SubletModel {
       'amenities_available': amenitiesAvailable?.toMap() ?? {},
       'room_type': (roomType ?? '').toString(),
       'address': address ?? '',
-      'location': location?.toPoint() ?? {},
+      'location': location?.toPoint() ?? "",
       'is_available': isAvailable ?? true,
       ...apartmentSize?.toMap() ?? {},
       ...leasePeriod?.toMap() ?? {},

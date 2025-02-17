@@ -34,3 +34,4 @@ part 'show_no_info_widget.dart';
 part 'universities_loader.dart';
 part 'degrees_loader.dart';
 part 'marketplace_categories_loader.dart';
+part 'custom_loader_button.dart';

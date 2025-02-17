@@ -14,7 +14,8 @@ import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class ApartmentFilterDialogPage extends StatefulWidget {
-  const ApartmentFilterDialogPage({super.key});
+  final ApartmentFilter? filter;
+  const ApartmentFilterDialogPage({super.key, this.filter});
 
   @override
   State<ApartmentFilterDialogPage> createState() =>
@@ -28,6 +29,19 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
   LeasePeriod? selectedLeasePeriod;
   Map<AmenitiesType, bool> selectedAmenities = {};
   ApartmentSize? selectedApartmentSize;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.filter != null) {
+      rentStart = widget.filter!.startRent;
+      rentEnd = widget.filter!.endRent;
+      selectedLeasePeriod = widget.filter!.leasePeriod;
+      selectedApartmentSize = widget.filter!.apartmentSize;
+      selectedAmenities =
+          widget.filter!.amenitiesAvailable?.toMapAmenitiesTypes() ?? {};
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

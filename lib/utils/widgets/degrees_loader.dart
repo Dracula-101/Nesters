@@ -21,8 +21,21 @@ class _DegreesLoaderState extends State<DegreesLoader> {
                 },
               )
             : state.degreesState.isLoading && state.degrees.isEmpty
-                ? const Center(
-                    child: CircularProgressIndicator(),
+                ? Center(
+                    child: Column(
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 10),
+                        OutlinedButton(
+                          onPressed: () {
+                            context
+                                .read<AppBloc>()
+                                .add(const AppEvent.loadDegrees());
+                          },
+                          child: const Text('Reload'),
+                        ),
+                      ],
+                    ),
                   )
                 : state.degrees.isEmpty
                     ? const ShowNoInfoWidget(

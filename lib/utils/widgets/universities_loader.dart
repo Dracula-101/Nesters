@@ -24,8 +24,21 @@ class _UniversitiesLoaderState extends State<UniversitiesLoader> {
                 },
               )
             : state.universitiesState.isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(),
+                ? Center(
+                    child: Column(
+                      children: [
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 10),
+                        OutlinedButton(
+                          onPressed: () {
+                            context
+                                .read<AppBloc>()
+                                .add(const AppEvent.loadUniversities());
+                          },
+                          child: const Text('Reload'),
+                        ),
+                      ],
+                    ),
                   )
                 : state.universities.isEmpty
                     ? const ShowNoInfoWidget(

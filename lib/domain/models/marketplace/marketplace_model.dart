@@ -79,7 +79,7 @@ class MarketplaceModel {
       'photos': photos ?? [],
       'link': reference?.toJson() ?? {},
       'address': address ?? '',
-      'location': location?.toPoint() ?? {},
+      'location': location?.toPoint() ?? "",
       'period': period?.toJson() ?? {},
       'is_available': isAvailable ?? false,
       'created_at': createdAt?.millisecondsSinceEpoch,

@@ -23,6 +23,16 @@ class Location {
     );
   }
 
+  factory Location.fromCoords({
+    required double lat,
+    required double long,
+  }) {
+    return Location(
+      latitude: lat,
+      longitude: long,
+    );
+  }
+
   Location copyWith({
     double? latitude,
     double? longitude,

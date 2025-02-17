@@ -304,7 +304,7 @@ class _EditProfileViewState extends State<EditProfileView> {
                                         CustomDropdownField(
                                           controller: roomTypeController,
                                           items: UserRoomType.values
-                                              .map((e) => e..toString())
+                                              .map((e) => e.toString())
                                               .toList(),
                                         ),
                                         const SizedBox(height: 16),

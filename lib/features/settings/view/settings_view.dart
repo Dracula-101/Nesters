@@ -32,8 +32,10 @@ class SettingsPage extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          body: SettingsView(
-            state: state,
+          body: SafeArea(
+            child: SettingsView(
+              state: state,
+            ),
           ),
         );
       },
@@ -63,6 +65,7 @@ class _SettingsViewState extends State<SettingsView> {
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
+                  const SizedBox(width: 8),
                   Icon(
                     Icons.arrow_back_ios,
                     color: AppTheme.primary,

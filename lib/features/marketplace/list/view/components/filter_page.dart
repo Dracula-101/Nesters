@@ -9,7 +9,8 @@ import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarketplaceFilterDialogPage extends StatefulWidget {
-  const MarketplaceFilterDialogPage({super.key});
+  final MarketplaceAdvancedFilter? filter;
+  const MarketplaceFilterDialogPage({super.key, this.filter});
 
   @override
   State<MarketplaceFilterDialogPage> createState() =>
@@ -21,6 +22,19 @@ class _MarketplaceFilterDialogPageState
   MarketplaceFilterTypes selectedFilterType = MarketplaceFilterTypes.price;
   double? minPrice, maxPrice;
   MarketplaceCategoryModel? selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.filter != null) {
+      minPrice = widget.filter!.minPrice;
+      maxPrice = widget.filter!.maxPrice;
+      selectedCategory = widget.filter!.category;
+      selectedFilterType = minPrice != null || maxPrice != null
+          ? MarketplaceFilterTypes.price
+          : MarketplaceFilterTypes.category;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {

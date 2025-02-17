@@ -5,7 +5,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:google_places_sdk/google_places_sdk.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
+import 'package:nesters/data/repository/apartment/error/apartment_error.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
@@ -33,6 +35,7 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
 
   final ApartmentRepository _apartmentRepository =
       GetIt.I<ApartmentRepository>();
+  final GooglePlaces _googlePlaces = GetIt.I<GooglePlaces>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
   final AppLogger _logger = GetIt.I<AppLogger>();
   int apartmentId = DateTime.now().millisecondsSinceEpoch;
@@ -43,6 +46,10 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
       isPreFilled: true,
       hasSecondPageAccess: true,
     ));
+  }
+
+  void addAddress(String placeId) {
+    emit(state.copyWith(placeId: placeId));
   }
 
   void validatePage() {
@@ -95,19 +102,29 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
   }
 
   Future<void> createApartment() async {
-    if (state.submitState?.isLoading ?? false) return;
+    if (state.submitState.isLoading) return;
     try {
-      emit(state.copyWith(submitState: state.submitState?.loading()));
+      emit(state.copyWith(submitState: state.submitState.loading()));
+      if (state.placeId != null) {
+        final locationResult =
+            await _googlePlaces.fetchPlaceDetails(state.placeId!);
+        emit(state.copyWith(
+            apartment: state.apartment?.copyWith(
+          location: Location.fromCoords(
+              lat: locationResult.latLng?.lat ?? 0,
+              long: locationResult.latLng?.lng ?? 0),
+          address: locationResult.address,
+        )));
+      }
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(
-            submitState: state.submitState?.failure(UserNotAuthError())));
+            submitState: state.submitState.failure(UserNotAuthError())));
         return;
       }
       if (state.pickedImages.isEmpty) {
         emit(state.copyWith(
-            submitState:
-                state.submitState?.failure(UserNoPhotosUploadError())));
+            submitState: state.submitState.failure(UserNoPhotosUploadError())));
         return;
       }
       Stream<ApartmentImageUploadTask> uploadImageStream =
@@ -126,8 +143,7 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
       }
       if (uploadedImagesUrl.isEmpty) {
         emit(state.copyWith(
-            submitState:
-                state.submitState?.failure(UserNoPhotosUploadError())));
+            submitState: state.submitState.failure(UserNoPhotosUploadError())));
         return;
       }
       ApartmentModel? model =
@@ -138,25 +154,42 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
       );
       emit(state.copyWith(
         imageUploadTask: null,
-        submitState: state.submitState?.success(),
+        submitState: state.submitState.success(),
       ));
     } on AppException catch (e) {
       _logger.error('Error creating apartment: $e');
       emit(state.copyWith(
-        submitState: state.submitState?.failure(e),
+        submitState: state.submitState.failure(e),
+        imageUploadTask: null,
+      ));
+    } catch (e, stackTrace) {
+      _logger.error('Error creating apartment: $e $stackTrace');
+      emit(state.copyWith(
+        submitState: state.submitState
+            .failure(UnknownApartmentError(extra: e.toString())),
         imageUploadTask: null,
       ));
     }
   }
 
   Future<void> updateApartment() async {
-    if (state.submitState?.isLoading ?? false) return;
+    if (state.submitState.isLoading) return;
     try {
-      emit(state.copyWith(submitState: state.submitState?.loading()));
+      emit(state.copyWith(submitState: state.submitState.loading()));
+      if (state.placeId != null) {
+        final locationResult =
+            await _googlePlaces.fetchPlaceDetails(state.placeId!);
+        final location = Location.fromCoords(
+            lat: locationResult.latLng?.lat ?? 0,
+            long: locationResult.latLng?.lng ?? 0);
+        emit(state.copyWith(
+            apartment: state.apartment?.copyWith(
+                location: location, address: locationResult.address)));
+      }
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(
-            submitState: state.submitState?.failure(UserNotAuthError())));
+            submitState: state.submitState.failure(UserNotAuthError())));
         return;
       }
       List<String> uploadedImagesUrl = [];
@@ -190,17 +223,24 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
       emit(
         state.copyWith(
           imageUploadTask: null,
-          submitState: state.submitState?.success(),
+          submitState: state.submitState.success(),
         ),
       );
     } on AppException catch (e) {
       _logger.error('Error updating apartment: $e');
       emit(
         state.copyWith(
-          submitState: state.submitState?.failure(e),
+          submitState: state.submitState.failure(e),
           imageUploadTask: null,
         ),
       );
+    } catch (e) {
+      _logger.error('Error creating apartment: $e');
+      emit(state.copyWith(
+        submitState: state.submitState
+            .failure(UnknownApartmentError(extra: e.toString())),
+        imageUploadTask: null,
+      ));
     }
   }
 

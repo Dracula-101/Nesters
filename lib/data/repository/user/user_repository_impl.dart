@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:google_places_sdk/google_places_sdk.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:nesters/data/repository/auth/auth_repository.dart';
@@ -17,6 +18,7 @@ import 'package:nesters/domain/models/location/city_info.dart';
 import 'package:nesters/domain/models/location/city_info_response.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/domain/models/user/address.dart';
 import 'package:nesters/domain/models/user/form/user_advance_profile.dart';
 import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
@@ -38,13 +40,15 @@ class UserRepositoryImpl implements UserRepository {
     required AuthRepository authRepository,
     required LocalStorageRepository storageRepository,
     required AppLogger logger,
-    // required FirestoreRepository firestoreRepository,
+    required GooglePlaces placesRepository,
   })  : _authRepository = authRepository,
         _storageRepository = storageRepository,
-        _logger = logger;
+        _logger = logger,
+        _placesRepository = placesRepository;
 
   final AuthRepository _authRepository;
   final LocalStorageRepository _storageRepository;
+  final GooglePlaces _placesRepository;
   final AppLogger _logger;
   final SupabaseStorageClient _storageClient = Supabase.instance.client.storage;
   final SupabaseClient _supabase = Supabase.instance.client;
@@ -219,6 +223,21 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  Future<List<SearchAddress>> searchAddress(String? searchQuery) async {
+    try {
+      final places =
+          await _placesRepository.getAutoCompletePredictions(searchQuery!);
+      return places.map((e) => SearchAddress.fromPrediction(e)).toList();
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting addresses');
+    }
+  }
+
+  @override
   Future<List<Degree>> getMastersDegree(String? searchString) async {
     try {
       return _supabase
@@ -300,8 +319,8 @@ class UserRepositoryImpl implements UserRepository {
           .neq('id', userId)
           .neq('user_deleted', true)
           .neq('has_roommate_found', true)
-          .order('created_at', ascending: true)
-          .limit(limit)
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit)
           .then((e) => e.map((e) => UserQuickProfile.fromJson(e)).toList());
     } on SocketException {
       throw NoNetworkError();

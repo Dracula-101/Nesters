@@ -2,6 +2,7 @@ part of 'sublet_form_cubit.dart';
 
 class SubletFormState extends Equatable {
   final SubletModel? sublet;
+  final String? addressPlaceId;
   final bool? isPreFilled;
   final Exception? error;
   final int pageNumber;
@@ -14,6 +15,7 @@ class SubletFormState extends Equatable {
 
   const SubletFormState({
     this.sublet,
+    this.addressPlaceId,
     this.isPreFilled = false,
     this.error,
     this.pageNumber = 0,
@@ -27,6 +29,7 @@ class SubletFormState extends Equatable {
 
   SubletFormState copyWith({
     SubletModel? sublet,
+    String? addressPlaceId,
     bool? isPreFilled,
     Exception? error,
     int? pageNumber,
@@ -39,6 +42,7 @@ class SubletFormState extends Equatable {
   }) {
     return SubletFormState(
       sublet: sublet ?? this.sublet,
+      addressPlaceId: addressPlaceId ?? this.addressPlaceId,
       isPreFilled: isPreFilled ?? this.isPreFilled,
       error: error ?? this.error,
       pageNumber: pageNumber ?? this.pageNumber,
@@ -54,6 +58,7 @@ class SubletFormState extends Equatable {
   @override
   List<Object?> get props => [
         sublet,
+        addressPlaceId,
         isPreFilled,
         error,
         pageNumber,
