@@ -7,7 +7,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
-import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:nesters/app/app.dart';

@@ -372,9 +372,11 @@ class _SubletDetailViewState extends State<SubletDetailView> {
               size: 18,
             ),
             const SizedBox(width: 4),
-            Text(
-              widget.sublet.address?.toTitleCase ?? '',
-              style: AppTheme.bodyMediumLightVariant,
+            Flexible(
+              child: Text(
+                widget.sublet.address?.toTitleCase ?? '',
+                style: AppTheme.bodyMediumLightVariant,
+              ),
             ),
           ],
         ),
@@ -535,11 +537,12 @@ class _HeroCarouselState extends State<HeroCarousel> {
                   tag: 'hero_image_${widget.images[index]}',
                   child: CachedNetworkImage(
                     fadeInDuration: 0.sec,
+                    fadeOutDuration: 0.sec,
+                    filterQuality: FilterQuality.high,
                     imageUrl: widget.images[index],
+                    cacheKey: '${widget.images[index]}-sublet-photo',
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
+                    memCacheWidth: 800,
                   ),
                 ),
               );

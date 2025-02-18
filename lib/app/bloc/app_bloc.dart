@@ -89,7 +89,9 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       _loggerService.info(
           "Local Storage: ${repositoryIntialize[0]} ms\nObject Box: ${repositoryIntialize[1]} ms\nLocal Notification: ${repositoryIntialize[2]} ms\nDevice Info: ${repositoryIntialize[3]} ms");
       add(AppEvent.loaded(
-          isSuccessful: true, isOnboaringComplete: isOnboardingCompleted));
+        isSuccessful: true,
+        isOnboaringComplete: isOnboardingCompleted,
+      ));
     } on Exception catch (error, stacktrace) {
       _loggerService.error('Error loading app: $error');
       _crashServiceRepository.recordError(error, stackTrace: stacktrace);
@@ -134,7 +136,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         .asyncMap(_checkUserProfileCreated)
         .listen(_authHandler);
     if (isSuccessful) {
-      emit(const AppState(isLoading: false));
+      emit(state.copyWith(isLoading: false));
     } else {
       emit(AppState(error: Exception('Error loading app)'), isLoading: false));
     }
@@ -275,7 +277,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     NetworkData data,
     bool isOnline,
   ) {
-    emit(AppState(networkData: data, isOnline: isOnline));
+    emit(state.copyWith(networkData: data, isOnline: isOnline));
   }
 
   Future<void> _loadUniversities(AppEvent event, Emitter<AppState> emit) async {
