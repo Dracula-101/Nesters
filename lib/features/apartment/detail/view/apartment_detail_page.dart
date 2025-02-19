@@ -335,9 +335,11 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
               size: 18,
             ),
             const SizedBox(width: 4),
-            Text(
-              widget.apartment.address.toTitleCase ?? '',
-              style: AppTheme.bodyMediumLightVariant,
+            Flexible(
+              child: Text(
+                widget.apartment.address.toTitleCase,
+                style: AppTheme.bodyMediumLightVariant,
+              ),
             ),
           ],
         ),
@@ -413,8 +415,12 @@ class _HeroCarouselState extends State<HeroCarousel> {
   Future<void> preloadImages() async {
     try {
       await Future.wait(
-        widget.images
-            .map((photo) => precacheImage(NetworkImage(photo), context)),
+        widget.images.map((photo) => precacheImage(
+            CachedNetworkImageProvider(
+              photo,
+              cacheKey: '$photo-apartment-photo',
+            ),
+            context)),
       );
     } catch (e) {
       // ignore: avoid_print
@@ -448,11 +454,16 @@ class _HeroCarouselState extends State<HeroCarousel> {
                   tag: 'hero_image_${widget.images[index]}',
                   child: CachedNetworkImage(
                     fadeInDuration: 0.sec,
+                    cacheKey: '${widget.images[index]}-apartment-photo',
                     imageUrl: widget.images[index],
                     fit: BoxFit.cover,
                     placeholder: (context, url) => const Center(
                       child: CircularProgressIndicator(),
                     ),
+                    fadeOutDuration: 0.sec,
+                    alignment: Alignment.center,
+                    memCacheWidth: 800,
+                    filterQuality: FilterQuality.high,
                   ),
                 ),
               );

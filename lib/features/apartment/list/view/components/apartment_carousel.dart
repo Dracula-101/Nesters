@@ -26,8 +26,12 @@ class _ApartmentPhotoCarouselState extends State<ApartmentPhotoCarousel> {
   Future<void> preloadImages() async {
     if (mounted) {
       await Future.wait(
-        widget.photos
-            .map((photo) => precacheImage(NetworkImage(photo), context)),
+        widget.photos.map((photo) => precacheImage(
+            CachedNetworkImageProvider(
+              photo,
+              cacheKey: '$photo-apartment-photo',
+            ),
+            context)),
       );
     }
   }
@@ -45,11 +49,16 @@ class _ApartmentPhotoCarouselState extends State<ApartmentPhotoCarousel> {
           itemBuilder: (context, index) {
             return CachedNetworkImage(
               imageUrl: widget.photos[index],
+              cacheKey: '${widget.photos[index]}-apartment-photo',
               fit: BoxFit.cover,
               errorWidget: (context, url, error) => const Center(
                 child: Icon(Icons.error),
               ),
               fadeInDuration: Duration.zero,
+              fadeOutDuration: Duration.zero,
+              alignment: Alignment.center,
+              filterQuality: FilterQuality.high,
+              memCacheWidth: 800,
             );
           },
         ),
