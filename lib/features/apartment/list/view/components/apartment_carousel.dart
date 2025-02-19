@@ -25,14 +25,16 @@ class _ApartmentPhotoCarouselState extends State<ApartmentPhotoCarousel> {
 
   Future<void> preloadImages() async {
     if (mounted) {
-      await Future.wait(
-        widget.photos.map((photo) => precacheImage(
-            CachedNetworkImageProvider(
-              photo,
-              cacheKey: '$photo-apartment-photo',
-            ),
-            context)),
-      );
+      try {
+        await Future.wait(
+          widget.photos.map((photo) => precacheImage(
+              CachedNetworkImageProvider(
+                photo,
+                cacheKey: '$photo-apartment-photo',
+              ),
+              context)),
+        );
+      } catch (_) {}
     }
   }
 

@@ -305,9 +305,11 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
               size: 18,
             ),
             const SizedBox(width: 4),
-            Text(
-              widget.marketplace.address.toTitleCase ?? '',
-              style: AppTheme.bodyMediumLightVariant,
+            Flexible(
+              child: Text(
+                widget.marketplace.address.toTitleCase,
+                style: AppTheme.bodyMediumLightVariant,
+              ),
             ),
           ],
         ),
@@ -434,9 +436,16 @@ class _HeroCarouselState extends State<HeroCarousel> {
   }
 
   Future<void> preloadImages() async {
-    await Future.wait(
-      widget.images.map((photo) => precacheImage(NetworkImage(photo), context)),
-    );
+    try {
+      await Future.wait(
+        widget.images.map((photo) => precacheImage(
+            CachedNetworkImageProvider(
+              photo,
+              cacheKey: "$photo-marketplace-photo",
+            ),
+            context)),
+      );
+    } catch (_) {}
   }
 
   @override
@@ -466,11 +475,13 @@ class _HeroCarouselState extends State<HeroCarousel> {
                   tag: 'hero_image_${widget.images[index]}',
                   child: CachedNetworkImage(
                     fadeInDuration: 0.sec,
+                    fadeOutDuration: 0.sec,
+                    cacheKey: "${widget.images[index]}-marketplace-photo",
+                    filterQuality: FilterQuality.high,
+                    memCacheWidth: 800,
+                    alignment: Alignment.center,
                     imageUrl: widget.images[index],
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
                   ),
                 ),
               );

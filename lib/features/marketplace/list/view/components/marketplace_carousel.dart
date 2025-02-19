@@ -25,9 +25,16 @@ class _MarketplacePhotoCarouselState extends State<MarketplacePhotoCarousel> {
   }
 
   Future<void> preloadImages() async {
-    await Future.wait(
-      widget.photos.map((photo) => precacheImage(NetworkImage(photo), context)),
-    );
+    try {
+      await Future.wait(
+        widget.photos.map((photo) => precacheImage(
+            CachedNetworkImageProvider(
+              photo,
+              cacheKey: "$photo-marketplace-photo",
+            ),
+            context)),
+      );
+    } catch (_) {}
   }
 
   @override
@@ -48,6 +55,11 @@ class _MarketplacePhotoCarouselState extends State<MarketplacePhotoCarousel> {
                 child: Icon(Icons.error),
               ),
               fadeInDuration: Duration.zero,
+              fadeOutDuration: Duration.zero,
+              cacheKey: "${widget.photos[index]}-marketplace-photo",
+              alignment: Alignment.center,
+              memCacheWidth: 800,
+              filterQuality: FilterQuality.high,
             );
           },
         ),

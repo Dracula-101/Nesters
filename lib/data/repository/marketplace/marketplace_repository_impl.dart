@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
@@ -175,7 +176,8 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } catch (e) {
+    } catch (e, stacktrace) {
+      log(e.toString(), stackTrace: stacktrace);
       if (e is Exception) {
         throw MarketplaceErrorFactory.fromCode(
           MarketplaceErrorCode.GET_MARKETPLACES_ERR,

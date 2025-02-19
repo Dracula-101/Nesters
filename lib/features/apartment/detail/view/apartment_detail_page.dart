@@ -457,9 +457,6 @@ class _HeroCarouselState extends State<HeroCarousel> {
                     cacheKey: '${widget.images[index]}-apartment-photo',
                     imageUrl: widget.images[index],
                     fit: BoxFit.cover,
-                    placeholder: (context, url) => const Center(
-                      child: CircularProgressIndicator(),
-                    ),
                     fadeOutDuration: 0.sec,
                     alignment: Alignment.center,
                     memCacheWidth: 800,
