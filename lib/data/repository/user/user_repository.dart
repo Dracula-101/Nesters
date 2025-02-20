@@ -22,6 +22,10 @@ abstract class UserRepository {
 
   Future<void> markUserTutorialComplete();
 
+  bool checkSettingInfoComplete();
+
+  Future<void> updateSettingInfoStatus();
+
   Future<List<MarketplaceModel>> getMarketplaceData();
 
   Future<List<University>> getAllUniversities();

@@ -137,6 +137,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
       builderDelegate: PagedChildBuilderDelegate<MarketplaceModel>(
         itemBuilder: (context, marketplace, index) {
           return MarketplaceModelWidget(
+            key: ValueKey(marketplace.id),
             onPressed: () {
               GoRouter.of(context).go(
                 '${AppRouterService.homeScreen}/${AppRouterService.marketplaceDetail}',

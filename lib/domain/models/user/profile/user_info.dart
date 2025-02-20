@@ -41,6 +41,7 @@ class UserInfo extends Equatable {
   final UserIntake? intakePeriod;
   final int? intakeYear;
   final bool? hasRoommateFound;
+  final bool? profileCompleted;
 
   const UserInfo({
     required this.id,
@@ -71,6 +72,7 @@ class UserInfo extends Equatable {
     required this.intakeYear,
     required this.email,
     required this.hasRoommateFound,
+    this.profileCompleted = false,
   });
 
   @override
@@ -102,6 +104,7 @@ class UserInfo extends Equatable {
         intakeYear,
         email,
         hasRoommateFound,
+        profileCompleted,
       ];
 
   Map<String, dynamic> toJson() {
@@ -133,6 +136,7 @@ class UserInfo extends Equatable {
       'intake_year': intakeYear,
       'email': email,
       'has_roommate_found': hasRoommateFound,
+      'user_data_completed': profileCompleted,
     };
   }
 
@@ -193,6 +197,7 @@ class UserInfo extends Equatable {
       intakeYear: json['intake_year'] ?? DateTime.now().year,
       email: json['email'] ?? '',
       hasRoommateFound: json['has_roommate_found'] ?? false,
+      profileCompleted: json['user_data_completed'] ?? false,
     );
   }
 
@@ -269,6 +274,7 @@ class UserInfo extends Equatable {
     int? intakeYear,
     String? email,
     bool? hasRoommateFound,
+    bool? profileCompleted,
   }) {
     return UserInfo(
       id: id ?? this.id,
@@ -299,6 +305,7 @@ class UserInfo extends Equatable {
       email: email ?? this.email,
       hasRoommateFound: hasRoommateFound ?? this.hasRoommateFound,
       undergradCollegeName: undergradCollegeName ?? this.undergradCollegeName,
+      profileCompleted: profileCompleted ?? this.profileCompleted,
     );
   }
 

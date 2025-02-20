@@ -118,7 +118,7 @@ class _SubletListViewState extends State<SubletListView> {
                   state.subletFilter != null)
                 _buildFilteredSublets()
               else
-                _buildSubletList(state.subletList ?? []),
+                _buildSubletList(),
             ],
           ),
           onRefresh: () {
@@ -148,7 +148,7 @@ class _SubletListViewState extends State<SubletListView> {
                 : state.filterState.isSuccess &&
                         state.filteredSubletList != null &&
                         state.filteredSubletList!.isNotEmpty
-                    ? _buildSubletList(state.filteredSubletList!)
+                    ? _buildFilteredSubletList(state.filteredSubletList!)
                     : const SliverFillRemaining(
                         child: ShowNoInfoWidget(
                           title: "No Sublets Found",
@@ -160,7 +160,7 @@ class _SubletListViewState extends State<SubletListView> {
     );
   }
 
-  Widget _buildSubletList(List<SubletModel> sublets) {
+  Widget _buildSubletList() {
     return PagedSliverList(
       pagingController: _pagingController,
       builderDelegate: PagedChildBuilderDelegate<SubletModel>(
@@ -168,6 +168,7 @@ class _SubletListViewState extends State<SubletListView> {
             const ShimmerSubletPage(),
         itemBuilder: (context, sublet, index) {
           return SubletModelWidget(
+            key: ValueKey(sublet.id),
             onPressed: () {
               GoRouter.of(context).go(
                 '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
@@ -204,6 +205,34 @@ class _SubletListViewState extends State<SubletListView> {
               "There are no sublets at the moment. Please try again later.",
         ),
         noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 100),
+      ),
+    );
+  }
+
+  Widget _buildFilteredSubletList(List<SubletModel> sublets) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final sublet = sublets[index];
+          return SubletModelWidget(
+            key: ValueKey(sublet.id),
+            onPressed: () {
+              GoRouter.of(context).go(
+                '${AppRouterService.homeScreen}/${AppRouterService.subletDetail}',
+                extra: sublet,
+              );
+            },
+            actionOnFavourite: (isFavourite) {
+              return _subletRepository.updateLikeStatus(
+                userId: _authRepository.currentUser!.id,
+                subletId: sublet.id,
+                isLiked: isFavourite,
+              );
+            },
+            sublet: sublet,
+          );
+        },
+        childCount: sublets.length,
       ),
     );
   }

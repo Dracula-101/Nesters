@@ -147,6 +147,8 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                         itemCount: state.filteredApartmentList!.length,
                         itemBuilder: (context, index) {
                           return ApartmentModelWidget(
+                            key: ValueKey(
+                                state.filteredApartmentList![index].id),
                             onPressed: () {
                               GoRouter.of(context).go(
                                 '${AppRouterService.homeScreen}/${AppRouterService.apartmentDetail}',
@@ -184,6 +186,7 @@ class _ApartmentListViewState extends State<ApartmentListView> {
             const ShimmerApartmentPage(),
         itemBuilder: (context, apartment, index) {
           return ApartmentModelWidget(
+            key: ValueKey(apartment.id),
             onPressed: () {
               GoRouter.of(context).go(
                 '${AppRouterService.homeScreen}/${AppRouterService.apartmentDetail}',

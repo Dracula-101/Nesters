@@ -20,6 +20,14 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
 
   final AppLogger _logger;
 
+  final String apartmentsTable = 'apartments';
+  final String apartmentSelectQuery =
+      '*, apartment_likes!apartment_likes_apartment_id_fkey!left(*)';
+  final String apartmentLikesTable = 'apartment_likes';
+  final String apartmentLikesSelectQuery =
+      '*, apartment_likes!apartment_likes_apartment_id_fkey!inner(*)';
+  final String apartmentImagesStorage = 'apartment_images';
+
   @override
   Future<String> createApartment({
     required String userId,
@@ -27,7 +35,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   }) async {
     try {
       await _supabaseClient
-          .from('apartments')
+          .from(apartmentsTable)
           .upsert(apartment.copyWith(userId: userId).toMap());
       _logger.info('Apartment created successfully with id: ${apartment.id}');
       return apartment.id.toString();
@@ -55,12 +63,14 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
     try {
       String basePathName = '$userId/$apartmentId';
       int noOfFiles = (await _supabaseClient.storage
-              .from('apartments')
+              .from(apartmentsTable)
               .list(path: basePathName))
           .length;
       yield ApartmentImageUploadTask(urls: [], progress: 0.025);
       if (noOfFiles == imagePaths.length) {
-        await _supabaseClient.storage.from('apartments').remove([basePathName]);
+        await _supabaseClient.storage
+            .from(apartmentsTable)
+            .remove([basePathName]);
         yield ApartmentImageUploadTask(urls: [], progress: 0.05);
       }
       List<String> urls = [];
@@ -72,10 +82,10 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
         String supabasePath =
             '$basePathName/image_$date.${fileName.split('.').last}';
         await _supabaseClient.storage
-            .from('apartments')
+            .from(apartmentsTable)
             .upload(supabasePath, file);
         String url = _supabaseClient.storage
-            .from('apartments')
+            .from(apartmentsTable)
             .getPublicUrl(supabasePath);
         urls.add(url);
         yield ApartmentImageUploadTask(
@@ -106,9 +116,8 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   }) async {
     try {
       final response = await _supabaseClient
-          .from('apartments')
-          .select(
-              "*, apartment_likes!apartment_likes_apartment_id_fkey!left(*)")
+          .from(apartmentsTable)
+          .select(apartmentSelectQuery)
           .neq("user_id", userId)
           .eq("is_available", true)
           .range(paginationKey, paginationKey + range)
@@ -138,7 +147,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
     // - GenderPreferenceFilter, RentFilter, ApartmentTypeFilter, ApartmentSizeFilter
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
-          _supabaseClient.from("apartments").select();
+          _supabaseClient.from(apartmentsTable).select();
       queryBuilder = queryBuilder.eq("is_available", true);
       if (filter is GenderPreferenceFilter) {
         queryBuilder = queryBuilder.eq(
@@ -166,8 +175,9 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       }
       if (filter is RentFilter) {
         response = response.order("rent", ascending: true);
+      } else {
+        response = response.order("id", ascending: false);
       }
-      response = response.order("id", ascending: false);
       return response
           .select()
           .then((v) => v.map((e) => ApartmentModel.fromMap(e)).toList());
@@ -193,7 +203,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   }) {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
-          _supabaseClient.from("apartments").select();
+          _supabaseClient.from(apartmentsTable).select();
       queryBuilder = queryBuilder.eq("is_available", true);
       if (filter.amenitiesAvailable != null &&
           filter.amenitiesAvailable!.hasAmenities()) {
@@ -297,8 +307,10 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       }
       if (filter.endRent != null && filter.endRent != 0) {
         transformBuilder = transformBuilder.order("rent", ascending: true);
+      } else {
+        transformBuilder = transformBuilder.order("id", ascending: false);
       }
-      return transformBuilder.order("id", ascending: false).select().then(
+      return transformBuilder.select().then(
           (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
     } on SocketException {
       throw NoNetworkError();
@@ -320,7 +332,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       {required String userId}) async {
     try {
       final apartments = await _supabaseClient
-          .from('apartments')
+          .from(apartmentsTable)
           .select()
           .eq('user_id', userId)
           .order('id', ascending: false)
@@ -350,7 +362,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
     try {
       log(apartment.toMap().toString());
       final apartments = await _supabaseClient
-          .from('apartments')
+          .from(apartmentsTable)
           .update({...apartment.toMap(), 'user_id': userId})
           .eq('id', apartmentId)
           .eq('user_id', userId);
@@ -378,7 +390,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
     required bool isLiked,
   }) async {
     try {
-      await _supabaseClient.from('apartment_likes').upsert({
+      await _supabaseClient.from(apartmentLikesTable).upsert({
         'user_id': userId,
         'apartment_id': apartmentId,
         'is_liked': isLiked,
@@ -405,9 +417,8 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       {required String userId}) async {
     try {
       final likedApartments = await _supabaseClient
-          .from('apartments')
-          .select(
-              '*, apartment_likes!apartment_likes_apartment_id_fkey!inner(*)')
+          .from(apartmentsTable)
+          .select(apartmentLikesSelectQuery)
           .eq('apartment_likes.user_id', userId)
           .eq('apartment_likes.is_liked', true)
           .then(
@@ -436,7 +447,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   }) async {
     try {
       await _supabaseClient
-          .from('apartments')
+          .from(apartmentsTable)
           .update({
             'is_available': isAvailable,
           })
@@ -466,7 +477,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   }) async {
     try {
       await _supabaseClient
-          .from('apartments')
+          .from(apartmentsTable)
           .delete()
           .eq('id', apartmentId)
           .eq('user_id', userId);

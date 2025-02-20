@@ -53,12 +53,15 @@ class UserRepositoryImpl implements UserRepository {
   final SupabaseStorageClient _storageClient = Supabase.instance.client.storage;
   final SupabaseClient _supabase = Supabase.instance.client;
 
-  String universityCollection = 'universities';
-  String masterDegreeCollection = "masters";
-  String userDetailCollection = "user_details";
-  String selectUserTableQuery =
-      '*, universities!user_details_college_fkey!inner(*)';
-  String languageCollection = "languages";
+  final String constSchema = "const";
+  final String universityTable = 'universities';
+  final String masterDegreeTable = "degrees";
+  final String marketplaceTable = "marketplace";
+  final String languageTable = "languages";
+
+  final String userDetailTable = "user_details";
+  final String selectUserTableQuery =
+      "'*, const.universities!user_details_college_fkey!inner(*)'";
 
   @override
   Future<void> setOnBoardingComplete() async {
@@ -75,8 +78,9 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   bool checkUserTutorialComplete() {
-    return _storageRepository.getBool(LocalStorageKeys.userTutorialComplete) ??
-        false;
+    return _authRepository.currentUserInfo?.profileCompleted == true ||
+        (_storageRepository.getBool(LocalStorageKeys.userTutorialComplete) ??
+            false);
   }
 
   @override
@@ -86,10 +90,25 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  bool checkSettingInfoComplete() {
+    final currentTimesShown =
+        _storageRepository.getInt(LocalStorageKeys.settingInfoStatus) ?? 0;
+    return currentTimesShown >= 3;
+  }
+
+  @override
+  Future<void> updateSettingInfoStatus() {
+    final currentTimesShown =
+        _storageRepository.getInt(LocalStorageKeys.settingInfoStatus) ?? 0;
+    return _storageRepository.saveInt(
+        LocalStorageKeys.settingInfoStatus, currentTimesShown + 1);
+  }
+
+  @override
   Future<List<MarketplaceModel>> getMarketplaceData() async {
     try {
       return _supabase
-          .from('marketplace')
+          .from(marketplaceTable)
           .select()
           .order('created_at', ascending: false)
           .then((event) =>
@@ -107,7 +126,8 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<University>> getAllUniversities() async {
     try {
       return _supabase
-          .from(universityCollection)
+          .schema(constSchema)
+          .from(universityTable)
           .select()
           .order('title', ascending: true)
           .then((event) =>
@@ -125,7 +145,8 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<Degree>> getAllDegrees() async {
     try {
       return _supabase
-          .from(masterDegreeCollection)
+          .schema(constSchema)
+          .from(masterDegreeTable)
           .select()
           .order('title', ascending: true)
           .then((event) => event.map((e) => Degree.fromJson(e)).toList());
@@ -163,7 +184,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<bool?> checkUserCreated(String userId) async {
     try {
       final result = await _supabase
-          .from(userDetailCollection)
+          .from(userDetailTable)
           .select()
           .eq('id', userId)
           .limit(1);
@@ -181,7 +202,7 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<List<University>> getUniversities(String? searchString) async {
     try {
-      return _supabase.from(universityCollection).select().then((event) =>
+      return _supabase.from(universityTable).select().then((event) =>
           event.map((e) => University.fromJson(e['id'], json: e)).toList());
     } on AppException {
       rethrow;
@@ -194,7 +215,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<Language>> getLanguage(String? searchQuery) async {
     try {
       return _supabase
-          .from(languageCollection)
+          .from(languageTable)
           .select()
           .then((event) => event.map((e) => Language.fromJson(e)).toList());
     } on SocketException {
@@ -210,7 +231,8 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<Language>> getLanguages() async {
     try {
       return _supabase
-          .from(languageCollection)
+          .schema(constSchema)
+          .from(languageTable)
           .select()
           .then((event) => event.map((e) => Language.fromJson(e)).toList());
     } on SocketException {
@@ -241,7 +263,8 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<Degree>> getMastersDegree(String? searchString) async {
     try {
       return _supabase
-          .from(masterDegreeCollection)
+          .schema(constSchema)
+          .from(masterDegreeTable)
           .select()
           .then((event) => event.map((e) => Degree.fromJson(e)).toList());
     } on AppException {
@@ -254,7 +277,7 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<bool> setBasicUserProfileData(UserBasicProfile userProfile) async {
     try {
-      await _supabase.from(userDetailCollection).upsert({
+      await _supabase.from(userDetailTable).upsert({
         ...userProfile.toJson(),
         'user_deleted': false,
       });
@@ -278,7 +301,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<bool> hasUserDeletedAccount({required String email}) async {
     try {
       final result = _supabase
-          .from(userDetailCollection)
+          .from(userDetailTable)
           .select()
           .eq('email', email)
           .eq('user_deleted', true)
@@ -297,7 +320,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<void> updateRoommateFoundStatus(
       {required String id, required bool status}) async {
     try {
-      return _supabase.from(userDetailCollection).update({
+      return _supabase.from(userDetailTable).update({
         'has_roommate_found': status,
       }).eq('id', id);
     } on SocketException {
@@ -314,7 +337,7 @@ class UserRepositoryImpl implements UserRepository {
       int offset, int limit, String userId) async {
     try {
       return _supabase
-          .from(userDetailCollection)
+          .from(userDetailTable)
           .select(selectUserTableQuery)
           .neq('id', userId)
           .neq('user_deleted', true)
@@ -337,7 +360,7 @@ class UserRepositoryImpl implements UserRepository {
       SingleUserFilter filter) async {
     try {
       PostgrestFilterBuilder queryBuilder =
-          _supabase.from(userDetailCollection).select();
+          _supabase.from(userDetailTable).select();
       if (filter is UniversityFilter) {
         queryBuilder = queryBuilder.eq('college', filter.university.id);
       } else if (filter is BranchFilter) {
@@ -372,7 +395,7 @@ class UserRepositoryImpl implements UserRepository {
   ) async {
     try {
       PostgrestFilterBuilder queryBuilder =
-          _supabase.from(userDetailCollection).select();
+          _supabase.from(userDetailTable).select();
       if (filters.university != null && filters.university?.id != null) {
         queryBuilder = queryBuilder.eq('college', filters.university!.id);
       }
@@ -435,7 +458,7 @@ class UserRepositoryImpl implements UserRepository {
         throw UserNotAuthError();
       }
       return _supabase
-          .from(userDetailCollection)
+          .from(userDetailTable)
           .select(selectUserTableQuery)
           .eq('id', userId)
           .single()
@@ -453,7 +476,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<UserProfile> getUserProfile(String userId) async {
     try {
       return _supabase
-          .from(userDetailCollection)
+          .from(userDetailTable)
           .select(selectUserTableQuery)
           .eq('id', userId)
           .single()
@@ -471,7 +494,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<UserAdvanceProfile> getUserFullProfile(String userId) async {
     try {
       return _supabase
-          .from(userDetailCollection)
+          .from(userDetailTable)
           .select(selectUserTableQuery)
           .eq('id', userId)
           .single()
@@ -490,7 +513,7 @@ class UserRepositoryImpl implements UserRepository {
     try {
       final userId = _authRepository.currentUser?.id;
       if (userId == null) throw UserNotAuthError();
-      return _supabase.from(userDetailCollection).upsert({
+      return _supabase.from(userDetailTable).upsert({
         ...profile.toMap(),
         'id': userId,
       });
@@ -506,7 +529,7 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<void> editProfile(UserEditProfile profile, String userId) async {
     try {
-      return _supabase.from(userDetailCollection).upsert({
+      return _supabase.from(userDetailTable).upsert({
         ...profile.toMap(),
         'id': userId,
       });
@@ -560,7 +583,7 @@ class UserRepositoryImpl implements UserRepository {
     try {
       final userId = _authRepository.currentUser?.id;
       if (userId == null) throw UserNotAuthError();
-      return _supabase.from(userDetailCollection).update({
+      return _supabase.from(userDetailTable).update({
         'user_deleted': true,
       }).eq('id', userId);
     } on SocketException {

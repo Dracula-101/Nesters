@@ -65,7 +65,7 @@ class SupabaseAuthRepository extends AuthRepository {
     try {
       return await _supabaseClient
           .from('user_details')
-          .select('*, universities!user_details_college_fkey!inner(*)')
+          .select("'*, const.universities!user_details_college_fkey!inner(*)'")
           .eq('id', userId)
           .single()
           .then((value) => UserInfo.fromJson(value));

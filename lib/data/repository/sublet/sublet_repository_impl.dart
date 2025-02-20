@@ -21,6 +21,13 @@ class SubletRepositoryImpl implements SubletRepository {
       supabase.Supabase.instance.client;
 
   final AppLogger _logger;
+  final String subletTable = 'sublets';
+  final String subletLikesTable = 'sublets_likes';
+  final String subletSelectQuery =
+      '*, sublet_likes!sublet_likes_sublet_id_fkey!left(*)';
+  final String subletLikeSelectQuery =
+      '*, sublet_likes!sublet_likes_sublet_id_fkey!inner(*)';
+  final String subletImageTable = 'sublet';
 
   @override
   Future<String> createSublet({
@@ -29,7 +36,7 @@ class SubletRepositoryImpl implements SubletRepository {
   }) async {
     try {
       await _supabaseClient
-          .from('sublets')
+          .from(subletTable)
           .upsert(sublet.copyWith(userId: userId).toMap());
       _logger.info('Sublet created successfully with id: ${sublet.id}');
       return sublet.id.toString();
@@ -57,12 +64,12 @@ class SubletRepositoryImpl implements SubletRepository {
     try {
       String basePathName = '$userId/$subletId';
       int noOfFiles = (await _supabaseClient.storage
-              .from('sublets')
+              .from(subletImageTable)
               .list(path: basePathName))
           .length;
       yield SubletImageUploadTask(urls: [], progress: 0.025);
       if (noOfFiles == imagePaths.length) {
-        await _supabaseClient.storage.from('sublets').remove([basePathName]);
+        await _supabaseClient.storage.from(subletTable).remove([basePathName]);
         yield SubletImageUploadTask(urls: [], progress: 0.05);
       }
       List<String> urls = [];
@@ -74,10 +81,11 @@ class SubletRepositoryImpl implements SubletRepository {
         String supabasePath =
             '$basePathName/image_$date.${fileName.split('.').last}';
         await _supabaseClient.storage
-            .from('sublets')
+            .from(subletTable)
             .upload(supabasePath, file);
-        String url =
-            _supabaseClient.storage.from('sublets').getPublicUrl(supabasePath);
+        String url = _supabaseClient.storage
+            .from(subletTable)
+            .getPublicUrl(supabasePath);
         urls.add(url);
         yield SubletImageUploadTask(
           urls: urls,
@@ -114,8 +122,8 @@ class SubletRepositoryImpl implements SubletRepository {
   }) async {
     try {
       final response = await _supabaseClient
-          .from('sublets')
-          .select("*, sublet_likes!sublet_likes_sublet_id_fkey!left(*)")
+          .from(subletTable)
+          .select(subletSelectQuery)
           .neq("user_id", userId)
           .eq("is_available", true)
           .range(paginationKey, paginationKey + range)
@@ -152,7 +160,7 @@ class SubletRepositoryImpl implements SubletRepository {
     // - GenderPreferenceFilter, RentFilter, ApartmentTypeFilter, ApartmentSizeFilter
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
-          _supabaseClient.from("sublets").select();
+          _supabaseClient.from(subletTable).select();
       queryBuilder = queryBuilder.eq("is_available", true);
       if (filter is GenderPreferenceFilter) {
         queryBuilder = queryBuilder.eq(
@@ -209,7 +217,7 @@ class SubletRepositoryImpl implements SubletRepository {
   }) {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
-          _supabaseClient.from("sublets").select();
+          _supabaseClient.from(subletTable).select();
       queryBuilder = queryBuilder.eq("is_available", true);
       if (filter.amenitiesAvailable != null &&
           filter.amenitiesAvailable!.hasAmenities()) {
@@ -313,11 +321,12 @@ class SubletRepositoryImpl implements SubletRepository {
             .order("beds", ascending: true)
             .order("baths", ascending: true);
       }
-      if (filter.startRent != null) {
+      if (filter.startRent != null || filter.endRent != null) {
         response = response.order("rent", ascending: true);
+      } else {
+        response = response.order("id", ascending: false);
       }
       return response
-          .order("id", ascending: false)
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
@@ -345,7 +354,7 @@ class SubletRepositoryImpl implements SubletRepository {
   Future<List<SubletModel>> getUserSublets({required String userId}) async {
     try {
       final sublets = await _supabaseClient
-          .from('sublets')
+          .from(subletTable)
           .select()
           .eq('user_id', userId)
           .order('id')
@@ -380,7 +389,7 @@ class SubletRepositoryImpl implements SubletRepository {
       required SubletModel sublet}) async {
     try {
       final sublets = await _supabaseClient
-          .from('sublets')
+          .from(subletTable)
           .update({...sublet.toMap(), 'user_id': userId})
           .eq('id', subletId)
           .eq('user_id', userId);
@@ -408,7 +417,7 @@ class SubletRepositoryImpl implements SubletRepository {
     required bool isLiked,
   }) async {
     try {
-      await _supabaseClient.from('sublet_likes').upsert({
+      await _supabaseClient.from(subletLikesTable).upsert({
         'user_id': userId,
         'sublet_id': subletId,
         'is_liked': isLiked,
@@ -435,8 +444,8 @@ class SubletRepositoryImpl implements SubletRepository {
       {required String userId}) async {
     try {
       final likedSublets = await _supabaseClient
-          .from('sublets')
-          .select('*, sublet_likes!sublet_likes_sublet_id_fkey!inner(*)')
+          .from(subletTable)
+          .select(subletLikeSelectQuery)
           .eq('sublet_likes.user_id', userId)
           .eq('sublet_likes.is_liked', true)
           .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
@@ -471,10 +480,8 @@ class SubletRepositoryImpl implements SubletRepository {
   }) async {
     try {
       await _supabaseClient
-          .from('sublets')
-          .update({
-            'is_available': isAvailable,
-          })
+          .from(subletTable)
+          .update({'is_available': isAvailable})
           .eq('id', subletId)
           .eq('user_id', userId);
       _logger.info(
@@ -501,7 +508,7 @@ class SubletRepositoryImpl implements SubletRepository {
   }) async {
     try {
       await _supabaseClient
-          .from('sublets')
+          .from(subletTable)
           .delete()
           .eq('id', subletId)
           .eq('user_id', userId);
