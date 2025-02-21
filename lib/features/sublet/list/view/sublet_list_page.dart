@@ -643,7 +643,7 @@ class _SubletListViewState extends State<SubletListView> {
                                           children: [
                                             Padding(
                                               padding: const EdgeInsets.only(
-                                                  left: 12, bottom: 16),
+                                                  left: 12, bottom: 12),
                                               child: Text(
                                                 "Gender Preference for Sublet",
                                                 style: AppTheme.titleLarge,
@@ -652,6 +652,7 @@ class _SubletListViewState extends State<SubletListView> {
                                             // male
                                             ListTile(
                                               title: const Text('Male'),
+                                              dense: true,
                                               leading: Icon(
                                                 Icons.male,
                                                 color: AppTheme
@@ -664,6 +665,7 @@ class _SubletListViewState extends State<SubletListView> {
                                             ),
                                             ListTile(
                                               title: const Text('Female'),
+                                              dense: true,
                                               onTap: () {
                                                 Navigator.of(context)
                                                     .pop('Female');

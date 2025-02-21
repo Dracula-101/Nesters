@@ -307,22 +307,36 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                               )
                                             else
                                               ...appState.marketplaceCategory
-                                                  .map((category) => ListTile(
-                                                        title: Text(
-                                                            category.name ??
-                                                                ""),
-                                                        onTap: () {
-                                                          context
-                                                              .read<
-                                                                  MarketplaceBloc>()
-                                                              .add(MarketplaceEvent
-                                                                  .applySingleFilter(
-                                                                      MarketplaceCategoryFilter(
-                                                                          category)));
-                                                          Navigator.pop(
-                                                              context);
-                                                        },
-                                                      ))
+                                                  .map(
+                                                    (category) =>
+                                                        GestureDetector(
+                                                      onTap: () {
+                                                        context
+                                                            .read<
+                                                                MarketplaceBloc>()
+                                                            .add(MarketplaceEvent
+                                                                .applySingleFilter(
+                                                                    MarketplaceCategoryFilter(
+                                                                        category)));
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: Container(
+                                                        width: MediaQuery.of(
+                                                                context)
+                                                            .size
+                                                            .width,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          horizontal: 12,
+                                                          vertical: 8,
+                                                        ),
+                                                        child: Text(
+                                                          category.name ?? "",
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )
                                                   .toList(),
                                           ],
                                         ),
