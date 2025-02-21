@@ -20,7 +20,7 @@ class UserInfo extends Equatable {
   final LocationCity? city;
   final LocationState? state;
   final LocationCountry? country;
-  final University? userCollege;
+  final String? userCollege;
   final String? selectedCourseName; //changeable
   final String? gender;
   final String? undergradCollegeName;
@@ -115,7 +115,7 @@ class UserInfo extends Equatable {
       'city': city.toString(),
       'state': state.toString(),
       'selected_course_name': selectedCourseName,
-      'college': userCollege?.id,
+      'college': userCollege,
       'gender': gender,
       'undergrad_college_name': undergradCollegeName,
       'birth_date': birthDate?.toIso8601String(),
@@ -149,12 +149,7 @@ class UserInfo extends Equatable {
       state: LocationState(name: json['state'] ?? ''),
       country: LocationCountry(name: json['country'] ?? ''),
       selectedCourseName: json['selected_course_name'] ?? '',
-      userCollege: json['universities'] != null
-          ? University.fromJson(
-              json['universities']['id'],
-              json: json['universities'],
-            )
-          : null,
+      userCollege: json['college'] ?? '',
       gender: json['gender'] ?? '',
       undergradCollegeName: json['undergrad_college_name'] ?? '',
       birthDate: json['birth_date'] != null
@@ -252,7 +247,7 @@ class UserInfo extends Equatable {
     LocationCity? city,
     LocationState? state,
     LocationCountry? country,
-    University? userCollege,
+    String? userCollege,
     String? selectedCourseName,
     String? gender,
     String? undergradCollegeName,

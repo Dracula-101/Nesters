@@ -60,8 +60,6 @@ class UserRepositoryImpl implements UserRepository {
   final String languageTable = "languages";
 
   final String userDetailTable = "user_details";
-  final String selectUserTableQuery =
-      "'*, const.universities!user_details_college_fkey!inner(*)'";
 
   @override
   Future<void> setOnBoardingComplete() async {
@@ -202,8 +200,9 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<List<University>> getUniversities(String? searchString) async {
     try {
-      return _supabase.from(universityTable).select().then((event) =>
-          event.map((e) => University.fromJson(e['id'], json: e)).toList());
+      return _supabase.schema(constSchema).from(universityTable).select().then(
+          (event) =>
+              event.map((e) => University.fromJson(e['id'], json: e)).toList());
     } on AppException {
       rethrow;
     } on Exception {
@@ -215,6 +214,7 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<Language>> getLanguage(String? searchQuery) async {
     try {
       return _supabase
+          .schema(constSchema)
           .from(languageTable)
           .select()
           .then((event) => event.map((e) => Language.fromJson(e)).toList());
@@ -338,7 +338,7 @@ class UserRepositoryImpl implements UserRepository {
     try {
       return _supabase
           .from(userDetailTable)
-          .select(selectUserTableQuery)
+          .select()
           .neq('id', userId)
           .neq('user_deleted', true)
           .neq('has_roommate_found', true)
@@ -375,7 +375,7 @@ class UserRepositoryImpl implements UserRepository {
           .neq('user_deleted', true)
           .neq('has_roommate_found', true)
           .order('created_at', ascending: true)
-          .select(selectUserTableQuery);
+          .select();
       return filterResults.isNotEmpty
           ? filterResults.map((e) => UserQuickProfile.fromJson(e)).toList()
           : [];
@@ -437,7 +437,7 @@ class UserRepositoryImpl implements UserRepository {
           .neq('user_deleted', true)
           .neq('has_roommate_found', true)
           .order('created_at', ascending: true)
-          .select(selectUserTableQuery);
+          .select();
       return filterResults.isNotEmpty
           ? filterResults.map((e) => UserQuickProfile.fromJson(e)).toList()
           : [];
@@ -459,7 +459,7 @@ class UserRepositoryImpl implements UserRepository {
       }
       return _supabase
           .from(userDetailTable)
-          .select(selectUserTableQuery)
+          .select()
           .eq('id', userId)
           .single()
           .then((value) => UserInfo.fromJson(value));
@@ -477,7 +477,7 @@ class UserRepositoryImpl implements UserRepository {
     try {
       return _supabase
           .from(userDetailTable)
-          .select(selectUserTableQuery)
+          .select()
           .eq('id', userId)
           .single()
           .then((value) => UserProfile.fromJson(value));
@@ -495,7 +495,7 @@ class UserRepositoryImpl implements UserRepository {
     try {
       return _supabase
           .from(userDetailTable)
-          .select(selectUserTableQuery)
+          .select()
           .eq('id', userId)
           .single()
           .then((value) => UserAdvanceProfile.fromJson(value));

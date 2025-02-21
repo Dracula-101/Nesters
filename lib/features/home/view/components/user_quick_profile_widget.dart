@@ -210,7 +210,7 @@ class UserQuickProfileWidget extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  userQuickProfile.userCollege?.title ?? '',
+                                  userQuickProfile.userCollege ?? '',
                                   style: AppTheme.labelSmall,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,

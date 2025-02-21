@@ -82,7 +82,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 FontAwesomeIcons.telegram,
               ),
               onPressed: () {
-                if (state.profileStatus?.isLoading ?? false) return;
+                if (state.profileStatus.isLoading) return;
                 _handleOuterRequest(widget.id, state.userProfile!);
               },
             );
@@ -267,9 +267,9 @@ class _ProfileViewState extends State<ProfileView> {
         }
       },
       builder: (context, state) {
-        return state.profileStatus?.exception != null
-            ? _buildProfileError(state.profileStatus!.exception!)
-            : state.profileStatus?.isLoading ?? false
+        return state.profileStatus.exception != null
+            ? _buildProfileError(state.profileStatus.exception!)
+            : state.profileStatus.isLoading
                 ? const ShimmerProfile()
                 : state.userProfile != null
                     ? _buildProfile(state.userProfile!)
@@ -334,7 +334,7 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           _buildCard(
             userProfile.selectedCourseName ?? '',
-            _buildCollegeNameString(userProfile.userCollege?.title,
+            _buildCollegeNameString(userProfile.userCollege,
                 userProfile.intakePeriod, userProfile.intakeYear),
             Icons.school,
           ),

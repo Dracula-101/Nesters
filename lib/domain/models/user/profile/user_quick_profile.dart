@@ -12,7 +12,7 @@ class UserQuickProfile extends Equatable {
   final String? fullName;
   final String? profileImage;
   final String? selectedCourseName;
-  final University? userCollege;
+  final String? userCollege;
   final UserIntake? intakePeriod;
   final int? intakeYear;
   final LocationCity? city;
@@ -58,7 +58,7 @@ class UserQuickProfile extends Equatable {
       'full_name': fullName,
       'profile_image': profileImage,
       'selected_course_name': selectedCourseName,
-      'college': userCollege?.id,
+      'college': userCollege,
       'city': city,
       'state': state,
       'country': country,
@@ -77,10 +77,7 @@ class UserQuickProfile extends Equatable {
         fullName: json['full_name'] ?? '',
         profileImage: json['profile_image'] ?? '',
         selectedCourseName: json['selected_course_name'] ?? '',
-        userCollege: json['universities'] != null
-            ? University.fromJson(json['universities']['id'],
-                json: json['universities'])
-            : null,
+        userCollege: json['college'] ?? '',
         city: json['city'] != null ? LocationCity(name: json['city']) : null,
         state:
             json['state'] != null ? LocationState(name: json['state']) : null,

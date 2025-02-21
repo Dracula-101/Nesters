@@ -24,30 +24,23 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   }
 
   Future<void> _loadUserProfile(String userId, Emitter<ProfileState> emit) {
-    emit(state.copyWith(profileStatus: state.profileStatus?.loading()));
+    emit(state.copyWith(profileStatus: state.profileStatus.loading()));
     return _userRepository.getUserProfile(userId).then(
       (userProfile) {
         emit(
-          state.copyWith(
-            userProfile: userProfile,
-          ),
+          state.copyWith(userProfile: userProfile),
         );
       },
     ).catchError(
       (error) {
         if (error is AppException) {
-          emit(
-            state.copyWith(profileStatus: state.profileStatus?.failure(error)),
-          );
+          emit(state.copyWith(
+              profileStatus: state.profileStatus.failure(error)));
         }
       },
     ).whenComplete(
       () {
-        emit(
-          state.copyWith(
-            profileStatus: state.profileStatus?.resetLoading(),
-          ),
-        );
+        emit(state.copyWith(profileStatus: state.profileStatus.resetLoading()),);
       },
     );
   }

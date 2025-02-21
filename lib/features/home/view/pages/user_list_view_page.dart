@@ -113,7 +113,8 @@ class _UserListViewState extends State<UserListView> {
             .read<HomeBloc>()
             .add(LoadProfileCompleteEvent(_pagingController.itemList ?? []));
         if (_tooltip.currentState is TooltipState &&
-            !userRepository.checkSettingInfoComplete()) {
+            !userRepository.checkSettingInfoComplete() &&
+            userRepository.checkUserTutorialComplete()) {
           (_tooltip.currentState as TooltipState).ensureTooltipVisible();
           userRepository.updateSettingInfoStatus();
         }
