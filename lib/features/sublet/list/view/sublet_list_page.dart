@@ -629,9 +629,9 @@ class _SubletListViewState extends State<SubletListView> {
                                 builder: (context) {
                                   return DraggableScrollableSheet(
                                     expand: false,
-                                    initialChildSize: 0.25,
-                                    maxChildSize: 0.25,
-                                    minChildSize: 0.25,
+                                    initialChildSize: 0.20,
+                                    maxChildSize: 0.20,
+                                    minChildSize: 0.20,
                                     builder: (context, scrollController) {
                                       return SingleChildScrollView(
                                         controller: scrollController,
