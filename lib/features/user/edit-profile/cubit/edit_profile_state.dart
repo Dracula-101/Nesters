@@ -24,7 +24,7 @@ class EditProfileState extends Equatable {
     BlocState? loadingState,
     BlocState? submitState,
     String? profileImage,
-    University? selectedCollege,
+    String? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
@@ -92,7 +92,7 @@ class EditProfileState extends Equatable {
 
 class UserEditProfile {
   final String? profileImage;
-  final University? selectedCollege;
+  final String? selectedCollege;
   final String? selectedCourseName;
   final PersonType? personType;
   final int workExperience;
@@ -129,7 +129,7 @@ class UserEditProfile {
 
   UserEditProfile copyWith({
     String? profileImage,
-    University? selectedCollege,
+    String? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
@@ -172,48 +172,22 @@ class UserEditProfile {
 
   Map<String, dynamic> toMap() {
     return {
-      'profileImage': profileImage,
-      'college': selectedCollege?.id,
-      'selectedCourseName': selectedCourseName,
-      'personType': personType?.toSafeString(),
-      'workExperience': workExperience,
-      'smokingHabit': smokingHabit.toSafeString(),
-      'drinkingHabit': drinkingHabit.toSafeString(),
-      'foodHabit': foodHabit.toSafeString(),
-      'cookingSkill': cookingSkill.toSafeString(),
-      'cleanlinessHabit': cleanlinessHabit.toSafeString(),
+      'profile_image': profileImage,
+      'college': selectedCollege,
+      'selected_course_name': selectedCourseName,
+      'person_type': personType?.toSafeString(),
+      'work_experience': workExperience,
+      'smoking_habit': smokingHabit.toSafeString(),
+      'drinking_habit': drinkingHabit.toSafeString(),
+      'food_habit': foodHabit.toSafeString(),
+      'cooking_skill': cookingSkill.toSafeString(),
+      'cleanliness_habit': cleanlinessHabit.toSafeString(),
       'bio': bio,
       'hobbies': hobbies,
-      'flatmatesGenderPrefs': flatmatesGenderPrefs,
-      'roomType': roomType.toSafeString(),
-      'intakePeriod': intakePeriod?.toSafeString(),
-      'intakeYear': intakeYear,
+      'flatmates_gender_prefs': flatmatesGenderPrefs,
+      'room_type': roomType.toSafeString(),
+      'intake_period': intakePeriod?.toSafeString(),
+      'intake_year': intakeYear,
     };
-  }
-
-  //to map
-  factory UserEditProfile.fromMap(Map<String, dynamic> map) {
-    return UserEditProfile(
-      profileImage: map['profileImage'],
-      selectedCollege: map['universities'] != null
-          ? University.fromJson(map['universities']['id'],
-              json: map['universities'])
-          : null,
-      selectedCourseName: map['selectedCourseName'],
-      personType: PersonType.fromString(map['personType']),
-      workExperience: map['workExperience'],
-      smokingHabit: UserHabit.fromString(map['smokingHabit']),
-      drinkingHabit: UserHabit.fromString(map['drinkingHabit']),
-      foodHabit: UserFoodHabit.fromString(map['foodHabit']),
-      cookingSkill: UserCookingSkill.fromString(map['cookingSkill']),
-      cleanlinessHabit:
-          UserCleanlinessHabit.fromString(map['cleanlinessHabit']),
-      bio: map['bio'],
-      hobbies: map['hobbies'],
-      flatmatesGenderPrefs: map['flatmatesGenderPrefs'],
-      roomType: UserRoomType.fromString(map['roomType']),
-      intakePeriod: UserIntake.fromString(map['intakePeriod']),
-      intakeYear: map['intakeYear'],
-    );
   }
 }

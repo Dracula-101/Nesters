@@ -70,7 +70,6 @@ class _EditProfileViewState extends State<EditProfileView> {
   final TextEditingController intakePeriodController =
       TextEditingController(text: "Not Selected");
   DateTime selectedYear = DateTime.now();
-  University? selectedUniversity;
 
   @override
   void dispose() {
@@ -110,7 +109,7 @@ class _EditProfileViewState extends State<EditProfileView> {
         }
         if (state.userEditProfile != null) {
           collegeNameController.text =
-              state.userEditProfile!.selectedCollege?.title ?? '';
+              state.userEditProfile!.selectedCollege ?? '';
           degreeNameController.text =
               state.userEditProfile!.selectedCourseName ?? '';
           personTypeController.text =
@@ -142,7 +141,6 @@ class _EditProfileViewState extends State<EditProfileView> {
                   .toString();
           selectedYear = DateTime(
               state.userEditProfile!.intakeYear ?? DateTime.now().year);
-          selectedUniversity = state.userEditProfile!.selectedCollege;
           setState(() {});
         }
       },
@@ -191,15 +189,6 @@ class _EditProfileViewState extends State<EditProfileView> {
                                         const SizedBox(height: 8),
                                         CustomSearchableDropDownField(
                                           controller: collegeNameController,
-                                          onEditingComplete: () {
-                                            selectedUniversity = userState
-                                                .universities
-                                                .firstWhere(
-                                              (element) =>
-                                                  element.title ==
-                                                  collegeNameController.text,
-                                            );
-                                          },
                                           asyncItems: (query) async {
                                             return userState.universities
                                                 .where((element) =>
@@ -444,7 +433,8 @@ class _EditProfileViewState extends State<EditProfileView> {
                                     context
                                         .read<EditProfileCubit>()
                                         .loadProfileData(
-                                          selectedCollege: selectedUniversity,
+                                          selectedCollege:
+                                              collegeNameController.text,
                                           selectedCourseName:
                                               degreeNameController.text,
                                           personType: PersonType.fromString(

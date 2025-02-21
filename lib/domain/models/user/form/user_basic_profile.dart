@@ -40,7 +40,7 @@ class UserBasicProfile extends Equatable {
       'email': email,
       'profile_image': photoUrl,
       'birth_date': birthDate?.toIso8601String(),
-      'college': userCollege?.id,
+      'college': userCollege?.title,
       'selected_course_name': selectedCourseName,
       'city': city,
       'state': state,

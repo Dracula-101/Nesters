@@ -549,8 +549,12 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         onChanged: (value) {
           if (value?.title != null) {
             _collegeNameController.text = value!.title!;
+            if (value.title != null) {
+              _selectedUniversity = value;
+            }
           }
         },
+        selectedItem: _selectedUniversity,
         itemAsString: (University? u) => u!.title!,
       ),
     );

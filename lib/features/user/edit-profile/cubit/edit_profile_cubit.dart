@@ -36,6 +36,7 @@ class EditProfileCubit extends Cubit<EditProfileState> {
         state.copyWith(
           loadingState: state.loadingState.success(),
           profileImage: userProfile.profileImage,
+          selectedCollege: userProfile.userCollege,
           selectedCourseName: userProfile.selectedCourseName,
           personType: userProfile.personType,
           workExperience: userProfile.workExperience,
@@ -52,13 +53,11 @@ class EditProfileCubit extends Cubit<EditProfileState> {
           intakeYear: userProfile.intakeYear,
         ),
       );
-    } catch (error) {
+    } on AppException catch (error) {
       _logger.error('Error getting user profile: $error');
-      if (error is AppException) {
-        emit(
-          state.copyWith(loadingState: state.loadingState.failure(error)),
-        );
-      }
+      emit(
+        state.copyWith(loadingState: state.loadingState.failure(error)),
+      );
     } finally {
       emit(
         state.copyWith(loadingState: state.loadingState.resetLoading()),
@@ -72,7 +71,7 @@ class EditProfileCubit extends Cubit<EditProfileState> {
 
   void loadProfileData({
     String? profileImage,
-    University? selectedCollege,
+    String? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
