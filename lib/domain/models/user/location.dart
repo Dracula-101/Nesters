@@ -1,23 +1,19 @@
 class Location {
-  String? address;
   double? latitude;
   double? longitude;
 
-  Location({this.address, this.latitude, this.longitude});
+  Location({this.latitude, this.longitude});
 
-  Map<String, dynamic> toJson() {
-    return {
-      'address': address ?? '',
-      'latitude': latitude ?? 0.0,
-      'longitude': longitude ?? 0.0,
-    };
+  String toPoint() {
+    return 'POINT($longitude $latitude)';
   }
 
-  factory Location.fromJson(Map<String, dynamic> map) {
+  factory Location.fromPoint(String point) {
+    final pointString = point.substring(6, point.length - 1);
+    final pointArray = pointString.split(' ');
     return Location(
-      address: map['address'] ?? '',
-      latitude: double.tryParse(map['latitude'].toString()) ?? 0.0,
-      longitude: double.tryParse(map['longitude'].toString()) ?? 0.0,
+      latitude: double.tryParse(pointArray[1]),
+      longitude: double.tryParse(pointArray[0]),
     );
   }
 
@@ -27,7 +23,6 @@ class Location {
     double? longitude,
   }) {
     return Location(
-      address: address ?? this.address,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
     );

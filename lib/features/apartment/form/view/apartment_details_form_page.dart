@@ -35,7 +35,7 @@ class _ApartmentDetailsFormState extends State<ApartmentDetailsForm>
   void initState() {
     super.initState();
     if (widget.apartment != null) {
-      _addressController.text = widget.apartment!.location?.address ?? '';
+      _addressController.text = widget.apartment!.address ?? '';
       _rentPriceController.text = widget.apartment!.rent.toString();
       startDate = widget.apartment!.leasePeriod?.startDate;
       endDate = widget.apartment!.leasePeriod?.endDate;

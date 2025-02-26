@@ -72,9 +72,7 @@ class ApartmentFormCubit extends Cubit<ApartmentFormState> {
     final userId = _authRepository.currentUser?.id;
     ApartmentModel model = ApartmentModel(
       id: state.apartment?.id ?? apartmentId,
-      location: Location(
-        address: address,
-      ),
+      address: address,
       leasePeriod: LeasePeriod(
         startDate: startDate,
       ),

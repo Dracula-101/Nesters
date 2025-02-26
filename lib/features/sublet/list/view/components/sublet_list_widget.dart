@@ -223,7 +223,7 @@ class SubletModelWidget extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(
           child: Text(
-            sublet.location?.address.toTitleCase ?? '',
+            sublet.address?.toTitleCase ?? '',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),

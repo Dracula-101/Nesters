@@ -1,6 +1,9 @@
 import 'dart:developer';
-
+import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -32,8 +35,10 @@ class SettingsPage extends StatelessWidget {
       },
       builder: (context, state) {
         return Scaffold(
-          body: SettingsView(
-            state: state,
+          body: SafeArea(
+            child: SettingsView(
+              state: state,
+            ),
           ),
         );
       },
@@ -93,6 +98,7 @@ class _SettingsViewState extends State<SettingsView> {
         ),
         _buildUserPostSettings(),
         _buildAppInfoSettings(),
+        if (kDebugMode) _buildAppTesting(),
         _buildDeleteAccount(),
         _buildLogout(),
         _buildSpacing(),
@@ -292,6 +298,54 @@ class _SettingsViewState extends State<SettingsView> {
                   } catch (e) {
                     // ignore: avoid_print
                   }
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAppTesting() {
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
+      sliver: SliverToBoxAdapter(
+        child: CustomCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  "App Testing",
+                  style: AppTheme.titleLarge,
+                ),
+              ),
+              const Divider(thickness: 1, height: 1),
+              SettingsTile(
+                title: 'Maps Api test',
+                subtitle: 'Test the maps api',
+                icon: FontAwesomeIcons.handshake,
+                iconSize: 18,
+                onTap: () async {
+                  final places = FlutterGooglePlacesSdk(
+                      "AIzaSyB2nC-a_A2Q8qfCC7rdMTC3CmNBp2g4HxA");
+                  final predictions = await places.findAutocompletePredictions(
+                    'Tandon School of Engineering',
+                    countries: ['USA'],
+                  );
+                  print(
+                      'Result: ${predictions.predictions.map((e) => "$e\n").toList()}');
+                  final placeInfo = await places.fetchPlace(
+                      predictions.predictions.last.placeId,
+                      fields: [
+                        PlaceField.Name,
+                        PlaceField.Address,
+                        PlaceField.Location,
+                      ]);
+                  print('Place Info: $placeInfo');
                 },
               ),
             ],

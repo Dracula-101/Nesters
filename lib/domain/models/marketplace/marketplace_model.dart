@@ -24,6 +24,7 @@ class MarketplaceModel {
   List<String>? photos;
   MarketplaceLinkModel? reference;
   Location? location;
+  String? address;
   MarketplacePeriodModel? period;
   bool? isAvailable;
   DateTime? createdAt;
@@ -38,6 +39,7 @@ class MarketplaceModel {
     this.category,
     this.photos,
     this.reference,
+    this.address,
     this.location,
     this.period,
     this.isAvailable,
@@ -56,7 +58,8 @@ class MarketplaceModel {
         photos: List<String>.from(json['photos'] ?? []),
         category: MarketplaceCategoryModel.fromJson(json['category']),
         reference: MarketplaceLinkModel.fromJson(json['link'] ?? {}),
-        location: Location.fromJson(json['location'] ?? {}),
+        address: json['address'] ?? '',
+        location: Location.fromPoint(json['location'] ?? {}),
         period: MarketplacePeriodModel.fromJson(json['period'] ?? {}),
         isAvailable: json['is_available'] ?? false,
         createdAt: DateTime.fromMillisecondsSinceEpoch(json['created_at']),
@@ -80,7 +83,8 @@ class MarketplaceModel {
       'category': category?.toJson() ?? {},
       'photos': photos ?? [],
       'link': reference?.toJson() ?? {},
-      'location': location?.toJson() ?? {},
+      'address': address ?? '',
+      'location': location?.toPoint() ?? {},
       'period': period?.toJson() ?? {},
       'is_available': isAvailable ?? false,
       'created_at': createdAt?.millisecondsSinceEpoch,
@@ -97,6 +101,7 @@ class MarketplaceModel {
     MarketplaceCategoryModel? category,
     List<String>? photos,
     MarketplaceLinkModel? reference,
+    String? address,
     Location? location,
     MarketplacePeriodModel? period,
     bool? isAvailable,
@@ -111,6 +116,7 @@ class MarketplaceModel {
       category: category ?? this.category,
       photos: photos ?? this.photos,
       reference: reference ?? this.reference,
+      address: address ?? this.address,
       location: location ?? this.location,
       period: period ?? this.period,
       isAvailable: isAvailable ?? this.isAvailable,

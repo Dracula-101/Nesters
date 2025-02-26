@@ -35,7 +35,7 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
   void initState() {
     super.initState();
     if (widget.sublet != null) {
-      _addressController.text = widget.sublet!.location?.address ?? '';
+      _addressController.text = widget.sublet!.address ?? '';
       _rentPriceController.text = widget.sublet!.rent.toString();
       _roomTypeContoller.text = widget.sublet!.roomType?.toUI() ?? '';
       _roomateGenderController.text = widget.sublet?.roommateGenderPref ?? '';

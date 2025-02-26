@@ -75,7 +75,7 @@ class SubletFormCubit extends Cubit<SubletFormState> {
   }) {
     SubletModel model = SubletModel(
       id: state.sublet?.id ?? subletId,
-      location: Location(address: address),
+      address: address,
       leasePeriod: LeasePeriod(startDate: startDate, endDate: endDate),
       rent: rentPrice,
       roomType: roomType,

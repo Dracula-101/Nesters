@@ -65,7 +65,7 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
     MarketplaceModel? model = MarketplaceModel(
       id: state.item?.id ?? itemId,
       name: name,
-      location: Location(address: address),
+      address: address,
       period: MarketplacePeriodModel(
         periodFrom: startDate,
         periodTill: endDate,

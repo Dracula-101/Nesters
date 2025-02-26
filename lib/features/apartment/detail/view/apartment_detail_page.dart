@@ -336,7 +336,7 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
             ),
             const SizedBox(width: 4),
             Text(
-              widget.apartment.location?.address.toTitleCase ?? '',
+              widget.apartment.address?.toTitleCase ?? '',
               style: AppTheme.bodyMediumLightVariant,
             ),
           ],

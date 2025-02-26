@@ -45,8 +45,7 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
       _nameContoller.text = widget.marketplaceModel!.name ?? '';
       _categoryController.text = widget.marketplaceModel!.category?.name ?? '';
       _descriptionController.text = widget.marketplaceModel!.description ?? '';
-      _addressController.text =
-          widget.marketplaceModel!.location?.address ?? '';
+      _addressController.text = widget.marketplaceModel!.address ?? '';
       _itemPriceController.text = widget.marketplaceModel!.price.toString();
       startDate = widget.marketplaceModel!.period?.periodFrom;
       endDate = widget.marketplaceModel!.period?.periodTill;
