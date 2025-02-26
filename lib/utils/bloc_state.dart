@@ -1,29 +1,59 @@
 import 'package:nesters/data/repository/utils/app_exception.dart';
 
-abstract class BlocState {
+class BlocState {
   final bool isLoading;
   final AppException? exception;
   final bool isSuccess;
 
-  BlocState({
-    this.isLoading = false,
+  const BlocState({
+    this.isLoading = true,
     this.exception,
     this.isSuccess = false,
   });
 
   BlocState copyWith({
     bool? isLoading,
-    AppException? error,
+    AppException? exception,
     bool? isSuccess,
-  });
+  }) {
+    return BlocState(
+      isLoading: isLoading ?? this.isLoading,
+      exception: exception ?? this.exception,
+      isSuccess: isSuccess ?? this.isSuccess,
+    );
+  }
 
-  BlocState loading();
+  BlocState loading() {
+    return const BlocState(
+      isLoading: true,
+      exception: null,
+      isSuccess: false,
+    );
+  }
 
-  BlocState resetLoading();
+  BlocState resetLoading() {
+    return const BlocState(
+      isLoading: false,
+      exception: null,
+      isSuccess: false,
+    );
+  }
 
-  BlocState failure(AppException error);
+  BlocState failure(AppException error) {
+    return BlocState(
+      isLoading: false,
+      exception: error,
+      isSuccess: false,
+    );
+  }
 
-  BlocState success();
+  BlocState success() {
+    return const BlocState(
+      isLoading: false,
+      exception: null,
+      isSuccess: true,
+    );
+  }
 
   @override
   int get hashCode =>

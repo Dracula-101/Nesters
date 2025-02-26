@@ -29,6 +29,7 @@ class SubletModel {
   Amenities? amenitiesAvailable;
   ApartmentSize? apartmentSize;
   UserRoomType? roomType;
+  String? address;
   Location? location;
   bool? isAvailable;
   bool? isFavouriteByUser;
@@ -45,6 +46,7 @@ class SubletModel {
     this.amenitiesAvailable,
     this.apartmentSize,
     this.roomType,
+    this.address,
     this.location,
     this.isAvailable = true,
     this.isFavouriteByUser = false,
@@ -65,7 +67,8 @@ class SubletModel {
       'photos': photos ?? [],
       'amenities_available': amenitiesAvailable?.toMap() ?? {},
       'room_type': (roomType ?? '').toString(),
-      'location': location?.toJson() ?? {},
+      'address': address ?? '',
+      'location': location?.toPoint() ?? "",
       'is_available': isAvailable ?? true,
       ...apartmentSize?.toMap() ?? {},
       ...leasePeriod?.toMap() ?? {},
@@ -85,7 +88,8 @@ class SubletModel {
       amenitiesAvailable: Amenities.fromMap(map['amenities_available'] ?? {}),
       apartmentSize: ApartmentSize.fromMap(map),
       roomType: UserRoomType.fromString(map['room_type'] ?? ''),
-      location: Location.fromJson(map['location'] ?? {}),
+      address: map['address'] ?? '',
+      location: Location.fromPoint(map['location']),
       isAvailable: map['is_available'] ?? true,
       isFavouriteByUser: map['sublet_likes'] == null
           ? false
@@ -105,6 +109,7 @@ class SubletModel {
     Amenities? amenitiesAvailable,
     ApartmentSize? apartmentSize,
     UserRoomType? roomType,
+    String? address,
     Location? location,
     bool? isAvailable,
   }) {
@@ -120,6 +125,7 @@ class SubletModel {
       amenitiesAvailable: amenitiesAvailable ?? this.amenitiesAvailable,
       apartmentSize: apartmentSize ?? this.apartmentSize,
       roomType: roomType ?? this.roomType,
+      address: address ?? this.address,
       location: location ?? this.location,
       isAvailable: isAvailable ?? this.isAvailable,
     );

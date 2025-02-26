@@ -3,22 +3,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/language.dart';
-import 'package:nesters/domain/models/location/city_info.dart';
-import 'package:nesters/domain/models/location/location_city.dart';
-import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
-import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class PersonalInformationPage extends StatefulWidget {
   final GlobalKey<FormState> formKey;
-  final Function(PersonType, String String, LocationCity, LocationState, String)
-      onSubmit;
-  const PersonalInformationPage(
-      {super.key, required this.formKey, required this.onSubmit});
+  final CurrentFormState currentFormState;
+  const PersonalInformationPage({
+    super.key,
+    required this.formKey,
+    required this.currentFormState,
+  });
 
   @override
   State<PersonalInformationPage> createState() =>
@@ -26,26 +25,35 @@ class PersonalInformationPage extends StatefulWidget {
 }
 
 class _PersonalInformationPageState extends State<PersonalInformationPage> {
-  // personType
-  // primaryLang
-  // otherLang
-  // city
-  // state
-  // bio
-  CityInfo? userCityInfo;
   final UserRepository userRepository = GetIt.I<UserRepository>();
   final TextEditingController personTypeController = TextEditingController();
   final TextEditingController primaryLangController = TextEditingController();
   final TextEditingController otherLangController = TextEditingController();
-  final TextEditingController locationContoller = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
-  final TextEditingController stateController = TextEditingController();
   final TextEditingController bioController = TextEditingController();
   final ValueNotifier<int> maxLines = ValueNotifier<int>(1);
 
   @override
   void initState() {
     super.initState();
+    if (widget.currentFormState.userFormProfile.personType != null) {
+      personTypeController.text =
+          widget.currentFormState.userFormProfile.personType!.name;
+    }
+    if (widget.currentFormState.userFormProfile.primaryLang != null) {
+      primaryLangController.text =
+          widget.currentFormState.userFormProfile.primaryLang!;
+    }
+    if (widget.currentFormState.userFormProfile.secondaryLang != null) {
+      otherLangController.text =
+          widget.currentFormState.userFormProfile.secondaryLang!;
+    }
+    if (widget.currentFormState.userFormProfile.bio != null) {
+      bioController.text = widget.currentFormState.userFormProfile.bio!;
+    }
+    if (bioController.text.isNotEmpty) {
+      int expectedLines = (bioController.text.length / 25).ceil();
+      maxLines.value = expectedLines;
+    }
   }
 
   @override
@@ -53,24 +61,13 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     personTypeController.dispose();
     primaryLangController.dispose();
     otherLangController.dispose();
-    locationContoller.dispose();
-    cityController.dispose();
-    stateController.dispose();
     bioController.dispose();
     maxLines.dispose();
     super.dispose();
   }
 
-  // Stream<List<LocationCity>> getCities(String searchQuery) {
-  //   return userRepository.getCites(searchQuery);
-  // }
-
-  // Future<List<LocationState>> getStates(String? searchQuery) async {
-  //   return await userRepository.getIndianStates(searchQuery);
-  // }
-
-  Future<List<Language>> getLanguages(String? searchQuery) async {
-    return await userRepository.getLanguage(searchQuery);
+  Future<List<Language>> getLanguages(String? searchQuery) {
+    return userRepository.getLanguage(searchQuery);
   }
 
   @override
@@ -79,18 +76,34 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
       padding: const EdgeInsets.symmetric(horizontal: 18.0),
       child: Form(
         key: widget.formKey,
-        child: Column(
-          children: [
-            _buildPersonTypeField(),
-            _buildSpacing(),
-            _buildPrimaryLangField(),
-            _buildSpacing(),
-            _buildOtherLangField(),
-            _buildSpacing(),
-            _buildCityField(),
-            _buildSpacing(),
-            _buildBioField(),
-          ],
+        child: BlocConsumer<FormCubit, CurrentFormState>(
+          listener: (context, state) {
+            if (state.validationState.isLoading) {
+              context.read<FormCubit>().addData(
+                    personType: personTypeController.text,
+                    primaryLang: primaryLangController.text,
+                    secondaryLang: otherLangController.text,
+                    bio: bioController.text,
+                  );
+            }
+          },
+          builder: (context, state) {
+            return BlocBuilder<AppBloc, AppState>(builder: (context, appState) {
+              return SingleChildScrollView(
+                child: Column(
+                  children: [
+                    _buildPersonTypeField(),
+                    _buildSpacing(),
+                    _buildPrimaryLangField(appState.languages),
+                    _buildSpacing(),
+                    _buildOtherLangField(appState.languages),
+                    _buildSpacing(),
+                    _buildBioField(),
+                  ],
+                ),
+              );
+            });
+          },
         ),
       ),
     );
@@ -115,118 +128,79 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
         }
         return null;
       },
-      onEditingComplete: () {
-        context.read<FormCubit>().checkFirstStage(
-              personType: personTypeController.text,
-              primaryLang: primaryLangController.text,
-              secondaryLang: otherLangController.text,
-              city: cityController.text,
-              indianState: stateController.text,
-              bio: bioController.text,
+      onEditingComplete: (value) {
+        context.read<FormCubit>().addData(
+              personType: value,
             );
       },
     );
   }
 
-  Widget _buildPrimaryLangField() {
-    return CustomSearchableDropDownField(
-      controller: stateController,
+  Widget _buildPrimaryLangField(List<Language> languages) {
+    return CustomDynamicSearchableDropDropField(
+      controller: primaryLangController,
       hintText: 'Primate Langauge',
       labelText: 'Primary Language',
       prefixIcon: const Icon(
         Icons.language,
       ),
-      itemAsString: (language) => language.name as String,
-      asyncItems: getLanguages,
-      filterFn: (state, searchQuery) {
-        return (state as Language)
-            .name
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase());
-      },
-      itemBuilder: (context, state, isSelected) {
+      itemAsString: (language) => language.name,
+      itemBuilder: (context, language) {
         return ListTile(
-          title: Text(state.name),
+          title: Text(language.name),
+          subtitle: Text(language.nativeName),
+          dense: true,
         );
       },
+      asyncStaticItems: userRepository.getLanguages(),
       validator: (value) {
         if (value == null) {
           return 'Please select a language';
         }
         return null;
       },
-      onEditingComplete: () {
-        context.read<FormCubit>().checkFirstStage(
-              personType: personTypeController.text,
-              primaryLang: primaryLangController.text,
-              secondaryLang: otherLangController.text,
-              city: cityController.text,
-              indianState: stateController.text,
-              bio: bioController.text,
-            );
+      emptyBuilder: (context) {
+        return ShowInfoWidget(
+          icon: Icons.language,
+          message: primaryLangController.text.isEmpty
+              ? 'Search'
+              : 'No language found',
+          subtitle: primaryLangController.text.isEmpty
+              ? 'Search for a language'
+              : 'No language found for the search query ${primaryLangController.text}',
+        );
       },
     );
   }
 
-  Widget _buildOtherLangField() {
-    return CustomBottomSheetDropdownField(
+  Widget _buildOtherLangField(List<Language> languages) {
+    return CustomDynamicSearchableDropDropField(
       controller: otherLangController,
       hintText: 'Other Language',
       labelText: 'Other Language',
       prefixIcon: const Icon(
         Icons.language,
       ),
-      isMultiSelect: true,
-      items: PersonType.values,
-      validator: (value) {
-        if (value == null) {
-          return 'Please select a other language';
-        }
-        return null;
-      },
-      onEditingComplete: () {
-        context.read<FormCubit>().checkFirstStage(
-              personType: personTypeController.text,
-              primaryLang: primaryLangController.text,
-              secondaryLang: otherLangController.text,
-              city: cityController.text,
-              indianState: stateController.text,
-              bio: bioController.text,
-            );
-      },
-    );
-  }
-
-  Widget _buildCityField() {
-    return CustomDynamicSearchableDropDropField(
-      controller: locationContoller,
-      labelText: 'City',
-      prefixIcon: Icon(
-        Icons.location_on,
-        color: AppTheme.primary,
-      ),
-      asyncSearchItems: (value) => Stream.fromFuture(
-        GetIt.I<UserRepository>()
-            .searchCities(searchQuery: value.isEmpty ? "Aa" : value),
-      ),
-      searchText: "Search City",
-      hintText: 'Search for your city',
-      validator: (value) {
-        if (value == null) {
-          return 'Please select your city';
-        }
-        return null;
-      },
-      onItemClick: (value) {
-        userCityInfo = value;
-      },
-      itemBuilder: (context, value) {
+      itemAsString: (language) => language.name,
+      itemBuilder: (context, language) {
         return ListTile(
-          title: Text(value.cityName ?? ''),
-          subtitle: Text("${value.stateName}, ${value.countryName}"),
+          title: Text(language.name),
+          subtitle: Text(language.nativeName),
+          dense: true,
         );
       },
-      itemAsString: (value) => "${value.cityName}, ${value.countryName}",
+      asyncStaticItems: userRepository.getLanguages(),
+      emptyBuilder: (context) {
+        return ShowInfoWidget(
+          icon: Icons.language,
+          message: primaryLangController.text.isEmpty
+              ? 'Search'
+              : 'No language found',
+          subtitle: primaryLangController.text.isEmpty
+              ? 'Search for a language'
+              : 'No language found for the search query ${primaryLangController.text}',
+        );
+      },
     );
   }
 
@@ -252,16 +226,6 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
             } else {
               maxLines.value = 1;
             }
-          },
-          onFieldSaved: () {
-            context.read<FormCubit>().checkFirstStage(
-                  personType: personTypeController.text,
-                  primaryLang: primaryLangController.text,
-                  secondaryLang: otherLangController.text,
-                  city: cityController.text,
-                  indianState: stateController.text,
-                  bio: bioController.text,
-                );
           },
           alignLabelWithHint: true,
           maxLines: 5,

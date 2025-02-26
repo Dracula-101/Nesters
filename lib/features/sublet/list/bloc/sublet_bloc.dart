@@ -34,21 +34,53 @@ class SubletBloc extends Bloc<SubletEvent, SubletState> {
         saveSublets(sublets, emit);
       },
       singleAddFilter: (filter) async {
-        final filteredSublets = await _subletRepository.singleFilterSublet(
-            filter: filter, userId: userId);
-        emit(state.copyWith(
-            filteredSubletList: filteredSublets, singleSubletFilter: filter));
+        try {
+          emit(state.copyWith(
+            filterState: state.filterState.loading(),
+            singleSubletFilter: filter,
+          ));
+          final filteredSublets = await _subletRepository.singleFilterSublet(
+            filter: filter,
+            userId: userId,
+          );
+          emit(state.copyWith(
+            filteredSubletList: filteredSublets,
+            filterState: state.filterState.success(),
+            singleSubletFilter: filter,
+          ));
+        } on AppException catch (e) {
+          emit(state.copyWith(
+            filterState: state.filterState.failure(e),
+            singleSubletFilter: null,
+          ));
+        }
       },
       singleRemoveFilter: () {
         emit(state.copyWith(singleSubletFilter: null));
       },
       addFilter: (filter) async {
-        final filteredSublets = await _subletRepository.multiFilterSublet(
-            filter: filter, userId: userId);
-        _logger.debug(
-            "Filtered Sublets: ${filteredSublets.length} with filter: $filter");
-        emit(state.copyWith(
-            filteredSubletList: filteredSublets, subletFilter: filter));
+        try {
+          emit(state.copyWith(
+            filterState: state.filterState.loading(),
+            subletFilter: filter,
+          ));
+          final filteredSublets = await _subletRepository.multiFilterSublet(
+            filter: filter,
+            userId: userId,
+          );
+          _logger.debug(
+              "Filtered Sublets: ${filteredSublets.length} with filter: $filter");
+          emit(state.copyWith(
+            filteredSubletList: filteredSublets,
+            filterState: state.filterState.success(),
+            subletFilter: filter,
+          ));
+        } on AppException catch (e) {
+          emit(state.copyWith(
+            filterState: state.filterState.failure(e),
+            subletFilter: null,
+          ));
+        }
       },
       removeFilter: () {
         emit(state.copyWith(subletFilter: null));

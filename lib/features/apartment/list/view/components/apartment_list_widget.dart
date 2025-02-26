@@ -177,7 +177,7 @@ class ApartmentModelWidget extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(
           child: Text(
-            apartment.location?.address.toTitleCase ?? '',
+            apartment.address?.toTitleCase ?? 'No Location Provided',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),
@@ -200,7 +200,7 @@ class ApartmentModelWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
-          '\$${apartment.rent}',
+          '\$${apartment.rent?.toInt()}',
           style: AppTheme.labelLarge.copyWith(
             color: AppTheme.surface,
             fontWeight: FontWeight.w700,

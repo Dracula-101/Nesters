@@ -23,6 +23,7 @@ class MarketplaceModel {
   MarketplaceCategoryModel? category;
   List<String>? photos;
   MarketplaceLinkModel? reference;
+  String? address;
   Location? location;
   MarketplacePeriodModel? period;
   bool? isAvailable;
@@ -38,6 +39,7 @@ class MarketplaceModel {
     this.category,
     this.photos,
     this.reference,
+    this.address,
     this.location,
     this.period,
     this.isAvailable,
@@ -47,28 +49,24 @@ class MarketplaceModel {
   });
 
   factory MarketplaceModel.fromJson(Map<String, dynamic> json) {
-    try {
-      return MarketplaceModel(
-        id: json['id'],
-        name: json['name'] ?? '',
-        description: json['description'] ?? '',
-        price: double.tryParse(json['price'].toString())?.toInt(),
-        photos: List<String>.from(json['photos'] ?? []),
-        category: MarketplaceCategoryModel.fromJson(json['category']),
-        reference: MarketplaceLinkModel.fromJson(json['link'] ?? {}),
-        location: Location.fromJson(json['location'] ?? {}),
-        period: MarketplacePeriodModel.fromJson(json['period'] ?? {}),
-        isAvailable: json['is_available'] ?? false,
-        createdAt: DateTime.fromMillisecondsSinceEpoch(json['created_at']),
-        userId: json['user_id'],
-        isFavouriteByUser: (json['marketplaces_likes'] != null
-            ? json['marketplaces_likes']['is_liked']
-            : false),
-      );
-    } catch (e, stacktrace) {
-      print('Error: $e, Stacktrace: $stacktrace');
-      return MarketplaceModel(id: 0);
-    }
+    return MarketplaceModel(
+      id: json['id'],
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      price: double.tryParse(json['price'].toString())?.toInt(),
+      photos: List<String>.from(json['photos'] ?? []),
+      category: MarketplaceCategoryModel.fromJson(json['category']),
+      reference: MarketplaceLinkModel.fromJson(json['link'] ?? {}),
+      address: json['address'] ?? '',
+      location: Location.fromPoint(json['location']),
+      period: MarketplacePeriodModel.fromJson(json['period'] ?? {}),
+      isAvailable: json['is_available'] ?? false,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(json['created_at']),
+      userId: json['user_id'],
+      isFavouriteByUser: (json['marketplaces_likes'] != null
+          ? json['marketplaces_likes']['is_liked']
+          : false),
+    );
   }
 
   Map<String, dynamic> toJson() {
@@ -80,7 +78,8 @@ class MarketplaceModel {
       'category': category?.toJson() ?? {},
       'photos': photos ?? [],
       'link': reference?.toJson() ?? {},
-      'location': location?.toJson() ?? {},
+      'address': address ?? '',
+      'location': location?.toPoint() ?? "",
       'period': period?.toJson() ?? {},
       'is_available': isAvailable ?? false,
       'created_at': createdAt?.millisecondsSinceEpoch,
@@ -97,6 +96,7 @@ class MarketplaceModel {
     MarketplaceCategoryModel? category,
     List<String>? photos,
     MarketplaceLinkModel? reference,
+    String? address,
     Location? location,
     MarketplacePeriodModel? period,
     bool? isAvailable,
@@ -111,6 +111,7 @@ class MarketplaceModel {
       category: category ?? this.category,
       photos: photos ?? this.photos,
       reference: reference ?? this.reference,
+      address: address ?? this.address,
       location: location ?? this.location,
       period: period ?? this.period,
       isAvailable: isAvailable ?? this.isAvailable,

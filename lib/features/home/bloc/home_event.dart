@@ -15,7 +15,7 @@ class LoadProfileCompleteEvent extends HomeEvent {
 }
 
 class LoadProfileErrorEvent extends HomeEvent {
-  final Exception error;
+  final AppException error;
   LoadProfileErrorEvent(this.error);
 }
 

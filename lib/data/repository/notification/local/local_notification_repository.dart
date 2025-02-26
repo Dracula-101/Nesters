@@ -21,7 +21,7 @@ class LocalNotificationRepository {
   final AppRouterService appRouterService;
   final MediaRepository mediaRepository;
   final AndroidInitializationSettings initializationSettingsAndroid =
-      const AndroidInitializationSettings('@mipmap/ic_launcher');
+      const AndroidInitializationSettings('@drawable/ic_notification');
 
   final DarwinInitializationSettings initializationSettingsIOS =
       const DarwinInitializationSettings();
@@ -37,7 +37,7 @@ class LocalNotificationRepository {
     log('Recieved Notification -> navigating to chat screen: ${details.payload}');
     if (details.payload != null) {
       final Map<String, dynamic> message = json.decode(details.payload!);
-      String notificationType = message['notificationType'];
+      String notificationType = message['notificationType'] ?? '';
       if (notificationType == 'chat') {
         String chatId = message['chatId'];
         User userProfile = User(
@@ -158,7 +158,7 @@ class LocalNotificationRepository {
       priority: Priority.max,
       groupKey: 'com.app.nesters.chat',
       number: (messagingStyle?.messages?.length ?? 0) + 1,
-      icon: '@mipmap/ic_launcher',
+      icon: '@drawable/ic_notification',
       enableVibration: true,
       sound: const RawResourceAndroidNotificationSound('message_notification'),
       playSound: true,
@@ -201,7 +201,7 @@ class LocalNotificationRepository {
       channelDescription: _channelDescription,
       importance: Importance.max,
       priority: Priority.max,
-      icon: '@mipmap/ic_launcher',
+      icon: '@drawable/ic_notification',
       sound: RawResourceAndroidNotificationSound('message_notification'),
       styleInformation: DefaultStyleInformation(true, true),
       category: AndroidNotificationCategory.event,

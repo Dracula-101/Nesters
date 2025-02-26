@@ -1,7 +1,8 @@
+import 'dart:developer';
 import 'dart:io';
 
-import 'package:nesters/data/repository/database/remote/error/database_error.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
+import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
@@ -20,28 +21,40 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   final supabase.SupabaseClient _supabaseClient =
       supabase.Supabase.instance.client;
   final AppLogger _logger;
+  final String marketplaceTable = 'marketplaces';
+  final String marketplaceLikesTable = 'marketplaces_likes';
+  final String marketplaceCategoriesTable = 'marketplace_categories';
+  final String marketplaceSelectQuery =
+      '*, marketplaces_likes!marketplaces_likes_marketplace_id_fkey!left(*)';
 
   @override
   Future<String> createMarketplace(
       {required String userId, required MarketplaceModel item}) async {
     try {
       await _supabaseClient
-          .from('marketplaces')
+          .from(marketplaceTable)
           .upsert(item.copyWith(userId: userId).toJson());
       _logger.info('Marketplace created successfully with id: ${item.id}');
       return item.id.toString();
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.CREATE_MARKETPLACE_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -54,13 +67,13 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
     try {
       String basePathName = '$userId/$itemId';
       int noOfFiles = (await _supabaseClient.storage
-              .from('marketplaces')
+              .from(marketplaceTable)
               .list(path: basePathName))
           .length;
       yield MarketplaceImageUploadTask(urls: [], progress: 0.025);
       if (noOfFiles == imagePaths.length) {
         await _supabaseClient.storage
-            .from('marketplaces')
+            .from(marketplaceTable)
             .remove([basePathName]);
         yield MarketplaceImageUploadTask(urls: [], progress: 0.05);
       }
@@ -73,10 +86,10 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
         String supabasePath =
             '$basePathName/image_$date.${fileName.split('.').last}';
         await _supabaseClient.storage
-            .from('marketplaces')
+            .from(marketplaceTable)
             .upload(supabasePath, file);
         String url = _supabaseClient.storage
-            .from('marketplaces')
+            .from(marketplaceTable)
             .getPublicUrl(supabasePath);
         urls.add(url);
         yield MarketplaceImageUploadTask(
@@ -87,20 +100,27 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
     } on supabase.StorageException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
-        extra: e.error.toString(),
+        hint: e.error.toString(),
       );
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPLOAD_IMAGES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -111,7 +131,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   }) async {
     try {
       await _supabaseClient
-          .from('marketplaces')
+          .from(marketplaceTable)
           .update({...item.toJson(), 'user_id': userId})
           .eq('id', item.id)
           .eq('user_id', userId);
@@ -120,15 +140,22 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPDATE_MARKETPLACE_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -140,46 +167,62 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   }) async {
     try {
       final response = await _supabaseClient
-          .from('marketplaces')
-          .select(
-              "*, marketplaces_likes!marketplace_likes_marketplace_id_fkey!left(*)")
+          .from(marketplaceTable)
+          .select(marketplaceSelectQuery)
           .neq('user_id', userId)
-          .order('created_at', ascending: false)
+          .order('id', ascending: false)
           .range(paginationKey, paginationKey + range);
       return response.map((e) => MarketplaceModel.fromJson(e)).toList();
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_MARKETPLACES_ERR,
-        extra: e.getException,
-      );
+    } catch (e, stacktrace) {
+      log(e.toString(), stackTrace: stacktrace);
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
   @override
   Future<List<MarketplaceCategoryModel>> getMarketplaceCategories() async {
     try {
-      final response =
-          await _supabaseClient.from('marketplaces_categories').select();
+      final response = await _supabaseClient
+          .schema('const')
+          .from(marketplaceCategoriesTable)
+          .select();
       return response.map((e) => MarketplaceCategoryModel.fromJson(e)).toList();
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACE_CATEGORIES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -190,16 +233,13 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   ) {
     try {
       supabase.PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
-          _supabaseClient.from("marketplaces").select();
+          _supabaseClient.from(marketplaceTable).select();
       if (filter is MarketplaceCategoryFilter) {
         queryBuilder =
             queryBuilder.eq('category->>id', filter.category.id ?? 0);
       }
       return queryBuilder
-          .neq(
-            "user_id",
-            userId,
-          )
+          .neq("user_id", userId)
           .order("created_at", ascending: false)
           .select()
           .then((response) =>
@@ -207,15 +247,22 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_SINGLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -226,7 +273,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   ) async {
     try {
       supabase.PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
-          _supabaseClient.from("marketplaces").select();
+          _supabaseClient.from(marketplaceTable).select();
       if (filter.minPrice != null) {
         queryBuilder = queryBuilder.gte('price', filter.minPrice!.toInt());
       }
@@ -240,29 +287,35 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       if (filter.keyword != null) {
         queryBuilder = queryBuilder.contains('title', filter.keyword!);
       }
-      return queryBuilder
-          .neq("user_id", userId)
-          .order(
-            "created_at",
-            ascending: false,
-          )
-          .select()
-          .then(
-            (response) =>
-                response.map((e) => MarketplaceModel.fromJson(e)).toList(),
-          );
+      supabase.PostgrestTransformBuilder<List<Map<String, dynamic>>>
+          transformBuilder = queryBuilder.neq("user_id", userId);
+      if (filter.minPrice != null) {
+        transformBuilder = transformBuilder.order('price', ascending: true);
+      } else {
+        transformBuilder =
+            transformBuilder.order('created_at', ascending: false);
+      }
+      return transformBuilder.then((response) =>
+          response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -270,24 +323,31 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   Future<List<MarketplaceModel>> getUserMarketplaces({required String userId}) {
     try {
       return _supabaseClient
-          .from('marketplaces')
+          .from(marketplaceTable)
           .select()
           .eq('user_id', userId)
-          .order('created_at', ascending: false)
+          .order('id', ascending: false)
           .then((response) =>
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_USER_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -298,23 +358,30 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
     required bool isLiked,
   }) async {
     try {
-      await _supabaseClient.from('marketplaces_likes').upsert(
+      await _supabaseClient.from(marketplaceLikesTable).upsert(
           {'user_id': userId, 'marketplace_id': itemId, 'is_liked': isLiked},
           onConflict: 'marketplace_id');
       _logger.info(
-          'Like status updated successfully for apartment: $itemId -> ${isLiked ? '❤️' : '💔'}');
+          'Like status updated successfully for marketplace: $itemId -> ${isLiked ? '❤️' : '💔'}');
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.UPDATE_LIKE_STATUS_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -324,25 +391,32 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   }) {
     try {
       return _supabaseClient
-          .from('marketplaces')
-          .select(
-              "*, marketplaces_likes!marketplace_likes_marketplace_id_fkey!inner(*)")
+          .from(marketplaceTable)
+          .select(marketplaceSelectQuery)
           .eq('marketplaces_likes.user_id', userId)
           .eq('marketplaces_likes.is_liked', true)
+          .order('id', ascending: false)
           .then((response) =>
               response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_USER_LIKED_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -354,7 +428,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   }) async {
     try {
       await _supabaseClient
-          .from('marketplaces')
+          .from(marketplaceTable)
           .update({'is_available': isAvailable})
           .eq('id', itemId)
           .eq('user_id', userId);
@@ -363,15 +437,22 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString(),
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.CHANGE_AVAILABILITY_STATUS_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 
@@ -382,7 +463,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   }) async {
     try {
       await _supabaseClient
-          .from('marketplaces')
+          .from(marketplaceTable)
           .delete()
           .eq('id', itemId)
           .eq('user_id', userId);
@@ -390,15 +471,22 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,
-        extra: e.details.toString().capitalize,
+        hint: e.details.toString().capitalize,
       );
     } on SocketException catch (_) {
       throw NoNetworkError();
-    } on Exception catch (e) {
-      throw MarketplaceErrorFactory.fromCode(
-        MarketplaceErrorCode.DELETE_MARKETPLACE_ERR,
-        extra: e.getException,
-      );
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.DELETE_MARKETPLACE_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.DELETE_MARKETPLACE_ERR,
+          hint: e.toString(),
+        );
+      }
     }
   }
 }

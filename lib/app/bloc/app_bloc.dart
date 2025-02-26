@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:get_it/get_it.dart';
@@ -18,13 +18,15 @@ import 'package:nesters/data/repository/network/network_checker_repository.dart'
 import 'package:nesters/data/repository/notification/remote/remote_notification_repository.dart';
 import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
+import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
-import 'package:rxdart/rxdart.dart';
 
 part 'app_state.dart';
 part 'app_event.dart';
@@ -42,8 +44,10 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         loadUniversities: () async => await _loadUniversities(event, emit),
         loadMarketplaceCategories: () async =>
             await _loadMarketplaceCategories(event, emit),
+        loadLanguages: () async => await _loadLanguages(event, emit),
       );
     });
+
     add(const AppEvent.load());
     _addNetworkListener();
   }
@@ -80,11 +84,14 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       ]);
       isOnboardingCompleted = _userRepository.checkUserOnboardingStatus();
       unawaited(loadAndSaveToken());
+      loadRemoteStaticData();
       _remoteChatRepository.tokenChangeListener();
       _loggerService.info(
           "Local Storage: ${repositoryIntialize[0]} ms\nObject Box: ${repositoryIntialize[1]} ms\nLocal Notification: ${repositoryIntialize[2]} ms\nDevice Info: ${repositoryIntialize[3]} ms");
       add(AppEvent.loaded(
-          isSuccessful: true, isOnboaringComplete: isOnboardingCompleted));
+        isSuccessful: true,
+        isOnboaringComplete: isOnboardingCompleted,
+      ));
     } on Exception catch (error, stacktrace) {
       _loggerService.error('Error loading app: $error');
       _crashServiceRepository.recordError(error, stackTrace: stacktrace);
@@ -105,6 +112,13 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     );
   }
 
+  void loadRemoteStaticData() {
+    add(const AppEvent.loadDegrees());
+    add(const AppEvent.loadUniversities());
+    add(const AppEvent.loadMarketplaceCategories());
+    add(const AppEvent.loadLanguages());
+  }
+
   Future<void> loadAndSaveToken() async {
     try {
       String token = await _rNotificationRepository.getToken();
@@ -122,7 +136,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         .asyncMap(_checkUserProfileCreated)
         .listen(_authHandler);
     if (isSuccessful) {
-      emit(const AppState(isLoading: false));
+      emit(state.copyWith(isLoading: false));
     } else {
       emit(AppState(error: Exception('Error loading app)'), isLoading: false));
     }
@@ -263,80 +277,110 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     NetworkData data,
     bool isOnline,
   ) {
-    emit(AppState(networkData: data, isOnline: isOnline));
+    emit(state.copyWith(networkData: data, isOnline: isOnline));
   }
 
   Future<void> _loadUniversities(AppEvent event, Emitter<AppState> emit) async {
-    emit(state.copyWith(isLoadingUniversities: true));
+    emit(state.copyWith(universitiesState: state.universitiesState.loading()));
     final cachedUniversities = _localStorageRepository.getListClass(
-        LocalStorageKeys.universityList, (p0) => University.fromJson(p0));
+        LocalStorageKeys.universityList,
+        (p0) => University.fromJson(p0['id'], json: p0));
     if (cachedUniversities?.isNotEmpty ?? false) {
       emit(state.copyWith(
-          universities: cachedUniversities, isLoadingUniversities: false));
+          universities: cachedUniversities,
+          universitiesState: state.universitiesState.success()));
+      _loggerService
+          .info('(Cache) Got Universities: ${cachedUniversities?.length}');
+      return;
     }
     try {
       final universities = await _userRepository.getAllUniversities();
       if (universities.isNotEmpty) {
-        _localStorageRepository.saveListClass(LocalStorageKeys.universityList,
-            universities, (p0) => p0?.toJson() ?? {});
-        emit(state.copyWith(
-            universities: universities, isLoadingUniversities: false));
-      } else {
-        emit(state.copyWith(isLoadingUniversities: false));
+        unawaited(_obxStorageRepository.saveUniversities(universities));
       }
-    } catch (e) {
-      emit(state.copyWith(isLoadingUniversities: false));
+      _loggerService.info('(Remote) Got Universities: ${universities.length}');
+      emit(state.copyWith(
+          universities: universities,
+          universitiesState: state.universitiesState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(
+          universitiesState: state.universitiesState.failure(e)));
     }
   }
 
   Future<void> _loadDegrees(AppEvent event, Emitter<AppState> emit) async {
-    emit(state.copyWith(isLoadingDegrees: true));
-    final cachedDegrees = _localStorageRepository.getListClass(
-        LocalStorageKeys.degreeList, (p0) => Degree.fromJson(p0));
-    if (cachedDegrees?.isNotEmpty ?? false) {
-      emit(state.copyWith(degrees: cachedDegrees, isLoadingDegrees: false));
+    emit(state.copyWith(degreesState: state.degreesState.loading()));
+    final cachedDegrees = _obxStorageRepository.getDegrees();
+    if (cachedDegrees.isNotEmpty) {
+      emit(state.copyWith(
+          degrees: cachedDegrees, degreesState: state.degreesState.success()));
+      _loggerService.info('(Cache) Got Degrees: ${cachedDegrees.length}');
+      return;
     }
     try {
       final degrees = await _userRepository.getAllDegrees();
       if (degrees.isNotEmpty) {
-        _localStorageRepository.saveListClass(
-            LocalStorageKeys.degreeList, degrees, (p0) => p0?.toJson() ?? {});
-        emit(state.copyWith(degrees: degrees, isLoadingDegrees: false));
-      } else {
-        emit(state.copyWith(isLoadingDegrees: false));
+        unawaited(_obxStorageRepository.saveDegrees(degrees));
       }
-    } catch (e) {
-      emit(state.copyWith(isLoadingDegrees: false));
+      _loggerService.info('(Remote) Got Degrees: ${degrees.length}');
+      emit(state.copyWith(
+          degrees: degrees, degreesState: state.degreesState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(degreesState: state.degreesState.failure(e)));
     }
   }
 
   Future<void> _loadMarketplaceCategories(
       AppEvent event, Emitter<AppState> emit) async {
-    emit(state.copyWith(isLoadingMarketplaceCategory: true));
-    final cachedMarketplaceCategories = _localStorageRepository.getListClass(
-        LocalStorageKeys.marketplaceCategoryList,
-        (p0) => MarketplaceCategoryModel.fromJson(p0));
-    if (cachedMarketplaceCategories?.isNotEmpty ?? false) {
+    emit(state.copyWith(
+        marketplaceCategoryState: state.marketplaceCategoryState.loading()));
+    final cachedCategories = _obxStorageRepository.getMarketplaceCategories();
+    if (cachedCategories.isNotEmpty) {
       emit(state.copyWith(
-          marketplaceCategory: cachedMarketplaceCategories,
-          isLoadingMarketplaceCategory: false));
+          marketplaceCategory: cachedCategories,
+          marketplaceCategoryState: state.marketplaceCategoryState.success()));
+      _loggerService.info(
+          '(Cache) Got Marketplace Categories: ${cachedCategories.length}');
+      return;
     }
     try {
       final marketplaceCategories =
           await _marketplaceRepository.getMarketplaceCategories();
       if (marketplaceCategories.isNotEmpty) {
-        _localStorageRepository.saveListClass(
-            LocalStorageKeys.marketplaceCategoryList,
-            marketplaceCategories,
-            (p0) => p0.toJson());
-        emit(state.copyWith(
-            marketplaceCategory: marketplaceCategories,
-            isLoadingMarketplaceCategory: false));
-      } else {
-        emit(state.copyWith(isLoadingMarketplaceCategory: false));
+        unawaited(_obxStorageRepository
+            .saveMarketplaceCategories(marketplaceCategories));
       }
-    } catch (e) {
-      emit(state.copyWith(isLoadingMarketplaceCategory: false));
+      _loggerService.info(
+          '(Remote) Got Marketplace Categories: ${marketplaceCategories.length}');
+      emit(state.copyWith(
+          marketplaceCategory: marketplaceCategories,
+          marketplaceCategoryState: state.marketplaceCategoryState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(
+          marketplaceCategoryState: state.marketplaceCategoryState.failure(e)));
+    }
+  }
+
+  Future<void> _loadLanguages(AppEvent event, Emitter<AppState> emit) async {
+    emit(state.copyWith(languageState: state.languageState.loading()));
+    final cachedLanguages = _obxStorageRepository.getLanguages();
+    if (cachedLanguages.isNotEmpty) {
+      emit(state.copyWith(
+          languages: cachedLanguages,
+          languageState: state.languageState.success()));
+      _loggerService.info('(Cache) Got Languages: ${cachedLanguages.length}');
+      return;
+    }
+    try {
+      final languages = await _userRepository.getLanguages();
+      if (languages.isNotEmpty) {
+        unawaited(_obxStorageRepository.saveLanguages(languages));
+      }
+      _loggerService.info('(Remote) Got Languages: ${cachedLanguages.length}');
+      emit(state.copyWith(
+          languages: languages, languageState: state.languageState.success()));
+    } on AppException catch (e) {
+      emit(state.copyWith(languageState: state.languageState.failure(e)));
     }
   }
 }

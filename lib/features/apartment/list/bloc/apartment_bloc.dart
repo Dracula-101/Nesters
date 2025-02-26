@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
@@ -37,24 +38,56 @@ class ApartmentBloc extends Bloc<ApartmentEvent, ApartmentState> {
         saveApartments(apartments, emit);
       },
       singleAddFilter: (filter) async {
-        final userId = _authRepository.currentUser!.id;
-        final filteredApartments = await _apartmentRepository
-            .singleFilterApartment(filter: filter, userId: userId);
-        emit(state.copyWith(
+        try {
+          emit(state.copyWith(
+            filterState: state.filterState.loading(),
+            singleApartmentFilter: filter,
+          ));
+          final userId = _authRepository.currentUser!.id;
+          final filteredApartments =
+              await _apartmentRepository.singleFilterApartment(
+            filter: filter,
+            userId: userId,
+          );
+          emit(state.copyWith(
             filteredApartmentList: filteredApartments,
-            singleApartmentFilter: filter));
+            filterState: state.filterState.success(),
+            singleApartmentFilter: filter,
+          ));
+        } on AppException catch (e) {
+          emit(state.copyWith(
+            filterState: state.filterState.failure(e),
+            singleApartmentFilter: null,
+          ));
+        }
       },
       singleRemoveFilter: () {
         emit(state.copyWith(singleApartmentFilter: null));
       },
       addFilter: (filter) async {
-        final filteredApartments = await _apartmentRepository
-            .multiFilterApartment(filter: filter, userId: userId);
-        _logger.debug(
-            "Filtered Apartments: ${filteredApartments.length} with filter: $filter");
-        emit(state.copyWith(
+        try {
+          emit(state.copyWith(
+            filterState: state.filterState.loading(),
+            apartmentFilter: filter,
+          ));
+          final filteredApartments =
+              await _apartmentRepository.multiFilterApartment(
+            filter: filter,
+            userId: userId,
+          );
+          _logger.debug(
+              "Filtered Apartments: ${filteredApartments.length} with filter: $filter");
+          emit(state.copyWith(
             filteredApartmentList: filteredApartments,
-            apartmentFilter: filter));
+            filterState: state.filterState.success(),
+            apartmentFilter: filter,
+          ));
+        } on AppException catch (e) {
+          emit(state.copyWith(
+            filterState: state.filterState.failure(e),
+            apartmentFilter: null,
+          ));
+        }
       },
       removeFilter: () {
         emit(state.copyWith(apartmentFilter: null));

@@ -64,4 +64,11 @@ enum PersonType {
         PersonType.EXTROVERT,
         PersonType.INTROVERT,
       ];
+
+  String? toSafeString() {
+    if (this == PersonType.UNKNOWN) {
+      return null;
+    }
+    return toString();
+  }
 }

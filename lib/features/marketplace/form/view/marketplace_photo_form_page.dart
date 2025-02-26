@@ -44,9 +44,9 @@ class _MarketplacePhotoFormState extends State<MarketplacePhotoForm>
             showImageErrorSnackbar();
           } else {
             if (state.isPreFilled ?? false) {
-              context.read<MarketplaceFormCubit>().updateSublet();
+              context.read<MarketplaceFormCubit>().updateMarketplace();
             } else {
-              context.read<MarketplaceFormCubit>().createSublet();
+              context.read<MarketplaceFormCubit>().createMarketplace();
             }
           }
         }

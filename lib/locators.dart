@@ -1,8 +1,11 @@
+import 'dart:io';
+
+import 'package:flutter/widgets.dart';
+import 'package:google_places_sdk/google_places_sdk.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository_impl.dart';
 import 'package:nesters/data/repository/crash_services/crash_services_repository.dart';
-import 'package:nesters/data/repository/database/remote/supadatabase_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository_impl.dart';
 import 'package:nesters/data/repository/media/media_compressor.dart';
@@ -35,7 +38,6 @@ import 'package:nesters/data/repository/auth/supabase_auth_repository_impl.dart'
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/database/local/get_storage_repository.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 
 Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
@@ -52,15 +54,23 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   AppRouterService appRouterService = AppRouterService();
   AuthRepository authRepository =
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
-  DatabaseRepository databaseRepository = SupaDatabaseRepository();
   RemoteChatRepository remoteChatRepository = FirebaseChatRepository();
   RecipientUserRepository firebaseRecipientQuickUserRepository =
       FirebaseRecipientUserRepository();
+  GooglePlaces googlePlaces = GooglePlaces();
+  await googlePlaces.initialize(
+    appSecretsRepository.getSecret(
+      Platform.isAndroid
+          ? AppSecretsKeys.GOOGLE_ANDROID_PLACES_API_KEY
+          : AppSecretsKeys.GOOGLE_IOS_PLACES_API_KEY,
+    ),
+    locale: const Locale('en'),
+  );
   UserRepository userRepository = UserRepositoryImpl(
     authRepository: authRepository,
-    databaseRepository: databaseRepository,
     storageRepository: localStorageRepository,
     logger: appLoggerService,
+    placesRepository: googlePlaces,
   );
   UserChatProfileRepository userChatRepository =
       FirebaseUserChatProfileRepository();
@@ -85,6 +95,7 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   // Register all repositories
   locator.registerSingleton(appSecretsRepository);
   locator.registerSingleton(appLoggerService);
+  locator.registerSingleton(googlePlaces);
   locator.registerSingleton(mediaCompressor);
   locator.registerSingleton(localStorageRepository);
   locator.registerSingleton(appRouterService);
@@ -92,7 +103,6 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   locator.registerSingleton(networkCheckerRepository);
   locator.registerSingleton(mediaRepository);
   locator.registerSingleton(authRepository);
-  locator.registerSingleton(databaseRepository);
   locator.registerSingleton(userRepository);
   locator.registerSingleton(remoteChatRepository);
   locator.registerSingleton(userChatRepository);

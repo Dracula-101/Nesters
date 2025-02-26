@@ -12,6 +12,7 @@ import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
@@ -81,7 +82,7 @@ class _UserProfilePageState extends State<UserProfilePage> {
                 FontAwesomeIcons.telegram,
               ),
               onPressed: () {
-                if (state.profileStatus?.isLoading ?? false) return;
+                if (state.profileStatus.isLoading) return;
                 _handleOuterRequest(widget.id, state.userProfile!);
               },
             );
@@ -266,15 +267,13 @@ class _ProfileViewState extends State<ProfileView> {
         }
       },
       builder: (context, state) {
-        return state.profileStatus?.exception != null
-            ? _buildProfileError(state.profileStatus!.exception!)
-            : state.profileStatus?.isLoading ?? false
+        return state.profileStatus.exception != null
+            ? _buildProfileError(state.profileStatus.exception!)
+            : state.profileStatus.isLoading
                 ? const ShimmerProfile()
                 : state.userProfile != null
                     ? _buildProfile(state.userProfile!)
-                    : const Center(
-                        child: Text('No user profile found!'),
-                      );
+                    : const ShimmerProfile();
       },
     );
   }
@@ -335,7 +334,7 @@ class _ProfileViewState extends State<ProfileView> {
           ),
           _buildCard(
             userProfile.selectedCourseName ?? '',
-            _buildCollegeNameString(userProfile.selectedCollegeName,
+            _buildCollegeNameString(userProfile.userCollege,
                 userProfile.intakePeriod, userProfile.intakeYear),
             Icons.school,
           ),
@@ -427,13 +426,13 @@ class _ProfileViewState extends State<ProfileView> {
   }
 
   String _buildCollegeNameString(
-      String? collegeName, String? intakePeriod, int? intakeYear) {
+      String? collegeName, UserIntake? intakePeriod, int? intakeYear) {
     String collegeText = "";
     String intakeText = "";
     if (collegeName != null && collegeName != "") {
       collegeText = collegeName.toTitleCase;
     }
-    if (intakePeriod != null && intakePeriod != "" && intakeYear != null) {
+    if (intakePeriod != null && intakeYear != null) {
       intakeText = '$intakePeriod $intakeYear';
     }
     if (collegeText != "" && intakeText != "") {

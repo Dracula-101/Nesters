@@ -238,7 +238,7 @@ class MarketplaceModelWidget extends StatelessWidget {
         const SizedBox(width: 4),
         Flexible(
           child: Text(
-            marketplace.location?.address.toTitleCase ?? '',
+            marketplace.address?.toTitleCase ?? '',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),

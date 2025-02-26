@@ -3,6 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/form/cubit/sublet_form_cubit.dart';
@@ -28,16 +30,18 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
       TextEditingController();
   DateTime? startDate, endDate;
   int baths = 0, beds = 0;
+  String? addressPlaceId;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final UserRepository _userRepository = GetIt.I<UserRepository>();
 
   @override
   void initState() {
     super.initState();
     if (widget.sublet != null) {
-      _addressController.text = widget.sublet!.location?.address ?? '';
+      _addressController.text = widget.sublet!.address ?? '';
       _rentPriceController.text = widget.sublet!.rent.toString();
-      _roomTypeContoller.text = widget.sublet!.roomType?.toUI() ?? '';
+      _roomTypeContoller.text = widget.sublet!.roomType?.toString() ?? '';
       _roomateGenderController.text = widget.sublet?.roommateGenderPref ?? '';
       startDate = widget.sublet!.leasePeriod?.startDate;
       endDate = widget.sublet!.leasePeriod?.endDate;
@@ -159,7 +163,7 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
   }
 
   Widget _buildAddressField() {
-    return CustomTextField(
+    return CustomDynamicSearchableDropDropField(
       controller: _addressController,
       labelText: 'Address',
       prefixIcon: Icon(
@@ -167,13 +171,39 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
         color: AppTheme.greyShades.shade600,
         size: 22,
       ),
+      asyncSearchItems: (searchQuery) {
+        return _userRepository.searchAddress(searchQuery).asStream();
+      },
       validator: (value) {
-        if (value.isEmpty) {
+        if (value?.isEmpty == true) {
           return 'Please enter the address';
         }
         return null;
       },
-      hintText: 'Enter the address of the apartment',
+      onItemClick: (item) {
+        context.read<SubletFormCubit>().addAddressInfo(item.placeId);
+      },
+      itemAsString: (p0) => p0.primaryText,
+      emptyBuilder: (context) {
+        return ShowInfoWidget(
+          height: 300,
+          icon: FontAwesomeIcons.locationDot,
+          message: _addressController.text.isEmpty
+              ? 'Enter the address of the sublet'
+              : 'No address found',
+          subtitle: _addressController.text.isEmpty
+              ? 'Please enter the address of the sublet'
+              : 'No address found for the "${_addressController.text}"',
+        );
+      },
+      itemBuilder: (context, item) {
+        return ListTile(
+          title: Text(item.primaryText),
+          subtitle: Text(item.secondaryText),
+          dense: true,
+        );
+      },
+      hintText: 'Enter the address of the sublet',
     );
   }
 
@@ -323,7 +353,7 @@ class _SubletDetailsFormState extends State<SubletDetailsForm>
         UserRoomType.PRIVATE,
         UserRoomType.SHARED,
         UserRoomType.FLEX,
-      ].map((e) => e.toUI()).toList(),
+      ].map((e) => e.toString()).toList(),
       validatorText: 'Please select the room type',
     );
   }

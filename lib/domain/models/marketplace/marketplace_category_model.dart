@@ -28,4 +28,9 @@ class MarketplaceCategoryModel {
       name: name ?? this.name,
     );
   }
+
+  @override
+  String toString() {
+    return name ?? '';
+  }
 }

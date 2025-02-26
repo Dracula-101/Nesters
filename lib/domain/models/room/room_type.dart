@@ -9,16 +9,12 @@ enum UserRoomType {
   static UserRoomType fromString(String value) {
     switch (value) {
       case 'Private':
-      case 'PRIVATE':
         return UserRoomType.PRIVATE;
       case 'Shared':
-      case 'SHARED':
         return UserRoomType.SHARED;
       case 'Anything':
-      case 'ANYTHING':
         return UserRoomType.ANYTHING;
       case 'Flex':
-      case 'FLEX':
         return UserRoomType.FLEX;
       default:
         return UserRoomType.UNKNOWN;
@@ -29,27 +25,6 @@ enum UserRoomType {
   String toString() {
     switch (this) {
       case UserRoomType.PRIVATE:
-        return 'PRIVATE';
-      case UserRoomType.SHARED:
-        return 'SHARED';
-      case UserRoomType.ANYTHING:
-        return 'ANYTHING';
-      case UserRoomType.FLEX:
-        return 'FLEX';
-      default:
-        return 'UNKNOWN';
-    }
-  }
-
-  static List<UserRoomType> toList() => [
-        UserRoomType.PRIVATE,
-        UserRoomType.SHARED,
-        UserRoomType.FLEX,
-      ];
-
-  String toUI() {
-    switch (this) {
-      case UserRoomType.PRIVATE:
         return 'Private';
       case UserRoomType.SHARED:
         return 'Shared';
@@ -58,8 +33,21 @@ enum UserRoomType {
       case UserRoomType.FLEX:
         return 'Flex';
       default:
-        return 'Unknown';
+        return 'Not Selected';
     }
+  }
+
+  static List<UserRoomType> get safeValues => [
+        UserRoomType.PRIVATE,
+        UserRoomType.SHARED,
+        UserRoomType.FLEX,
+      ];
+
+  String? toSafeString() {
+    if (this == UserRoomType.UNKNOWN) {
+      return null;
+    }
+    return toString();
   }
 }
 
@@ -71,11 +59,11 @@ enum FlatmateGenderType {
 
   static FlatmateGenderType fromString(String value) {
     switch (value) {
-      case 'MALE':
+      case 'Male':
         return FlatmateGenderType.MALE;
-      case 'FEMALE':
+      case 'Female':
         return FlatmateGenderType.FEMALE;
-      case 'MIX':
+      case 'Mix':
         return FlatmateGenderType.MIX;
       default:
         return FlatmateGenderType.UNKNOWN;
@@ -86,13 +74,26 @@ enum FlatmateGenderType {
   String toString() {
     switch (this) {
       case FlatmateGenderType.MALE:
-        return 'MALE';
+        return 'Male';
       case FlatmateGenderType.FEMALE:
-        return 'FFEMALE';
+        return 'Female';
       case FlatmateGenderType.MIX:
-        return 'MIX';
+        return 'Mix';
       default:
-        return 'UNKNOWN';
+        return 'Unknown';
     }
+  }
+
+  static List<FlatmateGenderType> get safeValues => [
+        FlatmateGenderType.MALE,
+        FlatmateGenderType.FEMALE,
+        FlatmateGenderType.MIX,
+      ];
+
+  String? toSafeString() {
+    if (this == FlatmateGenderType.UNKNOWN) {
+      return null;
+    }
+    return toString();
   }
 }

@@ -4,14 +4,18 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:google_places_sdk/google_places_sdk.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
+import 'package:nesters/data/repository/marketplace/error/marketplace_error.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_link_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_period_model.dart';
 import 'package:nesters/domain/models/user/location.dart';
+import 'package:nesters/features/auth/bloc/auth_error.dart';
 import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
@@ -33,12 +37,17 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
   final MarketplaceRepository _marketplaceRepository =
       GetIt.I<MarketplaceRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
+  final GooglePlaces _googlePlaces = GetIt.I<GooglePlaces>();
   final AppLogger _logger = GetIt.I<AppLogger>();
   int itemId = DateTime.now().millisecondsSinceEpoch;
 
   void validatePage() {
     emit(state.copyWith(isValidating: false));
     emit(state.copyWith(isValidating: true));
+  }
+
+  void addPlaceId(String placeId) {
+    emit(state.copyWith(placeId: placeId));
   }
 
   void onPageChange(int pageNumber) {
@@ -64,7 +73,7 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
     MarketplaceModel? model = MarketplaceModel(
       id: state.item?.id ?? itemId,
       name: name,
-      location: Location(address: address),
+      address: address,
       period: MarketplacePeriodModel(
         periodFrom: startDate,
         periodTill: endDate,
@@ -81,12 +90,27 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
     emit(state.copyWith(item: model));
   }
 
-  Future<void> createSublet() async {
-    emit(state.copyWith(submitState: state.submitState?.loading()));
+  Future<void> createMarketplace() async {
+    if (state.submitState.isLoading) return;
+    emit(state.copyWith(submitState: state.submitState.loading()));
     try {
+      if (state.placeId != null) {
+        final locationResult =
+            await _googlePlaces.fetchPlaceDetails(state.placeId!);
+        emit(state.copyWith(
+          item: state.item?.copyWith(
+            location: Location.fromCoords(
+              lat: locationResult.latLng?.lat ?? 0.0,
+              long: locationResult.latLng?.lng ?? 0.0,
+            ),
+            address: locationResult.address,
+          ),
+        ));
+      }
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
-        emit(state.copyWith(submitError: Exception('User ID is null')));
+        emit(state.copyWith(
+            submitState: state.submitState.failure(UserNotAuthError())));
         return;
       }
       Stream<MarketplaceImageUploadTask> uploadImageStream =
@@ -109,27 +133,46 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
         item: model!,
       );
       emit(state.copyWith(
-        submitError: null,
         imageUploadTask: null,
-        submitState: state.submitState?.success(),
+        submitState: state.submitState.success(),
       ));
     } on AppException catch (e) {
-      _logger.log('Error creating sublet: $e');
+      _logger.log('Error creating marketplace: $e');
       emit(state.copyWith(
-        submitError: e,
-        submitState: state.submitState?.failure(e),
+        submitState: state.submitState.failure(e),
+        imageUploadTask: null,
+      ));
+    } catch (e) {
+      _logger.log('Error creating marketplace: $e');
+      emit(state.copyWith(
+        submitState: state.submitState
+            .failure(UnknownMarketplaceError(hint: e.toString())),
         imageUploadTask: null,
       ));
     }
   }
 
-  Future<void> updateSublet() async {
-    if (state.submitState?.isLoading ?? false) return;
+  Future<void> updateMarketplace() async {
+    if (state.submitState.isLoading) return;
     try {
-      emit(state.copyWith(submitState: state.submitState?.loading()));
+      emit(state.copyWith(submitState: state.submitState.loading()));
+      if (state.placeId != null) {
+        final locationResult =
+            await _googlePlaces.fetchPlaceDetails(state.placeId!);
+        emit(state.copyWith(
+          item: state.item?.copyWith(
+            location: Location.fromCoords(
+              lat: locationResult.latLng?.lat ?? 0.0,
+              long: locationResult.latLng?.lng ?? 0.0,
+            ),
+            address: locationResult.address,
+          ),
+        ));
+      }
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
-        emit(state.copyWith(submitError: Exception('User ID is null')));
+        emit(state.copyWith(
+            submitState: state.submitState.failure(UserNotAuthError())));
         return;
       }
       List<String> uploadedImagesUrl = [];
@@ -160,15 +203,20 @@ class MarketplaceFormCubit extends Cubit<MarketplaceFormState> {
         item: model!,
       );
       emit(state.copyWith(
-        submitError: null,
         imageUploadTask: null,
-        submitState: state.submitState?.success(),
+        submitState: state.submitState.success(),
       ));
     } on AppException catch (e) {
-      _logger.log('Error creating sublet: $e');
+      _logger.log('Error creating marketplace: $e');
       emit(state.copyWith(
-        submitError: e,
-        submitState: state.submitState?.failure(e),
+        submitState: state.submitState.failure(e),
+        imageUploadTask: null,
+      ));
+    } catch (e) {
+      _logger.log('Error creating marketplace: $e');
+      emit(state.copyWith(
+        submitState: state.submitState
+            .failure(UnknownMarketplaceError(hint: e.toString())),
         imageUploadTask: null,
       ));
     }

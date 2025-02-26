@@ -15,12 +15,14 @@ class AmenitiesBottomSheet extends StatefulWidget {
 }
 
 class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
-  Amenities? amenities;
+  Amenities amenities = Amenities();
 
   @override
   void initState() {
     super.initState();
-    amenities = widget.amenities;
+    if (widget.amenities != null) {
+      amenities = widget.amenities!;
+    }
   }
 
   @override
@@ -53,9 +55,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: Icons.dry,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasDryer: value);
+                        amenities = amenities.copyWith(hasDryer: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -64,9 +66,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: Icons.fitness_center,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasGym: value);
+                        amenities = amenities.copyWith(hasGym: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -75,9 +77,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: Icons.pool,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasPool: value);
+                        amenities = amenities.copyWith(hasPool: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -86,9 +88,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: Icons.ac_unit,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasAC: value);
+                        amenities = amenities.copyWith(hasAC: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -97,9 +99,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: FontAwesomeIcons.fireBurner,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasGas: value);
+                        amenities = amenities.copyWith(hasGas: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -108,9 +110,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: Icons.dinner_dining,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasDishwasher: value);
+                        amenities = amenities.copyWith(hasDishwasher: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -119,9 +121,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: Icons.local_parking,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasParking: value);
+                        amenities = amenities.copyWith(hasParking: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -130,9 +132,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: Icons.balcony,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasBalcony: value);
+                        amenities = amenities.copyWith(hasBalcony: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -141,9 +143,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: FontAwesomeIcons.piedPiperHat,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasPatio: value);
+                        amenities = amenities.copyWith(hasPatio: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -152,9 +154,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: FontAwesomeIcons.fire,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasHeater: value);
+                        amenities = amenities.copyWith(hasHeater: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -163,10 +165,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: Icons.weekend,
                     onChanged: (value) {
                       setState(() {
-                        amenities =
-                            amenities?.copyWith(hasSemiFurnished: value);
+                        amenities = amenities.copyWith(hasSemiFurnished: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -175,9 +176,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     icon: Icons.weekend,
                     onChanged: (value) {
                       setState(() {
-                        amenities = amenities?.copyWith(hasFurnished: value);
+                        amenities = amenities.copyWith(hasFurnished: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                   AmentityWidget(
@@ -187,9 +188,9 @@ class _AmenitiesBottomSheetState extends State<AmenitiesBottomSheet> {
                     onChanged: (value) {
                       setState(() {
                         amenities =
-                            amenities?.copyWith(hasWashingMachine: value);
+                            amenities.copyWith(hasWashingMachine: value);
                       });
-                      widget.onChanged(amenities!);
+                      widget.onChanged(amenities);
                     },
                   ),
                 ],

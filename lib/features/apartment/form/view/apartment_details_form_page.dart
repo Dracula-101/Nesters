@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/features/apartment/components/amenities_sheet.dart';
@@ -29,13 +31,15 @@ class _ApartmentDetailsFormState extends State<ApartmentDetailsForm>
   int baths = 0, beds = 0;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final UserRepository _userRepository = GetIt.I<UserRepository>();
+
   @override
   bool get wantKeepAlive => true;
   @override
   void initState() {
     super.initState();
     if (widget.apartment != null) {
-      _addressController.text = widget.apartment!.location?.address ?? '';
+      _addressController.text = widget.apartment!.address ?? '';
       _rentPriceController.text = widget.apartment!.rent.toString();
       startDate = widget.apartment!.leasePeriod?.startDate;
       endDate = widget.apartment!.leasePeriod?.endDate;
@@ -140,7 +144,7 @@ class _ApartmentDetailsFormState extends State<ApartmentDetailsForm>
   }
 
   Widget _buildAddressField() {
-    return CustomTextField(
+    return CustomDynamicSearchableDropDropField(
       controller: _addressController,
       labelText: 'Address',
       prefixIcon: Icon(
@@ -148,8 +152,34 @@ class _ApartmentDetailsFormState extends State<ApartmentDetailsForm>
         color: AppTheme.greyShades.shade600,
         size: 22,
       ),
+      asyncSearchItems: (searchQuery) {
+        return _userRepository.searchAddress(searchQuery).asStream();
+      },
+      emptyBuilder: (p0) {
+        return ShowInfoWidget(
+          height: 300,
+          icon: FontAwesomeIcons.locationDot,
+          message: _addressController.text.isEmpty
+              ? 'Search for an address'
+              : 'No address found',
+          subtitle: _addressController.text.isEmpty
+              ? 'Search for an address to get the location'
+              : 'No address found for the "${_addressController.text}"',
+        );
+      },
+      itemAsString: (p0) => p0.primaryText,
+      itemBuilder: (p0, item) {
+        return ListTile(
+          title: Text(item.primaryText),
+          subtitle: Text(item.secondaryText),
+          dense: true,
+        );
+      },
+      onItemClick: (item) {
+        context.read<ApartmentFormCubit>().addAddress(item.placeId);
+      },
       validator: (value) {
-        if (value.isEmpty) {
+        if (value?.isEmpty == true) {
           return 'Please enter the address';
         }
         return null;

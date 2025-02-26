@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/location/location_city.dart';
 import 'package:nesters/domain/models/location/location_country.dart';
 import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/user.dart';
@@ -18,7 +19,7 @@ class UserProfile extends Equatable {
   final LocationCity? city;
   final LocationState? state;
   final LocationCountry? country;
-  final String? selectedCollegeName; //changeable
+  final String? userCollege;
   final String? selectedCourseName; //changeable
   final String? gender;
   final String? undergradCollegeName;
@@ -36,8 +37,9 @@ class UserProfile extends Equatable {
   final String hobbies; //changeable
   final String flatmatesGenderPrefs; //changeable
   final UserRoomType roomType; //changeable
-  final String? intakePeriod;
+  final UserIntake? intakePeriod;
   final int? intakeYear;
+  final bool? hasRoommateFound;
 
   const UserProfile({
     required this.id,
@@ -46,7 +48,7 @@ class UserProfile extends Equatable {
     required this.city,
     required this.state,
     required this.country,
-    required this.selectedCollegeName,
+    required this.userCollege,
     required this.selectedCourseName,
     required this.gender,
     required this.undergradCollegeName,
@@ -66,7 +68,68 @@ class UserProfile extends Equatable {
     required this.roomType,
     required this.intakePeriod,
     required this.intakeYear,
+    required this.hasRoommateFound,
   });
+
+  UserProfile copyWith({
+    String? id,
+    String? fullName,
+    String? profileImage,
+    LocationCity? city,
+    LocationState? state,
+    LocationCountry? country,
+    String? userCollege,
+    String? selectedCourseName,
+    String? gender,
+    String? undergradCollegeName,
+    DateTime? birthDate,
+    PersonType? personType,
+    Language? primaryLang,
+    Language? otherLang,
+    int? workExperience,
+    UserHabit? smokingHabit,
+    UserHabit? drinkingHabit,
+    UserFoodHabit? foodHabit,
+    UserCookingSkill? cookingSkill,
+    UserCleanlinessHabit? cleanlinessHabit,
+    String? bio,
+    String? hobbies,
+    String? flatmatesGenderPrefs,
+    UserRoomType? roomType,
+    UserIntake? intakePeriod,
+    int? intakeYear,
+    bool? hasRoommateFound,
+  }) {
+    return UserProfile(
+      id: id ?? this.id,
+      fullName: fullName ?? this.fullName,
+      profileImage: profileImage ?? this.profileImage,
+      city: city ?? this.city,
+      state: state ?? this.state,
+      country: country ?? this.country,
+      userCollege: userCollege ?? this.userCollege,
+      selectedCourseName: selectedCourseName ?? this.selectedCourseName,
+      gender: gender ?? this.gender,
+      undergradCollegeName: undergradCollegeName ?? this.undergradCollegeName,
+      birthDate: birthDate ?? this.birthDate,
+      personType: personType ?? this.personType,
+      primaryLang: primaryLang ?? this.primaryLang,
+      otherLang: otherLang ?? this.otherLang,
+      workExperience: workExperience ?? this.workExperience,
+      smokingHabit: smokingHabit ?? this.smokingHabit,
+      drinkingHabit: drinkingHabit ?? this.drinkingHabit,
+      foodHabit: foodHabit ?? this.foodHabit,
+      cookingSkill: cookingSkill ?? this.cookingSkill,
+      cleanlinessHabit: cleanlinessHabit ?? this.cleanlinessHabit,
+      bio: bio ?? this.bio,
+      hobbies: hobbies ?? this.hobbies,
+      flatmatesGenderPrefs: flatmatesGenderPrefs ?? this.flatmatesGenderPrefs,
+      roomType: roomType ?? this.roomType,
+      intakePeriod: intakePeriod ?? this.intakePeriod,
+      intakeYear: intakeYear ?? this.intakeYear,
+      hasRoommateFound: hasRoommateFound ?? this.hasRoommateFound,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -75,7 +138,7 @@ class UserProfile extends Equatable {
         profileImage,
         city,
         state,
-        selectedCollegeName,
+        country,
         selectedCourseName,
         gender,
         undergradCollegeName,
@@ -97,36 +160,6 @@ class UserProfile extends Equatable {
         intakeYear,
       ];
 
-  List<FieldValue> toFieldValues() {
-    return [
-      FieldValue(key: 'id', value: id),
-      FieldValue(key: 'full_name', value: fullName),
-      FieldValue(key: 'profile_image', value: profileImage),
-      FieldValue(key: 'city', value: city),
-      FieldValue(key: 'state', value: state),
-      FieldValue(key: 'selected_course_name', value: selectedCourseName),
-      FieldValue(key: 'selected_college_name', value: selectedCollegeName),
-      FieldValue(key: 'gender', value: gender),
-      FieldValue(key: 'undergrad_college_name', value: undergradCollegeName),
-      FieldValue(key: 'birth_date', value: birthDate),
-      FieldValue(key: 'person_type', value: personType),
-      FieldValue(key: 'primary_lang', value: primaryLang),
-      FieldValue(key: 'other_lang', value: otherLang),
-      FieldValue(key: 'work_experience', value: workExperience),
-      FieldValue(key: 'smoking_habit', value: smokingHabit),
-      FieldValue(key: 'drinking_habit', value: drinkingHabit),
-      FieldValue(key: 'food_habit', value: foodHabit),
-      FieldValue(key: 'cooking_skill', value: cookingSkill),
-      FieldValue(key: 'cleanliness_habit', value: cleanlinessHabit),
-      FieldValue(key: 'bio', value: bio),
-      FieldValue(key: 'hobbies', value: hobbies),
-      FieldValue(key: 'flatmates_gender_prefs', value: flatmatesGenderPrefs),
-      FieldValue(key: 'room_type', value: roomType),
-      FieldValue(key: 'intake_period', value: intakePeriod),
-      FieldValue(key: 'intake_year', value: intakeYear),
-    ];
-  }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -135,7 +168,7 @@ class UserProfile extends Equatable {
       'city': city.toString(),
       'state': state.toString(),
       'selected_course_name': selectedCourseName,
-      'selected_college_name': selectedCollegeName,
+      'college': userCollege,
       'gender': gender,
       'undergrad_college_name': undergradCollegeName,
       'birth_date': birthDate?.toIso8601String(),
@@ -154,6 +187,7 @@ class UserProfile extends Equatable {
       'room_type': roomType.toString(),
       'intake_period': intakePeriod,
       'intake_year': intakeYear,
+      'has_roommate_found': hasRoommateFound,
     };
   }
 
@@ -167,7 +201,7 @@ class UserProfile extends Equatable {
         state: LocationState(name: json['state'] ?? ''),
         country: LocationCountry(name: json['country'] ?? ''),
         selectedCourseName: json['selected_course_name'] ?? '',
-        selectedCollegeName: json['selected_college_name'] ?? '',
+        userCollege: json['college'] ?? '',
         gender: json['gender'] ?? '',
         undergradCollegeName: json['undergrad_college_name'] ?? '',
         birthDate: json['birth_date'] != null
@@ -204,11 +238,14 @@ class UserProfile extends Equatable {
         roomType: json['room_type'] != null
             ? UserRoomType.fromString(json['room_type'])
             : UserRoomType.UNKNOWN,
-        intakePeriod: json['intake_period'] ?? '',
+        intakePeriod: json['intake_period'] != null
+            ? UserIntake.fromString(json['intake_period'])
+            : UserIntake.FALL,
         // current year take
         intakeYear: json['intake_year'] ?? DateTime.now().year,
+        hasRoommateFound: json['has_roommate_found'] ?? true,
       );
-    } on Exception catch (e) {
+    } catch (e) {
       throw Exception('Error parsing user profile: $e');
     }
   }
@@ -220,12 +257,13 @@ class UserProfile extends Equatable {
       city: city,
       state: state,
       country: country,
-      selectedCollegeName: selectedCollegeName,
+      userCollege: userCollege,
       selectedCourseName: selectedCourseName,
       profileImage: profileImage,
       workExperience: workExperience,
       intakePeriod: intakePeriod,
       intakeYear: intakeYear,
+      hasRoommateFound: hasRoommateFound,
     );
   }
 
@@ -236,8 +274,7 @@ class UserProfile extends Equatable {
       email: '',
       photoUrl: profileImage ?? '',
       accessToken: '',
-      isProfileCompleted: true,
-      isProfileCreated: true,
+      isProfileCreated: false,
     );
   }
 

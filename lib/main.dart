@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupFirebase();
   await initalizeApp();
+  setupCrashlytics();
   setupMessaging();
   Bloc.observer = AppBlocObserver();
   runApp(const RootApp());
@@ -27,13 +29,24 @@ Future<void> setupFirebase() {
   return Firebase.initializeApp();
 }
 
+void setupCrashlytics() {
+  FlutterError.onError = (errorDetails) {
+    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  };
+  // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+  FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(!kDebugMode);
+}
+
 Future<void> setupSupabase(AppSecretsRepository appSecrets) {
   return Supabase.initialize(
     url: appSecrets.getSecret(AppSecretsKeys.SUPABASE_URL),
     anonKey: appSecrets.getSecret(AppSecretsKeys.SUPABASE_ANON_KEY),
-    postgrestOptions: const PostgrestClientOptions(
-      schema: kDebugMode ? 'public' : 'prod',
-    ),
+    postgrestOptions:
+        const PostgrestClientOptions(schema: kDebugMode ? 'public' : 'prod'),
     debug: false,
   );
 }

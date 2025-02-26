@@ -8,7 +8,6 @@ class User extends Equatable {
     required this.photoUrl,
     this.accessToken,
     this.isProfileCreated = false,
-    this.isProfileCompleted = false,
   });
 
   final String id;
@@ -17,7 +16,6 @@ class User extends Equatable {
   final String photoUrl;
   final String? accessToken;
   final bool isProfileCreated;
-  final bool isProfileCompleted;
 
   @override
   List<Object?> get props => [id, fullName, email, photoUrl, accessToken];
@@ -58,7 +56,6 @@ class User extends Equatable {
     String? email,
     String? photoUrl,
     bool? isProfileCreated,
-    bool? isProfileCompleted,
     String? profileUrl,
   }) {
     return User(
@@ -68,7 +65,6 @@ class User extends Equatable {
       photoUrl: photoUrl ?? this.photoUrl,
       accessToken: accessToken,
       isProfileCreated: isProfileCreated ?? this.isProfileCreated,
-      isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
     );
   }
 

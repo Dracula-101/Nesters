@@ -5,7 +5,9 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
+import 'package:google_places_sdk/google_places_sdk.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
+import 'package:nesters/data/repository/sublet/error/sublet_error.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/amenities.dart';
@@ -33,6 +35,7 @@ class SubletFormCubit extends Cubit<SubletFormState> {
   }
 
   final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
+  final GooglePlaces _googlePlacesRepository = GetIt.I<GooglePlaces>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
   final AppLogger _logger = GetIt.I<AppLogger>();
   int subletId = DateTime.now().millisecondsSinceEpoch;
@@ -63,6 +66,10 @@ class SubletFormCubit extends Cubit<SubletFormState> {
     }
   }
 
+  void addAddressInfo(String placeId) {
+    emit(state.copyWith(addressPlaceId: placeId));
+  }
+
   void addFirstPageData({
     required String address,
     required DateTime? startDate,
@@ -75,7 +82,7 @@ class SubletFormCubit extends Cubit<SubletFormState> {
   }) {
     SubletModel model = SubletModel(
       id: state.sublet?.id ?? subletId,
-      location: Location(address: address),
+      address: address,
       leasePeriod: LeasePeriod(startDate: startDate, endDate: endDate),
       rent: rentPrice,
       roomType: roomType,
@@ -105,18 +112,30 @@ class SubletFormCubit extends Cubit<SubletFormState> {
   }
 
   Future<void> createSublet() async {
-    if (state.submitState?.isLoading ?? false) return;
+    if (state.submitState.isLoading) return;
     try {
-      emit(state.copyWith(submitState: state.submitState?.loading()));
+      emit(state.copyWith(submitState: state.submitState.loading()));
+      if (state.addressPlaceId != null) {
+        final placeDetails = await _googlePlacesRepository
+            .fetchPlaceDetails(state.addressPlaceId!);
+        emit(state.copyWith(
+            sublet: state.sublet?.copyWith(
+          address: placeDetails.address,
+          location: Location.fromCoords(
+            lat: placeDetails.latLng?.lat ?? 0,
+            long: placeDetails.latLng?.lng ?? 0,
+          ),
+        )));
+      }
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(
-            submitState: state.submitState?.failure(UserNotAuthError())));
+            submitState: state.submitState.failure(UserNotAuthError())));
         return;
       }
       if (state.pickedImages.isEmpty) {
         emit(state.copyWith(
-            submitState: state.submitState?.failure(SelectOneImageError())));
+            submitState: state.submitState.failure(SelectOneImageError())));
         return;
       }
       Stream<SubletImageUploadTask> uploadImageStream =
@@ -136,7 +155,7 @@ class SubletFormCubit extends Cubit<SubletFormState> {
       if (uploadedImagesUrl.isEmpty) {
         emit(state.copyWith(
             submitState:
-                state.submitState?.failure(NoUploadImagePresentError())));
+                state.submitState.failure(NoUploadImagePresentError())));
         return;
       }
       SubletModel? model = state.sublet?.copyWith(photos: uploadedImagesUrl);
@@ -146,25 +165,43 @@ class SubletFormCubit extends Cubit<SubletFormState> {
       );
       emit(state.copyWith(
         imageUploadTask: null,
-        submitState: state.submitState?.success(),
+        submitState: state.submitState.success(),
       ));
     } on AppException catch (e) {
       _logger.error('Error creating sublet: $e');
       emit(
         state.copyWith(
-            submitState: state.submitState?.failure(e), imageUploadTask: null),
+            submitState: state.submitState.failure(e), imageUploadTask: null),
       );
+    } catch (e) {
+      _logger.error('Error creating sublet: $e');
+      emit(state.copyWith(
+          submitState: state.submitState
+              .failure(UnknownSubletError(extra: e.toString())),
+          imageUploadTask: null));
     }
   }
 
   Future<void> updateSublet() async {
-    if (state.submitState?.isLoading ?? false) return;
+    if (state.submitState.isLoading) return;
     try {
-      emit(state.copyWith(submitState: state.submitState?.loading()));
+      emit(state.copyWith(submitState: state.submitState.loading()));
+      if (state.addressPlaceId != null) {
+        final placeDetails = await _googlePlacesRepository
+            .fetchPlaceDetails(state.addressPlaceId!);
+        emit(state.copyWith(
+            sublet: state.sublet?.copyWith(
+          address: placeDetails.address,
+          location: Location.fromCoords(
+            lat: placeDetails.latLng?.lat ?? 0,
+            long: placeDetails.latLng?.lng ?? 0,
+          ),
+        )));
+      }
       String? userId = _authRepository.currentUser?.id;
       if (userId == null) {
         emit(state.copyWith(
-            submitState: state.submitState?.failure(UserNotAuthError())));
+            submitState: state.submitState.failure(UserNotAuthError())));
         return;
       }
       List<String> uploadedImagesUrl = [];
@@ -197,12 +234,19 @@ class SubletFormCubit extends Cubit<SubletFormState> {
       );
       emit(state.copyWith(
         imageUploadTask: null,
-        submitState: state.submitState?.success(),
+        submitState: state.submitState.success(),
       ));
     } on AppException catch (e) {
       _logger.error('Error updating sublet: $e');
       emit(state.copyWith(
-          submitState: state.submitState?.failure(e), imageUploadTask: null));
+          submitState: state.submitState.failure(e), imageUploadTask: null));
+    } catch (e) {
+      _logger.error('Error creating apartment: $e');
+      emit(state.copyWith(
+        submitState:
+            state.submitState.failure(UnknownSubletError(extra: e.toString())),
+        imageUploadTask: null,
+      ));
     }
   }
 

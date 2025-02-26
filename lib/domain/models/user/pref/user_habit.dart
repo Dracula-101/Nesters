@@ -40,7 +40,7 @@ enum UserHabit {
     }
   }
 
-  static List<UserHabit> toList() {
+  static List<UserHabit> get safeValues {
     return [
       UserHabit.REGULAR,
       UserHabit.OCCASIONAL,
@@ -77,6 +77,13 @@ enum UserHabit {
       default:
         return 'having an unknown smoking habit';
     }
+  }
+
+  String? toSafeString() {
+    if (this == UserHabit.UNKNOWN) {
+      return null;
+    }
+    return toString();
   }
 }
 
@@ -151,6 +158,21 @@ enum UserFoodHabit {
         return 'having an unknown food habit';
     }
   }
+
+  String? toSafeString() {
+    if (this == UserFoodHabit.UNKNOWN) {
+      return null;
+    }
+    return toString();
+  }
+
+  static List<UserFoodHabit> get safeValues => [
+        UserFoodHabit.VEGAN,
+        UserFoodHabit.VEGETARIAN,
+        UserFoodHabit.PESCATARIAN,
+        UserFoodHabit.EGGETARIAN,
+        UserFoodHabit.NON_VEGETERIAN,
+      ];
 }
 
 enum UserCookingSkill {
@@ -199,6 +221,19 @@ enum UserCookingSkill {
         return 'having an unknown drinking habit';
     }
   }
+
+  String? toSafeString() {
+    if (this == UserCookingSkill.UNKNOWN) {
+      return null;
+    }
+    return toString();
+  }
+
+  static List<UserCookingSkill> get safeValues => [
+        UserCookingSkill.NEWBIE,
+        UserCookingSkill.INTERMEDIATE,
+        UserCookingSkill.CHEF,
+      ];
 }
 
 enum UserCleanlinessHabit {
@@ -253,4 +288,18 @@ enum UserCleanlinessHabit {
         return 'having an unknown cleanliness habit';
     }
   }
+
+  String? toSafeString() {
+    if (this == UserCleanlinessHabit.UNKNOWN) {
+      return null;
+    }
+    return toString();
+  }
+
+  static List<UserCleanlinessHabit> get safeValues => [
+        UserCleanlinessHabit.MESSY,
+        UserCleanlinessHabit.DECENTLY_CLEAN,
+        UserCleanlinessHabit.VERY_CLEAN,
+        UserCleanlinessHabit.OBSESSIVELY_CLEAN,
+      ];
 }

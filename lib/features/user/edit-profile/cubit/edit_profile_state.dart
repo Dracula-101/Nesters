@@ -1,137 +1,30 @@
 import 'package:equatable/equatable.dart';
-import 'package:nesters/data/repository/utils/app_exception.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/utils/bloc_state.dart';
-
-class EditProfileSubmitState extends BlocState {
-  EditProfileSubmitState({
-    bool? isLoading,
-    AppException? exception,
-    bool? isSuccess,
-  }) : super(
-          isLoading: isLoading ?? false,
-          exception: exception,
-          isSuccess: isSuccess ?? false,
-        );
-
-  @override
-  EditProfileSubmitState copyWith(
-      {bool? isLoading, AppException? error, bool? isSuccess}) {
-    return EditProfileSubmitState(
-      isLoading: isLoading ?? this.isLoading,
-      exception: error ?? exception,
-      isSuccess: isSuccess ?? this.isSuccess,
-    );
-  }
-
-  @override
-  EditProfileSubmitState failure(AppException error) {
-    return EditProfileSubmitState(
-      isLoading: false,
-      exception: error,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  EditProfileSubmitState loading() {
-    return EditProfileSubmitState(
-      isLoading: true,
-      exception: null,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  EditProfileSubmitState resetLoading() {
-    return copyWith(isLoading: false);
-  }
-
-  @override
-  EditProfileSubmitState success() {
-    return EditProfileSubmitState(
-      isLoading: false,
-      exception: null,
-      isSuccess: true,
-    );
-  }
-}
-
-class EditProfileLoadingState extends BlocState {
-  EditProfileLoadingState({
-    bool? isLoading,
-    AppException? exception,
-    bool? isSuccess,
-  }) : super(
-          isLoading: isLoading ?? false,
-          exception: exception,
-          isSuccess: isSuccess ?? false,
-        );
-
-  @override
-  EditProfileLoadingState copyWith(
-      {bool? isLoading, AppException? error, bool? isSuccess}) {
-    return EditProfileLoadingState(
-      isLoading: isLoading ?? this.isLoading,
-      exception: error ?? exception,
-      isSuccess: isSuccess ?? this.isSuccess,
-    );
-  }
-
-  @override
-  EditProfileLoadingState failure(AppException error) {
-    return EditProfileLoadingState(
-      isLoading: false,
-      exception: error,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  EditProfileLoadingState loading() {
-    return EditProfileLoadingState(
-      isLoading: true,
-      exception: null,
-      isSuccess: false,
-    );
-  }
-
-  @override
-  EditProfileLoadingState resetLoading() {
-    return copyWith(isLoading: false);
-  }
-
-  @override
-  EditProfileLoadingState success() {
-    return EditProfileLoadingState(
-      isLoading: false,
-      exception: null,
-      isSuccess: true,
-    );
-  }
-}
 
 class EditProfileState extends Equatable {
   final UserEditProfile? userEditProfile;
-  final EditProfileLoadingState? loadingState;
-  final EditProfileSubmitState? submitState;
+  final BlocState loadingState;
+  final BlocState submitState;
   final String? imagePath;
 
   const EditProfileState({
     this.userEditProfile,
-    this.loadingState,
-    this.submitState,
+    this.loadingState = const BlocState(),
+    this.submitState = const BlocState(isLoading: false),
     this.imagePath,
   });
 
   EditProfileState copyWith({
     String? imagePath,
-    EditProfileLoadingState? loadingState,
-    EditProfileSubmitState? submitState,
+    BlocState? loadingState,
+    BlocState? submitState,
     String? profileImage,
-    String? selectedCollegeName,
+    String? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
@@ -144,7 +37,7 @@ class EditProfileState extends Equatable {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
-    String? intakePeriod,
+    UserIntake? intakePeriod,
     int? intakeYear,
   }) {
     return EditProfileState(
@@ -153,10 +46,9 @@ class EditProfileState extends Equatable {
       submitState: submitState ?? this.submitState,
       userEditProfile: UserEditProfile(
         profileImage: profileImage ?? userEditProfile?.profileImage,
-        selectedCollegeName:
-            selectedCollegeName ?? userEditProfile?.selectedCollegeName,
         selectedCourseName:
             selectedCourseName ?? userEditProfile?.selectedCourseName,
+        selectedCollege: selectedCollege ?? userEditProfile?.selectedCollege,
         personType: personType ?? userEditProfile?.personType,
         workExperience: workExperience ?? userEditProfile?.workExperience ?? 0,
         smokingHabit:
@@ -177,7 +69,7 @@ class EditProfileState extends Equatable {
         flatmatesGenderPrefs:
             flatmatesGenderPrefs ?? userEditProfile?.flatmatesGenderPrefs ?? '',
         roomType: roomType ?? userEditProfile?.roomType ?? UserRoomType.UNKNOWN,
-        intakePeriod: intakePeriod ?? userEditProfile?.intakePeriod ?? '',
+        intakePeriod: intakePeriod ?? userEditProfile?.intakePeriod,
         intakeYear:
             intakeYear ?? userEditProfile?.intakeYear ?? DateTime.now().year,
       ),
@@ -200,7 +92,7 @@ class EditProfileState extends Equatable {
 
 class UserEditProfile {
   final String? profileImage;
-  final String? selectedCollegeName;
+  final String? selectedCollege;
   final String? selectedCourseName;
   final PersonType? personType;
   final int workExperience;
@@ -213,12 +105,12 @@ class UserEditProfile {
   final String hobbies;
   final String flatmatesGenderPrefs;
   final UserRoomType roomType;
-  final String? intakePeriod;
+  final UserIntake? intakePeriod;
   final int? intakeYear;
 
   const UserEditProfile({
     required this.profileImage,
-    required this.selectedCollegeName,
+    required this.selectedCollege,
     required this.selectedCourseName,
     required this.personType,
     required this.workExperience,
@@ -237,7 +129,7 @@ class UserEditProfile {
 
   UserEditProfile copyWith({
     String? profileImage,
-    String? selectedCollegeName,
+    String? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
@@ -250,12 +142,12 @@ class UserEditProfile {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
-    String? intakePeriod,
+    UserIntake? intakePeriod,
     int? intakeYear,
   }) {
     return UserEditProfile(
       profileImage: profileImage ?? this.profileImage,
-      selectedCollegeName: selectedCollegeName ?? this.selectedCollegeName,
+      selectedCollege: selectedCollege ?? this.selectedCollege,
       selectedCourseName: selectedCourseName ?? this.selectedCourseName,
       personType: personType ?? this.personType,
       workExperience: workExperience ?? this.workExperience,
@@ -275,6 +167,27 @@ class UserEditProfile {
 
   @override
   String toString() {
-    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollegeName, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType, intakePeriod: $intakePeriod, intakeYear: $intakeYear)';
+    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollege, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType, intakePeriod: $intakePeriod, intakeYear: $intakeYear)';
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'profile_image': profileImage,
+      'college': selectedCollege,
+      'selected_course_name': selectedCourseName,
+      'person_type': personType?.toSafeString(),
+      'work_experience': workExperience,
+      'smoking_habit': smokingHabit.toSafeString(),
+      'drinking_habit': drinkingHabit.toSafeString(),
+      'food_habit': foodHabit.toSafeString(),
+      'cooking_skill': cookingSkill.toSafeString(),
+      'cleanliness_habit': cleanlinessHabit.toSafeString(),
+      'bio': bio,
+      'hobbies': hobbies,
+      'flatmates_gender_prefs': flatmatesGenderPrefs,
+      'room_type': roomType.toSafeString(),
+      'intake_period': intakePeriod?.toSafeString(),
+      'intake_year': intakeYear,
+    };
   }
 }

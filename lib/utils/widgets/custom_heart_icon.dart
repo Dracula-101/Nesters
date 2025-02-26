@@ -55,7 +55,7 @@ class _HeartIconState extends State<HeartIcon>
         onTap: () {
           debouncer.run(() {
             try {
-              widget.onPressed?.call(isFavourite);
+              widget.onPressed?.call(!isFavourite);
               _controller?.reset();
               if (!isFavourite) {
                 _controller?.forward();
@@ -66,7 +66,6 @@ class _HeartIconState extends State<HeartIcon>
                 isFavourite = !isFavourite;
               });
             } on AppException catch (e) {
-              // ignore: use_build_context_synchronously
               context.showErrorSnackBar(e.message);
             }
           });

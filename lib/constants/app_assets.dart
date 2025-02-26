@@ -25,6 +25,7 @@ class AppVectorImages {
   static const String bedFilled = '$_mainFolder/icons/bed_filled.svg';
   static const String storeOutlined = '$_mainFolder/icons/store_outlined.svg';
   static const String storeFilled = '$_mainFolder/icons/store_filled.svg';
+  static const String arrowTooltip = '$_mainFolder/arrow_tooltip.svg';
 }
 
 class AppRasterImages {

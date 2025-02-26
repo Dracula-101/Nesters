@@ -4,11 +4,15 @@ class ShowErrorWidget extends StatelessWidget {
   final String? message;
   final Exception? error;
   final double? height;
+  final VoidCallback? onRetry;
+  final String? retryText;
   const ShowErrorWidget({
     super.key,
     this.error,
     this.message,
     this.height,
+    this.onRetry,
+    this.retryText,
   });
 
   @override
@@ -32,8 +36,6 @@ class ShowErrorWidget extends StatelessWidget {
                     ? "Error"
                     : (error is NoNetworkError)
                         ? "Network Issue"
-                        : (error is DatabaseError)
-                            ? 'Server Error'
                             : (error is SocketException)
                                 ? 'Network Issue'
                                 : (error is TimeoutException)
@@ -63,6 +65,17 @@ class ShowErrorWidget extends StatelessWidget {
                 style: AppTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 10),
+              if (onRetry != null)
+                ElevatedButton(
+                  onPressed: onRetry,
+                  child: Text(
+                    retryText ?? 'Retry',
+                    style: AppTheme.bodyMedium.copyWith(
+                      color: AppTheme.onPrimary,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

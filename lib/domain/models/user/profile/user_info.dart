@@ -1,11 +1,12 @@
 import 'package:equatable/equatable.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/location/location_city.dart';
 import 'package:nesters/domain/models/location/location_country.dart';
 import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/user.dart';
@@ -19,7 +20,7 @@ class UserInfo extends Equatable {
   final LocationCity? city;
   final LocationState? state;
   final LocationCountry? country;
-  final String? selectedCollegeName; //changeable
+  final String? userCollege;
   final String? selectedCourseName; //changeable
   final String? gender;
   final String? undergradCollegeName;
@@ -34,11 +35,13 @@ class UserInfo extends Equatable {
   final UserCookingSkill cookingSkill; //changeable
   final UserCleanlinessHabit cleanlinessHabit; //changeable
   final String bio; //changeable
-  final String hobbies; //changeable
-  final String flatmatesGenderPrefs; //changeable
+  final String? hobbies; //changeable
+  final String? flatmatesGenderPrefs; //changeable
   final UserRoomType roomType; //changeable
-  final String? intakePeriod;
+  final UserIntake? intakePeriod;
   final int? intakeYear;
+  final bool? hasRoommateFound;
+  final bool? profileCompleted;
 
   const UserInfo({
     required this.id,
@@ -47,7 +50,7 @@ class UserInfo extends Equatable {
     required this.city,
     required this.state,
     required this.country,
-    required this.selectedCollegeName,
+    required this.userCollege,
     required this.selectedCourseName,
     required this.gender,
     required this.undergradCollegeName,
@@ -67,7 +70,9 @@ class UserInfo extends Equatable {
     required this.roomType,
     required this.intakePeriod,
     required this.intakeYear,
-    required this.email, // new field
+    required this.email,
+    required this.hasRoommateFound,
+    this.profileCompleted = false,
   });
 
   @override
@@ -77,7 +82,7 @@ class UserInfo extends Equatable {
         profileImage,
         city,
         state,
-        selectedCollegeName,
+        userCollege,
         selectedCourseName,
         gender,
         undergradCollegeName,
@@ -97,39 +102,10 @@ class UserInfo extends Equatable {
         roomType,
         intakePeriod,
         intakeYear,
-        email, // new field
+        email,
+        hasRoommateFound,
+        profileCompleted,
       ];
-
-  List<FieldValue> toFieldValues() {
-    return [
-      FieldValue(key: 'id', value: id),
-      FieldValue(key: 'full_name', value: fullName),
-      FieldValue(key: 'profile_image', value: profileImage),
-      FieldValue(key: 'city', value: city),
-      FieldValue(key: 'state', value: state),
-      FieldValue(key: 'selected_course_name', value: selectedCourseName),
-      FieldValue(key: 'selected_college_name', value: selectedCollegeName),
-      FieldValue(key: 'gender', value: gender),
-      FieldValue(key: 'undergrad_college_name', value: undergradCollegeName),
-      FieldValue(key: 'birth_date', value: birthDate),
-      FieldValue(key: 'person_type', value: personType),
-      FieldValue(key: 'primary_lang', value: primaryLang),
-      FieldValue(key: 'other_lang', value: otherLang),
-      FieldValue(key: 'work_experience', value: workExperience),
-      FieldValue(key: 'smoking_habit', value: smokingHabit),
-      FieldValue(key: 'drinking_habit', value: drinkingHabit),
-      FieldValue(key: 'food_habit', value: foodHabit),
-      FieldValue(key: 'cooking_skill', value: cookingSkill),
-      FieldValue(key: 'cleanliness_habit', value: cleanlinessHabit),
-      FieldValue(key: 'bio', value: bio),
-      FieldValue(key: 'hobbies', value: hobbies),
-      FieldValue(key: 'flatmates_gender_prefs', value: flatmatesGenderPrefs),
-      FieldValue(key: 'room_type', value: roomType),
-      FieldValue(key: 'intake_period', value: intakePeriod),
-      FieldValue(key: 'intake_year', value: intakeYear),
-      FieldValue(key: 'email', value: email), // new field
-    ];
-  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -139,7 +115,7 @@ class UserInfo extends Equatable {
       'city': city.toString(),
       'state': state.toString(),
       'selected_course_name': selectedCourseName,
-      'selected_college_name': selectedCollegeName,
+      'college': userCollege,
       'gender': gender,
       'undergrad_college_name': undergradCollegeName,
       'birth_date': birthDate?.toIso8601String(),
@@ -158,64 +134,66 @@ class UserInfo extends Equatable {
       'room_type': roomType.toString(),
       'intake_period': intakePeriod,
       'intake_year': intakeYear,
-      'email': email, // new field
+      'email': email,
+      'has_roommate_found': hasRoommateFound,
+      'user_data_completed': profileCompleted,
     };
   }
 
   factory UserInfo.fromJson(Map<String, dynamic> json) {
-    try {
-      return UserInfo(
-        id: json['id'] ?? '',
-        fullName: json['full_name'] ?? '',
-        profileImage: json['profile_image'] ?? '',
-        city: LocationCity(name: json['city'] ?? ''),
-        state: LocationState(name: json['state'] ?? ''),
-        country: LocationCountry(name: json['country'] ?? ''),
-        selectedCourseName: json['selected_course_name'] ?? '',
-        selectedCollegeName: json['selected_college_name'] ?? '',
-        gender: json['gender'] ?? '',
-        undergradCollegeName: json['undergrad_college_name'] ?? '',
-        birthDate: json['birth_date'] != null
-            ? DateTime.tryParse(json['birth_date'])
-            : null,
-        personType: json['person_type'] != null
-            ? PersonType.fromString(json['person_type'])
-            : null,
-        primaryLang: json['primary_lang'] != null
-            ? Language(name: json['primary_lang'])
-            : null,
-        otherLang: json['other_lang'] != null
-            ? Language(name: json['other_lang'])
-            : null,
-        workExperience: json['work_experience'] ?? 0,
-        smokingHabit: json['smoking_habit'] != null
-            ? UserHabit.fromString(json['smoking_habit'])
-            : UserHabit.UNKNOWN,
-        drinkingHabit: json['drinking_habit'] != null
-            ? UserHabit.fromString(json['drinking_habit'])
-            : UserHabit.UNKNOWN,
-        foodHabit: json['food_habit'] != null
-            ? UserFoodHabit.fromString(json['food_habit'])
-            : UserFoodHabit.UNKNOWN,
-        cookingSkill: json['cooking_skill'] != null
-            ? UserCookingSkill.fromString(json['cooking_skill'])
-            : UserCookingSkill.UNKNOWN,
-        cleanlinessHabit: json['cleanliness_habit'] != null
-            ? UserCleanlinessHabit.fromString(json['cleanliness_habit'])
-            : UserCleanlinessHabit.UNKNOWN,
-        bio: json['bio'] ?? '',
-        hobbies: json['hobbies'] ?? '',
-        flatmatesGenderPrefs: json['flatmates_gender_prefs'] ?? '',
-        roomType: json['room_type'] != null
-            ? UserRoomType.fromString(json['room_type'])
-            : UserRoomType.UNKNOWN,
-        intakePeriod: json['intake_period'] ?? '',
-        intakeYear: json['intake_year'] ?? DateTime.now().year,
-        email: json['email'] ?? '', // new field
-      );
-    } on Exception catch (e) {
-      throw Exception('Error parsing user profile: $e');
-    }
+    return UserInfo(
+      id: json['id'] ?? '',
+      fullName: json['full_name'] ?? '',
+      profileImage: json['profile_image'] ?? '',
+      city: LocationCity(name: json['city'] ?? ''),
+      state: LocationState(name: json['state'] ?? ''),
+      country: LocationCountry(name: json['country'] ?? ''),
+      selectedCourseName: json['selected_course_name'] ?? '',
+      userCollege: json['college'] ?? '',
+      gender: json['gender'] ?? '',
+      undergradCollegeName: json['undergrad_college_name'] ?? '',
+      birthDate: json['birth_date'] != null
+          ? DateTime.tryParse(json['birth_date'])
+          : null,
+      personType: json['person_type'] != null
+          ? PersonType.fromString(json['person_type'])
+          : null,
+      primaryLang: json['primary_lang'] != null
+          ? Language(name: json['primary_lang'])
+          : null,
+      otherLang: json['other_lang'] != null
+          ? Language(name: json['other_lang'])
+          : null,
+      workExperience: json['work_experience'] ?? 0,
+      smokingHabit: json['smoking_habit'] != null
+          ? UserHabit.fromString(json['smoking_habit'])
+          : UserHabit.UNKNOWN,
+      drinkingHabit: json['drinking_habit'] != null
+          ? UserHabit.fromString(json['drinking_habit'])
+          : UserHabit.UNKNOWN,
+      foodHabit: json['food_habit'] != null
+          ? UserFoodHabit.fromString(json['food_habit'])
+          : UserFoodHabit.UNKNOWN,
+      cookingSkill: json['cooking_skill'] != null
+          ? UserCookingSkill.fromString(json['cooking_skill'])
+          : UserCookingSkill.UNKNOWN,
+      cleanlinessHabit: json['cleanliness_habit'] != null
+          ? UserCleanlinessHabit.fromString(json['cleanliness_habit'])
+          : UserCleanlinessHabit.UNKNOWN,
+      bio: json['bio'] ?? '',
+      hobbies: json['hobbies'] ?? '',
+      flatmatesGenderPrefs: json['flatmates_gender_prefs'] ?? '',
+      roomType: json['room_type'] != null
+          ? UserRoomType.fromString(json['room_type'])
+          : UserRoomType.UNKNOWN,
+      intakePeriod: json['intake_period'] != null
+          ? UserIntake.fromString(json['intake_period'])
+          : null,
+      intakeYear: json['intake_year'] ?? DateTime.now().year,
+      email: json['email'] ?? '',
+      hasRoommateFound: json['has_roommate_found'] ?? false,
+      profileCompleted: json['user_data_completed'] ?? false,
+    );
   }
 
   UserQuickProfile toUserQuickProfile() {
@@ -225,12 +203,13 @@ class UserInfo extends Equatable {
       city: city,
       state: state,
       country: country,
-      selectedCollegeName: selectedCollegeName,
+      userCollege: userCollege,
       selectedCourseName: selectedCourseName,
       profileImage: profileImage,
       workExperience: workExperience,
       intakePeriod: intakePeriod,
       intakeYear: intakeYear,
+      hasRoommateFound: hasRoommateFound,
     );
   }
 
@@ -268,7 +247,7 @@ class UserInfo extends Equatable {
     LocationCity? city,
     LocationState? state,
     LocationCountry? country,
-    String? selectedCollegeName,
+    String? userCollege,
     String? selectedCourseName,
     String? gender,
     String? undergradCollegeName,
@@ -286,9 +265,11 @@ class UserInfo extends Equatable {
     String? hobbies,
     String? flatmatesGenderPrefs,
     UserRoomType? roomType,
-    String? intakePeriod,
+    UserIntake? intakePeriod,
     int? intakeYear,
     String? email,
+    bool? hasRoommateFound,
+    bool? profileCompleted,
   }) {
     return UserInfo(
       id: id ?? this.id,
@@ -297,10 +278,9 @@ class UserInfo extends Equatable {
       city: city ?? this.city,
       state: state ?? this.state,
       country: country ?? this.country,
-      selectedCollegeName: selectedCollegeName ?? this.selectedCollegeName,
+      userCollege: userCollege ?? this.userCollege,
       selectedCourseName: selectedCourseName ?? this.selectedCourseName,
       gender: gender ?? this.gender,
-      undergradCollegeName: undergradCollegeName ?? this.undergradCollegeName,
       birthDate: birthDate ?? this.birthDate,
       personType: personType ?? this.personType,
       primaryLang: primaryLang ?? this.primaryLang,
@@ -318,6 +298,26 @@ class UserInfo extends Equatable {
       intakePeriod: intakePeriod ?? this.intakePeriod,
       intakeYear: intakeYear ?? this.intakeYear,
       email: email ?? this.email,
+      hasRoommateFound: hasRoommateFound ?? this.hasRoommateFound,
+      undergradCollegeName: undergradCollegeName ?? this.undergradCollegeName,
+      profileCompleted: profileCompleted ?? this.profileCompleted,
     );
+  }
+
+  bool isUserProfileComplete() {
+    List<String?> requiredFields = [
+      // personType?.toSafeString(),
+      primaryLang?.name,
+      smokingHabit.toSafeString(),
+      drinkingHabit.toSafeString(),
+      foodHabit.toSafeString(),
+      cookingSkill.toSafeString(),
+      cleanlinessHabit.toSafeString(),
+      bio,
+      roomType.toSafeString(),
+      flatmatesGenderPrefs,
+    ];
+    return requiredFields
+        .every((element) => (element != null) && element.isNotEmpty);
   }
 }

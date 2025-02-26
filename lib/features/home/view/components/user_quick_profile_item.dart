@@ -49,7 +49,7 @@ class UserQuickProfileItem extends StatelessWidget {
 
                   maxLines: 2, // Set maximum lines as per your requirement
                 ),
-                Text('@ ${userQuickProfile.selectedCollegeName}'),
+                Text('@ ${userQuickProfile.userCollege}'),
                 Text(
                   '${userQuickProfile.city}, ${userQuickProfile.state}',
                   style: AppTheme.bodySmallLightVariant,

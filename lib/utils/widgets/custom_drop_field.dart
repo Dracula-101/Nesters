@@ -334,8 +334,8 @@ class CustomSearchableDropDownFieldState<T>
 class CustomBottomSheetDropdownField<T> extends StatefulWidget {
   final List<T> items;
   final TextEditingController controller;
-  final VoidCallback? onEditingComplete;
-  final Function(T?) validator;
+  final void Function(dynamic)? onEditingComplete;
+  final String? Function(dynamic) validator;
   final String? hintText;
   final String? bottomSheetTitle;
   final Widget? prefixIcon;
@@ -363,6 +363,20 @@ class CustomBottomSheetDropdownField<T> extends StatefulWidget {
 class _CustomBottomSheetDropdownFieldState<T>
     extends State<CustomBottomSheetDropdownField> {
   T? _selectedItem;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.controller.text.isNotEmpty) {
+      for (var item in widget.items) {
+        if (widget.controller.text == item.toString()) {
+          setState(() {
+            _selectedItem = item;
+          });
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -432,7 +446,7 @@ class _CustomBottomSheetDropdownFieldState<T>
           });
           if (widget.onEditingComplete != null && _selectedItem == null) {
             GetIt.I<AppLogger>().debug('Editing complete called');
-            widget.onEditingComplete!();
+            widget.onEditingComplete!(_selectedItem);
           }
         },
       ),
@@ -541,7 +555,7 @@ class _CustomDynamicSearchableDropDropFieldState
   Stream<List<dynamic>>? _searchItems;
   List<dynamic>? _items = [];
   List<dynamic>? _filteredItems = [];
-  GlobalKey _rebuildKey = GlobalKey();
+  final GlobalKey _rebuildKey = GlobalKey();
 
   @override
   void initState() {
@@ -660,16 +674,17 @@ class _CustomDynamicSearchableDropDropFieldState
                 color: Colors.transparent,
                 child: AlertDialog.adaptive(
                   clipBehavior: Clip.none,
+                  actionsAlignment: MainAxisAlignment.center,
                   actions: [
-                    if (Platform.isIOS)
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('Close'),
-                      ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text('Close'),
+                    ),
                   ],
                   actionsPadding: const EdgeInsets.all(0),
+                  contentPadding: const EdgeInsets.all(0),
                   content: SingleChildScrollView(
                     child: Column(
                       children: [
@@ -678,6 +693,10 @@ class _CustomDynamicSearchableDropDropFieldState
                             color: widget.backgroundColor ??
                                 AppTheme.greyShades.shade200,
                             borderRadius: BorderRadius.circular(10),
+                          ),
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 12.0,
                           ),
                           child: TextField(
                             autofocus: true,
@@ -721,9 +740,8 @@ class _CustomDynamicSearchableDropDropFieldState
                             },
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const Divider(),
                         SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.5,
                           width: MediaQuery.of(context).size.width * 0.8,
                           child: widget.asyncSearchItems == null
                               ? FutureBuilder(
@@ -736,8 +754,12 @@ class _CustomDynamicSearchableDropDropFieldState
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
+                                      return SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        child: const Center(
+                                            child: CircularProgressIndicator()),
                                       );
                                     } else if (snapshot.hasError) {
                                       return ShowErrorWidget(
@@ -749,6 +771,8 @@ class _CustomDynamicSearchableDropDropFieldState
                                           return ListView.builder(
                                             shrinkWrap: true, //MUST TO ADDED
                                             itemCount: _filteredItems?.length,
+                                            padding: const EdgeInsets.only(
+                                                bottom: 68),
                                             itemBuilder: (context, index) {
                                               return widget.itemBuilder != null
                                                   ? GestureDetector(
@@ -817,8 +841,12 @@ class _CustomDynamicSearchableDropDropFieldState
                                   builder: (context, snapshot) {
                                     if (snapshot.connectionState ==
                                         ConnectionState.waiting) {
-                                      return const Center(
-                                        child: CircularProgressIndicator(),
+                                      return SizedBox(
+                                        height:
+                                            MediaQuery.of(context).size.height *
+                                                0.5,
+                                        child: const Center(
+                                            child: CircularProgressIndicator()),
                                       );
                                     } else if (snapshot.hasError) {
                                       return ShowErrorWidget(
@@ -828,6 +856,8 @@ class _CustomDynamicSearchableDropDropFieldState
                                       return SizedBox(
                                         child: ListView.builder(
                                           shrinkWrap: true, //MUST TO ADDED
+                                          padding:
+                                              const EdgeInsets.only(bottom: 68),
                                           itemCount: snapshot.data?.length,
                                           itemBuilder: (context, index) {
                                             return widget.itemBuilder != null
@@ -855,9 +885,12 @@ class _CustomDynamicSearchableDropDropFieldState
                                                     contentPadding:
                                                         const EdgeInsets.all(0),
                                                     title: Text(
-                                                      widget.itemAsString!(
-                                                          snapshot
-                                                              .data?[index]),
+                                                      widget.itemAsString?.call(
+                                                              snapshot.data?[
+                                                                  index]) ??
+                                                          snapshot.data?[index]
+                                                              .toString() ??
+                                                          '',
                                                     ),
                                                     onTap: () {
                                                       setState(() {
@@ -881,11 +914,12 @@ class _CustomDynamicSearchableDropDropFieldState
                                     } else {
                                       return widget.emptyBuilder != null
                                           ? widget.emptyBuilder!(context)
-                                          : const SizedBox();
+                                          : const Center();
                                     }
                                   },
                                 ),
                         ),
+                        const Divider(),
                       ],
                     ),
                   ),

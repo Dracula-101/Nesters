@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:google_places_sdk/google_places_sdk.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/database/local/error/local_storage_error.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/data/repository/database/remote/error/database_error.dart';
+import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/data/repository/user/error/user_error.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
@@ -17,46 +17,49 @@ import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/location/city_info.dart';
 import 'package:nesters/domain/models/location/city_info_response.dart';
 import 'package:nesters/domain/models/language.dart';
-import 'package:nesters/domain/models/location/location_city.dart';
-import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/domain/models/user/address.dart';
 import 'package:nesters/domain/models/user/form/user_advance_profile.dart';
 import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
+import 'package:nesters/domain/models/user/pref/user_intake.dart';
 import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_info.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
+import 'package:nesters/features/auth/bloc/auth_error.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/features/user/edit-profile/cubit/edit_profile_state.dart';
+import 'package:nesters/features/user/profile-forms/forms/cubit/form_cubit.dart';
 import 'package:nesters/utils/logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UserRepositoryImpl implements UserRepository {
   UserRepositoryImpl({
     required AuthRepository authRepository,
-    required DatabaseRepository databaseRepository,
     required LocalStorageRepository storageRepository,
     required AppLogger logger,
-    // required FirestoreRepository firestoreRepository,
+    required GooglePlaces placesRepository,
   })  : _authRepository = authRepository,
-        _databaseRepository = databaseRepository,
         _storageRepository = storageRepository,
-        _logger = logger;
+        _logger = logger,
+        _placesRepository = placesRepository;
 
   final AuthRepository _authRepository;
-  final DatabaseRepository _databaseRepository;
   final LocalStorageRepository _storageRepository;
+  final GooglePlaces _placesRepository;
   final AppLogger _logger;
   final SupabaseStorageClient _storageClient = Supabase.instance.client.storage;
+  final SupabaseClient _supabase = Supabase.instance.client;
 
-  String universityCollection = "universities";
-  String masterDegreeCollection = "masters";
-  String indianCitiesCollection = "indian_cities";
-  String indianStatesCollection = "indian_states";
-  String userDetailCollection = "user_details";
-  String indianLanguagesCollection = "indian_languages";
+  final String constSchema = "const";
+  final String universityTable = 'universities';
+  final String masterDegreeTable = "degrees";
+  final String marketplaceTable = "marketplace";
+  final String languageTable = "languages";
+
+  final String userDetailTable = "user_details";
 
   @override
   Future<void> setOnBoardingComplete() async {
@@ -73,8 +76,9 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   bool checkUserTutorialComplete() {
-    return _storageRepository.getBool(LocalStorageKeys.userTutorialComplete) ??
-        false;
+    return _authRepository.currentUserInfo?.profileCompleted == true ||
+        (_storageRepository.getBool(LocalStorageKeys.userTutorialComplete) ??
+            false);
   }
 
   @override
@@ -84,98 +88,199 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
+  bool checkSettingInfoComplete() {
+    final currentTimesShown =
+        _storageRepository.getInt(LocalStorageKeys.settingInfoStatus) ?? 0;
+    return currentTimesShown >= 3;
+  }
+
+  @override
+  Future<void> updateSettingInfoStatus() {
+    final currentTimesShown =
+        _storageRepository.getInt(LocalStorageKeys.settingInfoStatus) ?? 0;
+    return _storageRepository.saveInt(
+        LocalStorageKeys.settingInfoStatus, currentTimesShown + 1);
+  }
+
+  @override
   Future<List<MarketplaceModel>> getMarketplaceData() async {
-    return await _databaseRepository.getData(
-      "marketplace",
-      orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
-    ).then((event) => event.map((e) => MarketplaceModel.fromJson(e)).toList());
+    try {
+      return _supabase
+          .from(marketplaceTable)
+          .select()
+          .order('created_at', ascending: false)
+          .then((event) =>
+              event.map((e) => MarketplaceModel.fromJson(e)).toList());
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting marketplace data');
+    }
   }
 
   @override
-  Future<List<University?>> getAllUniversities() async {
-    return await _databaseRepository.getData(
-      "universities",
-      orderBy: [OrderByKey(key: 'title', isDescending: false)],
-    ).then((event) => event.map((e) => University.fromJson(e)).toList());
+  Future<List<University>> getAllUniversities() async {
+    try {
+      return _supabase
+          .schema(constSchema)
+          .from(universityTable)
+          .select()
+          .order('title', ascending: true)
+          .then((event) =>
+              event.map((e) => University.fromJson(e['id'], json: e)).toList());
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting universities');
+    }
   }
 
   @override
-  Future<List<Degree?>> getAllDegrees() async {
-    return await _databaseRepository
-        .searchDataFromFuture(
-          masterDegreeCollection,
-          FieldValue(key: 'title', value: ''),
-        )
-        .then((event) => event.map((e) => Degree.fromJson(e)).toList());
+  Future<List<Degree>> getAllDegrees() async {
+    try {
+      return _supabase
+          .schema(constSchema)
+          .from(masterDegreeTable)
+          .select()
+          .order('title', ascending: true)
+          .then((event) => event.map((e) => Degree.fromJson(e)).toList());
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting degrees');
+    }
   }
 
   @override
   Future<List<CityInfo>> searchCities({required String searchQuery}) async {
-    String baseUrl =
-        "https://api.thecompaniesapi.com/v2/locations/cities?search=$searchQuery";
-    http.Response response = await http.get(Uri.parse(baseUrl));
-    CityInfoResponse cityInfoResponse =
-        CityInfoResponse.fromJson(jsonDecode(response.body));
-    return CityInfo.fromResponse(cityInfoResponse);
+    try {
+      String baseUrl =
+          "https://api.thecompaniesapi.com/v2/locations/cities?search=$searchQuery";
+      http.Response response = await http.get(Uri.parse(baseUrl));
+      if (response.statusCode != 200) {
+        throw GetUserInfoError(message: 'Error in getting cities');
+      }
+      CityInfoResponse cityInfoResponse =
+          CityInfoResponse.fromJson(jsonDecode(response.body));
+      return CityInfo.fromResponse(cityInfoResponse);
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting cities');
+    }
   }
 
   @override
   Future<bool?> checkUserCreated(String userId) async {
     try {
-      return await _databaseRepository.checkExistsData(
-        userDetailCollection,
-        [
-          FieldValue(
-            key: 'id',
-            value: userId,
-          ),
-          FieldValue(
-            key: 'user_deleted',
-            value: false,
-          ),
-        ],
-      );
-    } catch (e) {
+      final result = await _supabase
+          .from(userDetailTable)
+          .select()
+          .eq('id', userId)
+          .limit(1);
+      if (result.isEmpty) return false;
+      return true;
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
       return null;
     }
   }
 
   @override
   Future<List<University>> getUniversities(String? searchString) async {
-    return await _databaseRepository
-        .searchDataFromFuture(
-          universityCollection,
-          FieldValue(key: 'title', value: searchString ?? ''),
-        )
-        .then((event) => event.map((e) => University.fromJson(e)).toList());
+    try {
+      return _supabase.schema(constSchema).from(universityTable).select().then(
+          (event) =>
+              event.map((e) => University.fromJson(e['id'], json: e)).toList());
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting universities');
+    }
+  }
+
+  @override
+  Future<List<Language>> getLanguage(String? searchQuery) async {
+    try {
+      return _supabase
+          .schema(constSchema)
+          .from(languageTable)
+          .select()
+          .then((event) => event.map((e) => Language.fromJson(e)).toList());
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting languages');
+    }
+  }
+
+  @override
+  Future<List<Language>> getLanguages() async {
+    try {
+      return _supabase
+          .schema(constSchema)
+          .from(languageTable)
+          .select()
+          .then((event) => event.map((e) => Language.fromJson(e)).toList());
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      throw GetUserInfoError(message: 'Error in getting languages');
+    }
+  }
+
+  @override
+  Future<List<SearchAddress>> searchAddress(String? searchQuery) async {
+    try {
+      final places =
+          await _placesRepository.getAutoCompletePredictions(searchQuery!);
+      return places.map((e) => SearchAddress.fromPrediction(e)).toList();
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting addresses');
+    }
   }
 
   @override
   Future<List<Degree>> getMastersDegree(String? searchString) async {
-    return await _databaseRepository
-        .searchDataFromFuture(
-          masterDegreeCollection,
-          FieldValue(key: 'title', value: searchString ?? ''),
-        )
-        .then((event) => event.map((e) => Degree.fromJson(e)).toList());
+    try {
+      return _supabase
+          .schema(constSchema)
+          .from(masterDegreeTable)
+          .select()
+          .then((event) => event.map((e) => Degree.fromJson(e)).toList());
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting degrees');
+    }
   }
 
   @override
   Future<bool> setBasicUserProfileData(UserBasicProfile userProfile) async {
     try {
-      bool isUserDeleted = userProfile.email == null
-          ? false
-          : await hasUserDeletedAccount(
-              email: userProfile.email!,
-            );
-      await _databaseRepository.setData(
-        userDetailCollection,
-        SetData(
-          fields: userProfile.toFieldValues(
-            includeUserDeleteUpdate: isUserDeleted,
-          ),
-        ),
-      );
+      await _supabase.from(userDetailTable).upsert({
+        ...userProfile.toJson(),
+        'user_deleted': false,
+      });
       await _storageRepository.saveBool(
         LocalStorageKeys.userProfileCreated,
         true,
@@ -185,10 +290,6 @@ class UserRepositoryImpl implements UserRepository {
       throw NoNetworkError();
     } on LocalStorageError {
       throw UserBasicInfoError(message: 'Error setting user profile');
-    } on DatabaseError {
-      throw UserBasicInfoError(
-        message: 'Error setting values in DB',
-      );
     } on AppException {
       rethrow;
     } catch (e) {
@@ -197,28 +298,18 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<bool> hasUserDeletedAccount({required String email}) {
+  Future<bool> hasUserDeletedAccount({required String email}) async {
     try {
-      return _databaseRepository.checkExistsData(
-        userDetailCollection,
-        [
-          FieldValue(
-            key: 'email',
-            value: email,
-          ),
-          FieldValue(
-            key: 'user_deleted',
-            value: true,
-          ),
-        ],
-      );
+      final result = _supabase
+          .from(userDetailTable)
+          .select()
+          .eq('email', email)
+          .eq('user_deleted', true)
+          .limit(1);
+      return result.then((value) => value.isNotEmpty);
     } on SocketException {
       throw NoNetworkError();
-    } on DatabaseError {
-      throw UserBasicInfoError(
-        message: 'Error checking user deleted status',
-      );
-    } catch (e) {
+    } on Exception {
       throw UserBasicInfoError(
         message: 'Error checking user deleted status',
       );
@@ -226,51 +317,18 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Stream<List<LocationCity>> getCites(String searchQuery) {
+  Future<void> updateRoommateFoundStatus(
+      {required String id, required bool status}) async {
     try {
-      return _databaseRepository
-          .searchDataFromFuture(
-            indianCitiesCollection,
-            FieldValue(key: 'name', value: searchQuery),
-          )
-          .asStream()
-          .map((event) => event.map((e) => LocationCity.fromJson(e)).toList());
-    } catch (e) {
-      _logger.error('Error in getting cities: $e');
-      return Stream.value([]);
-    }
-  }
-
-  @override
-  Future<List<LocationState>> getIndianStates(String? searchQuery) async {
-    try {
-      return await _databaseRepository
-          .searchDataFromFuture(
-            indianStatesCollection,
-            FieldValue(key: 'name', value: searchQuery ?? ''),
-          )
-          .then(
-              (event) => event.map((e) => LocationState.fromJson(e)).toList());
-    } on AppException {
-      rethrow;
-    } catch (e) {
-      throw GetUserInfoError(message: 'Error in getting states');
-    }
-  }
-
-  @override
-  Future<List<Language>> getLanguage(String? searchQuery) async {
-    try {
-      return await _databaseRepository
-          .searchDataFromFuture(
-            indianLanguagesCollection,
-            FieldValue(key: 'name', value: searchQuery ?? ''),
-          )
-          .then((event) => event.map((e) => Language.fromJson(e)).toList());
-    } on AppException {
-      rethrow;
-    } catch (e) {
-      throw GetUserInfoError(message: 'Error in getting languages');
+      return _supabase.from(userDetailTable).update({
+        'has_roommate_found': status,
+      }).eq('id', id);
+    } on SocketException {
+      throw NoNetworkError();
+    } on Exception {
+      throw UserBasicInfoError(
+        message: 'Error updating roommate found status',
+      );
     }
   }
 
@@ -278,40 +336,21 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<UserQuickProfile>> getUserQuickProfiles(
       int offset, int limit, String userId) async {
     try {
-      return await _databaseRepository.getDataWithPagination(
-        userDetailCollection,
-        offset,
-        limit,
-        orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
-        columns: [
-          DbKey(key: 'id'),
-          DbKey(key: 'full_name'),
-          DbKey(key: 'profile_image'),
-          DbKey(key: 'selected_college_name'),
-          DbKey(key: 'selected_course_name'),
-          DbKey(key: 'city'),
-          DbKey(key: 'state'),
-          DbKey(key: 'work_experience'),
-          DbKey(key: 'intake_period'),
-          DbKey(key: 'intake_year'),
-        ],
-        whereNotFields: [
-          FieldValue(
-            key: 'id',
-            value: userId,
-          ),
-          FieldValue(
-            key: 'user_deleted',
-            value: true,
-          ),
-        ],
-      ).then(
-          (event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
+      return _supabase
+          .from(userDetailTable)
+          .select()
+          .neq('id', userId)
+          .neq('user_deleted', true)
+          .neq('has_roommate_found', true)
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit)
+          .then((e) => e.map((e) => UserQuickProfile.fromJson(e)).toList());
     } on SocketException {
       throw NoNetworkError();
     } on AppException {
       rethrow;
     } catch (e) {
+      log(e.toString());
       throw GetUserInfoError(message: 'Error in getting user profiles');
     }
   }
@@ -320,69 +359,32 @@ class UserRepositoryImpl implements UserRepository {
   Future<List<UserQuickProfile>> getSingleFilteredQuickProfiles(
       SingleUserFilter filter) async {
     try {
-      QueryData? query;
+      PostgrestFilterBuilder queryBuilder =
+          _supabase.from(userDetailTable).select();
       if (filter is UniversityFilter) {
-        query = QueryData(
-          fieldName: 'selected_college_name',
-          equalTo: FieldValue(
-            key: 'selected_college_name',
-            value: filter.university,
-          ),
-        );
+        queryBuilder = queryBuilder.eq('college', filter.university.id);
       } else if (filter is BranchFilter) {
-        query = QueryData(
-          fieldName: 'selected_course_name',
-          equalTo: FieldValue(
-            key: 'selected_course_name',
-            value: filter.branch,
-          ),
-        );
+        queryBuilder = queryBuilder.eq('selected_course_name', filter.branch);
       } else if (filter is GenderFilter) {
-        query = QueryData(
-          fieldName: 'gender',
-          equalTo: FieldValue(
-            key: 'gender',
-            value: filter.gender,
-          ),
-        );
-      }
-      if (query == null) {
-        throw Exception('Invalid filter type');
+        queryBuilder = queryBuilder.eq('gender', filter.gender);
       }
       final userId = _authRepository.currentUser?.id;
-      return await _databaseRepository.getFilteredData(
-        userDetailCollection,
-        query,
-        orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
-        columns: [
-          DbKey(key: 'id'),
-          DbKey(key: 'full_name'),
-          DbKey(key: 'profile_image'),
-          DbKey(key: 'selected_college_name'),
-          DbKey(key: 'selected_course_name'),
-          DbKey(key: 'city'),
-          DbKey(key: 'state'),
-          DbKey(key: 'work_experience'),
-          DbKey(key: 'intake_period'),
-          DbKey(key: 'intake_year'),
-        ],
-        whereNotFields: [
-          FieldValue(
-            key: 'id',
-            value: userId,
-          ),
-          FieldValue(
-            key: 'user_deleted',
-            value: true,
-          ),
-        ],
-      ).then(
-          (event) => event.map((e) => UserQuickProfile.fromJson(e!)).toList());
+      if (userId == null) throw UserNotAuthError();
+      final filterResults = await queryBuilder
+          .neq('id', userId)
+          .neq('user_deleted', true)
+          .neq('has_roommate_found', true)
+          .order('created_at', ascending: true)
+          .select();
+      return filterResults.isNotEmpty
+          ? filterResults.map((e) => UserQuickProfile.fromJson(e)).toList()
+          : [];
     } on SocketException {
       throw NoNetworkError();
     } on AppException {
       rethrow;
     } catch (e) {
+      log(e.toString());
       throw GetUserInfoError(message: 'Error in getting user profiles');
     }
   }
@@ -392,271 +394,145 @@ class UserRepositoryImpl implements UserRepository {
     UserFilter filters,
   ) async {
     try {
-      List<QueryData> query = [];
-      if (filters.universityName != null && filters.universityName != "") {
-        query.add(
-          QueryData(
-            fieldName: 'selected_college_name',
-            equalTo: FieldValue(
-              key: 'selected_college_name',
-              value: filters.universityName,
-            ),
-          ),
-        );
+      PostgrestFilterBuilder queryBuilder =
+          _supabase.from(userDetailTable).select();
+      if (filters.university != null && filters.university?.id != null) {
+        queryBuilder = queryBuilder.eq('college', filters.university!.id);
       }
       if (filters.branchName != null && filters.branchName != "") {
-        query.add(
-          QueryData(
-            fieldName: 'selected_course_name',
-            equalTo: FieldValue(
-              key: 'selected_course_name',
-              value: filters.branchName,
-            ),
-          ),
-        );
+        queryBuilder =
+            queryBuilder.eq('selected_course_name', filters.branchName!);
       }
-      if (filters.intakePeriod != null && filters.intakePeriod != "") {
-        query.add(
-          QueryData(
-            fieldName: 'intake_period',
-            equalTo: FieldValue(
-              key: 'intake_period',
-              value: filters.intakePeriod,
-            ),
-          ),
-        );
+      if (filters.intakePeriod != null &&
+          filters.intakePeriod != UserIntake.UNKNOWN) {
+        queryBuilder = queryBuilder.eq('intake_period', filters.intakePeriod!);
       }
       if (filters.intakeYear != null) {
-        query.add(
-          QueryData(
-            fieldName: 'intake_year',
-            equalTo: FieldValue(
-              key: 'intake_year',
-              value: filters.intakeYear,
-            ),
-          ),
-        );
+        queryBuilder = queryBuilder.eq('intake_year', filters.intakeYear!);
       }
       if (filters.drinkingHabit != null &&
           filters.drinkingHabit != UserHabit.UNKNOWN) {
-        query.add(
-          QueryData(
-            fieldName: "drinking_habit",
-            equalTo: FieldValue(
-              key: "drinking_habit",
-              value: filters.drinkingHabit,
-            ),
-          ),
-        );
+        queryBuilder =
+            queryBuilder.eq('drinking_habit', filters.drinkingHabit.toString());
       }
       if (filters.smokingHabit != null &&
           filters.smokingHabit != UserHabit.UNKNOWN) {
-        query.add(
-          QueryData(
-            fieldName: "smoking_habit",
-            equalTo: FieldValue(
-              key: "smoking_habit",
-              value: filters.smokingHabit,
-            ),
-          ),
-        );
+        queryBuilder =
+            queryBuilder.eq('smoking_habit', filters.smokingHabit.toString());
       }
       if (filters.personType != null &&
           filters.personType != PersonType.UNKNOWN) {
-        query.add(
-          QueryData(
-            fieldName: "person_type",
-            equalTo: FieldValue(
-              key: "person_type",
-              value: filters.personType,
-            ),
-          ),
-        );
+        queryBuilder =
+            queryBuilder.eq('person_type', filters.personType.toString());
       }
       if (filters.flatmateGenderPref != null &&
           filters.flatmateGenderPref != "") {
-        query.add(
-          QueryData(
-            fieldName: "gender",
-            equalTo: FieldValue(
-              key: "gender",
-              value: filters.flatmateGenderPref,
-            ),
-          ),
-        );
+        queryBuilder = queryBuilder.eq(
+            'flatmates_gender_prefs', filters.flatmateGenderPref!);
       }
       final userId = _authRepository.currentUser?.id;
-      return await _databaseRepository.getMultipleFilteredData(
-        userDetailCollection,
-        query,
-        orderBy: [OrderByKey(key: 'created_at', isDescending: true)],
-        columns: [
-          DbKey(key: 'id'),
-          DbKey(key: 'full_name'),
-          DbKey(key: 'profile_image'),
-          DbKey(key: 'selected_college_name'),
-          DbKey(key: 'selected_course_name'),
-          DbKey(key: 'city'),
-          DbKey(key: 'state'),
-          DbKey(key: 'gender'),
-          DbKey(key: 'work_experience'),
-          DbKey(key: 'intake_period'),
-          DbKey(key: 'intake_year'),
-        ],
-        whereNotFields: [
-          FieldValue(
-            key: 'id',
-            value: userId,
-          ),
-          FieldValue(
-            key: 'user_deleted',
-            value: true,
-          ),
-        ],
-      ).then((value) {
-        return value.map((e) => UserQuickProfile.fromJson(e ?? {})).toList();
+      if (userId == null) throw UserNotAuthError();
+      final filterResults = await queryBuilder
+          .neq('id', userId)
+          .neq('user_deleted', true)
+          .neq('has_roommate_found', true)
+          .order('created_at', ascending: true)
+          .select();
+      return filterResults.isNotEmpty
+          ? filterResults.map((e) => UserQuickProfile.fromJson(e)).toList()
+          : [];
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } catch (e) {
+      log(e.toString());
+      throw GetUserInfoError(message: 'Error in getting user profiles');
+    }
+  }
+
+  Future<UserInfo> getUserInfoProfile() async {
+    try {
+      final userId = _authRepository.currentUser?.id;
+      if (userId == null) {
+        throw UserNotAuthError();
+      }
+      return _supabase
+          .from(userDetailTable)
+          .select()
+          .eq('id', userId)
+          .single()
+          .then((value) => UserInfo.fromJson(value));
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting user profile');
+    }
+  }
+
+  @override
+  Future<UserProfile> getUserProfile(String userId) async {
+    try {
+      return _supabase
+          .from(userDetailTable)
+          .select()
+          .eq('id', userId)
+          .single()
+          .then((value) => UserProfile.fromJson(value));
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting user profile');
+    }
+  }
+
+  @override
+  Future<UserAdvanceProfile> getUserFullProfile(String userId) async {
+    try {
+      return _supabase
+          .from(userDetailTable)
+          .select()
+          .eq('id', userId)
+          .single()
+          .then((value) => UserAdvanceProfile.fromJson(value));
+    } on SocketException {
+      throw NoNetworkError();
+    } on AppException {
+      rethrow;
+    } on Exception {
+      throw GetUserInfoError(message: 'Error in getting user profile');
+    }
+  }
+
+  @override
+  Future<void> completeProfileInfo(UserFormProfile profile) async {
+    try {
+      final userId = _authRepository.currentUser?.id;
+      if (userId == null) throw UserNotAuthError();
+      return _supabase.from(userDetailTable).upsert({
+        ...profile.toMap(),
+        'id': userId,
       });
     } on SocketException {
       throw NoNetworkError();
     } on AppException {
       rethrow;
-    } catch (e) {
-      throw GetUserInfoError(message: 'Error in getting user profiles');
-    }
-  }
-
-  Future<UserInfo> getUserInfoProfile() {
-    try {
-      final userId = _authRepository.currentUser?.id;
-      if (userId == null) {
-        throw Exception('User not found');
-      }
-      return _databaseRepository
-          .getDataWithId(
-            userDetailCollection,
-            FieldValue(key: 'id', value: userId),
-          )
-          .then((value) => UserInfo.fromJson(value?.first ?? {}));
-    } on SocketException {
-      throw NoNetworkError();
-    } on AppException {
-      rethrow;
-    } catch (e) {
-      throw GetUserInfoError(message: 'Error in getting user profile');
+    } on Exception {
+      throw UpdateUserInfoError(message: 'Error in updating user profile');
     }
   }
 
   @override
-  Future<UserProfile> getUserProfile(String userId) {
+  Future<void> editProfile(UserEditProfile profile, String userId) async {
     try {
-      return _databaseRepository
-          .getDataWithId(
-            userDetailCollection,
-            FieldValue(key: 'id', value: userId),
-          )
-          .then((value) => UserProfile.fromJson(value?.first ?? {}));
-    } on SocketException {
-      throw NoNetworkError();
-    } on AppException {
-      rethrow;
-    } catch (e) {
-      throw GetUserInfoError(message: 'Error in getting user profile');
-    }
-  }
-
-  @override
-  Future<UserAdvanceProfile> getUserFullProfile(String userId) {
-    try {
-      return _databaseRepository
-          .getDataWithId(
-            userDetailCollection,
-            FieldValue(key: 'id', value: userId),
-          )
-          .then((value) => UserAdvanceProfile.fromJson(value?.first ?? {}));
-    } on SocketException {
-      throw NoNetworkError();
-    } on AppException {
-      rethrow;
-    } catch (e) {
-      throw GetUserInfoError(message: 'Error in getting user profile');
-    }
-  }
-
-  @override
-  Future<void> updateProfile(UserEditProfile profile, String userId) async {
-    try {
-      return await _databaseRepository.updateData(
-        userDetailCollection,
-        UpdateData(
-          columnId: "id",
-          columnValue: userId,
-          fields: [
-            UpdateFieldValue(
-              fieldName: "profile_image",
-              newValue: profile.profileImage,
-            ),
-            UpdateFieldValue(
-              fieldName: "selected_college_name",
-              newValue: profile.selectedCollegeName,
-            ),
-            UpdateFieldValue(
-              fieldName: "selected_course_name",
-              newValue: profile.selectedCourseName,
-            ),
-            UpdateFieldValue(
-              fieldName: "person_type",
-              newValue: profile.personType.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "work_experience",
-              newValue: profile.workExperience,
-            ),
-            UpdateFieldValue(
-              fieldName: "smoking_habit",
-              newValue: profile.smokingHabit.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "drinking_habit",
-              newValue: profile.drinkingHabit.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "food_habit",
-              newValue: profile.foodHabit.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "cooking_skill",
-              newValue: profile.cookingSkill.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "cleanliness_habit",
-              newValue: profile.cleanlinessHabit.toString(),
-            ),
-            UpdateFieldValue(
-              fieldName: "bio",
-              newValue: profile.bio,
-            ),
-            UpdateFieldValue(
-              fieldName: "hobbies",
-              newValue: profile.hobbies,
-            ),
-            UpdateFieldValue(
-                fieldName: "flatmates_gender_prefs",
-                newValue: profile.flatmatesGenderPrefs),
-            UpdateFieldValue(
-              fieldName: "room_type",
-              newValue: profile.roomType.toUI(),
-            ),
-            UpdateFieldValue(
-              fieldName: "intake_period",
-              newValue: profile.intakePeriod,
-            ),
-            UpdateFieldValue(
-              fieldName: "intake_year",
-              newValue: profile.intakeYear,
-            ),
-          ],
-        ),
-      );
+      return _supabase.from(userDetailTable).upsert({
+        ...profile.toMap(),
+        'id': userId,
+      });
     } on SocketException {
       throw NoNetworkError();
     } on AppException {
@@ -706,27 +582,15 @@ class UserRepositoryImpl implements UserRepository {
   Future<void> softDeleteAccount() {
     try {
       final userId = _authRepository.currentUser?.id;
-      if (userId == null) {
-        throw Exception('User not found');
-      }
-      return _databaseRepository.updateData(
-        userDetailCollection,
-        UpdateData(
-          columnId: "id",
-          columnValue: userId,
-          fields: [
-            UpdateFieldValue(fieldName: "user_deleted", newValue: true),
-            UpdateFieldValue(
-                fieldName: "user_deleted_date",
-                newValue: DateTime.now().toIso8601String()),
-          ],
-        ),
-      );
+      if (userId == null) throw UserNotAuthError();
+      return _supabase.from(userDetailTable).update({
+        'user_deleted': true,
+      }).eq('id', userId);
     } on SocketException {
       throw NoNetworkError();
     } on AppException {
       rethrow;
-    } catch (e) {
+    } on Exception {
       throw UserDeleteError(message: 'Error in deleting user account');
     }
   }

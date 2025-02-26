@@ -56,4 +56,5 @@ class LocalStorageKeys {
   static const universityList = 'universityList';
   static const degreeList = 'degreeList';
   static const marketplaceCategoryList = 'marketplaceCategoryList';
+  static const settingInfoStatus = 'settingInfoStatus';
 }
