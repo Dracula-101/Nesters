@@ -68,6 +68,7 @@ class _SettingsViewState extends State<SettingsView> {
               padding: const EdgeInsets.all(8.0),
               child: Row(
                 children: [
+                  const SizedBox(width: 8),
                   Icon(
                     Icons.arrow_back_ios,
                     color: AppTheme.primary,

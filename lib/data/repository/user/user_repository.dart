@@ -2,13 +2,11 @@ import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/location/city_info.dart';
 import 'package:nesters/domain/models/language.dart';
-import 'package:nesters/domain/models/location/location_city.dart';
-import 'package:nesters/domain/models/location/location_state.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/domain/models/user/address.dart';
 import 'package:nesters/domain/models/user/form/user_advance_profile.dart';
 import 'package:nesters/domain/models/user/form/user_basic_profile.dart';
 import 'package:nesters/domain/models/user/profile/user_filter.dart';
-import 'package:nesters/domain/models/user/profile/user_info.dart';
 import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
@@ -23,6 +21,10 @@ abstract class UserRepository {
   bool checkUserTutorialComplete();
 
   Future<void> markUserTutorialComplete();
+
+  bool checkSettingInfoComplete();
+
+  Future<void> updateSettingInfoStatus();
 
   Future<List<MarketplaceModel>> getMarketplaceData();
 
@@ -46,6 +48,8 @@ abstract class UserRepository {
   Future<List<Language>> getLanguage(String? searchQuery);
 
   Future<List<Language>> getLanguages();
+
+  Future<List<SearchAddress>> searchAddress(String? searchQuery);
 
   Future<bool> setBasicUserProfileData(UserBasicProfile userProfile);
 

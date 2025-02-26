@@ -74,20 +74,9 @@ class _UserPostViewState extends State<UserPostView> {
           data: (sublets, marketplace, apartments, view) => (sublets.isEmpty &&
                   marketplace.isEmpty &&
                   apartments.isEmpty)
-              ? Center(
-                  child: Text(
-                    "No ${(() {
-                      switch (view) {
-                        case PostView.sublet:
-                          return "Sublet";
-                        case PostView.marketplace:
-                          return "Marketplace";
-                        case PostView.apartment:
-                          return "Apartment";
-                      }
-                    })()} Posts Found",
-                    style: AppTheme.titleMedium,
-                  ),
+              ? const ShowNoInfoWidget(
+                  title: "No Posts Found",
+                  subtitle: "Try adding a new post and check back later.",
                 )
               : ListView.builder(
                   itemCount: (view) {
@@ -195,11 +184,13 @@ class _UserPostViewState extends State<UserPostView> {
                                             Icon(Icons.warning,
                                                 color: AppTheme.error),
                                             const SizedBox(width: 10),
-                                            Text(
-                                              'This action cannot be undone.',
-                                              style:
-                                                  AppTheme.bodyMedium.copyWith(
-                                                color: AppTheme.error,
+                                            Flexible(
+                                              child: Text(
+                                                'This action cannot be undone.',
+                                                style: AppTheme.bodyMedium
+                                                    .copyWith(
+                                                  color: AppTheme.error,
+                                                ),
                                               ),
                                             ),
                                           ],

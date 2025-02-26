@@ -3,6 +3,9 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get_it/get_it.dart';
+import 'package:nesters/app/bloc/app_bloc.dart';
+import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_link_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
@@ -34,6 +37,7 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
   MarketplaceLinkModel? selectedLink;
   DateTime? startDate, endDate;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final UserRepository _userRepository = GetIt.I<UserRepository>();
 
   @override
   bool get wantKeepAlive => true;
@@ -197,25 +201,43 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
   }
 
   Widget _buildCategoryField() {
-    return CustomDynamicSearchableDropDropField(
-      labelText: 'Category',
-      hintText: 'Select the category',
-      prefixIcon: Icon(
-        FontAwesomeIcons.list,
-        color: AppTheme.greyShades.shade600,
-        size: 22,
-      ),
-      emptyBuilder: (context) {
-        return ShowInfoWidget(
-          message: _categoryController.text.isNotEmpty ? 'Not Found' : 'Search',
-          subtitle: _categoryController.text.isNotEmpty
-              ? 'No category found with the name "${_categoryController.text}"'
-              : 'Search for the category like "Furniture"',
+    context.read<AppBloc>().add(const AppEvent.loadMarketplaceCategories());
+    return BlocBuilder<AppBloc, AppState>(
+      builder: (context, state) {
+        return CustomSearchableDropDownField(
+          labelText: 'Category',
+          hintText: 'Select the category',
+          prefixIcon: Icon(
+            FontAwesomeIcons.list,
+            color: AppTheme.greyShades.shade600,
+            size: 22,
+          ),
+          controller: _categoryController,
+          asyncItems: (p0) {
+            return state.marketplaceCategoryState.isLoading
+                ? Future.value([])
+                : Future.value(state.marketplaceCategory);
+          },
+          filterFn: (item, searchQuery) {
+            return ((item as MarketplaceCategoryModel).name ?? '')
+                .toLowerCase()
+                .contains(searchQuery.toLowerCase());
+          },
+          itemBuilder: (context, item, isSelected) {
+            return ListTile(
+              title: Text((item as MarketplaceCategoryModel).name ?? ''),
+              dense: true,
+            );
+          },
+          validator: (value) {
+            if (value.toString().isEmpty == true) {
+              return 'Please select the category';
+            }
+            return null;
+          },
+          itemAsString: (item) => (item as MarketplaceCategoryModel).name ?? '',
         );
       },
-      controller: _categoryController,
-      asyncStaticItems: context.read<MarketplaceFormCubit>().getCategories(),
-      itemAsString: (item) => (item as MarketplaceCategoryModel?)?.name ?? "",
     );
   }
 
@@ -371,7 +393,7 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
   }
 
   Widget _buildAddressField() {
-    return CustomTextField(
+    return CustomDynamicSearchableDropDropField(
       controller: _addressController,
       labelText: 'Address',
       prefixIcon: Icon(
@@ -379,8 +401,32 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
         color: AppTheme.greyShades.shade600,
         size: 20,
       ),
+      asyncSearchItems: (searchQuery) {
+        return _userRepository.searchAddress(searchQuery).asStream();
+      },
+      emptyBuilder: (p0) {
+        return ShowInfoWidget(
+          height: 300,
+          icon: FontAwesomeIcons.locationDot,
+          message: _addressController.text.isNotEmpty ? 'Not Found' : 'Search',
+          subtitle: _addressController.text.isNotEmpty
+              ? 'No address found with the name "${_addressController.text}"'
+              : 'Search for the address like "Kathmandu"',
+        );
+      },
+      itemAsString: (item) => item.primaryText,
+      itemBuilder: (p0, item) {
+        return ListTile(
+          title: Text(item.primaryText),
+          subtitle: Text(item.secondaryText),
+          dense: true,
+        );
+      },
+      onItemClick: (item) {
+        context.read<MarketplaceFormCubit>().addPlaceId(item.placeId);
+      },
       validator: (value) {
-        if (value.isEmpty) {
+        if (value?.isEmpty == true) {
           return 'Please enter the address';
         }
         return null;

@@ -11,15 +11,10 @@ import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
-import 'package:nesters/domain/models/room/room_type.dart';
-import 'package:nesters/domain/models/user/pref/user_habit.dart';
-import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/view/components/filter_page.dart';
-import 'package:nesters/features/home/view/components/filter_tab.dart';
-import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
@@ -28,6 +23,8 @@ import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
+import 'package:nesters/constants/app_assets.dart';
+import 'package:flutter_svg/svg.dart';
 
 class UserListPage extends StatelessWidget {
   final GlobalKey chatIconKey;
@@ -76,6 +73,7 @@ class _UserListViewState extends State<UserListView> {
   final PagingController<int, UserQuickProfile> _pagingController =
       PagingController(firstPageKey: 0);
   final int _pageSize = 20;
+  final GlobalKey _tooltip = GlobalKey();
 
   @override
   void initState() {
@@ -114,8 +112,15 @@ class _UserListViewState extends State<UserListView> {
         context
             .read<HomeBloc>()
             .add(LoadProfileCompleteEvent(_pagingController.itemList ?? []));
+        if (_tooltip.currentState is TooltipState &&
+            !userRepository.checkSettingInfoComplete() &&
+            userRepository.checkUserTutorialComplete()) {
+          (_tooltip.currentState as TooltipState).ensureTooltipVisible();
+          userRepository.updateSettingInfoStatus();
+        }
       }
     } catch (error) {
+      log(error.toString());
       _pagingController.error = error;
     }
   }
@@ -170,21 +175,63 @@ class _UserListViewState extends State<UserListView> {
               },
               child: Row(
                 children: [
-                  CircleAvatar(
-                    key: widget.settingsIconKey,
-                    radius: 20,
-                    backgroundColor: AppColor.white,
-                    backgroundImage: const AssetImage(
-                      'assets/images/user/user_placeholder.png',
+                  Tooltip(
+                    key: _tooltip,
+                    richMessage: WidgetSpan(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20),
+                            child: SvgPicture.asset(
+                              AppVectorImages.arrowTooltip,
+                              height: 6,
+                              width: 6,
+                              colorFilter: ColorFilter.mode(
+                                AppTheme.onSurface,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: AppTheme.onSurface,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: Text(
+                              'Click here to view settings',
+                              style: AppTheme.bodySmall
+                                  .copyWith(color: AppTheme.surface),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    foregroundImage:
-                        NetworkImage(state.user?.profileImage ?? ""),
-                    child: state.user?.profileImage.isEmpty == true
-                        ? const Icon(
-                            Icons.person,
-                            size: 20,
-                          )
-                        : null,
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    margin: EdgeInsets.zero,
+                    padding: EdgeInsets.zero,
+                    preferBelow: true,
+                    triggerMode: TooltipTriggerMode.manual,
+                    child: CircleAvatar(
+                      key: widget.settingsIconKey,
+                      radius: 20,
+                      backgroundColor: AppColor.white,
+                      backgroundImage: const AssetImage(
+                        'assets/images/user/user_placeholder.png',
+                      ),
+                      foregroundImage:
+                          NetworkImage(state.user?.profileImage ?? ""),
+                      child: state.user?.profileImage.isEmpty == true
+                          ? const Icon(
+                              Icons.person,
+                              size: 20,
+                            )
+                          : null,
+                    ),
                   ),
                   const SizedBox(
                     width: 8,
@@ -322,7 +369,9 @@ class _UserListViewState extends State<UserListView> {
                     icon: Icons.school,
                     title: homeState.singleUserFilter is UniversityFilter
                         ? (homeState.singleUserFilter as UniversityFilter)
-                            .university
+                                .university
+                                .title ??
+                            ''
                         : "University",
                     isActive: homeState.singleUserFilter is UniversityFilter,
                     onPressed: () async {
@@ -390,7 +439,7 @@ class _UserListViewState extends State<UserListView> {
                           if (value != null && value is University) {
                             context.read<HomeBloc>().add(
                                 SingleAddFilterProfileEvent(
-                                    UniversityFilter(value.title ?? '')));
+                                    UniversityFilter(value)));
                           }
                         });
                       }
@@ -586,6 +635,7 @@ class _UserListViewState extends State<UserListView> {
           milliseconds: 500,
         ),
         itemBuilder: (context, item, index) => UserQuickProfileWidget(
+          key: ValueKey(item.id),
           userQuickProfile: item,
           canNavigate: isAllowed,
         ),
@@ -634,6 +684,7 @@ class _UserListViewState extends State<UserListView> {
                         itemCount: state.filteredProfiles!.length,
                         itemBuilder: (context, index) {
                           return UserQuickProfileWidget(
+                            key: ValueKey(state.filteredProfiles![index].id),
                             userQuickProfile: state.filteredProfiles![index],
                             canNavigate: isAllowed,
                           );

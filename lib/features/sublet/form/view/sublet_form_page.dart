@@ -43,12 +43,12 @@ class CustomBottomNavigationBar extends StatelessWidget {
     final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     return BlocConsumer<SubletFormCubit, SubletFormState>(
       listener: (context, state) {
-        if (state.submitState?.exception != null) {
+        if (state.submitState.exception != null) {
           context.showErrorSnackBar(
-            state.submitState!.exception!.message,
+            state.submitState.exception!.message,
           );
         }
-        if (state.submitState?.isSuccess ?? false) {
+        if (state.submitState.isSuccess) {
           Future.delayed(1.sec).then((value) {
             context.showSuccessSnackBar(
               'Sublet ${(state.isPreFilled ?? false) ? 'updated' : 'created'} successfully',
@@ -58,53 +58,22 @@ class CustomBottomNavigationBar extends StatelessWidget {
         }
       },
       builder: (context, state) {
-        return GestureDetector(
+        return LoadingWidget(
+          isLoading: state.submitState.isLoading,
+          text: state.submitState.isSuccess
+              ? (state.isPreFilled ?? false)
+                  ? 'Updated'
+                  : 'Submitted'
+              : state.submitState.isLoading
+                  ? 'Uploading ${((state.imageUploadTask?.progress ?? 0.01) * 100).toInt()}%'
+                  : editPage
+                      ? 'Update'
+                      : state.pageNumber == 2
+                          ? 'Submit'
+                          : 'Next',
           onTap: () {
             context.read<SubletFormCubit>().validatePage();
           },
-          child: Container(
-            height: 60,
-            margin:
-                const EdgeInsets.symmetric(horizontal: 18.0, vertical: 18.0),
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: isKeyboardOpen
-                  ? Border(
-                      top: BorderSide(
-                        color: AppTheme.greyShades.shade400,
-                        width: 1,
-                      ),
-                    )
-                  : null,
-            ),
-            child: DynamicProgressIndicator(
-              currentValue: state.submitState?.isSuccess ?? false
-                  ? 1.0
-                  : state.imageUploadTask?.progress ?? 1.0,
-              totalValue: 1.0,
-              height: 60,
-              width: double.infinity,
-              backgroundColor: AppTheme.primaryShades.shade300,
-              progressColor: AppTheme.primaryShades.shade600,
-              child: Text(
-                state.submitState?.isSuccess ?? false
-                    ? (state.isPreFilled ?? false)
-                        ? 'Updated'
-                        : 'Submitted'
-                    : state.imageUploadTask != null
-                        ? 'Uploading ${((state.imageUploadTask?.progress ?? 0.01) * 100).toInt()}%'
-                        : editPage
-                            ? 'Update'
-                            : state.pageNumber == 2
-                                ? 'Submit'
-                                : 'Next',
-                style: AppTheme.titleLarge.copyWith(
-                  color: AppTheme.surface,
-                ),
-              ),
-            ),
-          ),
         );
       },
     );

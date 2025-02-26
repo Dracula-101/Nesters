@@ -36,8 +36,6 @@ class ShowErrorWidget extends StatelessWidget {
                     ? "Error"
                     : (error is NoNetworkError)
                         ? "Network Issue"
-                        : (error is DatabaseError)
-                            ? 'Server Error'
                             : (error is SocketException)
                                 ? 'Network Issue'
                                 : (error is TimeoutException)

@@ -85,6 +85,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   DateTime selectedDate = DateTime.now();
   DateTime _selectedYear = DateTime.now();
   bool isLoading = false;
+  University? _selectedUniversity;
 
   @override
   void initState() {
@@ -157,7 +158,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       email: widget.user.email,
       photoUrl: photoUrl ?? widget.user.photoUrl,
       birthDate: selectedDate,
-      selectedCollegeName: _collegeNameController.text,
+      userCollege: _selectedUniversity,
       selectedCourseName: _courseNameController.text,
       gender: _genderController.text,
       intakePeriod: _intakePeriodController.text,
@@ -548,8 +549,12 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         onChanged: (value) {
           if (value?.title != null) {
             _collegeNameController.text = value!.title!;
+            if (value.title != null) {
+              _selectedUniversity = value;
+            }
           }
         },
+        selectedItem: _selectedUniversity,
         itemAsString: (University? u) => u!.title!,
       ),
     );

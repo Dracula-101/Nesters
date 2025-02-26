@@ -1,0 +1,41 @@
+{
+    "seed_users": false,
+    "seed_sublets": true,
+    "seed_apartments": false,
+    "seed_marketplaces": false,
+    "seed_user_items": 100,
+    "room_images": [
+        "bedroom",
+        "kitchen",
+        "garage"
+    ],
+    "max_room_item_images": 2,
+    "seed_room_items": 50,
+    "marketplace_items": [
+        "couch",
+        "chair",
+        "table",
+        "lamp",
+        "bookshelf",
+        "bed",
+        "desk",
+        "dresser",
+        "nightstand",
+        "tv",
+        "cabinet",
+        "rug",
+        "painting",
+        "plant",
+        "mirror",
+        "clock",
+        "vase",
+        "candle",
+        "basket",
+        "pillow",
+        "blanket",
+        "makeup",
+        "toothpaste"
+    ],
+    "max_marketplace_item_images": 10,
+    "seed_marketplace_items": 50
+}

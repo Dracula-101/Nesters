@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 
@@ -168,30 +167,5 @@ class UserAdvanceProfile extends Equatable {
           : null,
       imageUrl: json['profile_image'] as String?,
     );
-  }
-
-  //toFieldValues
-  List<FieldValue> toFieldValues() {
-    return [
-      FieldValue(key: 'id', value: id),
-      FieldValue(key: 'person_type', value: personType.toString()),
-      FieldValue(key: 'bio', value: bio),
-      FieldValue(key: 'primary_lang', value: primaryLang),
-      FieldValue(key: 'other_lang', value: otherLang),
-      FieldValue(key: 'city', value: city),
-      FieldValue(key: 'state', value: state),
-      FieldValue(key: 'undergrad_college_name', value: undergradCollegeName),
-      FieldValue(key: 'work_experience', value: workExperience),
-      FieldValue(key: 'food_habit', value: foodHabit),
-      FieldValue(key: 'cooking_skill', value: cookingSkill),
-      FieldValue(key: 'drinking_habit', value: drinkingHabit.toString()),
-      FieldValue(key: 'smoking_habit', value: smokingHabit.toString()),
-      FieldValue(key: 'cleanliness_habit', value: cleanlinessHabit),
-      FieldValue(key: 'hobbies', value: hobbies),
-      FieldValue(key: 'room_type', value: roomType),
-      FieldValue(key: 'flatmates_gender_prefs', value: flatematesGenderPrefs),
-      FieldValue(key: 'social_media', value: socialMedia),
-      FieldValue(key: 'profile_image', value: imageUrl),
-    ];
   }
 }

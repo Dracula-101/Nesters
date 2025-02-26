@@ -7,6 +7,7 @@ import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/network/network_checker_repository.dart';
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/user/profile/user_filter.dart';
 import 'package:nesters/domain/models/user/profile/user_info.dart';
 import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';

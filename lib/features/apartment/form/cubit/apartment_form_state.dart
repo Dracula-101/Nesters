@@ -2,6 +2,7 @@ part of 'apartment_form_cubit.dart';
 
 class ApartmentFormState extends Equatable {
   final ApartmentModel? apartment;
+  final String? placeId;
   final bool? isPreFilled;
   final Exception? error;
   final int pageNumber;
@@ -13,18 +14,20 @@ class ApartmentFormState extends Equatable {
 
   const ApartmentFormState({
     this.apartment,
+    this.placeId,
     this.isPreFilled = false,
     this.error,
     this.pageNumber = 0,
     this.hasSecondPageAccess = false,
     this.isValidating = false,
-    this.submitState =  const BlocState(isLoading: false),
+    this.submitState = const BlocState(isLoading: false),
     this.imageUploadTask,
     this.pickedImages = const [],
   });
 
   ApartmentFormState copyWith({
     ApartmentModel? apartment,
+    String? placeId,
     bool? isPreFilled,
     Exception? error,
     int? pageNumber,
@@ -37,6 +40,7 @@ class ApartmentFormState extends Equatable {
   }) {
     return ApartmentFormState(
       apartment: apartment ?? this.apartment,
+      placeId: placeId ?? this.placeId,
       isPreFilled: isPreFilled ?? this.isPreFilled,
       error: error ?? this.error,
       pageNumber: pageNumber ?? this.pageNumber,

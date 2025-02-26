@@ -40,7 +40,7 @@ enum UserHabit {
     }
   }
 
-  static List<UserHabit> toList() {
+  static List<UserHabit> get safeValues {
     return [
       UserHabit.REGULAR,
       UserHabit.OCCASIONAL,
@@ -165,6 +165,14 @@ enum UserFoodHabit {
     }
     return toString();
   }
+
+  static List<UserFoodHabit> get safeValues => [
+        UserFoodHabit.VEGAN,
+        UserFoodHabit.VEGETARIAN,
+        UserFoodHabit.PESCATARIAN,
+        UserFoodHabit.EGGETARIAN,
+        UserFoodHabit.NON_VEGETERIAN,
+      ];
 }
 
 enum UserCookingSkill {
@@ -220,6 +228,12 @@ enum UserCookingSkill {
     }
     return toString();
   }
+
+  static List<UserCookingSkill> get safeValues => [
+        UserCookingSkill.NEWBIE,
+        UserCookingSkill.INTERMEDIATE,
+        UserCookingSkill.CHEF,
+      ];
 }
 
 enum UserCleanlinessHabit {
@@ -281,4 +295,11 @@ enum UserCleanlinessHabit {
     }
     return toString();
   }
+
+  static List<UserCleanlinessHabit> get safeValues => [
+        UserCleanlinessHabit.MESSY,
+        UserCleanlinessHabit.DECENTLY_CLEAN,
+        UserCleanlinessHabit.VERY_CLEAN,
+        UserCleanlinessHabit.OBSESSIVELY_CLEAN,
+      ];
 }

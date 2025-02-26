@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/location/location_city.dart';
 import 'package:nesters/domain/models/location/location_country.dart';
 import 'package:nesters/domain/models/location/location_state.dart';
@@ -12,7 +12,7 @@ class UserQuickProfile extends Equatable {
   final String? fullName;
   final String? profileImage;
   final String? selectedCourseName;
-  final String? selectedCollegeName;
+  final String? userCollege;
   final UserIntake? intakePeriod;
   final int? intakeYear;
   final LocationCity? city;
@@ -26,7 +26,7 @@ class UserQuickProfile extends Equatable {
     required this.fullName,
     required this.profileImage,
     required this.selectedCourseName,
-    required this.selectedCollegeName,
+    required this.userCollege,
     required this.city,
     required this.state,
     required this.country,
@@ -42,7 +42,7 @@ class UserQuickProfile extends Equatable {
         fullName,
         profileImage,
         selectedCourseName,
-        selectedCollegeName,
+        userCollege,
         city,
         state,
         country,
@@ -52,30 +52,13 @@ class UserQuickProfile extends Equatable {
         hasRoommateFound,
       ];
 
-  List<FieldValue> toFieldValues() {
-    return [
-      FieldValue(key: 'id', value: id),
-      FieldValue(key: 'full_name', value: fullName),
-      FieldValue(key: 'profile_image', value: profileImage),
-      FieldValue(key: 'selected_course_name', value: selectedCourseName),
-      FieldValue(key: 'selected_college_name', value: selectedCollegeName),
-      FieldValue(key: 'city', value: city),
-      FieldValue(key: 'state', value: state),
-      FieldValue(key: 'country', value: country),
-      FieldValue(key: 'work_experience', value: workExperience),
-      FieldValue(key: 'intake_period', value: intakePeriod),
-      FieldValue(key: 'intake_year', value: intakeYear),
-      FieldValue(key: 'has_roomate_found', value: hasRoommateFound),
-    ];
-  }
-
   Map<String, dynamic> toJson() {
     return {
       'id': id,
       'full_name': fullName,
       'profile_image': profileImage,
       'selected_course_name': selectedCourseName,
-      'selected_college_name': selectedCollegeName,
+      'college': userCollege,
       'city': city,
       'state': state,
       'country': country,
@@ -94,7 +77,7 @@ class UserQuickProfile extends Equatable {
         fullName: json['full_name'] ?? '',
         profileImage: json['profile_image'] ?? '',
         selectedCourseName: json['selected_course_name'] ?? '',
-        selectedCollegeName: json['selected_college_name'] ?? '',
+        userCollege: json['college'] ?? '',
         city: json['city'] != null ? LocationCity(name: json['city']) : null,
         state:
             json['state'] != null ? LocationState(name: json['state']) : null,

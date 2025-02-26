@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -41,12 +42,8 @@ class SupabaseAuthRepository extends AuthRepository {
     _supabaseClient.auth.onAuthStateChange.listen((event) async {
       if (event.session?.user != null) {
         try {
-          _userInfo = await _supabaseClient
-              .from('user_details')
-              .select()
-              .eq('id', event.session!.user.id)
-              .single()
-              .then((value) => UserInfo.fromJson(value));
+          //  constraint user_details_college_fkey foreign KEY (college) references universities (id) on update CASCADE on delete set null
+          _userInfo = await _getUserInfo(event.session!.user.id);
           _currentUser = currentUser;
           _userInfoController.add(_userInfo);
           _userController.add(_currentUser);
@@ -62,6 +59,19 @@ class SupabaseAuthRepository extends AuthRepository {
         _userInfo = null;
       }
     });
+  }
+
+  Future<UserInfo?> _getUserInfo(String userId) async {
+    try {
+      return await _supabaseClient
+          .from('user_details')
+          .select("'*, const.universities!user_details_college_fkey!inner(*)'")
+          .eq('id', userId)
+          .single()
+          .then((value) => UserInfo.fromJson(value));
+    } catch (error) {
+      return null;
+    }
   }
 
   @override

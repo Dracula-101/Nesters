@@ -122,64 +122,23 @@ class UserFormProfile {
     return 'UserFormProfile{personType: $personType, bio: $bio, primaryLang: $primaryLang, secondaryLang: $secondaryLang, undergradCollegeName: $undergradCollegeName, workExperience: $workExperience, foodHabit: $foodHabit, cookingSkill: $cookingSkill, drinkingHabit: $drinkingHabit, smokingHabit: $smokingHabit, cleanlinessHabit: $cleanlinessHabit, hobbies: $hobbies, flatmateGenderPrefs: $flatmateGenderPrefs, roomType: $roomType}';
   }
 
-  List<FieldValue> toFieldValues() {
-    return [
-      FieldValue(
-        key: 'person_type',
-        value: personType?.toSafeString(),
-      ),
-      FieldValue(
-        key: 'bio',
-        value: bio,
-      ),
-      FieldValue(
-        key: 'primary_lang',
-        value: primaryLang,
-      ),
-      FieldValue(
-        key: 'other_lang',
-        value: secondaryLang,
-      ),
-      FieldValue(
-        key: 'undergrad_college_name',
-        value: undergradCollegeName,
-      ),
-      FieldValue(
-        key: 'work_experience',
-        value: workExperience,
-      ),
-      FieldValue(
-        key: 'food_habit',
-        value: foodHabit?.toSafeString(),
-      ),
-      FieldValue(
-        key: 'cooking_skill',
-        value: cookingSkill?.toSafeString(),
-      ),
-      FieldValue(
-        key: 'drinking_habit',
-        value: drinkingHabit?.toSafeString(),
-      ),
-      FieldValue(
-        key: 'smoking_habit',
-        value: smokingHabit?.toSafeString(),
-      ),
-      FieldValue(
-        key: 'cleanliness_habit',
-        value: cleanlinessHabit?.toSafeString(),
-      ),
-      FieldValue(
-        key: 'hobbies',
-        value: hobbies,
-      ),
-      FieldValue(
-        key: 'flatmates_gender_prefs',
-        value: flatmateGenderPrefs,
-      ),
-      FieldValue(
-        key: 'room_type',
-        value: roomType?.toSafeString(),
-      ),
-    ];
+  // to map based on field values
+  Map<String, dynamic> toMap() {
+    return {
+      'person_type': personType?.toSafeString(),
+      'bio': bio,
+      'primary_lang': primaryLang,
+      'other_lang': secondaryLang,
+      'undergrad_college_name': undergradCollegeName,
+      'work_experience': workExperience,
+      'food_habit': foodHabit?.toSafeString(),
+      'cooking_skill': cookingSkill?.toSafeString(),
+      'drinking_habit': drinkingHabit?.toSafeString(),
+      'smoking_habit': smokingHabit?.toSafeString(),
+      'cleanliness_habit': cleanlinessHabit?.toSafeString(),
+      'hobbies': hobbies,
+      'flatmates_gender_prefs': flatmateGenderPrefs,
+      'room_type': roomType?.toSafeString(),
+    };
   }
 }

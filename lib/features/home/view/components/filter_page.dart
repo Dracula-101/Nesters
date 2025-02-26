@@ -212,19 +212,18 @@ class _UserFilterPageState extends State<UserFilterPage> {
                       itemCount: filterUniversities.length,
                       itemBuilder: (context, index) {
                         return UniversityFilterTile(
-                          isSelected: userFilter.universityName ==
-                              filterUniversities[index].title,
+                          isSelected: userFilter.university?.id ==
+                              filterUniversities[index].id,
                           isDense: true,
                           onTap: () {
                             setState(() {
-                              if (userFilter.universityName ==
-                                  filterUniversities[index].title) {
+                              if (userFilter.university?.id ==
+                                  filterUniversities[index].id) {
                                 userFilter =
-                                    userFilter.copyWith(universityName: null);
+                                    userFilter.copyWith(university: null);
                               } else {
                                 userFilter = userFilter.copyWith(
-                                  universityName:
-                                      filterUniversities[index].title,
+                                  university: filterUniversities[index],
                                 );
                               }
                             });
@@ -411,7 +410,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
               ),
             UserFilterTypes.SmokingHabits => ListView(
                 children: [
-                  ...UserHabit.toList().map(
+                  ...UserHabit.safeValues.map(
                     (e) => FilterTile(
                       title: e.toString().capitalize,
                       isSelected: userFilter.smokingHabit == e,
@@ -431,7 +430,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
               ),
             UserFilterTypes.DrinkingHabits => ListView(
                 children: [
-                  ...UserHabit.toList().map(
+                  ...UserHabit.safeValues.map(
                     (e) => FilterTile(
                       title: e.toString().capitalize,
                       isSelected: userFilter.drinkingHabit == e,
@@ -451,9 +450,9 @@ class _UserFilterPageState extends State<UserFilterPage> {
               ),
             UserFilterTypes.RoomType => ListView(
                 children: [
-                  ...UserRoomType.toList().map(
+                  ...UserRoomType.safeValues.map(
                     (e) => FilterTile(
-                      title: e.toUI(),
+                      title: e.toString(),
                       isSelected: userFilter.roomType == e,
                       onTap: () {
                         setState(() {

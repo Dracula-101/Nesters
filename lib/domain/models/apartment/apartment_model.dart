@@ -22,6 +22,7 @@ class ApartmentModel {
   ApartmentSize? apartmentSize;
   String? address;
   Location? location;
+  String? address;
   bool? isAvailable;
   bool? isFavouriteByUser;
 
@@ -52,7 +53,8 @@ class ApartmentModel {
       'rent': rent ?? 0.0,
       'photos': photos ?? [],
       'amenities_available': amenitiesAvailable?.toMap() ?? {},
-      'location': location?.toPoint() ?? {},
+      'address': address ?? '',
+      'location': location?.toPoint(),
       'is_available': isAvailable ?? true,
       ...apartmentSize?.toMap() ?? {},
       ...leasePeriod?.toMap() ?? {},
@@ -69,7 +71,8 @@ class ApartmentModel {
       leasePeriod: LeasePeriod.fromMap(map),
       amenitiesAvailable: Amenities.fromMap(map['amenities_available'] ?? {}),
       apartmentSize: ApartmentSize.fromMap(map),
-      location: Location.fromPoint(map['location'] ?? {}),
+      address: map['address'],
+      location: Location.fromPoint(map['location']),
       isAvailable: map['is_available'] ?? true,
       isFavouriteByUser: map['apartment_likes'] == null
           ? false
@@ -86,6 +89,7 @@ class ApartmentModel {
     LeasePeriod? leasePeriod,
     Amenities? amenitiesAvailable,
     ApartmentSize? apartmentSize,
+    String? address,
     Location? location,
     bool? isAvailable,
   }) {
@@ -98,6 +102,7 @@ class ApartmentModel {
       leasePeriod: leasePeriod ?? this.leasePeriod,
       amenitiesAvailable: amenitiesAvailable ?? this.amenitiesAvailable,
       apartmentSize: apartmentSize ?? this.apartmentSize,
+      address: address ?? this.address,
       location: location ?? this.location,
       isAvailable: isAvailable ?? this.isAvailable,
     );

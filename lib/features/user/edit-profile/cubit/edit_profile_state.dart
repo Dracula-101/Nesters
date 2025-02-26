@@ -1,11 +1,9 @@
 import 'package:equatable/equatable.dart';
-import 'package:nesters/data/repository/database/remote/database_repository.dart';
-import 'package:nesters/data/repository/utils/app_exception.dart';
+import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';
 import 'package:nesters/domain/models/user/pref/user_intake.dart';
-import 'package:nesters/domain/models/user/profile/user_profile.dart';
 import 'package:nesters/utils/bloc_state.dart';
 
 class EditProfileState extends Equatable {
@@ -26,7 +24,7 @@ class EditProfileState extends Equatable {
     BlocState? loadingState,
     BlocState? submitState,
     String? profileImage,
-    String? selectedCollegeName,
+    String? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
@@ -48,10 +46,9 @@ class EditProfileState extends Equatable {
       submitState: submitState ?? this.submitState,
       userEditProfile: UserEditProfile(
         profileImage: profileImage ?? userEditProfile?.profileImage,
-        selectedCollegeName:
-            selectedCollegeName ?? userEditProfile?.selectedCollegeName,
         selectedCourseName:
             selectedCourseName ?? userEditProfile?.selectedCourseName,
+        selectedCollege: selectedCollege ?? userEditProfile?.selectedCollege,
         personType: personType ?? userEditProfile?.personType,
         workExperience: workExperience ?? userEditProfile?.workExperience ?? 0,
         smokingHabit:
@@ -95,7 +92,7 @@ class EditProfileState extends Equatable {
 
 class UserEditProfile {
   final String? profileImage;
-  final String? selectedCollegeName;
+  final String? selectedCollege;
   final String? selectedCourseName;
   final PersonType? personType;
   final int workExperience;
@@ -113,7 +110,7 @@ class UserEditProfile {
 
   const UserEditProfile({
     required this.profileImage,
-    required this.selectedCollegeName,
+    required this.selectedCollege,
     required this.selectedCourseName,
     required this.personType,
     required this.workExperience,
@@ -132,7 +129,7 @@ class UserEditProfile {
 
   UserEditProfile copyWith({
     String? profileImage,
-    String? selectedCollegeName,
+    String? selectedCollege,
     String? selectedCourseName,
     PersonType? personType,
     int? workExperience,
@@ -150,7 +147,7 @@ class UserEditProfile {
   }) {
     return UserEditProfile(
       profileImage: profileImage ?? this.profileImage,
-      selectedCollegeName: selectedCollegeName ?? this.selectedCollegeName,
+      selectedCollege: selectedCollege ?? this.selectedCollege,
       selectedCourseName: selectedCourseName ?? this.selectedCourseName,
       personType: personType ?? this.personType,
       workExperience: workExperience ?? this.workExperience,
@@ -170,72 +167,27 @@ class UserEditProfile {
 
   @override
   String toString() {
-    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollegeName, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType, intakePeriod: $intakePeriod, intakeYear: $intakeYear)';
+    return 'UserEditProfile(profileImage: $profileImage, selectedCollegeName: $selectedCollege, selectedCourseName: $selectedCourseName, personType: $personType, workExperience: $workExperience, smokingHabit: $smokingHabit, drinkingHabit: $drinkingHabit, foodHabit: $foodHabit, cookingSkill: $cookingSkill, cleanlinessHabit: $cleanlinessHabit, bio: $bio, hobbies: $hobbies, flatmatesGenderPrefs: $flatmatesGenderPrefs, roomType: $roomType, intakePeriod: $intakePeriod, intakeYear: $intakeYear)';
   }
 
-  List<FieldValue> toFieldValues() {
-    return [
-      FieldValue(
-        key: "profile_image",
-        value: profileImage,
-      ),
-      FieldValue(
-        key: "selected_college_name",
-        value: selectedCollegeName,
-      ),
-      FieldValue(
-        key: "selected_course_name",
-        value: selectedCourseName,
-      ),
-      FieldValue(
-        key: "person_type",
-        value: personType?.toSafeString(),
-      ),
-      FieldValue(
-        key: "work_experience",
-        value: workExperience,
-      ),
-      FieldValue(
-        key: "smoking_habit",
-        value: smokingHabit.toSafeString(),
-      ),
-      FieldValue(
-        key: "drinking_habit",
-        value: drinkingHabit.toSafeString(),
-      ),
-      FieldValue(
-        key: "food_habit",
-        value: foodHabit.toSafeString(),
-      ),
-      FieldValue(
-        key: "cooking_skill",
-        value: cookingSkill.toSafeString(),
-      ),
-      FieldValue(
-        key: "cleanliness_habit",
-        value: cleanlinessHabit.toSafeString(),
-      ),
-      FieldValue(
-        key: "bio",
-        value: bio,
-      ),
-      FieldValue(
-        key: "hobbies",
-        value: hobbies,
-      ),
-      FieldValue(key: "flatmates_gender_prefs", value: flatmatesGenderPrefs),
-      FieldValue(
-        key: "room_type",
-        value: roomType.toSafeString(),
-      ),
-      FieldValue(
-        key: "intake_period",
-        value: intakePeriod.toString(),
-      ),
-      FieldValue(
-        key: "intake_year",
-        value: intakeYear,
-      ),
-    ];
+  Map<String, dynamic> toMap() {
+    return {
+      'profile_image': profileImage,
+      'college': selectedCollege,
+      'selected_course_name': selectedCourseName,
+      'person_type': personType?.toSafeString(),
+      'work_experience': workExperience,
+      'smoking_habit': smokingHabit.toSafeString(),
+      'drinking_habit': drinkingHabit.toSafeString(),
+      'food_habit': foodHabit.toSafeString(),
+      'cooking_skill': cookingSkill.toSafeString(),
+      'cleanliness_habit': cleanlinessHabit.toSafeString(),
+      'bio': bio,
+      'hobbies': hobbies,
+      'flatmates_gender_prefs': flatmatesGenderPrefs,
+      'room_type': roomType.toSafeString(),
+      'intake_period': intakePeriod?.toSafeString(),
+      'intake_year': intakeYear,
+    };
   }
 }

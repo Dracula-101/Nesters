@@ -66,6 +66,10 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
     super.dispose();
   }
 
+  Future<List<Language>> getLanguages(String? searchQuery) {
+    return userRepository.getLanguage(searchQuery);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -123,6 +127,11 @@ class _PersonalInformationPageState extends State<PersonalInformationPage> {
           return 'Please select a person type';
         }
         return null;
+      },
+      onEditingComplete: (value) {
+        context.read<FormCubit>().addData(
+              personType: value,
+            );
       },
     );
   }

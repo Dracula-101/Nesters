@@ -64,7 +64,7 @@ dependencies:
   sign_in_with_apple: ^5.0.0
   crypto: ^3.0.3
   tutorial_coach_mark: ^1.2.12
-  flutter_google_places_sdk: ^0.3.8
+  google_places_sdk: ^1.2.1
 
 dev_dependencies:
   flutter_test:

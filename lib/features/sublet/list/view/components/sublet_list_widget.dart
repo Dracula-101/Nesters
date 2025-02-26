@@ -122,7 +122,7 @@ class SubletModelWidget extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              '${sublet.roomType?.toUI()} Room',
+              '${sublet.roomType?.toString()} Room',
             )
           ],
         ),
@@ -246,7 +246,7 @@ class SubletModelWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
-          '\$${sublet.rent}',
+          '\$${sublet.rent?.toInt()}',
           style: AppTheme.labelLarge.copyWith(
             color: AppTheme.surface,
             fontWeight: FontWeight.w700,

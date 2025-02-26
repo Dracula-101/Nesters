@@ -37,26 +37,11 @@ enum UserRoomType {
     }
   }
 
-  static List<UserRoomType> toList() => [
+  static List<UserRoomType> get safeValues => [
         UserRoomType.PRIVATE,
         UserRoomType.SHARED,
         UserRoomType.FLEX,
       ];
-
-  String toUI() {
-    switch (this) {
-      case UserRoomType.PRIVATE:
-        return 'Private';
-      case UserRoomType.SHARED:
-        return 'Shared';
-      case UserRoomType.ANYTHING:
-        return 'Anything';
-      case UserRoomType.FLEX:
-        return 'Flex';
-      default:
-        return 'Unknown';
-    }
-  }
 
   String? toSafeString() {
     if (this == UserRoomType.UNKNOWN) {
@@ -98,6 +83,12 @@ enum FlatmateGenderType {
         return 'Unknown';
     }
   }
+
+  static List<FlatmateGenderType> get safeValues => [
+        FlatmateGenderType.MALE,
+        FlatmateGenderType.FEMALE,
+        FlatmateGenderType.MIX,
+      ];
 
   String? toSafeString() {
     if (this == FlatmateGenderType.UNKNOWN) {

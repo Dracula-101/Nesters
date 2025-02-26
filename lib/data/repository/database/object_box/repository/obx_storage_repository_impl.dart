@@ -12,7 +12,6 @@ import 'package:nesters/data/repository/database/object_box/repository/error/obx
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/chat/message.dart';
-import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:nesters/domain/models/college/degree.dart';
 import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/language.dart';
@@ -322,13 +321,12 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       universityEntityBox.removeAll();
       for (University university in universities) {
         UniversityEntity universityEntity = UniversityEntity(
+          universityId: university.id,
           title: university.title ?? '',
           country: university.country ?? '',
           city: university.city ?? '',
           logo: university.logo ?? '',
-          rankDisplay: university.rankDisplay ?? '',
           region: university.region ?? '',
-          score: university.score ?? "",
         );
         universityEntityBox.put(universityEntity);
       }

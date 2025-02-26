@@ -116,7 +116,7 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
       prefixIcon: const Icon(
         Icons.clean_hands,
       ),
-      items: UserCleanlinessHabit.values,
+      items: UserCleanlinessHabit.safeValues,
       validator: (value) {
         if (value == null) {
           return 'Please select a cleanliness habit';
@@ -139,7 +139,7 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
       prefixIcon: const Icon(
         Icons.smoking_rooms,
       ),
-      items: UserHabit.values,
+      items: UserHabit.safeValues,
       validator: (value) {
         if (value == null) {
           return 'Please select a smoking habit';
@@ -162,7 +162,7 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
       prefixIcon: const Icon(
         Icons.no_drinks,
       ),
-      items: UserHabit.values,
+      items: UserHabit.safeValues,
       validator: (value) {
         if (value == null) {
           return 'Please select a drinking habit';
@@ -186,7 +186,7 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
       prefixIcon: const Icon(
         Icons.restaurant,
       ),
-      items: UserCookingSkill.values,
+      items: UserCookingSkill.safeValues,
       validator: (value) {
         if (value == null) {
           return 'Please select a cooking proficiency';
@@ -213,7 +213,7 @@ class _LifeStyleInfoPageState extends State<LifeStyleInfoPage> {
       prefixIcon: const Icon(
         Icons.restaurant_menu,
       ),
-      items: UserFoodHabit.values,
+      items: UserFoodHabit.safeValues,
       validator: (value) {
         if (value == null) {
           return 'Please select a food preference';

@@ -4,12 +4,19 @@ class ShowInfoWidget extends StatelessWidget {
   final String message;
   final String subtitle;
   final IconData? icon;
+  final double? height;
   const ShowInfoWidget(
-      {super.key, required this.message, required this.subtitle, this.icon});
+      {super.key,
+      required this.message,
+      required this.subtitle,
+      this.icon,
+      this.height});
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return Container(
+      height: height,
+      alignment: Alignment.center,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(

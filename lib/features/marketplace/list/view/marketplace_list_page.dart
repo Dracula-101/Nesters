@@ -137,6 +137,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
       builderDelegate: PagedChildBuilderDelegate<MarketplaceModel>(
         itemBuilder: (context, marketplace, index) {
           return MarketplaceModelWidget(
+            key: ValueKey(marketplace.id),
             onPressed: () {
               GoRouter.of(context).go(
                 '${AppRouterService.homeScreen}/${AppRouterService.marketplaceDetail}',
@@ -306,22 +307,36 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                                               )
                                             else
                                               ...appState.marketplaceCategory
-                                                  .map((category) => ListTile(
-                                                        title: Text(
-                                                            category.name ??
-                                                                ""),
-                                                        onTap: () {
-                                                          context
-                                                              .read<
-                                                                  MarketplaceBloc>()
-                                                              .add(MarketplaceEvent
-                                                                  .applySingleFilter(
-                                                                      MarketplaceCategoryFilter(
-                                                                          category)));
-                                                          Navigator.pop(
-                                                              context);
-                                                        },
-                                                      ))
+                                                  .map(
+                                                    (category) =>
+                                                        GestureDetector(
+                                                      onTap: () {
+                                                        context
+                                                            .read<
+                                                                MarketplaceBloc>()
+                                                            .add(MarketplaceEvent
+                                                                .applySingleFilter(
+                                                                    MarketplaceCategoryFilter(
+                                                                        category)));
+                                                        Navigator.pop(context);
+                                                      },
+                                                      child: Container(
+                                                        width: MediaQuery.of(
+                                                                context)
+                                                            .size
+                                                            .width,
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                          horizontal: 12,
+                                                          vertical: 8,
+                                                        ),
+                                                        child: Text(
+                                                          category.name ?? "",
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  )
                                                   .toList(),
                                           ],
                                         ),
@@ -356,7 +371,9 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                     value: context.read<MarketplaceBloc>(),
                     child: BlocBuilder<MarketplaceBloc, MarketplaceState>(
                       builder: (context, marketplaceState) {
-                        return const MarketplaceFilterDialogPage();
+                        return MarketplaceFilterDialogPage(
+                          filter: marketplaceState.advancedFilter,
+                        );
                       },
                     ),
                   );

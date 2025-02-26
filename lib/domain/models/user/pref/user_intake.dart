@@ -44,4 +44,11 @@ enum UserIntake {
         UserIntake.FALL,
         UserIntake.WINTER,
       ];
+
+  String? toSafeString() {
+    if (this == UserIntake.UNKNOWN) {
+      return null;
+    }
+    return toString();
+  }
 }

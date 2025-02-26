@@ -99,7 +99,7 @@ class _BackgroundInfoPageState extends State<BackgroundInfoPage> {
       prefixIcon: const Icon(
         Icons.female,
       ),
-      items: FlatmateGenderType.values,
+      items: FlatmateGenderType.safeValues,
       validator: (value) {
         if (value == null) {
           return 'Please select a flatemate\'s gender preference.';
@@ -120,7 +120,7 @@ class _BackgroundInfoPageState extends State<BackgroundInfoPage> {
       prefixIcon: const Icon(
         Icons.room_preferences,
       ),
-      items: UserRoomType.values,
+      items: UserRoomType.safeValues,
       validator: (value) {
         if (value == null) {
           return 'Please select a room type';
