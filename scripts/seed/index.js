@@ -320,8 +320,8 @@ function getAllMarketplacePhotos() {
     return marketplace_photos_map;
 }
 
-function createRandomMarketplace() {
-    const title = `${faker.commerce.productAdjective()()} ${titleCase(faker.helpers.arrayElement(marketplace_items))}`;
+function createRandomMarketplace(photos) {
+    const title = `${faker.commerce.productAdjective()} ${titleCase(faker.helpers.arrayElement(marketplace_items))}`;
     const description = faker.commerce.productDescription();
     const location = faker.helpers.arrayElement(random_locations);
     const current_time = faker.date.recent().getTime();
@@ -357,9 +357,8 @@ async function seedMarketplaces(numOfMarketplaceItems) {
     try {
         const marketplacePhotos = getAllMarketplacePhotos();
         const marketplaceItemsArray = Object.keys(marketplacePhotos);
-        const numMarketplaceForEachItem = Math.ceil(numOfMarketplaceItems / marketplaceItemsArray.length);
-        for (let i = 0; i < numMarketplaceForEachItem; i++) {
-            const marketplaceCategory = faker.helpers.arrayElement(marketplaceItemsArray);
+        for (let i = 0; i < numOfMarketplaceItems; i++) {
+            const marketplaceCategory = marketplaceItemsArray[i % marketplaceItemsArray.length];
             const photos = marketplacePhotos[marketplaceCategory];
             const marketplace = createRandomMarketplace(photos);
             const { data, error } = await supabase.schema(supabaseSchema).from('marketplaces').insert(marketplace);
