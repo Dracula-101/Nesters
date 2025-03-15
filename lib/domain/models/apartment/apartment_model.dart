@@ -22,7 +22,6 @@ class ApartmentModel {
   ApartmentSize? apartmentSize;
   String? address;
   Location? location;
-  String? address;
   bool? isAvailable;
   bool? isFavouriteByUser;
 

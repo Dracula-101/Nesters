@@ -335,17 +335,11 @@ class _ApartmentDetailViewState extends State<ApartmentDetailView> {
               size: 18,
             ),
             const SizedBox(width: 4),
-<<<<<<< HEAD
-            Text(
-              widget.apartment.address?.toTitleCase ?? '',
-              style: AppTheme.bodyMediumLightVariant,
-=======
             Flexible(
               child: Text(
                 widget.apartment.address.toTitleCase,
                 style: AppTheme.bodyMediumLightVariant,
               ),
->>>>>>> 0a3916120374885fa562118e3257720de4aa4624
             ),
           ],
         ),
