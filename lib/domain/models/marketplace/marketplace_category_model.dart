@@ -6,7 +6,7 @@ class MarketplaceCategoryModel {
 
   factory MarketplaceCategoryModel.fromJson(Map<String, dynamic> json) {
     return MarketplaceCategoryModel(
-      id: json['id'],
+      id: int.tryParse(json['id'].toString()),
       name: json['name'],
     );
   }
