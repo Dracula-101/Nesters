@@ -660,275 +660,169 @@ class _CustomDynamicSearchableDropDropFieldState
   void _showDialog() {
     showDialog(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return PopScope(
-              onPopInvoked: (value) {
-                setState(() {
-                  _searchItems = null;
-                  _filteredItems = null;
-                });
-              },
-              child: Material(
-                color: Colors.transparent,
-                child: AlertDialog.adaptive(
-                  clipBehavior: Clip.none,
-                  actionsAlignment: MainAxisAlignment.center,
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Close'),
-                    ),
-                  ],
-                  actionsPadding: const EdgeInsets.all(0),
-                  contentPadding: const EdgeInsets.all(0),
-                  content: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            color: widget.backgroundColor ??
-                                AppTheme.greyShades.shade200,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          margin: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
-                            vertical: 12.0,
-                          ),
-                          child: TextField(
-                            autofocus: true,
-                            textCapitalization: TextCapitalization.words,
-                            decoration: InputDecoration(
-                              hintText: widget.searchText ?? 'Search...',
-                              prefixIcon: const Icon(Icons.search),
-                              border: InputBorder.none,
-                            ),
-                            onChanged: (value) {
-                              if (widget.asyncStaticItems != null) {
-                                if (!mounted) return;
-                                _rebuildKey.currentState?.setState(() {
-                                  _filteredItems = _items
-                                      ?.where((element) => widget.itemAsString!
-                                              (element)
-                                          .toLowerCase()
-                                          .contains(value.toLowerCase()))
-                                      .toList();
-                                });
-                              } else if (widget.asyncSearchItems != null) {
-                                _debouncer.run(() {
-                                  if (!mounted) return;
-                                  setState(() {
-                                    _searchItems =
-                                        widget.asyncSearchItems != null
-                                            ? widget.asyncSearchItems!(value)
-                                            : null;
-                                  });
-                                });
-                              }
-                            },
-                            onSubmitted: (value) {
-                              setState(() {
-                                GetIt.I<AppLogger>()
-                                    .debug('Search value: $value');
-                                _searchItems = widget.asyncSearchItems != null
-                                    ? widget.asyncSearchItems!(value)
-                                    : null;
-                              });
-                            },
-                          ),
-                        ),
-                        const Divider(),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.8,
-                          child: widget.asyncSearchItems == null
-                              ? FutureBuilder(
-                                  future:
-                                      widget.asyncStaticItems?.then((value) {
-                                    _items = value;
-                                    _filteredItems = value;
-                                    return _items;
-                                  }),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.5,
-                                        child: const Center(
-                                            child: CircularProgressIndicator()),
-                                      );
-                                    } else if (snapshot.hasError) {
-                                      return ShowErrorWidget(
-                                          error: snapshot.error as Exception);
-                                    } else if (snapshot.data != null) {
-                                      return StatefulBuilder(
-                                        key: _rebuildKey,
-                                        builder: (context, setState) {
-                                          return ListView.builder(
-                                            shrinkWrap: true, //MUST TO ADDED
-                                            itemCount: _filteredItems?.length,
-                                            padding: const EdgeInsets.only(
-                                                bottom: 68),
-                                            itemBuilder: (context, index) {
-                                              return widget.itemBuilder != null
-                                                  ? GestureDetector(
-                                                      child:
-                                                          widget.itemBuilder!(
-                                                              context,
-                                                              _filteredItems?[
-                                                                  index]),
-                                                      onTap: () {
-                                                        setState(() {
-                                                          _selectedItem =
-                                                              _filteredItems?[
-                                                                  index];
-                                                          widget.controller
-                                                              .text = widget
-                                                                  .itemAsString!(
-                                                              _filteredItems?[
-                                                                  index]);
-                                                        });
-                                                        widget.onItemClick
-                                                            ?.call(
-                                                                _selectedItem);
-                                                        Navigator.of(context)
-                                                            .pop(_selectedItem);
-                                                      })
-                                                  : ListTile(
-                                                      contentPadding:
-                                                          const EdgeInsets.all(
-                                                              0),
-                                                      title: Text(
-                                                        widget.itemAsString!(
-                                                            _filteredItems?[
-                                                                index]),
-                                                      ),
-                                                      onTap: () {
-                                                        setState(() {
-                                                          _selectedItem =
-                                                              _filteredItems?[
-                                                                  index];
-                                                          widget.controller
-                                                              .text = widget
-                                                                  .itemAsString!(
-                                                              _filteredItems?[
-                                                                  index]);
-                                                        });
-                                                        widget.onItemClick
-                                                            ?.call(
-                                                                _selectedItem);
-                                                        Navigator.of(context)
-                                                            .pop(_selectedItem);
-                                                      },
-                                                    );
-                                            },
-                                          );
-                                        },
-                                      );
-                                    } else {
-                                      return widget.emptyBuilder != null
-                                          ? widget.emptyBuilder!(context)
-                                          : const SizedBox();
-                                    }
-                                  },
-                                )
-                              : StreamBuilder(
-                                  stream: _searchItems,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState ==
-                                        ConnectionState.waiting) {
-                                      return SizedBox(
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                                0.5,
-                                        child: const Center(
-                                            child: CircularProgressIndicator()),
-                                      );
-                                    } else if (snapshot.hasError) {
-                                      return ShowErrorWidget(
-                                        error: snapshot.error as Exception,
-                                      );
-                                    } else if (snapshot.hasData) {
-                                      return SizedBox(
-                                        child: ListView.builder(
-                                          shrinkWrap: true, //MUST TO ADDED
-                                          padding:
-                                              const EdgeInsets.only(bottom: 68),
-                                          itemCount: snapshot.data?.length,
-                                          itemBuilder: (context, index) {
-                                            return widget.itemBuilder != null
-                                                ? GestureDetector(
-                                                    child: widget.itemBuilder!(
-                                                        context,
-                                                        snapshot.data?[index]),
-                                                    onTap: () {
-                                                      setState(() {
-                                                        _selectedItem = snapshot
-                                                            .data?[index];
-                                                        widget.controller
-                                                            .text = widget
-                                                                .itemAsString!(
-                                                            snapshot
-                                                                .data?[index]);
-                                                      });
-                                                      widget.onItemClick
-                                                          ?.call(_selectedItem);
-                                                      Navigator.of(context)
-                                                          .pop(_selectedItem);
-                                                    },
-                                                  )
-                                                : ListTile(
-                                                    contentPadding:
-                                                        const EdgeInsets.all(0),
-                                                    title: Text(
-                                                      widget.itemAsString?.call(
-                                                              snapshot.data?[
-                                                                  index]) ??
-                                                          snapshot.data?[index]
-                                                              .toString() ??
-                                                          '',
-                                                    ),
-                                                    onTap: () {
-                                                      setState(() {
-                                                        _selectedItem = snapshot
-                                                            .data?[index];
-                                                        widget.controller
-                                                            .text = widget
-                                                                .itemAsString!(
-                                                            snapshot
-                                                                .data?[index]);
-                                                      });
-                                                      widget.onItemClick
-                                                          ?.call(_selectedItem);
-                                                      Navigator.of(context)
-                                                          .pop(_selectedItem);
-                                                    },
-                                                  );
-                                          },
-                                        ),
-                                      );
-                                    } else {
-                                      return widget.emptyBuilder != null
-                                          ? widget.emptyBuilder!(context)
-                                          : const Center();
-                                    }
-                                  },
-                                ),
-                        ),
-                        const Divider(),
-                      ],
-                    ),
-                  ),
-                ),
+      builder: (context) => PopScope(
+        onPopInvoked: (value) {
+          _rebuildKey.currentState?.setState(() {
+            _searchItems = null;
+            _filteredItems = null;
+          });
+        },
+        child: AlertDialog.adaptive(
+          clipBehavior: Clip.none,
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+          actionsPadding: EdgeInsets.zero,
+          contentPadding: EdgeInsets.zero,
+          content: Column(
+            children: [
+              _buildSearchBar(),
+              const Divider(),
+              Expanded(
+                child: _buildItemList(context),
               ),
-            );
-          },
+              const Divider(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: widget.backgroundColor ?? AppTheme.greyShades.shade200,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+      child: TextField(
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        decoration: InputDecoration(
+          hintText: widget.searchText ?? 'Search...',
+          prefixIcon: const Icon(Icons.search),
+          border: InputBorder.none,
+        ),
+        onChanged: _onSearchChanged,
+        onSubmitted: _onSearchSubmitted,
+      ),
+    );
+  }
+
+  void _onSearchChanged(String value) {
+    if (widget.asyncStaticItems != null) {
+      _rebuildKey.currentState?.setState(() {
+        _filteredItems = _items
+            ?.where((element) => widget.itemAsString!(element)
+                .toLowerCase()
+                .contains(value.toLowerCase()))
+            .toList();
+      });
+    } else if (widget.asyncSearchItems != null) {
+      _debouncer.run(() {
+        _rebuildKey.currentState?.setState(() {
+          _searchItems = widget.asyncSearchItems!(value);
+        });
+      });
+    }
+  }
+
+  void _onSearchSubmitted(String value) {
+    setState(() {
+      _searchItems = widget.asyncSearchItems?.call(value);
+    });
+  }
+
+  Widget _buildItemList(BuildContext ctx) {
+    return StatefulBuilder(
+      key: _rebuildKey,
+      builder: (_, setState) {
+        return SizedBox(
+          width: MediaQuery.of(context).size.width * 0.8,
+          child: widget.asyncSearchItems == null
+              ? FutureBuilder<List<dynamic>>(
+                  future: widget.asyncStaticItems,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return _buildLoading();
+                    } else if (snapshot.hasError) {
+                      return ShowErrorWidget(
+                          error: snapshot.error as Exception);
+                    } else if (snapshot.hasData) {
+                      _items = snapshot.data;
+                      _filteredItems = _filteredItems ?? _items;
+                      return _buildListView(ctx, _filteredItems);
+                    } else {
+                      return _buildEmptyState();
+                    }
+                  },
+                )
+              : StreamBuilder<List<dynamic>>(
+                  stream: _searchItems,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return _buildLoading();
+                    } else if (snapshot.hasError) {
+                      return ShowErrorWidget(
+                          error: snapshot.error as Exception);
+                    } else if (snapshot.hasData) {
+                      return _buildListView(ctx, snapshot.data);
+                    } else {
+                      return _buildEmptyState();
+                    }
+                  },
+                ),
         );
       },
     );
+  }
+
+  Widget _buildListView(BuildContext ctx, List<dynamic>? items) {
+    if (items == null || items.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 68),
+      itemCount: items.length,
+      shrinkWrap: true,
+      itemBuilder: (context, index) {
+        return GestureDetector(
+          child: widget.itemBuilder != null
+              ? widget.itemBuilder!(context, items[index])
+              : ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(widget.itemAsString!(items[index])),
+                ),
+          onTap: () => _onItemSelected(ctx, items[index]),
+        );
+      },
+    );
+  }
+
+  Widget _buildLoading() {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.5,
+      child: const Center(child: CircularProgressIndicator()),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return widget.emptyBuilder?.call(context) ??
+        const Center(child: Text('No items found.'));
+  }
+
+  void _onItemSelected(BuildContext ctx, dynamic item) {
+    _rebuildKey.currentState?.setState(() {
+      _selectedItem = item;
+      widget.controller.text = widget.itemAsString!(item);
+    });
+    widget.onItemClick?.call(_selectedItem);
+    Navigator.of(ctx).pop(_selectedItem);
   }
 }

@@ -33,13 +33,13 @@ class SubletFilter {
     UserRoomType? roomType,
   }) {
     return SubletFilter(
-      roommateGenderPref: roommateGenderPref,
+      roommateGenderPref: roommateGenderPref ?? this.roommateGenderPref,
       startRent: startRent,
       endRent: endRent,
-      leasePeriod: leasePeriod,
-      amenitiesAvailable: amenitiesAvailable,
+      leasePeriod: leasePeriod ?? this.leasePeriod,
+      amenitiesAvailable: amenitiesAvailable ?? this.amenitiesAvailable,
       apartmentSize: apartmentSize,
-      roomType: roomType,
+      roomType: roomType ?? this.roomType,
     );
   }
 }

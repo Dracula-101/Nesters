@@ -22,7 +22,7 @@ class SubletRepositoryImpl implements SubletRepository {
 
   final AppLogger _logger;
   final String subletTable = 'sublets';
-  final String subletLikesTable = 'sublets_likes';
+  final String subletLikesTable = 'sublet_likes';
   final String subletSelectQuery =
       '*, sublet_likes!sublet_likes_sublet_id_fkey!left(*)';
   final String subletLikeSelectQuery =

@@ -362,7 +362,8 @@ class UserRepositoryImpl implements UserRepository {
       PostgrestFilterBuilder queryBuilder =
           _supabase.from(userDetailTable).select();
       if (filter is UniversityFilter) {
-        queryBuilder = queryBuilder.eq('college', filter.university.id);
+        queryBuilder =
+            queryBuilder.eq('college', filter.university.title ?? '');
       } else if (filter is BranchFilter) {
         queryBuilder = queryBuilder.eq('selected_course_name', filter.branch);
       } else if (filter is GenderFilter) {
@@ -397,7 +398,8 @@ class UserRepositoryImpl implements UserRepository {
       PostgrestFilterBuilder queryBuilder =
           _supabase.from(userDetailTable).select();
       if (filters.university != null && filters.university?.id != null) {
-        queryBuilder = queryBuilder.eq('college', filters.university!.id);
+        queryBuilder =
+            queryBuilder.eq('college', filters.university!.title ?? '');
       }
       if (filters.branchName != null && filters.branchName != "") {
         queryBuilder =

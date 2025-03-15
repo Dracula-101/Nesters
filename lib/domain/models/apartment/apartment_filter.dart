@@ -27,8 +27,8 @@ class ApartmentFilter {
     ApartmentSize? apartmentSize,
   }) {
     return ApartmentFilter(
-      startRent: startRent ?? this.startRent,
-      endRent: endRent ?? this.endRent,
+      startRent: startRent,
+      endRent: endRent,
       leasePeriod: leasePeriod ?? this.leasePeriod,
       amenitiesAvailable: amenitiesAvailable ?? this.amenitiesAvailable,
       apartmentSize: apartmentSize ?? this.apartmentSize,

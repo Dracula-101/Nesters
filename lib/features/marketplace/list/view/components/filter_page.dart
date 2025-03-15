@@ -275,22 +275,22 @@ class _MarketplaceFilterDialogPageState
                   ),
                 ),
               ),
-              if (minPrice != null || maxPrice != null)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: CustomFlatButton(
-                    text: "Reset",
-                    onPressed: () {
-                      setState(() {
-                        minPrice = null;
-                        maxPrice = null;
-                      });
-                    },
-                  ),
-                )
             ],
           ),
-        )
+        ),
+        if (minPrice != null || maxPrice != null)
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: CustomFlatButton(
+              text: "Reset",
+              onPressed: () {
+                setState(() {
+                  minPrice = null;
+                  maxPrice = null;
+                });
+              },
+            ),
+          )
       ],
     );
   }

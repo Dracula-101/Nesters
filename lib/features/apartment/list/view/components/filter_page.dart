@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
@@ -363,6 +365,7 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
               onPressed: () {
                 setState(() {
                   selectedApartmentSize = null; // Unselect apartment size
+                  log("Selected apartment size: $selectedApartmentSize");
                 });
               },
               text: 'Reset',
@@ -430,60 +433,6 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
           ),
         ),
         const SizedBox(height: 8),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "End Date",
-                style: AppTheme.titleSmall,
-              ),
-              GestureDetector(
-                onTap: () {
-                  showDatePicker(
-                    context: context,
-                    initialDate:
-                        selectedLeasePeriod?.startDate ?? DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                    firstDate: selectedLeasePeriod?.startDate ?? DateTime.now(),
-                  ).then((value) {
-                    if (value != null) {
-                      setState(() {
-                        selectedLeasePeriod = LeasePeriod(
-                          startDate: selectedLeasePeriod?.startDate,
-                          endDate: value,
-                        );
-                      });
-                    } else {
-                      setState(() {
-                        selectedLeasePeriod = null; // Unselect end date
-                      });
-                    }
-                  });
-                },
-                child: selectedLeasePeriod?.endDate != null
-                    ? Text(
-                        "${selectedLeasePeriod?.endDate!.day}, ${selectedLeasePeriod?.endDate!.monthName(true)}, ${selectedLeasePeriod?.endDate!.year}",
-                        style: AppTheme.bodySmall,
-                      )
-                    : Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppTheme.greyShades.shade300,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          "Select",
-                          style: AppTheme.bodySmall,
-                        ),
-                      ),
-              ),
-            ],
-          ),
-        ),
         if (selectedLeasePeriod != null)
           Padding(
             padding: const EdgeInsets.all(8.0),

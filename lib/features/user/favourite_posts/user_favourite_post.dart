@@ -65,9 +65,11 @@ class _UserFavouritePostPageState extends State<UserFavouritePostPage> {
     } on AppException catch (e, s) {
       error = e;
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 

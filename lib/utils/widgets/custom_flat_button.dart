@@ -18,7 +18,7 @@ class CustomFlatButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        return InkWell(
+        return GestureDetector(
           onTap: onPressed,
           child: Container(
             decoration: BoxDecoration(

@@ -45,16 +45,16 @@ class UserFilter {
     String? flatmateGenderPref,
   }) {
     return UserFilter(
-      university: university,
-      branchName: branchName,
-      intakePeriod: intakePeriod,
-      intakeYear: intakeYear,
-      foodHabit: foodHabit,
-      smokingHabit: smokingHabit,
-      drinkingHabit: drinkingHabit,
-      personType: personType,
-      roomType: roomType,
-      flatmateGenderPref: flatmateGenderPref,
+      university: university ?? this.university,
+      branchName: branchName ?? this.branchName,
+      intakePeriod: intakePeriod ?? this.intakePeriod,
+      intakeYear: intakeYear ?? this.intakeYear,
+      foodHabit: foodHabit ?? this.foodHabit,
+      smokingHabit: smokingHabit ?? this.smokingHabit,
+      drinkingHabit: drinkingHabit ?? this.drinkingHabit,
+      personType: personType ?? this.personType,
+      roomType: roomType ?? this.roomType,
+      flatmateGenderPref: flatmateGenderPref ?? this.flatmateGenderPref,
     );
   }
 }
