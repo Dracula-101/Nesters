@@ -324,31 +324,6 @@ class _SettingsViewState extends State<SettingsView> {
                   style: AppTheme.titleLarge,
                 ),
               ),
-              const Divider(thickness: 1, height: 1),
-              SettingsTile(
-                title: 'Maps Api test',
-                subtitle: 'Test the maps api',
-                icon: FontAwesomeIcons.handshake,
-                iconSize: 18,
-                onTap: () async {
-                  final places = FlutterGooglePlacesSdk(
-                      "AIzaSyB2nC-a_A2Q8qfCC7rdMTC3CmNBp2g4HxA");
-                  final predictions = await places.findAutocompletePredictions(
-                    'Tandon School of Engineering',
-                    countries: ['USA'],
-                  );
-                  print(
-                      'Result: ${predictions.predictions.map((e) => "$e\n").toList()}');
-                  final placeInfo = await places.fetchPlace(
-                      predictions.predictions.last.placeId,
-                      fields: [
-                        PlaceField.Name,
-                        PlaceField.Address,
-                        PlaceField.Location,
-                      ]);
-                  print('Place Info: $placeInfo');
-                },
-              ),
             ],
           ),
         ),

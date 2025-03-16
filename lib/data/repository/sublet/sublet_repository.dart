@@ -1,3 +1,4 @@
+import 'package:nesters/domain/models/sublet/nearby_sublet_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_filter.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
@@ -22,8 +23,15 @@ abstract class SubletRepository {
 
   Future<List<SubletModel>> getSublets({
     required String userId,
-    int range = 10,
-    int paginationKey = 0,
+    int range,
+    int paginationKey,
+  });
+
+  Future<List<NearbySubletModel>> getNearbySublets({
+    required String userId,
+    double rangeKm,
+    int range,
+    int paginationKey,
   });
 
   Future<List<SubletModel>> singleFilterSublet({

@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/data/repository/sublet/error/sublet_error.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
+import 'package:nesters/domain/models/sublet/nearby_sublet_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_filter.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
@@ -137,6 +139,49 @@ class SubletRepositoryImpl implements SubletRepository {
     } on SocketException catch (_) {
       throw NoNetworkError();
     } catch (e) {
+      if (e is Exception) {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.GET_SUBLETS_ERR,
+          e.getException,
+        );
+      } else {
+        throw SubletErrorFactory.createSubletError(
+          SubletErrorCode.GET_SUBLETS_ERR,
+          e.toString(),
+        );
+      }
+    }
+  }
+
+  @override
+  Future<List<NearbySubletModel>> getNearbySublets({
+    required String userId,
+    double rangeKm = 10,
+    int range = 10,
+    int paginationKey = 0,
+  }) async {
+    try {
+      final response = await _supabaseClient.rpc('get_nearby_sublets', params: {
+        'uid': userId,
+        'range_km': rangeKm,
+        'page_limit': range,
+        'offset_value': paginationKey,
+      });
+      List<NearbySubletModel> nearbySublets = [];
+      for (final sublet in response) {
+        nearbySublets.add(NearbySubletModel.fromMap(sublet));
+      }
+      return nearbySublets;
+    } on supabase.PostgrestException catch (e) {
+      log(e.toString());
+      throw SubletErrorFactory.createSubletError(
+        SubletErrorCode.DB_ERR,
+        '${e.details}, ${e.message}, ${e.hint}',
+      );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
+    } catch (e) {
+      log(e.toString());
       if (e is Exception) {
         throw SubletErrorFactory.createSubletError(
           SubletErrorCode.GET_SUBLETS_ERR,
