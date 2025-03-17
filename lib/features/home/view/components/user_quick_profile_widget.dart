@@ -103,25 +103,26 @@ class UserQuickProfileWidget extends StatelessWidget {
                           fadeInDuration: 150.ms,
                         ),
                       ),
-                      if (userQuickProfile.intakePeriod != null &&
-                          userQuickProfile.intakeYear != null)
-                        Container(
-                          width: double.infinity,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            color: AppTheme.lightPrimary,
-                          ),
-                          child: Text(
-                            _buildIntakeString(
-                              userQuickProfile.intakePeriod,
-                              userQuickProfile.intakeYear,
-                            ),
-                            style: AppTheme.labelSmall,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+                      // if (userQuickProfile.intakePeriod != null &&
+                      //     userQuickProfile.intakeYear != null)
+                      //   Container(
+                      //     width: double.infinity,
+                      //     height: 20,
+                      //     decoration: BoxDecoration(
+                      //       color: AppTheme.surface,
+                      //     ),
+                      //     child: Text(
+                      //       _buildIntakeString(
+                      //         userQuickProfile.intakePeriod,
+                      //         userQuickProfile.intakeYear,
+                      //       ),
+                      //       style: AppTheme.labelMedium
+                      //           .copyWith(fontWeight: FontWeight.w600),
+                      //       maxLines: 1,
+                      //       overflow: TextOverflow.ellipsis,
+                      //       textAlign: TextAlign.center,
+                      //     ),
+                      //   ),
                     ],
                   ),
                 ),
@@ -149,9 +150,8 @@ class UserQuickProfileWidget extends StatelessWidget {
                                 style: AppTheme.bodyLarge,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 2),
                               Text(
-                                userQuickProfile.toUserLocation(),
+                                userQuickProfile.selectedCourseName ?? '',
                                 style: AppTheme.labelMedium.copyWith(
                                     color: AppTheme.greyShades.shade700),
                                 maxLines: 1,
@@ -186,7 +186,7 @@ class UserQuickProfileWidget extends StatelessWidget {
                         )
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     Container(
                       padding: const EdgeInsets.symmetric(
                         vertical: 4,
@@ -203,14 +203,13 @@ class UserQuickProfileWidget extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  userQuickProfile.selectedCourseName ?? '',
+                                  userQuickProfile.userCollege ?? '',
                                   style: AppTheme.labelSmall,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 2),
                                 Text(
-                                  userQuickProfile.userCollege ?? '',
+                                  '${userQuickProfile.intakePeriod ?? ''} - ${userQuickProfile.intakeYear ?? ''}',
                                   style: AppTheme.labelSmall,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,

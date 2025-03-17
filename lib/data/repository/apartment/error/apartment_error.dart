@@ -49,7 +49,7 @@ class CreateApartmentError extends ApartmentError {
   CreateApartmentError({required this.extra})
       : super(
           code: ApartmentErrorCode.CREATE_APARTMENT_ERR,
-          message: 'Failed to create sublet',
+          message: 'Failed to create apartment',
         );
 }
 
@@ -59,7 +59,7 @@ class UpdateApartmentError extends ApartmentError {
   UpdateApartmentError({required this.extra})
       : super(
           code: ApartmentErrorCode.UPDATE_APARTMENT_ERR,
-          message: 'Failed to update sublet',
+          message: 'Failed to update apartment',
         );
 }
 
@@ -79,7 +79,7 @@ class GetApartmentsError extends ApartmentError {
   GetApartmentsError({required this.extra})
       : super(
           code: ApartmentErrorCode.GET_APARTMENTS_ERR,
-          message: 'Failed to get sublets',
+          message: 'Failed to get apartment',
         );
 }
 
@@ -89,7 +89,7 @@ class FilterApartmentError extends ApartmentError {
   FilterApartmentError({required this.extra})
       : super(
           code: ApartmentErrorCode.FILTER_APARTMENT_ERR,
-          message: 'Failed to filter sublets',
+          message: 'Failed to filter apartment',
         );
 }
 
@@ -99,7 +99,7 @@ class GetApartmentLikeStatusError extends ApartmentError {
   GetApartmentLikeStatusError({required this.extra})
       : super(
           code: ApartmentErrorCode.GET_APARTMENT_LIKE_STATUS_ERR,
-          message: 'Failed to get sublet like status',
+          message: 'Failed to get apartment like status',
         );
 }
 
@@ -109,7 +109,7 @@ class UpdateLikeStatusError extends ApartmentError {
   UpdateLikeStatusError({required this.extra})
       : super(
           code: ApartmentErrorCode.UPDATE_LIKE_STATUS_ERR,
-          message: 'Failed to update like status',
+          message: 'Failed to apartment like status',
         );
 }
 
@@ -119,7 +119,7 @@ class GetUserLikedApartmentsError extends ApartmentError {
   GetUserLikedApartmentsError({required this.extra})
       : super(
           code: ApartmentErrorCode.GET_USER_LIKED_APARTMENTS_ERR,
-          message: 'Failed to get user liked sublets',
+          message: 'Failed to get user liked apartments',
         );
 }
 
@@ -129,7 +129,7 @@ class ChangeApartmentAvailabilityStatusError extends ApartmentError {
   ChangeApartmentAvailabilityStatusError({required this.extra})
       : super(
           code: ApartmentErrorCode.CHANGE_APARTMENT_AVAILABILITY_STATUS_ERR,
-          message: 'Failed to change sublet availability status',
+          message: 'Failed to change apartment availability status',
         );
 }
 
@@ -139,7 +139,7 @@ class DeleteUserApartmentError extends ApartmentError {
   DeleteUserApartmentError({required this.extra})
       : super(
           code: ApartmentErrorCode.DELETE_APARTMENT_ERR,
-          message: 'Failed to delete user sublet',
+          message: 'Failed to delete user apartment',
         );
 }
 

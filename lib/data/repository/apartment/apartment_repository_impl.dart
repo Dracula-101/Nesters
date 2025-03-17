@@ -139,6 +139,41 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   }
 
   @override
+  Future<List<ApartmentModel>> getNearbyApartments({
+    required String userId,
+    int rangeInKm = 10,
+    int range = 10,
+    int paginationKey = 0,
+  }) async {
+    try {
+      final response =
+          await _supabaseClient.rpc('get_nearby_apartments', params: {
+        'uid': userId,
+        'range_km': rangeInKm,
+        'page_limit': range,
+        'offset_value': paginationKey,
+      });
+      List<ApartmentModel> apartments = [];
+      for (final apartment in response) {
+        apartments.add(ApartmentModel.fromMap(apartment));
+      }
+      return apartments;
+    } on SocketException {
+      throw NoNetworkError();
+    } on PostgrestException catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.GET_APARTMENTS_ERR,
+        e.message,
+      );
+    } catch (e) {
+      throw ApartmentErrorFactory.createApartmentError(
+        ApartmentErrorCode.GET_APARTMENTS_ERR,
+        e.toString(),
+      );
+    }
+  }
+
+  @override
   Future<List<ApartmentModel>> singleFilterApartment({
     required SingleApartmentFilter filter,
     required String userId,

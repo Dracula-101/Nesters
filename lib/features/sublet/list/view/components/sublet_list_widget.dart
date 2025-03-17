@@ -5,6 +5,7 @@ import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_carousel.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/extensions/measure_units.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class SubletModelWidget extends StatelessWidget {
@@ -227,7 +228,19 @@ class SubletModelWidget extends StatelessWidget {
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),
-        )
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(7),
+          ),
+          child: Text(
+            '${(sublet.distanceFromUserInMetres ?? 0).roundMiles}mi away',
+            style: AppTheme.labelMedium.copyWith(color: AppTheme.onSurface),
+          ),
+        ),
       ],
     );
   }

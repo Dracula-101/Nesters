@@ -24,6 +24,7 @@ class ApartmentModel {
   Location? location;
   bool? isAvailable;
   bool? isFavouriteByUser;
+  double? distanceFromUserInMeters;
 
   ApartmentModel({
     required this.id,
@@ -38,6 +39,7 @@ class ApartmentModel {
     this.location,
     this.isAvailable = true,
     this.isFavouriteByUser = false,
+    this.distanceFromUserInMeters,
   });
 
   bool isApartmentActive() {
@@ -76,6 +78,7 @@ class ApartmentModel {
       isFavouriteByUser: map['apartment_likes'] == null
           ? false
           : (map['apartment_likes']['is_liked'] ?? false),
+      distanceFromUserInMeters: map['distance_m'] ?? 0.0,
     );
   }
 
@@ -91,6 +94,7 @@ class ApartmentModel {
     String? address,
     Location? location,
     bool? isAvailable,
+    double? distanceFromUserInMeters,
   }) {
     return ApartmentModel(
       id: id ?? this.id,
@@ -104,6 +108,8 @@ class ApartmentModel {
       address: address ?? this.address,
       location: location ?? this.location,
       isAvailable: isAvailable ?? this.isAvailable,
+      distanceFromUserInMeters:
+          distanceFromUserInMeters ?? this.distanceFromUserInMeters,
     );
   }
 }

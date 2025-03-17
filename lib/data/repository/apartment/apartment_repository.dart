@@ -22,8 +22,15 @@ abstract class ApartmentRepository {
 
   Future<List<ApartmentModel>> getApartments({
     required String userId,
-    int range = 10,
-    int paginationKey = 0,
+    int range,
+    int paginationKey,
+  });
+
+  Future<List<ApartmentModel>> getNearbyApartments({
+    required String userId,
+    int rangeInKm,
+    int range,
+    int paginationKey,
   });
 
   Future<List<ApartmentModel>> singleFilterApartment({

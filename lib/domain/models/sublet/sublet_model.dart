@@ -33,6 +33,7 @@ class SubletModel {
   Location? location;
   bool? isAvailable;
   bool? isFavouriteByUser;
+  double? distanceFromUserInMetres;
 
   SubletModel({
     required this.id,
@@ -50,6 +51,7 @@ class SubletModel {
     this.location,
     this.isAvailable = true,
     this.isFavouriteByUser = false,
+    this.distanceFromUserInMetres,
   });
 
   bool isSubletActive() {
@@ -77,7 +79,7 @@ class SubletModel {
 
   factory SubletModel.fromMap(Map<String, dynamic> map) {
     return SubletModel(
-      id: map['id'] ?? 0,
+      id: map['id'] ?? map['sublet_id'] ?? 0,
       userId: map['user_id'] ?? '',
       roomDescription: map['room_description'] ?? '',
       roommateDescription: map['roommate_description'] ?? '',
@@ -94,6 +96,7 @@ class SubletModel {
       isFavouriteByUser: map['sublet_likes'] == null
           ? false
           : (map['sublet_likes']['is_liked'] ?? false),
+      distanceFromUserInMetres: map['distance_m'] ?? 0.0,
     );
   }
 
@@ -112,6 +115,7 @@ class SubletModel {
     String? address,
     Location? location,
     bool? isAvailable,
+    double? distanceFromUserInMetres,
   }) {
     return SubletModel(
       id: id ?? this.id,
@@ -128,6 +132,8 @@ class SubletModel {
       address: address ?? this.address,
       location: location ?? this.location,
       isAvailable: isAvailable ?? this.isAvailable,
+      distanceFromUserInMetres:
+          distanceFromUserInMetres ?? this.distanceFromUserInMetres,
     );
   }
 }

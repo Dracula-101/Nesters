@@ -5,6 +5,7 @@ import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/features/apartment/list/view/components/apartment_carousel.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/extensions/measure_units.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class ApartmentModelWidget extends StatelessWidget {
@@ -180,6 +181,18 @@ class ApartmentModelWidget extends StatelessWidget {
             apartment.address?.toTitleCase ?? 'No Location Provided',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(7),
+          ),
+          child: Text(
+            '${(apartment.distanceFromUserInMeters ?? 0).roundMiles}mi away',
+            style: AppTheme.labelMedium.copyWith(color: AppTheme.onSurface),
           ),
         )
       ],

@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/data/repository/sublet/error/sublet_error.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
-import 'package:nesters/domain/models/sublet/nearby_sublet_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_filter.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
@@ -154,7 +153,7 @@ class SubletRepositoryImpl implements SubletRepository {
   }
 
   @override
-  Future<List<NearbySubletModel>> getNearbySublets({
+  Future<List<SubletModel>> getNearbySublets({
     required String userId,
     double rangeKm = 10,
     int range = 10,
@@ -167,9 +166,9 @@ class SubletRepositoryImpl implements SubletRepository {
         'page_limit': range,
         'offset_value': paginationKey,
       });
-      List<NearbySubletModel> nearbySublets = [];
+      List<SubletModel> nearbySublets = [];
       for (final sublet in response) {
-        nearbySublets.add(NearbySubletModel.fromMap(sublet));
+        nearbySublets.add(SubletModel.fromMap(sublet));
       }
       return nearbySublets;
     } on supabase.PostgrestException catch (e) {

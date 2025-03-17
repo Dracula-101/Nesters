@@ -12,7 +12,6 @@ import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
-import 'package:nesters/domain/models/sublet/nearby_sublet_model.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 import 'package:nesters/features/sublet/list/view/components/filter_page.dart';
@@ -56,7 +55,7 @@ class SubletListView extends StatefulWidget {
 }
 
 class _SubletListViewState extends State<SubletListView> {
-  final PagingController<int, NearbySubletModel> _pagingController =
+  final PagingController<int, SubletModel> _pagingController =
       PagingController(firstPageKey: 0);
   final SubletRepository _subletRepository = GetIt.I<SubletRepository>();
   final AuthRepository _authRepository = GetIt.I<AuthRepository>();
@@ -66,11 +65,11 @@ class _SubletListViewState extends State<SubletListView> {
   Future<void> loadSublets(int pageKey) async {
     try {
       _logger.info('Loading sublets for page $pageKey');
-      final List<NearbySubletModel> sublets =
+      final List<SubletModel> sublets =
           await _subletRepository.getNearbySublets(
         userId: _authRepository.currentUser!.id,
         paginationKey: pageKey,
-        rangeKm: 50,
+        rangeKm: 50000000,
       );
       final isLastPage = sublets.length < _pageSize;
       if (isLastPage) {
@@ -161,7 +160,7 @@ class _SubletListViewState extends State<SubletListView> {
   Widget _buildSubletList() {
     return PagedSliverList(
       pagingController: _pagingController,
-      builderDelegate: PagedChildBuilderDelegate<NearbySubletModel>(
+      builderDelegate: PagedChildBuilderDelegate<SubletModel>(
         firstPageProgressIndicatorBuilder: (context) =>
             const ShimmerSubletPage(),
         itemBuilder: (context, sublet, index) {
