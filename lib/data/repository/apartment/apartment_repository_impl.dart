@@ -177,45 +177,62 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   Future<List<ApartmentModel>> singleFilterApartment({
     required SingleApartmentFilter filter,
     required String userId,
-  }) {
+  }) async {
     // singleapartment filter
     // - GenderPreferenceFilter, RentFilter, ApartmentTypeFilter, ApartmentSizeFilter
     try {
-      PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
-          _supabaseClient.from(apartmentsTable).select();
-      queryBuilder = queryBuilder.eq("is_available", true);
-      if (filter is GenderPreferenceFilter) {
-        queryBuilder = queryBuilder.eq(
-            "roommate_gender_pref", filter.preferredGender.toString());
-      } else if (filter is RentFilter) {
-        queryBuilder = queryBuilder
-            .gte("rent", filter.startRent)
-            .lte("rent", filter.endRent);
-      } else if (filter is ApartmentTypeFilter) {
-        queryBuilder =
-            queryBuilder.eq("room_type", filter.apartmentType.toString());
-      } else if (filter is ApartmentSizeFilter) {
-        log("Filter Apartment Size: ${filter.apartmentSize.beds} Beds, ${filter.apartmentSize.baths} Baths");
-        queryBuilder = queryBuilder
-            .gte("beds", filter.apartmentSize.beds ?? 0)
-            .gte("baths", filter.apartmentSize.baths ?? 0);
-      }
-      queryBuilder = queryBuilder.neq("user_id", userId);
-      PostgrestTransformBuilder<List<Map<String, dynamic>>> response =
-          queryBuilder;
-      if (filter is ApartmentSizeFilter) {
-        response = response
-            .order("beds", ascending: true)
-            .order("baths", ascending: true);
-      }
-      if (filter is RentFilter) {
-        response = response.order("rent", ascending: true);
+      if (filter is LocationFilter) {
+        final response =
+            await _supabaseClient.rpc('get_nearby_apartments', params: {
+          'uid': userId,
+          'source_latitude': filter.location.latitude,
+          'source_longitude': filter.location.longitude,
+          'range_km': filter.radiusKm,
+          'page_limit': 50,
+          'offset_value': 0,
+        });
+        List<ApartmentModel> apartments = [];
+        for (final apartment in response) {
+          apartments.add(ApartmentModel.fromMap(apartment));
+        }
+        return apartments;
       } else {
-        response = response.order("id", ascending: false);
+        PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
+            _supabaseClient.from(apartmentsTable).select();
+        queryBuilder = queryBuilder.eq("is_available", true);
+        if (filter is GenderPreferenceFilter) {
+          queryBuilder = queryBuilder.eq(
+              "roommate_gender_pref", filter.preferredGender.toString());
+        } else if (filter is RentFilter) {
+          queryBuilder = queryBuilder
+              .gte("rent", filter.startRent)
+              .lte("rent", filter.endRent);
+        } else if (filter is ApartmentTypeFilter) {
+          queryBuilder =
+              queryBuilder.eq("room_type", filter.apartmentType.toString());
+        } else if (filter is ApartmentSizeFilter) {
+          log("Filter Apartment Size: ${filter.apartmentSize.beds} Beds, ${filter.apartmentSize.baths} Baths");
+          queryBuilder = queryBuilder
+              .gte("beds", filter.apartmentSize.beds ?? 0)
+              .gte("baths", filter.apartmentSize.baths ?? 0);
+        }
+        queryBuilder = queryBuilder.neq("user_id", userId);
+        PostgrestTransformBuilder<List<Map<String, dynamic>>> response =
+            queryBuilder;
+        if (filter is ApartmentSizeFilter) {
+          response = response
+              .order("beds", ascending: true)
+              .order("baths", ascending: true);
+        }
+        if (filter is RentFilter) {
+          response = response.order("rent", ascending: true);
+        } else {
+          response = response.order("id", ascending: false);
+        }
+        return response
+            .select()
+            .then((v) => v.map((e) => ApartmentModel.fromMap(e)).toList());
       }
-      return response
-          .select()
-          .then((v) => v.map((e) => ApartmentModel.fromMap(e)).toList());
     } on SocketException {
       throw NoNetworkError();
     } on PostgrestException catch (e) {

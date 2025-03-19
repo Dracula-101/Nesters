@@ -8,6 +8,8 @@ import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/data/repository/apartment/apartment_repository.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
+import 'package:nesters/features/apartment/list/view/components/filter_apartment_location.dart';
 import 'package:nesters/features/apartment/list/view/components/filter_page.dart';
 import 'package:nesters/features/apartment/list/view/shimmer_apartment_list_page.dart';
 import 'package:nesters/features/apartment/list/bloc/apartment_bloc.dart';
@@ -256,12 +258,60 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                   TopActionButton(
                     icon: Icons.filter,
                     title: 'Filter',
-                    onPressed: () {
+                    onClose: () {
                       showFilterDialog(context, apartmentState);
                     },
                     isActive: apartmentState.apartmentFilter != null,
                     closeIcon: false,
                   ),
+                  if (apartmentState.singleApartmentFilter == null ||
+                      apartmentState.singleApartmentFilter is LocationFilter)
+                    TopActionButton(
+                      icon: Icons.location_on,
+                      title: "Location",
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) {
+                            return Material(
+                              color: Colors.transparent,
+                              child: ApartmentLocationFilter(
+                                apartments:
+                                    apartmentState.filteredApartmentList ??
+                                        _pagingController.itemList ??
+                                        [],
+                                location: apartmentState.singleApartmentFilter
+                                        is LocationFilter
+                                    ? (apartmentState.singleApartmentFilter
+                                            as LocationFilter)
+                                        .location
+                                    : null,
+                              ),
+                            );
+                          },
+                        ).then((value) {
+                          if (value != null && value is Location) {
+                            final filter = LocationFilter(
+                              location: value,
+                              radiusKm: 5,
+                            );
+                            context
+                                .read<ApartmentBloc>()
+                                .add(ApartmentEvent.addSingleFilter(filter));
+                          }
+                        });
+                      },
+                      onClose: () async {
+                        if (apartmentState.singleApartmentFilter
+                            is LocationFilter) {
+                          context
+                              .read<ApartmentBloc>()
+                              .add(const ApartmentEvent.removeSingleFilter());
+                        }
+                      },
+                      isActive: apartmentState.singleApartmentFilter
+                          is LocationFilter,
+                    ),
                   if (apartmentState.singleApartmentFilter == null ||
                       apartmentState.singleApartmentFilter is RentFilter)
                     TopActionButton(
@@ -271,7 +321,7 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                           : "Rent",
                       isActive:
                           apartmentState.singleApartmentFilter is RentFilter,
-                      onPressed: () async {
+                      onClose: () async {
                         if (apartmentState.singleApartmentFilter
                             is RentFilter) {
                           context
@@ -377,7 +427,7 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                               .apartmentSize
                               .toFormattedString()
                           : "Size",
-                      onPressed: () async {
+                      onClose: () async {
                         if (apartmentState.singleApartmentFilter
                             is ApartmentSizeFilter) {
                           context

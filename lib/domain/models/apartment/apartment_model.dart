@@ -73,7 +73,7 @@ class ApartmentModel {
       amenitiesAvailable: Amenities.fromMap(map['amenities_available'] ?? {}),
       apartmentSize: ApartmentSize.fromMap(map),
       address: map['address'],
-      location: Location.fromPoint(map['location']),
+      location: Location.fromMap(map),
       isAvailable: map['is_available'] ?? true,
       isFavouriteByUser: map['apartment_likes'] == null
           ? false

@@ -5,21 +5,24 @@ import 'package:nesters/theme/theme.dart';
 class TopActionButton extends StatelessWidget {
   final String title;
   final IconData icon;
-  final VoidCallback onPressed;
+  final VoidCallback onClose;
+  final VoidCallback? onTap;
   final bool isActive;
   final bool closeIcon;
-  const TopActionButton(
-      {super.key,
-      required this.title,
-      required this.icon,
-      required this.onPressed,
-      required this.isActive,
-      this.closeIcon = true});
+  const TopActionButton({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.onClose,
+    this.onTap,
+    required this.isActive,
+    this.closeIcon = true,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onPressed,
+      onTap: onTap,
       child: Container(
         margin: const EdgeInsets.all(8),
         padding: const EdgeInsets.all(8),
@@ -37,11 +40,18 @@ class TopActionButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (closeIcon) ...[
-              Icon(
-                isActive ? Icons.close : icon,
-                size: 16,
+              GestureDetector(
+                onTap: onClose,
+                child: Row(
+                  children: [
+                    Icon(
+                      isActive ? Icons.close : icon,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
               ),
-              const SizedBox(width: 8),
             ],
             Text(
               title,

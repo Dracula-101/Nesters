@@ -98,10 +98,7 @@ class _UserLocationFilterState extends State<UserLocationFilter> {
       builder: (_, snapshot) {
         if (snapshot.hasData) {
           return (snapshot.data != null)
-              ? GoogleMapLocation(
-                  lattitude: snapshot.data!.latitude,
-                  longitude: snapshot.data!.longitude,
-                )
+              ? SizedBox()
               : ShowErrorWidget(
                   error: Exception('Location not found'),
                   message: 'Failed to get location',
@@ -129,57 +126,5 @@ class _UserLocationFilterState extends State<UserLocationFilter> {
   @override
   void dispose() {
     super.dispose();
-  }
-}
-
-class GoogleMapLocation extends StatefulWidget {
-  final double lattitude;
-  final double longitude;
-  const GoogleMapLocation({
-    super.key,
-    required this.lattitude,
-    required this.longitude,
-  });
-
-  @override
-  State<GoogleMapLocation> createState() => _GoogleMapLocationState();
-}
-
-class _GoogleMapLocationState extends State<GoogleMapLocation> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
-
-  CameraPosition? _kGooglePlex;
-
-  @override
-  void initState() {
-    super.initState();
-    _kGooglePlex = CameraPosition(
-      target: LatLng(widget.lattitude, widget.longitude),
-      zoom: 14.4746,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: GoogleMap(
-        mapType: MapType.normal,
-        buildingsEnabled: false,
-        compassEnabled: true,
-        liteModeEnabled: true,
-        markers: <Marker>{
-          Marker(
-            markerId: const MarkerId('user_location'),
-            position: LatLng(widget.lattitude, widget.longitude),
-            infoWindow: const InfoWindow(title: 'Your Location'),
-          ),
-        },
-        initialCameraPosition: _kGooglePlex!,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-      ),
-    );
   }
 }

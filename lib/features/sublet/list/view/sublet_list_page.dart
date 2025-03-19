@@ -13,6 +13,7 @@ import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 import 'package:nesters/features/sublet/list/view/components/filter_page.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
@@ -265,40 +266,64 @@ class _SubletListViewState extends State<SubletListView> {
                       TopActionButton(
                         icon: Icons.filter,
                         title: 'Filter',
-                        onPressed: () {
+                        onTap: () {
                           showFilterDialog(context, subletState);
+                        },
+                        onClose: () {
+                          context
+                              .read<SubletBloc>()
+                              .add(const SubletEvent.removeFilterEvent());
                         },
                         isActive: subletState.subletFilter != null,
                         closeIcon: false,
                       ),
-                      TopActionButton(
-                        icon: Icons.location_on,
-                        title: "Location",
-                        onPressed: () async {
-                          if (subletState.singleSubletFilter
-                              is LocationFilter) {
-                            context
-                                .read<SubletBloc>()
-                                .add(const SubletEvent.removeSingleFilter());
-                          } else {
+                      if (subletState.singleSubletFilter == null ||
+                          subletState.singleSubletFilter is LocationFilter)
+                        TopActionButton(
+                          icon: Icons.location_on,
+                          title: "Location",
+                          onTap: () {
                             showDialog(
                               context: context,
                               builder: (ctx) {
                                 return Material(
                                   color: Colors.transparent,
                                   child: SubletLocationFilter(
-                                    sublets: _pagingController.itemList
-                                            ?.sublist(0, 10) ??
+                                    sublets: subletState.filteredSubletList ??
+                                        _pagingController.itemList ??
                                         [],
+                                    location: subletState.singleSubletFilter
+                                            is LocationFilter
+                                        ? (subletState.singleSubletFilter
+                                                as LocationFilter)
+                                            .location
+                                        : null,
                                   ),
                                 );
                               },
-                            );
-                          }
-                        },
-                        isActive:
-                            subletState.singleSubletFilter is LocationFilter,
-                      ),
+                            ).then((value) {
+                              if (value != null && value is Location) {
+                                final filter = LocationFilter(
+                                  location: value,
+                                  radiusKm: 5,
+                                );
+                                context
+                                    .read<SubletBloc>()
+                                    .add(SubletEvent.addSingleFilter(filter));
+                              }
+                            });
+                          },
+                          onClose: () async {
+                            if (subletState.singleSubletFilter
+                                is LocationFilter) {
+                              context
+                                  .read<SubletBloc>()
+                                  .add(const SubletEvent.removeSingleFilter());
+                            }
+                          },
+                          isActive:
+                              subletState.singleSubletFilter is LocationFilter,
+                        ),
                       if (subletState.singleSubletFilter == null ||
                           subletState.singleSubletFilter is RentFilter)
                         TopActionButton(
@@ -308,7 +333,7 @@ class _SubletListViewState extends State<SubletListView> {
                               : "Rent",
                           isActive:
                               subletState.singleSubletFilter is RentFilter,
-                          onPressed: () async {
+                          onClose: () async {
                             if (subletState.singleSubletFilter is RentFilter) {
                               context
                                   .read<SubletBloc>()
@@ -416,7 +441,7 @@ class _SubletListViewState extends State<SubletListView> {
                                   .apartmentSize
                                   .toFormattedString()
                               : "Size",
-                          onPressed: () async {
+                          onClose: () async {
                             if (subletState.singleSubletFilter
                                 is ApartmentSizeFilter) {
                               context
@@ -536,7 +561,7 @@ class _SubletListViewState extends State<SubletListView> {
                                   .apartmentType
                                   .toString()
                               : "Type",
-                          onPressed: () async {
+                          onClose: () async {
                             if (subletState.singleSubletFilter
                                 is ApartmentTypeFilter) {
                               context
@@ -638,7 +663,7 @@ class _SubletListViewState extends State<SubletListView> {
                               : "Gender Pref",
                           isActive: subletState.singleSubletFilter
                               is GenderPreferenceFilter,
-                          onPressed: () async {
+                          onClose: () async {
                             if (subletState.singleSubletFilter
                                 is GenderPreferenceFilter) {
                               context

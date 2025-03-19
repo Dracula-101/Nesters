@@ -13,6 +13,7 @@ import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/apartment/apartment_filter.dart';
 import 'package:nesters/domain/models/apartment/apartment_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/features/home/bloc/home_bloc.dart';
 import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';

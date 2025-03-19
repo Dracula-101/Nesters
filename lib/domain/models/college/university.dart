@@ -30,8 +30,7 @@ class University extends Equatable {
     title = json['title'];
     logo = json['logo'];
     region = json['region'];
-    location =
-        json['location'] != null ? Location.fromPoint(json['location']) : null;
+    location = json['location'] != null ? Location.fromMap(json) : null;
   }
 
   Map<String, dynamic> toJson() {

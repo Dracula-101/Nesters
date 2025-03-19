@@ -242,7 +242,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                       TopActionButton(
                         icon: Icons.filter,
                         title: 'Filter',
-                        onPressed: () {
+                        onClose: () {
                           showMultipleFilterDialog(marketplaceState);
                         },
                         isActive: marketplaceState.advancedFilter != null,
@@ -262,7 +262,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                               : "Category",
                           isActive: marketplaceState.singleFilter
                               is MarketplaceCategoryFilter,
-                          onPressed: () async {
+                          onClose: () async {
                             if (marketplaceState.singleFilter
                                 is MarketplaceCategoryFilter) {
                               context.read<MarketplaceBloc>().add(

@@ -61,7 +61,14 @@ $$ LANGUAGE plpgsql;
 
 -- Example usage
 SELECT * FROM get_nearby_sublets('25f247de-78b8-4ebc-91ac-1451302dc9ff', 1000);
-
+SELECT * FROM get_nearby_sublets(
+    '25f247de-78b8-4ebc-91ac-1451302dc9ff', 
+    1000000, 
+    0, 
+    10, 
+    -74.01069425046444,
+     40.64151070303465
+);
 
 CREATE OR REPLACE FUNCTION get_nearby_apartments(
     uid UUID,
@@ -249,3 +256,6 @@ $$ LANGUAGE plpgsql;
 
 -- Example usage
 SELECT * FROM get_users('25f247de-78b8-4ebc-91ac-1451302dc9ff', 'New York University (NYU)');
+
+
+SELECT * FROM get_nearby_marketplaces('25f247de-78b8-4ebc-91ac-1451302dc9ff', 1000000);

@@ -361,7 +361,7 @@ class _UserListViewState extends State<UserListView> {
                 TopActionButton(
                   icon: Icons.filter,
                   title: 'Filter',
-                  onPressed: () {
+                  onClose: () {
                     showFilterDialog(context, homeState, appState);
                   },
                   isActive: homeState.userFilter != null,
@@ -372,7 +372,7 @@ class _UserListViewState extends State<UserListView> {
                   TopActionButton(
                     icon: Icons.location_on,
                     title: "Location",
-                    onPressed: () async {
+                    onClose: () async {
                       if (homeState.singleUserFilter is LocationFilter) {
                         context
                             .read<HomeBloc>()
@@ -410,7 +410,7 @@ class _UserListViewState extends State<UserListView> {
                             ''
                         : "University",
                     isActive: homeState.singleUserFilter is UniversityFilter,
-                    onPressed: () async {
+                    onClose: () async {
                       if (homeState.singleUserFilter is UniversityFilter) {
                         context
                             .read<HomeBloc>()
@@ -488,7 +488,7 @@ class _UserListViewState extends State<UserListView> {
                     title: homeState.singleUserFilter is BranchFilter
                         ? (homeState.singleUserFilter as BranchFilter).branch
                         : "Branch",
-                    onPressed: () async {
+                    onClose: () async {
                       if (homeState.singleUserFilter is BranchFilter) {
                         context
                             .read<HomeBloc>()
@@ -571,7 +571,7 @@ class _UserListViewState extends State<UserListView> {
                     title: homeState.singleUserFilter is GenderFilter
                         ? (homeState.singleUserFilter as GenderFilter).gender
                         : 'Gender',
-                    onPressed: () async {
+                    onClose: () async {
                       if (homeState.singleUserFilter is GenderFilter) {
                         context
                             .read<HomeBloc>()

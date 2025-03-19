@@ -91,7 +91,7 @@ class SubletModel {
       apartmentSize: ApartmentSize.fromMap(map),
       roomType: UserRoomType.fromString(map['room_type'] ?? ''),
       address: map['address'] ?? '',
-      location: Location.fromPoint(map['location']),
+      location: Location.fromMap(map),
       isAvailable: map['is_available'] ?? true,
       isFavouriteByUser: map['sublet_likes'] == null
           ? false

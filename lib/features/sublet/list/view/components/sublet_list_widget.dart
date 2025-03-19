@@ -215,6 +215,7 @@ class SubletModelWidget extends StatelessWidget {
 
   Widget _buildLocation() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
         Icon(
           Icons.location_on_rounded,
@@ -229,7 +230,7 @@ class SubletModelWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        const SizedBox(width: 8),
+        const Spacer(flex: 2),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(

@@ -11,6 +11,7 @@ import 'package:nesters/domain/models/apartment/apartment_size.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/sublet/sublet_filter.dart';
 import 'package:nesters/domain/models/sublet/sublet_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
 

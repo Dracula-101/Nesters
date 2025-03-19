@@ -144,6 +144,13 @@ class _SaveApartments extends ApartmentEvent {
 
 abstract class SingleApartmentFilter {}
 
+class LocationFilter extends SingleApartmentFilter {
+  final Location location;
+  final double radiusKm;
+
+  LocationFilter({required this.location, required this.radiusKm});
+}
+
 class _SingleAddFilterApartmentEvent extends ApartmentEvent {
   const _SingleAddFilterApartmentEvent(this.filter);
 

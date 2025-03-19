@@ -199,39 +199,54 @@ class SubletRepositoryImpl implements SubletRepository {
   Future<List<SubletModel>> singleFilterSublet({
     required SingleSubletFilter filter,
     required String userId,
-  }) {
-    // singlesublet filter
-    // - GenderPreferenceFilter, RentFilter, ApartmentTypeFilter, ApartmentSizeFilter
+  }) async {
     try {
-      PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
-          _supabaseClient.from(subletTable).select();
-      queryBuilder = queryBuilder.eq("is_available", true);
-      if (filter is GenderPreferenceFilter) {
-        queryBuilder = queryBuilder.eq(
-            "roommate_gender_pref", filter.preferredGender.toString());
-      } else if (filter is RentFilter) {
-        queryBuilder = queryBuilder
-            .gte("rent", filter.startRent)
-            .lte("rent", filter.endRent);
-      } else if (filter is ApartmentTypeFilter) {
-        queryBuilder =
-            queryBuilder.eq("room_type", filter.apartmentType.toString());
-      } else if (filter is ApartmentSizeFilter) {
-        queryBuilder = queryBuilder
-            .gte("beds", filter.apartmentSize.beds ?? 0)
-            .gte("baths", filter.apartmentSize.baths ?? 0);
+      if (filter is LocationFilter) {
+        final response =
+            await _supabaseClient.rpc('get_nearby_sublets', params: {
+          'uid': userId,
+          'source_latitude': filter.location.latitude,
+          'source_longitude': filter.location.longitude,
+          'range_km': filter.radiusKm,
+          'page_limit': 50,
+          'offset_value': 0,
+        });
+        List<SubletModel> nearbySublets = [];
+        for (final sublet in response) {
+          nearbySublets.add(SubletModel.fromMap(sublet));
+        }
+        return nearbySublets;
+      } else {
+        PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
+            _supabaseClient.from(subletTable).select();
+        queryBuilder = queryBuilder.eq("is_available", true);
+        if (filter is GenderPreferenceFilter) {
+          queryBuilder = queryBuilder.eq(
+              "roommate_gender_pref", filter.preferredGender.toString());
+        } else if (filter is RentFilter) {
+          queryBuilder = queryBuilder
+              .gte("rent", filter.startRent)
+              .lte("rent", filter.endRent);
+        } else if (filter is ApartmentTypeFilter) {
+          queryBuilder =
+              queryBuilder.eq("room_type", filter.apartmentType.toString());
+        } else if (filter is ApartmentSizeFilter) {
+          queryBuilder = queryBuilder
+              .gte("beds", filter.apartmentSize.beds ?? 0)
+              .gte("baths", filter.apartmentSize.baths ?? 0);
+        }
+        queryBuilder = queryBuilder.neq("user_id", userId);
+        PostgrestTransformBuilder<List<Map<String, dynamic>>> response =
+            queryBuilder;
+        if (filter is ApartmentSizeFilter) {
+          response = response
+              .order("beds", ascending: true)
+              .order("baths", ascending: true);
+        }
+        return response
+            .order("id", ascending: false)
+            .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
       }
-      queryBuilder = queryBuilder.neq("user_id", userId);
-      PostgrestTransformBuilder<List<Map<String, dynamic>>> response =
-          queryBuilder;
-      if (filter is ApartmentSizeFilter) {
-        response = response
-            .order("beds", ascending: true)
-            .order("baths", ascending: true);
-      }
-      return response
-          .order("id", ascending: false)
-          .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,

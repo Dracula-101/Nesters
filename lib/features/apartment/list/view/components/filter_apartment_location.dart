@@ -2,21 +2,23 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:nesters/domain/models/sublet/sublet_model.dart';
+import 'package:nesters/domain/models/apartment/apartment_model.dart';
 import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/utils/widgets/google_map.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
-class SubletLocationFilter extends StatefulWidget {
-  final List<SubletModel> sublets;
+class ApartmentLocationFilter extends StatefulWidget {
+  final List<ApartmentModel> apartments;
   final Location? location;
-  const SubletLocationFilter({super.key, required this.sublets, this.location});
+  const ApartmentLocationFilter(
+      {super.key, required this.apartments, this.location});
 
   @override
-  State<SubletLocationFilter> createState() => _SubletLocationFilterState();
+  State<ApartmentLocationFilter> createState() =>
+      _ApartmentLocationFilterState();
 }
 
-class _SubletLocationFilterState extends State<SubletLocationFilter> {
+class _ApartmentLocationFilterState extends State<ApartmentLocationFilter> {
   final StreamController<LocationPermission> _permissionStream =
       StreamController<LocationPermission>.broadcast();
 
@@ -93,7 +95,7 @@ class _SubletLocationFilterState extends State<SubletLocationFilter> {
 
   Widget _buildLocationMap() {
     return GoogleMapLocation(
-      markers: widget.sublets.map((sublet) {
+      markers: widget.apartments.map((sublet) {
         return MarkerInfo(
           id: sublet.id.toString(),
           lattiude: sublet.location?.latitude ?? 0,
@@ -104,7 +106,7 @@ class _SubletLocationFilterState extends State<SubletLocationFilter> {
         );
       }).toList(),
       initialLocation: widget.location,
-      tooltip: 'Move the marker to find the sublets within the radius.',
+      tooltip: 'Move the marker to find the apartments within the radius.',
     );
   }
 

@@ -57,4 +57,6 @@ class LocalStorageKeys {
   static const degreeList = 'degreeList';
   static const marketplaceCategoryList = 'marketplaceCategoryList';
   static const settingInfoStatus = 'settingInfoStatus';
+  static const locationLatitude = 'locationLatitude';
+  static const locationLongitude = 'locationLongitude';
 }

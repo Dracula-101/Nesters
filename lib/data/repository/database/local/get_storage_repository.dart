@@ -118,7 +118,7 @@ class GetStorageRepository extends LocalStorageRepository {
   double? getDouble(String key) {
     try {
       final value = _getStorage.read(key);
-      if (value is! double) {
+      if (value is! double?) {
         throw LocalStorageObjectMisMatchError.fromMisMatchType(
             double, value.runtimeType);
       }
@@ -141,7 +141,7 @@ class GetStorageRepository extends LocalStorageRepository {
   List<Object?>? getListObject(String key) {
     try {
       final value = _getStorage.read(key);
-      if (value is! List<Object>) {
+      if (value is! List<Object>?) {
         throw LocalStorageObjectMisMatchError.fromMisMatchType(
             List<Object>, value.runtimeType);
       }
@@ -178,11 +178,11 @@ class GetStorageRepository extends LocalStorageRepository {
   T? getClass<T>(String key, T Function(Map<String, dynamic>) fromJson) {
     try {
       final value = _getStorage.read(key);
-      if (value is! Map<String, dynamic>) {
+      if (value is! Map<String, dynamic>?) {
         throw LocalStorageObjectMisMatchError.fromMisMatchType(
             Map<String, dynamic>, value.runtimeType);
       }
-      return fromJson(value);
+      return value == null ? null : fromJson(value);
     } catch (_) {
       throw LocalStorageGetKeyError(key);
     }

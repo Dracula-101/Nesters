@@ -60,7 +60,7 @@ class MarketplaceModel {
       category: MarketplaceCategoryModel.fromJson(json['category']),
       reference: MarketplaceLinkModel.fromJson(json['link'] ?? {}),
       address: json['address'] ?? '',
-      location: Location.fromPoint(json['location']),
+      location: Location.fromMap(json),
       period: MarketplacePeriodModel.fromJson(json['period'] ?? {}),
       isAvailable: json['is_available'] ?? false,
       createdAt: DateTime.fromMillisecondsSinceEpoch(json['created_at']),

@@ -6,13 +6,15 @@ class CustomFlatButton extends StatelessWidget {
   final TextStyle? textStyle;
   final EdgeInsetsGeometry? padding;
   final VoidCallback onPressed;
+  final bool enabled;
   const CustomFlatButton(
       {super.key,
       required this.onPressed,
       this.padding,
       required this.text,
       this.textStyle,
-      this.isLoading});
+      this.isLoading,
+      this.enabled = true});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class CustomFlatButton extends StatelessWidget {
           onTap: onPressed,
           child: Container(
             decoration: BoxDecoration(
-              color: AppTheme.primary,
+              color: enabled ? AppTheme.primary : AppTheme.greyShades.shade300,
               borderRadius: BorderRadius.circular(8),
             ),
             width: constraints.maxWidth,
@@ -40,7 +42,10 @@ class CustomFlatButton extends StatelessWidget {
                 : Text(
                     text,
                     style: textStyle ??
-                        AppTheme.bodyMedium.copyWith(color: AppTheme.onPrimary),
+                        AppTheme.bodyMedium.copyWith(
+                            color: enabled
+                                ? AppTheme.onPrimary
+                                : AppTheme.greyShades.shade600),
                   ),
           ),
         );

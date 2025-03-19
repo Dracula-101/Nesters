@@ -155,7 +155,13 @@ class _SingleRemoveFilterSubletEvent extends SubletEvent {
 }
 
 class LocationFilter extends SingleSubletFilter {
-  LocationFilter();
+  final Location location;
+  final double radiusKm;
+
+  LocationFilter({
+    required this.location,
+    required this.radiusKm,
+  });
 }
 
 class GenderPreferenceFilter extends SingleSubletFilter {
