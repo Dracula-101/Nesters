@@ -28,7 +28,7 @@ abstract class SubletRepository {
 
   Future<List<SubletModel>> getNearbySublets({
     required String userId,
-    double rangeKm,
+    double locationRange,
     int range,
     int paginationKey,
   });

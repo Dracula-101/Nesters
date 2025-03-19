@@ -155,14 +155,14 @@ class SubletRepositoryImpl implements SubletRepository {
   @override
   Future<List<SubletModel>> getNearbySublets({
     required String userId,
-    double rangeKm = 10,
+    double locationRange = 10,
     int range = 10,
     int paginationKey = 0,
   }) async {
     try {
       final response = await _supabaseClient.rpc('get_nearby_sublets', params: {
         'uid': userId,
-        'range_km': rangeKm,
+        'range_km': locationRange,
         'page_limit': range,
         'offset_value': paginationKey,
       });

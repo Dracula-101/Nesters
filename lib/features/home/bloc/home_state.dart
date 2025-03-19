@@ -147,6 +147,10 @@ class HomeState extends Equatable {
 
 abstract class SingleUserFilter {}
 
+class LocationFilter extends SingleUserFilter {
+  LocationFilter();
+}
+
 class UniversityFilter extends SingleUserFilter {
   final University university;
 

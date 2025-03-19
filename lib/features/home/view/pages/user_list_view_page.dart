@@ -15,6 +15,7 @@ import 'package:nesters/domain/models/user/profile/user_quick_profile.dart';
 import 'package:nesters/features/auth/bloc/auth_bloc.dart';
 import 'package:nesters/features/home/home.dart';
 import 'package:nesters/features/home/view/components/filter_page.dart';
+import 'package:nesters/features/home/view/components/filter_user_location.dart';
 import 'package:nesters/features/home/view/components/top_bar_action_button.dart';
 import 'package:nesters/features/home/view/components/user_quick_profile_widget.dart';
 import 'package:nesters/features/home/view/shimmer_home_view.dart';
@@ -98,8 +99,11 @@ class _UserListViewState extends State<UserListView> {
             orElse: () => throw Exception('User not authenticated'),
           );
       log("Fetching page $pageKey, page size $_pageSize");
-      final newItems =
-          await userRepository.getUserQuickProfiles(pageKey, _pageSize, userId);
+      final newItems = await userRepository.getUserQuickProfiles(
+        pageKey,
+        _pageSize,
+        userId,
+      );
       final isLastPage = newItems.length < _pageSize;
       if (isLastPage) {
         _pagingController.appendLastPage(newItems);
@@ -364,6 +368,38 @@ class _UserListViewState extends State<UserListView> {
                   closeIcon: false,
                 ),
                 if (homeState.singleUserFilter == null ||
+                    homeState.singleUserFilter is BranchFilter)
+                  TopActionButton(
+                    icon: Icons.location_on,
+                    title: "Location",
+                    onPressed: () async {
+                      if (homeState.singleUserFilter is LocationFilter) {
+                        context
+                            .read<HomeBloc>()
+                            .add(SingleRemoveFilterProfileEvent());
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) {
+                            return const Material(
+                              color: Colors.transparent,
+                              child: UserLocationFilter(),
+                            );
+                          },
+                        ).then((value) {
+                          if (value != null && value is Degree) {
+                            context.read<HomeBloc>().add(
+                                  SingleAddFilterProfileEvent(
+                                    LocationFilter(),
+                                  ),
+                                );
+                          }
+                        });
+                      }
+                    },
+                    isActive: homeState.singleUserFilter is LocationFilter,
+                  ),
+                if (homeState.singleUserFilter == null ||
                     homeState.singleUserFilter is UniversityFilter)
                   TopActionButton(
                     icon: Icons.school,
@@ -446,7 +482,7 @@ class _UserListViewState extends State<UserListView> {
                     },
                   ),
                 if (homeState.singleUserFilter == null ||
-                    homeState.singleUserFilter is BranchFilter)
+                    homeState.singleUserFilter == LocationFilter)
                   TopActionButton(
                     icon: Icons.book,
                     title: homeState.singleUserFilter is BranchFilter

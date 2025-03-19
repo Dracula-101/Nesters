@@ -30,6 +30,7 @@ class MarketplaceModel {
   DateTime? createdAt;
   String? userId;
   bool? isFavouriteByUser;
+  double? distanceFromUserInMeters;
 
   MarketplaceModel({
     required this.id,
@@ -46,6 +47,7 @@ class MarketplaceModel {
     this.createdAt,
     this.userId,
     this.isFavouriteByUser,
+    this.distanceFromUserInMeters,
   });
 
   factory MarketplaceModel.fromJson(Map<String, dynamic> json) {
@@ -66,6 +68,9 @@ class MarketplaceModel {
       isFavouriteByUser: (json['marketplaces_likes'] != null
           ? json['marketplaces_likes']['is_liked']
           : false),
+      distanceFromUserInMeters: json['distance_m'] != null
+          ? double.tryParse(json['distance_m'].toString())
+          : null,
     );
   }
 
@@ -102,6 +107,8 @@ class MarketplaceModel {
     bool? isAvailable,
     DateTime? createdAt,
     String? userId,
+    bool? isFavouriteByUser,
+    double? distanceFromUserInMeters,
   }) {
     return MarketplaceModel(
       id: id ?? this.id,
@@ -117,6 +124,9 @@ class MarketplaceModel {
       isAvailable: isAvailable ?? this.isAvailable,
       createdAt: createdAt ?? this.createdAt,
       userId: userId ?? this.userId,
+      isFavouriteByUser: isFavouriteByUser ?? this.isFavouriteByUser,
+      distanceFromUserInMeters:
+          distanceFromUserInMeters ?? this.distanceFromUserInMeters,
     );
   }
 }

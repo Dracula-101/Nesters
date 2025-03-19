@@ -5,6 +5,7 @@ import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_carousel.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:nesters/utils/extensions/measure_units.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarketplaceModelWidget extends StatelessWidget {
@@ -242,7 +243,19 @@ class MarketplaceModelWidget extends StatelessWidget {
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
           ),
-        )
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppTheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(7),
+          ),
+          child: Text(
+            '${(marketplace.distanceFromUserInMeters ?? 0).roundMiles}mi away',
+            style: AppTheme.labelMedium.copyWith(color: AppTheme.onSurface),
+          ),
+        ),
       ],
     );
   }

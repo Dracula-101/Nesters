@@ -197,6 +197,49 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   }
 
   @override
+  Future<List<MarketplaceModel>> getNearbyMarketplaces({
+    required String userId,
+    int locationRange = 10,
+    int range = 10,
+    int paginationKey = 0,
+  }) async {
+    try {
+      final response =
+          await _supabaseClient.rpc('get_nearby_marketplaces', params: {
+        'uid': userId,
+        'range_km': locationRange,
+        'page_limit': range,
+        'offset_value': paginationKey,
+      });
+      List<MarketplaceModel> marketplaces = [];
+      for (final item in response) {
+        marketplaces.add(MarketplaceModel.fromJson(item));
+      }
+      return marketplaces;
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERR,
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
+      );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
+    } catch (e, stacktrace) {
+      log(e.toString(), stackTrace: stacktrace);
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
+    }
+  }
+
+  @override
   Future<List<MarketplaceCategoryModel>> getMarketplaceCategories() async {
     try {
       final response = await _supabaseClient

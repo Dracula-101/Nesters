@@ -90,6 +90,7 @@ jobs:
         run: |
           echo ${{ secrets.BASE64_ENCODE_GOOGLE_SERVICES }} | base64 -d > android/app/google-services.json
           echo ${{ secrets.BASE64_ENCODED_KEY_PROPERTIES }} | base64 -d > android/key.properties
+          echo ${{ secrets.BASE64_ENCODED_GOOGLE_MAPS_PROPERTIES }} | base64 -d > android/google-maps.properties
           echo ${{ secrets.BASE64_ENCODED_KEYSTORE }} | base64 -d > keystores/release-keystore.jks
           echo ${{ secrets.ENCODED_ENV }} | base64 -d > .env
 
@@ -116,6 +117,7 @@ jobs:
         run: |
           rm -f android/app/google-services.json
           rm -f android/key.properties
+          rm -f android/google-maps.properties
           rm -f keystores/release-keystore.jks
           rm -f .env
 

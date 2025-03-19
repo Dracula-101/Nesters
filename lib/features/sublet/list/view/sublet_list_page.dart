@@ -17,6 +17,7 @@ import 'package:nesters/features/sublet/list/bloc/sublet_bloc.dart';
 import 'package:nesters/features/sublet/list/view/components/filter_page.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
 import 'package:nesters/features/sublet/list/view/shimmer_sublet_list_page.dart';
+import 'package:nesters/features/sublet/list/view/components/filter_sublet_location.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -69,7 +70,7 @@ class _SubletListViewState extends State<SubletListView> {
           await _subletRepository.getNearbySublets(
         userId: _authRepository.currentUser!.id,
         paginationKey: pageKey,
-        rangeKm: 50000000,
+        locationRange: 50000000,
       );
       final isLastPage = sublets.length < _pageSize;
       if (isLastPage) {
@@ -269,6 +270,34 @@ class _SubletListViewState extends State<SubletListView> {
                         },
                         isActive: subletState.subletFilter != null,
                         closeIcon: false,
+                      ),
+                      TopActionButton(
+                        icon: Icons.location_on,
+                        title: "Location",
+                        onPressed: () async {
+                          if (subletState.singleSubletFilter
+                              is LocationFilter) {
+                            context
+                                .read<SubletBloc>()
+                                .add(const SubletEvent.removeSingleFilter());
+                          } else {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) {
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: SubletLocationFilter(
+                                    sublets: _pagingController.itemList
+                                            ?.sublist(0, 10) ??
+                                        [],
+                                  ),
+                                );
+                              },
+                            );
+                          }
+                        },
+                        isActive:
+                            subletState.singleSubletFilter is LocationFilter,
                       ),
                       if (subletState.singleSubletFilter == null ||
                           subletState.singleSubletFilter is RentFilter)

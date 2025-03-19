@@ -20,6 +20,14 @@ if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
+def googleMapsProperties = new Properties()
+def googleMapsPropertiesFile = rootProject.file('google-maps.properties')
+if (googleMapsPropertiesFile.exists()) {
+    googleMapsProperties.load(new FileInputStream(googleMapsPropertiesFile))
+} else {
+    throw new GradleException("google-maps.properties file not found - please create one in the root directory of the android project")
+}
+
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
     flutterVersionCode = '1'
@@ -32,7 +40,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.app.nesters"
-    compileSdkVersion 34
+    compileSdkVersion 35
     ndkVersion flutter.ndkVersion
 
     compileOptions {
@@ -76,10 +84,12 @@ android {
         release {
             signingConfig signingConfigs.release
             manifestPlaceholders["crashlyticsCollectionEnabled"] = true
+            manifestPlaceholders['googleMapsApiKey'] = googleMapsProperties['GOOGLE_MAPS_RELEASE_API_KEY']
         }
         debug {
             signingConfig signingConfigs.debug
             manifestPlaceholders["crashlyticsCollectionEnabled"] = false
+            manifestPlaceholders['googleMapsApiKey'] = googleMapsProperties['GOOGLE_MAPS_DEBUG_API_KEY']
         }
     }
 

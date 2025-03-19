@@ -25,6 +25,13 @@ abstract class MarketplaceRepository {
     int paginationKey = 0,
   });
 
+  Future<List<MarketplaceModel>> getNearbyMarketplaces({
+    required String userId,
+    int locationRange = 10,
+    int range = 10,
+    int paginationKey = 0,
+  });
+
   Future<List<MarketplaceCategoryModel>> getMarketplaceCategories();
 
   Future<List<MarketplaceModel>> getSingleFilteredMarketplaces(

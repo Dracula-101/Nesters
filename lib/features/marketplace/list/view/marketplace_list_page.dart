@@ -68,9 +68,10 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
     try {
       _logger.info('Loading marketplaces for page $pageKey');
       final List<MarketplaceModel> marketplaces =
-          await _marketplaceRepository.getMarketplaces(
+          await _marketplaceRepository.getNearbyMarketplaces(
         userId: _authRepository.currentUser?.id ?? '',
         paginationKey: pageKey,
+        locationRange: 100000000,
       );
 
       final isLastPage = marketplaces.length < _pageSize;

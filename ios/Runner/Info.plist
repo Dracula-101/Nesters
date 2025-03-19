@@ -43,6 +43,10 @@
 	<string>The app requires permission to access the device camera to upload the picture.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string> The app requires permission to upload the picture.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs location access to provide you with the best experience.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs location access to provide you with the best experience.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

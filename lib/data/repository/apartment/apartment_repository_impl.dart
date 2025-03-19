@@ -141,7 +141,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   @override
   Future<List<ApartmentModel>> getNearbyApartments({
     required String userId,
-    int rangeInKm = 10,
+    int locationRange = 10,
     int range = 10,
     int paginationKey = 0,
   }) async {
@@ -149,7 +149,7 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       final response =
           await _supabaseClient.rpc('get_nearby_apartments', params: {
         'uid': userId,
-        'range_km': rangeInKm,
+        'range_km': locationRange,
         'page_limit': range,
         'offset_value': paginationKey,
       });

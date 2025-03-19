@@ -154,6 +154,10 @@ class _SingleRemoveFilterSubletEvent extends SubletEvent {
   const _SingleRemoveFilterSubletEvent();
 }
 
+class LocationFilter extends SingleSubletFilter {
+  LocationFilter();
+}
+
 class GenderPreferenceFilter extends SingleSubletFilter {
   final String preferredGender;
 

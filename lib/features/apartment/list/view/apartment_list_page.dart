@@ -66,7 +66,7 @@ class _ApartmentListViewState extends State<ApartmentListView> {
           await _apartmentRepository.getNearbyApartments(
         userId: _authRepository.currentUser!.id,
         paginationKey: pageKey,
-        rangeInKm: 100000000,
+        locationRange: 100000000,
       );
       final isLastPage = apartments.length < _pageSize;
       if (isLastPage) {
