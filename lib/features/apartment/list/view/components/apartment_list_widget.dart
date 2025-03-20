@@ -185,7 +185,6 @@ class ApartmentModelWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(

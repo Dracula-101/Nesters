@@ -258,4 +258,148 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM get_users('25f247de-78b8-4ebc-91ac-1451302dc9ff', 'New York University (NYU)');
 
 
-SELECT * FROM get_nearby_marketplaces('25f247de-78b8-4ebc-91ac-1451302dc9ff', 1000000);
+
+
+
+
+
+CREATE OR REPLACE FUNCTION get_nearby_apartments(
+    uid UUID,
+    range_km DOUBLE PRECISION DEFAULT 100,
+    offset_value INTEGER DEFAULT 0,
+    page_limit INTEGER DEFAULT 10,
+    source_latitude DOUBLE PRECISION DEFAULT 100,
+    source_longitude DOUBLE PRECISION DEFAULT 100
+)
+RETURNS TABLE(
+    id BIGINT,
+    apartment_description TEXT,
+    rent REAL,
+    photos JSON,
+    amenities_available JSON,
+    is_available BOOLEAN,
+    user_id UUID,
+    start_date BIGINT,
+    end_date BIGINT,
+    beds SMALLINT,
+    baths SMALLINT,
+    created_at TIMESTAMP WITH TIME ZONE,
+    address TEXT,
+    distance_m DOUBLE PRECISION,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    location gis.geometry
+) AS $$
+DECLARE
+    university_location gis.geometry;
+    search_location gis.geometry;
+BEGIN
+    -- If source_latitude and source_longitude are provided, convert them to gis.geometry
+    IF source_latitude IS NOT NULL AND source_longitude IS NOT NULL THEN
+        search_location := gis.ST_SetSRID(gis.ST_MakePoint(source_longitude, source_latitude), 4326);
+    ELSE
+        -- Otherwise, get the university location for the given user_id
+        SELECT u.location INTO university_location
+        FROM public.user_details AS ud
+        INNER JOIN const.universities AS u ON ud.college = u.title
+        WHERE ud.id = uid;
+        search_location := university_location;
+    END IF;
+
+    -- Return nearby apartments based on the search location with pagination and distance
+    RETURN QUERY
+    SELECT
+        a.id AS id,
+        a.apartment_description,
+        a.rent,
+        a.photos,
+        a.amenities_available,
+        a.is_available,
+        a.user_id,
+        a.start_date,
+        a.end_date,
+        a.beds,
+        a.baths,
+        a.created_at,
+        a.address,
+        a.location::gis.geometry
+        gis.ST_Distance(a.location::gis.geometry, search_location) AS distance_m,
+        gis.ST_Y(a.location::gis.geometry) AS latitude, -- Extract latitude
+        gis.ST_X(a.location::gis.geometry) AS longitude, -- Extract longitude
+    FROM public.apartments AS a
+    WHERE gis.ST_DWithin(a.location::gis.geometry, search_location, range_km * 1000) -- Convert km to meters
+    ORDER BY distance_m
+    OFFSET offset_value LIMIT page_limit;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT * FROM get_nearby_apartments('25f247de-78b8-4ebc-91ac-1451302dc9ff', 5, 0, 10,-74.01069425046444, 40.64151070303465);
+
+
+CREATE OR REPLACE FUNCTION get_nearby_apartments(
+    uid UUID,
+    range_km DOUBLE PRECISION DEFAULT 100,
+    offset_value INTEGER DEFAULT 0,
+    page_limit INTEGER DEFAULT 10,
+    source_latitude DOUBLE PRECISION DEFAULT 100,
+    source_longitude DOUBLE PRECISION DEFAULT 100
+)
+RETURNS TABLE(
+    id BIGINT,
+    apartment_description TEXT,
+    rent REAL,
+    photos JSON,
+    amenities_available JSON,
+    is_available BOOLEAN,
+    user_id UUID,
+    start_date BIGINT,
+    end_date BIGINT,
+    beds SMALLINT,
+    baths SMALLINT,
+    created_at TIMESTAMP WITH TIME ZONE,
+    address TEXT,
+    distance_m DOUBLE PRECISION,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    location gis.geometry
+) AS $$
+DECLARE
+    search_location gis.geography;
+BEGIN
+    -- If source_latitude and source_longitude are provided, convert them to gis.geography
+    IF source_latitude IS NOT NULL AND source_longitude IS NOT NULL THEN
+        search_location := gis.ST_SetSRID(gis.ST_MakePoint(source_longitude, source_latitude), 4326);
+    ELSE
+        -- Otherwise, get the university location for the given user_id
+        SELECT u.location INTO search_location
+        FROM public.user_details AS ud
+        INNER JOIN const.universities AS u ON ud.college = u.title
+        WHERE ud.id = uid;
+    END IF;
+
+    -- Return nearby sublets based on the search location with pagination and distance
+    RETURN QUERY
+    SELECT
+        a.id AS id,
+        a.apartment_description,
+        a.rent,
+        a.photos,
+        a.amenities_available,
+        a.is_available,
+        a.user_id,
+        a.start_date,
+        a.end_date,
+        a.beds,
+        a.baths,
+        a.created_at,
+        a.address,
+        gis.ST_Distance(a.location::gis.geography, search_location) AS distance_m,
+        gis.ST_Y(a.location::gis.geometry) AS latitude, -- Extract latitude
+        gis.ST_X(a.location::gis.geometry) AS longitude, -- Extract longitude
+        a.location::gis.geometry
+    FROM public.apartments AS a
+    WHERE gis.ST_DWithin(a.location::gis.geography, search_location, range_km * 1000) -- Convert km to meters
+    ORDER BY distance_m
+    OFFSET offset_value LIMIT page_limit;
+END;
+$$ LANGUAGE plpgsql;

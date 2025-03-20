@@ -23,7 +23,7 @@ def title_case(s: str) -> str:
 
 
 config = read_from_json("config.json")
-
+scrapping_allowed = config['scrapping_allowed']
 scrap_room_images = config["seed_sublets"] or config["seed_apartments"]
 scrap_marketplace_images = config["seed_marketplaces"]
 
@@ -166,44 +166,46 @@ def upload_folder(folder_name, image_dir, output_file):
     # Save the URLs to the output file
     save_urls_to_file(image_urls, output_file)
 
+if scrapping_allowed:
+    room_images_dir = []
+    for image in room_images:
+        dir = f"scrapper/photos/{title_case(image)}"
+        if os.path.exists(dir):
+            room_images_dir.append(dir)
 
-room_images_dir = []
-for image in room_images:
-    dir = f"scrapper/photos/{title_case(image)}"
-    if os.path.exists(dir):
-        room_images_dir.append(dir)
-
-marketplace_images_dir = []
-for image in marketplace_images:
-    dir = f"scrapper/photos/{title_case(image)}"
-    if os.path.exists(dir):
-        marketplace_images_dir.append(dir)
+    marketplace_images_dir = []
+    for image in marketplace_images:
+        dir = f"scrapper/photos/{title_case(image)}"
+        if os.path.exists(dir):
+            marketplace_images_dir.append(dir)
 
 
-# upload room photos to cloudinary
-for dir in room_images_dir:
-    room_type = str(dir).split("/")[-1].lower().replace(" ", "_")
-    file_name = f"seed/data/room_photos/{room_type}_urls.txt"
-    print(f"Uploading {room_type} and saving to {file_name}")
-    upload_folder(f"room_images/{room_type}", dir, file_name)
+    # upload room photos to cloudinary
+    for dir in room_images_dir:
+        room_type = str(dir).split("/")[-1].lower().replace(" ", "_")
+        file_name = f"seed/data/room_photos/{room_type}_urls.txt"
+        print(f"Uploading {room_type} and saving to {file_name}")
+        upload_folder(f"room_images/{room_type}", dir, file_name)
 
-# upload marketplace photos to cloudinary
-for dir in marketplace_images_dir:
-    marketplace_item = str(dir).split("/")[-1].lower().replace(" ", "_")
-    file_name = f"seed/data/marketplace_photos/{marketplace_item}_urls.txt"
-    print(f"Uploading {marketplace_item} and saving to {file_name}")
-    upload_folder(f"marketplace_items_images/{marketplace_item}", dir, file_name)
+    # upload marketplace photos to cloudinary
+    for dir in marketplace_images_dir:
+        marketplace_item = str(dir).split("/")[-1].lower().replace(" ", "_")
+        file_name = f"seed/data/marketplace_photos/{marketplace_item}_urls.txt"
+        print(f"Uploading {marketplace_item} and saving to {file_name}")
+        upload_folder(f"marketplace_items_images/{marketplace_item}", dir, file_name)
 
-print(os.getcwd())
+    print(os.getcwd())
 
 os.chdir("seed")
 if os.path.exists("node_modules") is False:
     print("Installing node modules")
     os.system("npm install")
 os.system("node index.js")
-try:
-    os.remove("data/room_photos")
-    os.remove("data/marketplace_photos")
-except Exception as e:
-    print(e)
-print("Seed data generated successfully")
+
+if scrapping_allowed:
+    try:
+        os.remove("data/room_photos")
+        os.remove("data/marketplace_photos")
+    except Exception as e:
+        print(e)
+    print("Seed data generated successfully")

@@ -51,7 +51,7 @@ if __name__ == "__main__":
     min_resolution = (0, 0)  # Minimum desired image resolution
     max_resolution = (1920, 1080)  # Maximum desired image resolution
     max_missed = 100  # Max number of failed images before exit
-    number_of_workers = min(len(search_keys), 5)  # Number of "workers" used
+    number_of_workers = 1  # Number of "workers" used
     keep_filenames = False  # Keep original URL image filenames
 
     # Run each search_key in a separate thread
