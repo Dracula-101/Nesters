@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -9,6 +10,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
 class MarkerInfo {
@@ -71,13 +73,21 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
     if (latitude != null && longitude != null) {
       return Location(latitude: latitude, longitude: longitude);
     }
-    final location = await Geolocator.getCurrentPosition(
-        timeLimit: const Duration(seconds: 10));
-    _localStorageRepository.saveDouble(
-        LocalStorageKeys.locationLatitude, location.latitude);
-    _localStorageRepository.saveDouble(
-        LocalStorageKeys.locationLongitude, location.longitude);
-    return Location(latitude: location.latitude, longitude: location.longitude);
+    try {
+      final position = await Geolocator.getCurrentPosition(
+          timeLimit: const Duration(seconds: 10));
+      _localStorageRepository.saveDouble(
+          LocalStorageKeys.locationLatitude, position.latitude);
+      _localStorageRepository.saveDouble(
+          LocalStorageKeys.locationLongitude, position.longitude);
+      return Location(
+          latitude: position.latitude, longitude: position.longitude);
+    } catch (e) {
+      if (kDebugMode) {
+        return Location(latitude: 40.641590, longitude: -74.010773);
+      }
+      rethrow;
+    }
   }
 
   Future<void> _loadCurrentLocation() async {
@@ -129,7 +139,7 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(120),
         child: Container(
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(16),
@@ -151,7 +161,7 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
                 size: 20,
               ),
               const SizedBox(width: 8),
-              Text(widget.tooltip)
+              Flexible(child: Text(widget.tooltip))
             ],
           ),
         ),

@@ -1,16 +1,20 @@
 {
     "seed_users": false,
     "seed_sublets": true,
-    "seed_apartments": false,
-    "seed_marketplaces": false,
+    "seed_apartments": true,
+    "seed_marketplaces": true,
     "seed_user_items": 100,
     "room_images": [
+        "balcony",
         "bedroom",
+        "living_room",
         "kitchen",
-        "garage"
+        "toilet",
+        "study_room",
+        "bathroom"
     ],
-    "max_room_item_images": 2,
-    "seed_room_items": 50,
+    "max_room_item_images": 5,
+    "seed_room_items": 150,
     "marketplace_items": [
         "couch",
         "chair",
@@ -37,5 +41,6 @@
         "toothpaste"
     ],
     "max_marketplace_item_images": 10,
-    "seed_marketplace_items": 50
+    "seed_marketplace_items": 100,
+    "scrapping_allowed": false
 }

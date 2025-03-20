@@ -39,24 +39,28 @@ class TopActionButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (closeIcon) ...[
-              GestureDetector(
-                onTap: onClose,
-                child: Row(
-                  children: [
-                    Icon(
-                      isActive ? Icons.close : icon,
-                      size: 16,
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                ),
-              ),
-            ],
             Text(
               title,
               style: AppTheme.labelMedium,
-            )
+            ),
+            if (closeIcon) ...[
+              GestureDetector(
+                onTap: onClose,
+                child: SizedBox(
+                  width: 24,
+                  height: 32,
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 8),
+                      Icon(
+                        isActive ? Icons.close : icon,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
