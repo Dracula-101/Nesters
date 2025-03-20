@@ -84,3 +84,7 @@ We welcome contributions to Nesters! If you'd like to contribute, please follow 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+
+git commit -m "updated postgres apartments function nearby, integrated location on apartment page, seeded data for apartment, sublet and marketplace
+
+Co-authored-by: Dracula-101 <pratikpujari1000@gmail.com>"
