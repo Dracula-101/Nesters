@@ -10,6 +10,7 @@ import 'package:nesters/data/repository/marketplace/marketplace_repository.dart'
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
 

@@ -4,12 +4,14 @@ extension ImperialUnits on double {
   double get yards => this * 1.09361;
   double get miles => this / 1609.34;
 
-  num get roundMiles {
+  String get formattedMiles {
     final miles = this / 1609.34;
-    if (miles < 1) {
-      return double.parse(miles.toStringAsFixed(2));
+    if (miles < 0.1) {
+      return '${(miles * 5280).toInt()} ft';
+    } else if (miles < 1) {
+      return '${miles.toStringAsFixed(2)} mi';
     } else {
-      return miles.toInt();
+      return '${miles.toInt()} mi';
     }
   }
 }

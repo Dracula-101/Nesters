@@ -140,6 +140,16 @@ class _SaveMarketplaces extends MarketplaceEvent {
 
 abstract class MarketplaceSingleFilter {}
 
+class LocationFilter extends MarketplaceSingleFilter {
+  final Location location;
+  final double radiusKm;
+
+  LocationFilter({
+    required this.location,
+    required this.radiusKm,
+  });
+}
+
 class MarketplaceCategoryFilter extends MarketplaceSingleFilter {
   final MarketplaceCategoryModel category;
 

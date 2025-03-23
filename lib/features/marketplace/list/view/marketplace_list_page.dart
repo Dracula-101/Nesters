@@ -11,8 +11,10 @@ import 'package:nesters/data/repository/marketplace/marketplace_repository.dart'
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
+import 'package:nesters/features/marketplace/list/view/components/filter_marketplace_location.dart';
 import 'package:nesters/features/marketplace/list/view/components/filter_page.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
 import 'package:nesters/features/marketplace/list/view/shimmer_marketplace_list_page.dart';
@@ -242,11 +244,55 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                       TopActionButton(
                         icon: Icons.filter,
                         title: 'Filter',
-                        onClose: () {
+                        onTap: () {
                           showMultipleFilterDialog(marketplaceState);
                         },
                         isActive: marketplaceState.advancedFilter != null,
                       ),
+                      if (marketplaceState.singleFilter == null ||
+                          marketplaceState.singleFilter is LocationFilter)
+                        TopActionButton(
+                          icon: Icons.location_on,
+                          title: "Location",
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) {
+                                return Material(
+                                  color: Colors.transparent,
+                                  child: MarketplaceLocationFilter(
+                                    marketplaces:
+                                        _pagingController.itemList ?? [],
+                                    location: marketplaceState.singleFilter
+                                            is LocationFilter
+                                        ? (marketplaceState.singleFilter
+                                                as LocationFilter)
+                                            .location
+                                        : null,
+                                  ),
+                                );
+                              },
+                            ).then((value) {
+                              if (value != null && value is Location) {
+                                final filter = LocationFilter(
+                                  location: value,
+                                  radiusKm: 5,
+                                );
+                                context.read<MarketplaceBloc>().add(
+                                    MarketplaceEvent.applySingleFilter(filter));
+                              }
+                            });
+                          },
+                          onClose: () async {
+                            if (marketplaceState.singleFilter
+                                is LocationFilter) {
+                              context.read<MarketplaceBloc>().add(
+                                  const MarketplaceEvent.removeSingleFilter());
+                            }
+                          },
+                          isActive:
+                              marketplaceState.singleFilter is LocationFilter,
+                        ),
                       if (marketplaceState.singleFilter == null ||
                           marketplaceState.singleFilter
                               is MarketplaceCategoryFilter)
@@ -262,91 +308,90 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                               : "Category",
                           isActive: marketplaceState.singleFilter
                               is MarketplaceCategoryFilter,
-                          onClose: () async {
-                            if (marketplaceState.singleFilter
-                                is MarketplaceCategoryFilter) {
-                              context.read<MarketplaceBloc>().add(
-                                  const MarketplaceEvent.removeSingleFilter());
-                            } else {
-                              // open a modal bottom sheet
-                              if (appState.marketplaceCategory.isEmpty) {
-                                context.read<AppBloc>().add(
-                                    const AppEvent.loadMarketplaceCategories());
-                              }
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                enableDrag: true,
-                                isDismissible: true,
-                                scrollControlDisabledMaxHeightRatio: 0.5,
-                                useSafeArea: true,
-                                builder: (ctx) {
-                                  return DraggableScrollableSheet(
-                                    expand: false,
-                                    builder: (ctx, scrollController) {
-                                      return SingleChildScrollView(
-                                        controller: scrollController,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 12, bottom: 16),
-                                                child: Text(
-                                                  "Categories",
-                                                  style: AppTheme.titleLarge,
-                                                )),
-                                            if (appState
-                                                .marketplaceCategory.isEmpty)
-                                              const Center(
-                                                child:
-                                                    CircularProgressIndicator(),
-                                              )
-                                            else
-                                              ...appState.marketplaceCategory
-                                                  .map(
-                                                    (category) =>
-                                                        GestureDetector(
-                                                      onTap: () {
-                                                        context
-                                                            .read<
-                                                                MarketplaceBloc>()
-                                                            .add(MarketplaceEvent
-                                                                .applySingleFilter(
-                                                                    MarketplaceCategoryFilter(
-                                                                        category)));
-                                                        Navigator.pop(context);
-                                                      },
-                                                      child: Container(
-                                                        width: MediaQuery.of(
-                                                                context)
-                                                            .size
-                                                            .width,
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .symmetric(
-                                                          horizontal: 12,
-                                                          vertical: 8,
-                                                        ),
-                                                        child: Text(
-                                                          category.name ?? "",
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              showDragHandle: true,
+                              enableDrag: true,
+                              isDismissible: true,
+                              scrollControlDisabledMaxHeightRatio: 0.5,
+                              useSafeArea: true,
+                              builder: (ctx) {
+                                return DraggableScrollableSheet(
+                                  expand: false,
+                                  builder: (ctx, scrollController) {
+                                    return SingleChildScrollView(
+                                      controller: scrollController,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 12, bottom: 16),
+                                              child: Text(
+                                                "Categories",
+                                                style: AppTheme.titleLarge,
+                                              )),
+                                          if (appState
+                                              .marketplaceCategory.isEmpty)
+                                            const Center(
+                                              child:
+                                                  CircularProgressIndicator(),
+                                            )
+                                          else
+                                            ...appState.marketplaceCategory
+                                                .map(
+                                                  (category) => GestureDetector(
+                                                    onTap: () {
+                                                      context
+                                                          .read<
+                                                              MarketplaceBloc>()
+                                                          .add(MarketplaceEvent
+                                                              .applySingleFilter(
+                                                                  MarketplaceCategoryFilter(
+                                                                      category)));
+                                                      Navigator.pop(context);
+                                                    },
+                                                    child: Container(
+                                                      width:
+                                                          MediaQuery.of(context)
+                                                              .size
+                                                              .width,
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              12),
+                                                      decoration: BoxDecoration(
+                                                        border: Border(
+                                                          bottom: BorderSide(
+                                                            color: AppTheme
+                                                                .greyShades
+                                                                .shade300,
+                                                            width: 1,
+                                                          ),
                                                         ),
                                                       ),
+                                                      child: Text(
+                                                        category.name ?? "",
+                                                      ),
                                                     ),
-                                                  )
-                                                  .toList(),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            }
+                                                  ),
+                                                )
+                                                .toList(),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          onClose: () {
+                            context.read<MarketplaceBloc>().add(
+                                const MarketplaceEvent.removeSingleFilter());
                           },
                         ),
                     ],

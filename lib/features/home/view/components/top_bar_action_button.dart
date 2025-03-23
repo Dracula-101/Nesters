@@ -1,20 +1,19 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nesters/theme/theme.dart';
 
 class TopActionButton extends StatelessWidget {
   final String title;
   final IconData icon;
-  final VoidCallback onClose;
-  final VoidCallback? onTap;
+  final VoidCallback? onClose;
+  final VoidCallback onTap;
   final bool isActive;
   final bool closeIcon;
   const TopActionButton({
     super.key,
     required this.title,
     required this.icon,
-    required this.onClose,
-    this.onTap,
+    this.onClose,
+    required this.onTap,
     required this.isActive,
     this.closeIcon = true,
   });
@@ -25,7 +24,6 @@ class TopActionButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.all(8),
-        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: AppTheme.greyShades.shade200,
           border: Border.all(
@@ -39,27 +37,41 @@ class TopActionButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              title,
-              style: AppTheme.labelMedium,
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                title,
+                style: AppTheme.labelMedium,
+              ),
             ),
             if (closeIcon) ...[
-              GestureDetector(
-                onTap: onClose,
-                child: SizedBox(
-                  width: 24,
+              if (isActive)
+                Container(
                   height: 32,
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 8),
-                      Icon(
-                        isActive ? Icons.close : icon,
-                        size: 16,
-                      ),
-                    ],
-                  ),
+                  width: 1,
+                  color: AppTheme.greyShades.shade400,
                 ),
-              ),
+              GestureDetector(
+                onTap: () {
+                  if (isActive) {
+                    onClose!();
+                  } else {
+                    onTap();
+                  }
+                },
+                behavior: HitTestBehavior.translucent,
+                child: Row(
+                  children: [
+                    if (isActive) const SizedBox(width: 8),
+                    Icon(
+                      isActive ? Icons.close : icon,
+                      size: 16,
+                      color: AppTheme.greyShades.shade600,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
+              )
             ],
           ],
         ),

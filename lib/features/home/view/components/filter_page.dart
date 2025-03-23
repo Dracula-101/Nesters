@@ -51,87 +51,91 @@ class _UserFilterPageState extends State<UserFilterPage> {
       height: MediaQuery.of(context).size.height,
       child: Material(
         color: AppTheme.surface,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 4, left: 16, right: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Filters',
-                    style: AppTheme.titleLarge.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    iconSize: 20,
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  )
-                ],
-              ),
-            ),
-            const Divider(
-              height: 1,
-              thickness: 1,
-            ),
-            Expanded(
-              child: Align(
-                alignment: Alignment.topCenter,
+        child: Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 4, left: 16, right: 16),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildFilterTabs(),
-                    _buildFilterTabValues(),
+                    Text(
+                      'Filters',
+                      style: AppTheme.titleLarge.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      iconSize: 20,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    )
                   ],
                 ),
               ),
-            ),
-            const Divider(
-              height: 1,
-              thickness: 1,
-            ),
-            Container(
-              width: MediaQuery.of(context).size.width,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.onReset();
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.error,
-                    ),
-                    child: Text(
-                      'Reset All',
-                      style: AppTheme.bodyMedium.copyWith(
-                        color: AppTheme.onError,
-                      ),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      widget.onApply(userFilter);
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(
-                      'Apply',
-                      style: AppTheme.bodyMedium.copyWith(
-                        color: AppColor.white,
-                      ),
-                    ),
-                  )
-                ],
+              const Divider(
+                height: 1,
+                thickness: 1,
               ),
-            )
-          ],
+              Expanded(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildFilterTabs(),
+                      _buildFilterTabValues(),
+                    ],
+                  ),
+                ),
+              ),
+              const Divider(
+                height: 1,
+                thickness: 1,
+              ),
+              Container(
+                width: MediaQuery.of(context).size.width,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        widget.onReset();
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.error,
+                      ),
+                      child: Text(
+                        'Reset All',
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppTheme.onError,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        widget.onApply(userFilter);
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(
+                        'Apply',
+                        style: AppTheme.bodyMedium.copyWith(
+                          color: AppColor.white,
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
         ),
       ),
     );

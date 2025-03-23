@@ -289,9 +289,7 @@ class _SubletListViewState extends State<SubletListView> {
                                 return Material(
                                   color: Colors.transparent,
                                   child: SubletLocationFilter(
-                                    sublets: subletState.filteredSubletList ??
-                                        _pagingController.itemList ??
-                                        [],
+                                    sublets: _pagingController.itemList ?? [],
                                     location: subletState.singleSubletFilter
                                             is LocationFilter
                                         ? (subletState.singleSubletFilter
@@ -333,101 +331,97 @@ class _SubletListViewState extends State<SubletListView> {
                               : "Rent",
                           isActive:
                               subletState.singleSubletFilter is RentFilter,
-                          onClose: () async {
-                            if (subletState.singleSubletFilter is RentFilter) {
-                              context
-                                  .read<SubletBloc>()
-                                  .add(const SubletEvent.removeSingleFilter());
-                            } else {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                enableDrag: true,
-                                isDismissible: true,
-                                scrollControlDisabledMaxHeightRatio: 0.3,
-                                useSafeArea: true,
-                                builder: (ctx) {
-                                  return DraggableScrollableSheet(
-                                    expand: false,
-                                    minChildSize: 0.15,
-                                    initialChildSize: 0.2,
-                                    maxChildSize: 0.2,
-                                    builder: (ctx, scrollController) {
-                                      return StatefulBuilder(
-                                        builder: (ctx, setState) {
-                                          return SingleChildScrollView(
-                                            controller: scrollController,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16),
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.start,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    children: [
-                                                      Text(
-                                                        "Min: ${rentStart.toInt()}",
-                                                        style:
-                                                            AppTheme.bodyLarge,
-                                                      ),
-                                                      const Spacer(),
-                                                      Text(
-                                                        "Max: ${rentEnd.toInt()}",
-                                                        style:
-                                                            AppTheme.bodyLarge,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  // to avoid the default padding of the slider
-                                                  Transform.scale(
-                                                    scale: 1.1,
-                                                    child: RangeSlider(
-                                                      values: RangeValues(
-                                                          rentStart, rentEnd),
-                                                      onChanged:
-                                                          (RangeValues values) {
-                                                        setState(() {
-                                                          rentStart =
-                                                              values.start;
-                                                          rentEnd = values.end;
-                                                        });
-                                                      },
-                                                      min: 0,
-                                                      max: 10000,
-                                                      divisions: 100,
+                          onClose: () {
+                            context
+                                .read<SubletBloc>()
+                                .add(const SubletEvent.removeSingleFilter());
+                          },
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              showDragHandle: true,
+                              enableDrag: true,
+                              isDismissible: true,
+                              scrollControlDisabledMaxHeightRatio: 0.3,
+                              useSafeArea: true,
+                              builder: (ctx) {
+                                return DraggableScrollableSheet(
+                                  expand: false,
+                                  minChildSize: 0.15,
+                                  initialChildSize: 0.2,
+                                  maxChildSize: 0.2,
+                                  builder: (ctx, scrollController) {
+                                    return StatefulBuilder(
+                                      builder: (ctx, setState) {
+                                        return SingleChildScrollView(
+                                          controller: scrollController,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 16),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      "Min: ${rentStart.toInt()}",
+                                                      style: AppTheme.bodyLarge,
                                                     ),
-                                                  ),
-                                                  CustomFlatButton(
-                                                    onPressed: () {
-                                                      context
-                                                          .read<SubletBloc>()
-                                                          .add(SubletEvent
-                                                              .addSingleFilter(
-                                                                  RentFilter(
-                                                                      rentStart
-                                                                          .toInt(),
-                                                                      rentEnd
-                                                                          .toInt())));
-                                                      Navigator.of(ctx).pop();
+                                                    const Spacer(),
+                                                    Text(
+                                                      "Max: ${rentEnd.toInt()}",
+                                                      style: AppTheme.bodyLarge,
+                                                    ),
+                                                  ],
+                                                ),
+                                                // to avoid the default padding of the slider
+                                                Transform.scale(
+                                                  scale: 1.1,
+                                                  child: RangeSlider(
+                                                    values: RangeValues(
+                                                        rentStart, rentEnd),
+                                                    onChanged:
+                                                        (RangeValues values) {
+                                                      setState(() {
+                                                        rentStart =
+                                                            values.start;
+                                                        rentEnd = values.end;
+                                                      });
                                                     },
-                                                    text: "Apply",
-                                                  )
-                                                ],
-                                              ),
+                                                    min: 0,
+                                                    max: 10000,
+                                                    divisions: 100,
+                                                  ),
+                                                ),
+                                                CustomFlatButton(
+                                                  onPressed: () {
+                                                    context
+                                                        .read<SubletBloc>()
+                                                        .add(SubletEvent
+                                                            .addSingleFilter(
+                                                                RentFilter(
+                                                                    rentStart
+                                                                        .toInt(),
+                                                                    rentEnd
+                                                                        .toInt())));
+                                                    Navigator.of(ctx).pop();
+                                                  },
+                                                  text: "Apply",
+                                                )
+                                              ],
                                             ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            }
+                                          ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                );
+                              },
+                            );
                           },
                         ),
                       if (subletState.singleSubletFilter == null ||
@@ -441,111 +435,107 @@ class _SubletListViewState extends State<SubletListView> {
                                   .apartmentSize
                                   .toFormattedString()
                               : "Size",
-                          onClose: () async {
-                            if (subletState.singleSubletFilter
-                                is ApartmentSizeFilter) {
-                              context
-                                  .read<SubletBloc>()
-                                  .add(const SubletEvent.removeSingleFilter());
-                            } else {
-                              // open a modal bottom sheet
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                enableDrag: true,
-                                isDismissible: true,
-                                scrollControlDisabledMaxHeightRatio: 0.5,
-                                useSafeArea: true,
-                                builder: (ctx) {
-                                  return DraggableScrollableSheet(
-                                    expand: false,
-                                    initialChildSize: 0.35,
-                                    maxChildSize: 0.35,
-                                    builder: (ctx, scrollController) {
-                                      return StatefulBuilder(
-                                          builder: (ctx, setState) {
-                                        return SingleChildScrollView(
-                                          controller: scrollController,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "Apartment Size",
-                                                  style: AppTheme.titleLarge,
-                                                ),
-                                                const SizedBox(height: 16),
-                                                Text(
-                                                  "Beds: $apartmentSizeBeds",
-                                                  style: AppTheme.bodyLarge,
-                                                ),
-                                                Transform.scale(
-                                                  scale: 1.1,
-                                                  child: Slider(
-                                                    value: apartmentSizeBeds
-                                                        .toDouble(),
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        apartmentSizeBeds =
-                                                            value.toInt();
-                                                      });
-                                                    },
-                                                    min: 1,
-                                                    max: 6,
-                                                  ),
-                                                ),
-                                                Text(
-                                                  "Baths: $apartmentSizeBaths",
-                                                  style: AppTheme.bodyLarge,
-                                                ),
-                                                Transform.scale(
-                                                  scale: 1.1,
-                                                  child: Slider(
-                                                    value: apartmentSizeBaths
-                                                        .toDouble(),
-                                                    onChanged: (value) {
-                                                      setState(() {
-                                                        apartmentSizeBaths =
-                                                            value.toInt();
-                                                      });
-                                                    },
-                                                    min: 1,
-                                                    max: 6,
-                                                  ),
-                                                ),
-                                                CustomFlatButton(
-                                                  text: "Apply",
-                                                  onPressed: () {
-                                                    context
-                                                        .read<SubletBloc>()
-                                                        .add(SubletEvent
-                                                            .addSingleFilter(
-                                                                ApartmentSizeFilter(
-                                                                    ApartmentSize(
-                                                          baths:
-                                                              apartmentSizeBaths,
-                                                          beds:
-                                                              apartmentSizeBeds,
-                                                        ))));
-                                                    Navigator.of(ctx).pop();
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              showDragHandle: true,
+                              enableDrag: true,
+                              isDismissible: true,
+                              scrollControlDisabledMaxHeightRatio: 0.5,
+                              useSafeArea: true,
+                              builder: (ctx) {
+                                return DraggableScrollableSheet(
+                                  expand: false,
+                                  initialChildSize: 0.35,
+                                  maxChildSize: 0.35,
+                                  builder: (ctx, scrollController) {
+                                    return StatefulBuilder(
+                                        builder: (ctx, setState) {
+                                      return SingleChildScrollView(
+                                        controller: scrollController,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Apartment Size",
+                                                style: AppTheme.titleLarge,
+                                              ),
+                                              const SizedBox(height: 16),
+                                              Text(
+                                                "Beds: $apartmentSizeBeds",
+                                                style: AppTheme.bodyLarge,
+                                              ),
+                                              Transform.scale(
+                                                scale: 1.1,
+                                                child: Slider(
+                                                  value: apartmentSizeBeds
+                                                      .toDouble(),
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      apartmentSizeBeds =
+                                                          value.toInt();
+                                                    });
                                                   },
-                                                )
-                                              ],
-                                            ),
+                                                  min: 1,
+                                                  max: 6,
+                                                ),
+                                              ),
+                                              Text(
+                                                "Baths: $apartmentSizeBaths",
+                                                style: AppTheme.bodyLarge,
+                                              ),
+                                              Transform.scale(
+                                                scale: 1.1,
+                                                child: Slider(
+                                                  value: apartmentSizeBaths
+                                                      .toDouble(),
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      apartmentSizeBaths =
+                                                          value.toInt();
+                                                    });
+                                                  },
+                                                  min: 1,
+                                                  max: 6,
+                                                ),
+                                              ),
+                                              CustomFlatButton(
+                                                text: "Apply",
+                                                onPressed: () {
+                                                  context
+                                                      .read<SubletBloc>()
+                                                      .add(SubletEvent
+                                                          .addSingleFilter(
+                                                              ApartmentSizeFilter(
+                                                                  ApartmentSize(
+                                                        baths:
+                                                            apartmentSizeBaths,
+                                                        beds: apartmentSizeBeds,
+                                                      ))));
+                                                  Navigator.of(ctx).pop();
+                                                },
+                                              )
+                                            ],
                                           ),
-                                        );
-                                      });
-                                    },
-                                  );
-                                },
-                              );
-                            }
+                                        ),
+                                      );
+                                    });
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          onClose: () {
+                            context
+                                .read<SubletBloc>()
+                                .add(const SubletEvent.removeSingleFilter());
                           },
                           isActive: subletState.singleSubletFilter
                               is ApartmentSizeFilter,
@@ -561,91 +551,88 @@ class _SubletListViewState extends State<SubletListView> {
                                   .apartmentType
                                   .toString()
                               : "Type",
-                          onClose: () async {
-                            if (subletState.singleSubletFilter
-                                is ApartmentTypeFilter) {
-                              context
-                                  .read<SubletBloc>()
-                                  .add(const SubletEvent.removeSingleFilter());
-                            } else {
-                              // open a modal bottom sheet
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                enableDrag: true,
-                                isDismissible: true,
-                                scrollControlDisabledMaxHeightRatio: 0.5,
-                                useSafeArea: true,
-                                builder: (ctx) {
-                                  return DraggableScrollableSheet(
-                                    expand: false,
-                                    initialChildSize: 0.35,
-                                    maxChildSize: 0.35,
-                                    builder: (ctx, scrollController) {
-                                      return StatefulBuilder(
-                                          builder: (ctx, setState) {
-                                        return SingleChildScrollView(
-                                          controller: scrollController,
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.start,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  "Apartment Type",
-                                                  style: AppTheme.titleLarge,
-                                                ),
-                                                const SizedBox(height: 16),
-                                                ListTile(
-                                                  title: const Text('Private'),
-                                                  onTap: () {
-                                                    context.read<SubletBloc>().add(
-                                                        SubletEvent.addSingleFilter(
-                                                            ApartmentTypeFilter(
-                                                                UserRoomType
-                                                                    .PRIVATE)));
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                ),
-                                                ListTile(
-                                                  title: const Text('Shared'),
-                                                  onTap: () {
-                                                    context.read<SubletBloc>().add(
-                                                        SubletEvent.addSingleFilter(
-                                                            ApartmentTypeFilter(
-                                                                UserRoomType
-                                                                    .SHARED)));
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                ),
-                                                ListTile(
-                                                  title: const Text('Flex'),
-                                                  onTap: () {
-                                                    context
-                                                        .read<SubletBloc>()
-                                                        .add(SubletEvent
-                                                            .addSingleFilter(
-                                                                ApartmentTypeFilter(
-                                                                    UserRoomType
-                                                                        .FLEX)));
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                ),
-                                              ],
-                                            ),
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              showDragHandle: true,
+                              enableDrag: true,
+                              isDismissible: true,
+                              scrollControlDisabledMaxHeightRatio: 0.5,
+                              useSafeArea: true,
+                              builder: (ctx) {
+                                return DraggableScrollableSheet(
+                                  expand: false,
+                                  initialChildSize: 0.35,
+                                  maxChildSize: 0.35,
+                                  builder: (ctx, scrollController) {
+                                    return StatefulBuilder(
+                                        builder: (ctx, setState) {
+                                      return SingleChildScrollView(
+                                        controller: scrollController,
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 16),
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                "Apartment Type",
+                                                style: AppTheme.titleLarge,
+                                              ),
+                                              const SizedBox(height: 16),
+                                              ListTile(
+                                                title: const Text('Private'),
+                                                onTap: () {
+                                                  context.read<SubletBloc>().add(
+                                                      SubletEvent.addSingleFilter(
+                                                          ApartmentTypeFilter(
+                                                              UserRoomType
+                                                                  .PRIVATE)));
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                              ListTile(
+                                                title: const Text('Shared'),
+                                                onTap: () {
+                                                  context.read<SubletBloc>().add(
+                                                      SubletEvent.addSingleFilter(
+                                                          ApartmentTypeFilter(
+                                                              UserRoomType
+                                                                  .SHARED)));
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                              ListTile(
+                                                title: const Text('Flex'),
+                                                onTap: () {
+                                                  context
+                                                      .read<SubletBloc>()
+                                                      .add(SubletEvent
+                                                          .addSingleFilter(
+                                                              ApartmentTypeFilter(
+                                                                  UserRoomType
+                                                                      .FLEX)));
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                            ],
                                           ),
-                                        );
-                                      });
-                                    },
-                                  );
-                                },
-                              );
-                            }
+                                        ),
+                                      );
+                                    });
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          onClose: () async {
+                            context
+                                .read<SubletBloc>()
+                                .add(const SubletEvent.removeSingleFilter());
                           },
                           isActive: subletState.singleSubletFilter
                               is ApartmentTypeFilter,
@@ -663,84 +650,81 @@ class _SubletListViewState extends State<SubletListView> {
                               : "Gender Pref",
                           isActive: subletState.singleSubletFilter
                               is GenderPreferenceFilter,
+                          onTap: () {
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              showDragHandle: true,
+                              enableDrag: true,
+                              isDismissible: true,
+                              useSafeArea: true,
+                              builder: (context) {
+                                return DraggableScrollableSheet(
+                                  expand: false,
+                                  initialChildSize: 0.20,
+                                  maxChildSize: 0.20,
+                                  minChildSize: 0.20,
+                                  builder: (context, scrollController) {
+                                    return SingleChildScrollView(
+                                      controller: scrollController,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                left: 12, bottom: 12),
+                                            child: Text(
+                                              "Gender Preference for Sublet",
+                                              style: AppTheme.titleLarge,
+                                            ),
+                                          ),
+                                          // male
+                                          ListTile(
+                                            title: const Text('Male'),
+                                            dense: true,
+                                            leading: Icon(
+                                              Icons.male,
+                                              color:
+                                                  AppTheme.greyShades.shade800,
+                                            ),
+                                            onTap: () {
+                                              Navigator.of(context).pop('Male');
+                                            },
+                                          ),
+                                          ListTile(
+                                            title: const Text('Female'),
+                                            dense: true,
+                                            onTap: () {
+                                              Navigator.of(context)
+                                                  .pop('Female');
+                                            },
+                                            leading: Icon(
+                                              Icons.female,
+                                              color:
+                                                  AppTheme.greyShades.shade800,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ).then((value) {
+                              if (value != null && value is String) {
+                                context.read<SubletBloc>().add(
+                                    SubletEvent.addSingleFilter(
+                                        GenderPreferenceFilter(value)));
+                              }
+                            });
+                          },
                           onClose: () async {
-                            if (subletState.singleSubletFilter
-                                is GenderPreferenceFilter) {
-                              context
-                                  .read<SubletBloc>()
-                                  .add(const SubletEvent.removeSingleFilter());
-                            } else {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                showDragHandle: true,
-                                enableDrag: true,
-                                isDismissible: true,
-                                useSafeArea: true,
-                                builder: (context) {
-                                  return DraggableScrollableSheet(
-                                    expand: false,
-                                    initialChildSize: 0.20,
-                                    maxChildSize: 0.20,
-                                    minChildSize: 0.20,
-                                    builder: (context, scrollController) {
-                                      return SingleChildScrollView(
-                                        controller: scrollController,
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 12, bottom: 12),
-                                              child: Text(
-                                                "Gender Preference for Sublet",
-                                                style: AppTheme.titleLarge,
-                                              ),
-                                            ),
-                                            // male
-                                            ListTile(
-                                              title: const Text('Male'),
-                                              dense: true,
-                                              leading: Icon(
-                                                Icons.male,
-                                                color: AppTheme
-                                                    .greyShades.shade800,
-                                              ),
-                                              onTap: () {
-                                                Navigator.of(context)
-                                                    .pop('Male');
-                                              },
-                                            ),
-                                            ListTile(
-                                              title: const Text('Female'),
-                                              dense: true,
-                                              onTap: () {
-                                                Navigator.of(context)
-                                                    .pop('Female');
-                                              },
-                                              leading: Icon(
-                                                Icons.female,
-                                                color: AppTheme
-                                                    .greyShades.shade800,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ).then((value) {
-                                if (value != null && value is String) {
-                                  context.read<SubletBloc>().add(
-                                      SubletEvent.addSingleFilter(
-                                          GenderPreferenceFilter(value)));
-                                }
-                              });
-                            }
+                            context
+                                .read<SubletBloc>()
+                                .add(const SubletEvent.removeSingleFilter());
                           },
                         ),
                     ],

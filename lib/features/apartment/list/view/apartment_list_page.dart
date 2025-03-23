@@ -258,7 +258,7 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                   TopActionButton(
                     icon: Icons.filter,
                     title: 'Filter',
-                    onClose: () {
+                    onTap: () {
                       showFilterDialog(context, apartmentState);
                     },
                     isActive: apartmentState.apartmentFilter != null,
@@ -276,10 +276,7 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                             return Material(
                               color: Colors.transparent,
                               child: ApartmentLocationFilter(
-                                apartments:
-                                    apartmentState.filteredApartmentList ??
-                                        _pagingController.itemList ??
-                                        [],
+                                apartments: _pagingController.itemList ?? [],
                                 location: apartmentState.singleApartmentFilter
                                         is LocationFilter
                                     ? (apartmentState.singleApartmentFilter
@@ -321,98 +318,99 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                           : "Rent",
                       isActive:
                           apartmentState.singleApartmentFilter is RentFilter,
-                      onClose: () async {
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          showDragHandle: true,
+                          enableDrag: true,
+                          isDismissible: true,
+                          scrollControlDisabledMaxHeightRatio: 0.3,
+                          useSafeArea: true,
+                          builder: (ctx) {
+                            return DraggableScrollableSheet(
+                              expand: false,
+                              minChildSize: 0.15,
+                              initialChildSize: 0.2,
+                              maxChildSize: 0.2,
+                              builder: (ctx, scrollController) {
+                                return StatefulBuilder(
+                                  builder: (ctx, setState) {
+                                    return SingleChildScrollView(
+                                      controller: scrollController,
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Text(
+                                                  "Min: ${rentStart.toInt()}",
+                                                  style: AppTheme.bodyLarge,
+                                                ),
+                                                const Spacer(),
+                                                Text(
+                                                  "Max: ${rentEnd.toInt()}",
+                                                  style: AppTheme.bodyLarge,
+                                                ),
+                                              ],
+                                            ),
+                                            // to avoid the default padding of the slider
+                                            Transform.scale(
+                                              scale: 0.8,
+                                              child: RangeSlider(
+                                                values: RangeValues(
+                                                    rentStart, rentEnd),
+                                                onChanged:
+                                                    (RangeValues values) {
+                                                  setState(() {
+                                                    rentStart = values.start;
+                                                    rentEnd = values.end;
+                                                  });
+                                                },
+                                                min: 0,
+                                                max: 10000,
+                                                divisions: 100,
+                                              ),
+                                            ),
+                                            CustomFlatButton(
+                                              onPressed: () {
+                                                context
+                                                    .read<ApartmentBloc>()
+                                                    .add(ApartmentEvent
+                                                        .addSingleFilter(
+                                                            RentFilter(
+                                                                rentStart
+                                                                    .toInt(),
+                                                                rentEnd
+                                                                    .toInt())));
+                                                Navigator.of(ctx).pop();
+                                              },
+                                              text: "Apply",
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                      onClose: () {
+                        context
+                            .read<ApartmentBloc>()
+                            .add(const ApartmentEvent.removeSingleFilter());
                         if (apartmentState.singleApartmentFilter
                             is RentFilter) {
-                          context
-                              .read<ApartmentBloc>()
-                              .add(const ApartmentEvent.removeSingleFilter());
-                        } else {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            showDragHandle: true,
-                            enableDrag: true,
-                            isDismissible: true,
-                            scrollControlDisabledMaxHeightRatio: 0.3,
-                            useSafeArea: true,
-                            builder: (ctx) {
-                              return DraggableScrollableSheet(
-                                expand: false,
-                                minChildSize: 0.15,
-                                initialChildSize: 0.2,
-                                maxChildSize: 0.2,
-                                builder: (ctx, scrollController) {
-                                  return StatefulBuilder(
-                                    builder: (ctx, setState) {
-                                      return SingleChildScrollView(
-                                        controller: scrollController,
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 16),
-                                          child: Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.start,
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Text(
-                                                    "Min: ${rentStart.toInt()}",
-                                                    style: AppTheme.bodyLarge,
-                                                  ),
-                                                  const Spacer(),
-                                                  Text(
-                                                    "Max: ${rentEnd.toInt()}",
-                                                    style: AppTheme.bodyLarge,
-                                                  ),
-                                                ],
-                                              ),
-                                              // to avoid the default padding of the slider
-                                              Transform.scale(
-                                                scale: 0.8,
-                                                child: RangeSlider(
-                                                  values: RangeValues(
-                                                      rentStart, rentEnd),
-                                                  onChanged:
-                                                      (RangeValues values) {
-                                                    setState(() {
-                                                      rentStart = values.start;
-                                                      rentEnd = values.end;
-                                                    });
-                                                  },
-                                                  min: 0,
-                                                  max: 10000,
-                                                  divisions: 100,
-                                                ),
-                                              ),
-                                              CustomFlatButton(
-                                                onPressed: () {
-                                                  context
-                                                      .read<ApartmentBloc>()
-                                                      .add(ApartmentEvent
-                                                          .addSingleFilter(
-                                                              RentFilter(
-                                                                  rentStart
-                                                                      .toInt(),
-                                                                  rentEnd
-                                                                      .toInt())));
-                                                  Navigator.of(ctx).pop();
-                                                },
-                                                text: "Apply",
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        }
+                        } else {}
                       },
                     ),
                   if (apartmentState.singleApartmentFilter == null ||
@@ -427,109 +425,106 @@ class _ApartmentListViewState extends State<ApartmentListView> {
                               .apartmentSize
                               .toFormattedString()
                           : "Size",
-                      onClose: () async {
-                        if (apartmentState.singleApartmentFilter
-                            is ApartmentSizeFilter) {
-                          context
-                              .read<ApartmentBloc>()
-                              .add(const ApartmentEvent.removeSingleFilter());
-                        } else {
-                          // open a modal bottom sheet
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            showDragHandle: true,
-                            enableDrag: true,
-                            isDismissible: true,
-                            scrollControlDisabledMaxHeightRatio: 0.5,
-                            useSafeArea: true,
-                            builder: (ctx) {
-                              return DraggableScrollableSheet(
-                                expand: false,
-                                initialChildSize: 0.35,
-                                maxChildSize: 0.35,
-                                builder: (ctx, scrollController) {
-                                  return StatefulBuilder(
-                                      builder: (ctx, setState) {
-                                    return SingleChildScrollView(
-                                      controller: scrollController,
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16),
-                                        child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Apartment Size",
-                                              style: AppTheme.titleLarge,
-                                            ),
-                                            const SizedBox(height: 16),
-                                            Text(
-                                              "Beds: $apartmentSizeBeds",
-                                              style: AppTheme.bodyLarge,
-                                            ),
-                                            Transform.scale(
-                                              scale: 1.1,
-                                              child: Slider(
-                                                value: apartmentSizeBeds
-                                                    .toDouble(),
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    apartmentSizeBeds =
-                                                        value.toInt();
-                                                  });
-                                                },
-                                                min: 1,
-                                                max: 6,
-                                              ),
-                                            ),
-                                            Text(
-                                              "Baths: $apartmentSizeBaths",
-                                              style: AppTheme.bodyLarge,
-                                            ),
-                                            Transform.scale(
-                                              scale: 1.1,
-                                              child: Slider(
-                                                value: apartmentSizeBaths
-                                                    .toDouble(),
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    apartmentSizeBaths =
-                                                        value.toInt();
-                                                  });
-                                                },
-                                                min: 1,
-                                                max: 6,
-                                              ),
-                                            ),
-                                            CustomFlatButton(
-                                              text: "Apply",
-                                              onPressed: () {
-                                                context
-                                                    .read<ApartmentBloc>()
-                                                    .add(ApartmentEvent
-                                                        .addSingleFilter(
-                                                            ApartmentSizeFilter(
-                                                                ApartmentSize(
-                                                      baths: apartmentSizeBaths,
-                                                      beds: apartmentSizeBeds,
-                                                    ))));
-                                                Navigator.of(ctx).pop();
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          showDragHandle: true,
+                          enableDrag: true,
+                          isDismissible: true,
+                          scrollControlDisabledMaxHeightRatio: 0.5,
+                          useSafeArea: true,
+                          builder: (ctx) {
+                            return DraggableScrollableSheet(
+                              expand: false,
+                              initialChildSize: 0.35,
+                              maxChildSize: 0.35,
+                              builder: (ctx, scrollController) {
+                                return StatefulBuilder(
+                                    builder: (ctx, setState) {
+                                  return SingleChildScrollView(
+                                    controller: scrollController,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 16),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "Apartment Size",
+                                            style: AppTheme.titleLarge,
+                                          ),
+                                          const SizedBox(height: 16),
+                                          Text(
+                                            "Beds: $apartmentSizeBeds",
+                                            style: AppTheme.bodyLarge,
+                                          ),
+                                          Transform.scale(
+                                            scale: 1.1,
+                                            child: Slider(
+                                              value:
+                                                  apartmentSizeBeds.toDouble(),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  apartmentSizeBeds =
+                                                      value.toInt();
+                                                });
                                               },
-                                            )
-                                          ],
-                                        ),
+                                              min: 1,
+                                              max: 6,
+                                            ),
+                                          ),
+                                          Text(
+                                            "Baths: $apartmentSizeBaths",
+                                            style: AppTheme.bodyLarge,
+                                          ),
+                                          Transform.scale(
+                                            scale: 1.1,
+                                            child: Slider(
+                                              value:
+                                                  apartmentSizeBaths.toDouble(),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  apartmentSizeBaths =
+                                                      value.toInt();
+                                                });
+                                              },
+                                              min: 1,
+                                              max: 6,
+                                            ),
+                                          ),
+                                          CustomFlatButton(
+                                            text: "Apply",
+                                            onPressed: () {
+                                              context
+                                                  .read<ApartmentBloc>()
+                                                  .add(ApartmentEvent
+                                                      .addSingleFilter(
+                                                          ApartmentSizeFilter(
+                                                              ApartmentSize(
+                                                    baths: apartmentSizeBaths,
+                                                    beds: apartmentSizeBeds,
+                                                  ))));
+                                              Navigator.of(ctx).pop();
+                                            },
+                                          )
+                                        ],
                                       ),
-                                    );
-                                  });
-                                },
-                              );
-                            },
-                          );
-                        }
+                                    ),
+                                  );
+                                });
+                              },
+                            );
+                          },
+                        );
+                      },
+                      onClose: () {
+                        context
+                            .read<ApartmentBloc>()
+                            .add(const ApartmentEvent.removeSingleFilter());
                       },
                       isActive: apartmentState.singleApartmentFilter
                           is ApartmentSizeFilter,

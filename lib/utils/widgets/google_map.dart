@@ -7,9 +7,13 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:google_places_sdk/google_places_sdk.dart';
 import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/bloc_state.dart';
+import 'package:nesters/utils/debouncer.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 
@@ -53,16 +57,29 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
   final Set<Marker> markers = {};
   final LocalStorageRepository _localStorageRepository =
       GetIt.I<LocalStorageRepository>();
+  final Debouncer _debouncer = Debouncer(milliseconds: 500);
+  final GooglePlaces _googlePlaces = GetIt.I<GooglePlaces>();
+  final TextEditingController _searchController = TextEditingController();
 
   BitmapDescriptor customIcon = BitmapDescriptor.defaultMarker;
   LatLng? userLocation;
   CameraPosition? cameraPosition;
   bool isPositionMoved = false;
+  bool isSearchingLocation = false;
+  BlocState mapSearchState = const BlocState(isLoading: false);
+  List<AutocompletePrediction> places = [];
 
   @override
   void initState() {
     super.initState();
     _loadCustomIcon();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _searchController.dispose();
+    _controller.future.then((controller) => controller.dispose());
   }
 
   Future<Location> getLocation() async {
@@ -75,7 +92,7 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
     }
     try {
       final position = await Geolocator.getCurrentPosition(
-          timeLimit: const Duration(seconds: 10));
+          timeLimit: const Duration(seconds: 7));
       _localStorageRepository.saveDouble(
           LocalStorageKeys.locationLatitude, position.latitude);
       _localStorageRepository.saveDouble(
@@ -96,11 +113,11 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
     final controller = await _controller.future;
     cameraPosition = CameraPosition(
         target: LatLng(position.latitude!, position.longitude!), zoom: 13);
-    await controller
-        .moveCamera(CameraUpdate.newCameraPosition(cameraPosition!));
-    isPositionMoved = false;
-    _addMarkers();
-    setState(() {});
+    if (mounted) {
+      await controller
+          .moveCamera(CameraUpdate.newCameraPosition(cameraPosition!));
+      isPositionMoved = false;
+    }
   }
 
   void _addMarkers() {
@@ -116,6 +133,9 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
         zIndex: 0,
       );
     }));
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
@@ -132,6 +152,17 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
     final Uint8List markerIcon =
         await getBytesFromAsset('assets/images/icons/home_map_marker.png', 110);
     customIcon = BitmapDescriptor.fromBytes(markerIcon);
+  }
+
+  Future<void> _searchLocation(String query) async {
+    try {
+      final response = await _googlePlaces.getAutoCompletePredictions(query);
+      places = response;
+    } on AppException catch (e) {
+      mapSearchState = BlocState(exception: e);
+    } finally {
+      mapSearchState = const BlocState(isLoading: false);
+    }
   }
 
   @override
@@ -161,7 +192,45 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
                 size: 20,
               ),
               const SizedBox(width: 8),
-              Flexible(child: Text(widget.tooltip))
+              if (isSearchingLocation) ...[
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search location',
+                      border: InputBorder.none,
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          setState(() {
+                            isSearchingLocation = false;
+                          });
+                        },
+                      ),
+                    ),
+                    autofocus: true,
+                    onChanged: (value) {
+                      _debouncer.run(() async {
+                        if (value.isNotEmpty) {
+                          mapSearchState = const BlocState(isLoading: true);
+                          if (mounted) setState(() {});
+                          await _searchLocation(value);
+                          if (mounted) setState(() {});
+                        }
+                      });
+                    },
+                  ),
+                )
+              ] else ...[
+                Flexible(child: Text(widget.tooltip)),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                )
+              ]
             ],
           ),
         ),
@@ -184,46 +253,144 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
           },
         ),
       ),
-      body: GoogleMap(
-        mapType: MapType.normal,
-        buildingsEnabled: false,
-        rotateGesturesEnabled: false,
-        circles: {
-          if (cameraPosition != null)
-            Circle(
-              circleId: const CircleId('user_location'),
-              center: cameraPosition!.target,
-              radius: widget.rangeRadius,
-              fillColor: AppTheme.primary.withOpacity(0.2),
-              strokeColor: AppTheme.primary,
-              strokeWidth: 1,
-            )
-        },
-        markers: {
-          if (cameraPosition != null)
-            Marker(
-              markerId: const MarkerId('user_location'),
-              position: cameraPosition!.target,
-              icon: BitmapDescriptor.defaultMarker,
-              zIndex: 1,
+      floatingActionButton: isSearchingLocation
+          ? null
+          : FloatingActionButton(
+              onPressed: () {
+                setState(() {
+                  isSearchingLocation = true;
+                });
+              },
+              child: const Icon(Icons.search),
             ),
-          ...markers,
-        },
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-          _loadCurrentLocation();
-        },
-        initialCameraPosition: const CameraPosition(
-          target: LatLng(0, 0),
-          zoom: 14,
-        ),
-        onCameraMove: (CameraPosition position) {
-          cameraPosition = position;
-          if (!isPositionMoved) {
-            isPositionMoved = true;
-          }
-          setState(() {});
-        },
+      body: Stack(
+        children: [
+          GoogleMap(
+            mapType: MapType.normal,
+            buildingsEnabled: false,
+            zoomControlsEnabled: false,
+            rotateGesturesEnabled: false,
+            circles: {
+              if (cameraPosition != null)
+                Circle(
+                  circleId: const CircleId('user_location'),
+                  center: cameraPosition!.target,
+                  radius: widget.rangeRadius,
+                  fillColor: AppTheme.primary.withOpacity(0.2),
+                  strokeColor: AppTheme.primary,
+                  strokeWidth: 1,
+                )
+            },
+            markers: {
+              if (cameraPosition != null)
+                Marker(
+                  markerId: const MarkerId('user_location'),
+                  position: cameraPosition!.target,
+                  icon: BitmapDescriptor.defaultMarker,
+                  zIndex: 1,
+                ),
+              ...markers,
+            },
+            onMapCreated: (GoogleMapController controller) {
+              _controller.complete(controller);
+              _loadCurrentLocation();
+              _addMarkers();
+              if (mounted) setState(() {});
+            },
+            initialCameraPosition: const CameraPosition(
+              target: LatLng(0, 0),
+              zoom: 14,
+            ),
+            onCameraMove: (CameraPosition position) {
+              cameraPosition = position;
+              if (!isPositionMoved) {
+                isPositionMoved = true;
+              }
+              setState(() {});
+            },
+          ),
+          if (isSearchingLocation)
+            Container(
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.onSurface.withOpacity(0.1),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height,
+              child: Column(
+                children: [
+                  if (places.isEmpty) const SizedBox(height: 130),
+                  if (mapSearchState.isLoading)
+                    const Center(child: CircularProgressIndicator())
+                  else if (mapSearchState.exception != null)
+                    ShowErrorWidget(
+                      error: mapSearchState.exception!,
+                      onRetry: () {},
+                    )
+                  else if (_searchController.text.isEmpty)
+                    const ShowInfoWidget(
+                      message: 'Search location',
+                      subtitle: 'Enter location name to search',
+                      icon: Icons.search,
+                    )
+                  else if (places.isEmpty)
+                    const ShowNoInfoWidget(
+                      title: 'No location found',
+                      subtitle: 'Try searching with different keyword',
+                    )
+                  else
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: places.length,
+                        itemBuilder: (context, index) {
+                          final place = places[index];
+                          return ListTile(
+                            title: Text(place.fullName ?? ''),
+                            subtitle: Text(place.secondaryText ?? ''),
+                            onTap: () async {
+                              try {
+                                final placeDetails = await _googlePlaces
+                                    .fetchPlaceDetails(place.placeId!);
+                                final controller = await _controller.future;
+                                cameraPosition = CameraPosition(
+                                  target: LatLng(
+                                    placeDetails.latLng!.lat!,
+                                    placeDetails.latLng!.lng!,
+                                  ),
+                                  zoom: 13,
+                                );
+                                await controller.moveCamera(
+                                    CameraUpdate.newCameraPosition(
+                                        cameraPosition!));
+                                isPositionMoved = false;
+                              } catch (e) {
+                                // ignore: use_build_context_synchronously
+                                context.showErrorSnackBar(
+                                  'Failed to load location',
+                                  subtitle: e.toString(),
+                                );
+                              } finally {
+                                if (mounted) {
+                                  setState(() {
+                                    isSearchingLocation = false;
+                                  });
+                                }
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            )
+        ],
       ),
     );
   }

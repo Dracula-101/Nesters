@@ -185,17 +185,19 @@ class ApartmentModelWidget extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppTheme.primary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(7),
-          ),
-          child: Text(
-            '${(apartment.distanceFromUserInMeters ?? 0).roundMiles}mi away',
-            style: AppTheme.labelMedium.copyWith(color: AppTheme.onSurface),
-          ),
-        )
+        if (apartment.distanceFromUserInMeters != null &&
+            apartment.distanceFromUserInMeters! > 0)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Text(
+              '${(apartment.distanceFromUserInMeters ?? 0).formattedMiles} away',
+              style: AppTheme.labelMedium.copyWith(color: AppTheme.onSurface),
+            ),
+          )
       ],
     );
   }

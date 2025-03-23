@@ -273,20 +273,37 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   Future<List<MarketplaceModel>> getSingleFilteredMarketplaces(
     MarketplaceSingleFilter filter,
     String userId,
-  ) {
+  ) async {
     try {
-      supabase.PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
-          _supabaseClient.from(marketplaceTable).select();
-      if (filter is MarketplaceCategoryFilter) {
-        queryBuilder =
-            queryBuilder.eq('category->>id', filter.category.id ?? 0);
+      if (filter is LocationFilter) {
+        final response =
+            await _supabaseClient.rpc('get_nearby_marketplaces', params: {
+          'uid': userId,
+          'range_km': filter.radiusKm,
+          'page_limit': 50,
+          'offset_value': 0,
+          'source_latitude': filter.location.latitude,
+          'source_longitude': filter.location.longitude,
+        });
+        List<MarketplaceModel> marketplaces = [];
+        for (final item in response) {
+          marketplaces.add(MarketplaceModel.fromJson(item));
+        }
+        return marketplaces;
+      } else {
+        supabase.PostgrestFilterBuilder<List<Map<String, dynamic>>>
+            queryBuilder = _supabaseClient.from(marketplaceTable).select();
+        if (filter is MarketplaceCategoryFilter) {
+          queryBuilder =
+              queryBuilder.eq('category->>id', filter.category.id ?? 0);
+        }
+        return queryBuilder
+            .neq("user_id", userId)
+            .order("created_at", ascending: false)
+            .select()
+            .then((response) =>
+                response.map((e) => MarketplaceModel.fromJson(e)).toList());
       }
-      return queryBuilder
-          .neq("user_id", userId)
-          .order("created_at", ascending: false)
-          .select()
-          .then((response) =>
-              response.map((e) => MarketplaceModel.fromJson(e)).toList());
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,

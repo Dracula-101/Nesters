@@ -133,7 +133,9 @@ CREATE OR REPLACE FUNCTION get_nearby_marketplaces(
     uid UUID,
     range_km DOUBLE PRECISION DEFAULT 100,
     offset_value INTEGER DEFAULT 0,
-    page_limit INTEGER DEFAULT 10
+    page_limit INTEGER DEFAULT 10,
+    source_latitude DOUBLE PRECISION DEFAULT 100,
+    source_longitude DOUBLE PRECISION DEFAULT 100
 )
 RETURNS TABLE(
     id BIGINT,
@@ -148,16 +150,22 @@ RETURNS TABLE(
     user_id UUID,
     created_at BIGINT,
     address TEXT,
-    distance_m DOUBLE PRECISION
+    distance_m DOUBLE PRECISION,
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION
 ) AS $$
 DECLARE
-    university_location gis.geography;
+    search_location gis.geography;
 BEGIN
     -- Get the university location for the given user_id
-    SELECT u.location INTO university_location
-    FROM public.user_details AS ud
-    INNER JOIN const.universities AS u ON ud.college = u.title
-    WHERE ud.id = uid;
+    IF source_latitude IS NOT NULL AND source_longitude IS NOT NULL THEN
+        search_location := gis.ST_SetSRID(gis.ST_MakePoint(source_longitude, source_latitude), 4326);
+    ELSE
+        SELECT u.location INTO search_location
+        FROM public.user_details AS ud
+        INNER JOIN const.universities AS u ON ud.college = u.title
+        WHERE ud.id = uid;
+    END IF;
 
     -- Return nearby marketplaces based on the university location with pagination and distance
     RETURN QUERY
@@ -174,9 +182,11 @@ BEGIN
         m.user_id,
         m.created_at,
         m.address,
-        gis.ST_Distance(m.location::gis.geography, university_location) AS distance_m
+        gis.ST_Distance(m.location::gis.geography, search_location) AS distance_m,
+        gis.ST_Y(m.location::gis.geometry) AS latitude, -- Extract latitude
+        gis.ST_X(m.location::gis.geometry) AS longitude -- Extract longitude
     FROM public.marketplaces AS m
-    WHERE gis.ST_DWithin(m.location::gis.geography, university_location, range_km * 1000)
+    WHERE gis.ST_DWithin(m.location::gis.geography, search_location, range_km * 1000)
     ORDER BY distance_m
     OFFSET offset_value LIMIT page_limit;
 END;
@@ -399,6 +409,74 @@ BEGIN
         a.location::gis.geometry
     FROM public.apartments AS a
     WHERE gis.ST_DWithin(a.location::gis.geography, search_location, range_km * 1000) -- Convert km to meters
+    ORDER BY distance_m
+    OFFSET offset_value LIMIT page_limit;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE FUNCTION get_nearby_marketplaces(
+    uid uuid,
+    range_km double precision DEFAULT 100,
+    offset_value integer DEFAULT 0,
+    page_limit integer DEFAULT 10,
+    source_latitude double precision DEFAULT 100,
+    source_longitude double precision DEFAULT 100
+) 
+RETURNS TABLE(
+    id bigint, 
+    name text, 
+    category json, 
+    description text, 
+    price integer, 
+    photos json, 
+    link json, 
+    period json, 
+    is_available boolean, 
+    user_id uuid, 
+    created_at bigint, 
+    address text, 
+    distance_m double precision, 
+    latitude double precision, 
+    longitude double precision
+)
+AS $$
+DECLARE
+    search_location gis.geography;
+BEGIN
+    -- Convert source coordinates to geography if provided
+    IF source_latitude IS NOT NULL AND source_longitude IS NOT NULL THEN
+        search_location := gis.ST_SetSRID(
+            gis.ST_MakePoint(source_longitude, source_latitude), 4326
+        );
+    ELSE
+        -- Get university location for the given user_id if no source coordinates provided
+        SELECT u.location INTO search_location
+        FROM public.user_details AS ud
+        INNER JOIN const.universities AS u ON ud.college = u.title
+        WHERE ud.id = uid;
+    END IF;
+
+    -- Return nearby apartments based on the search location, with pagination and distance
+    RETURN QUERY
+    SELECT
+        m.id AS id,
+        m.name,
+        m.category,
+        m.description,
+        m.price,
+        m.photos,
+        m.link,
+        m.period,
+        m.is_available,
+        m.user_id,
+        m.created_at,
+        m.address,
+        gis.ST_Distance(m.location::gis.geography, search_location) AS distance_m,
+        gis.ST_Y(m.location::gis.geometry) AS latitude,
+        gis.ST_X(m.location::gis.geometry) AS longitude
+    FROM public.marketplaces AS m
+    WHERE gis.ST_DWithin(m.location::gis.geography, search_location, range_km * 1000)
     ORDER BY distance_m
     OFFSET offset_value LIMIT page_limit;
 END;

@@ -68,9 +68,7 @@ class MarketplaceModel {
       isFavouriteByUser: (json['marketplaces_likes'] != null
           ? json['marketplaces_likes']['is_liked']
           : false),
-      distanceFromUserInMeters: json['distance_m'] != null
-          ? double.tryParse(json['distance_m'].toString())
-          : null,
+      distanceFromUserInMeters: json['distance_m'],
     );
   }
 
