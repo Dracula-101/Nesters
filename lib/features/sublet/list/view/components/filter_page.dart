@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+import 'package:google_places_sdk/google_places_sdk.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/features/sublet/list/view/sublet_list_page.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/domain/models/sublet/sublet_filter.dart';
@@ -8,6 +12,8 @@ import 'package:nesters/domain/models/apartment/lease_period.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/features/home/view/components/filter_tile.dart';
 import 'package:nesters/features/home/view/components/filter_tab.dart';
+import 'package:nesters/utils/bloc_state.dart';
+import 'package:nesters/utils/debouncer.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 
@@ -29,13 +35,71 @@ class SubletFilterPage extends StatefulWidget {
 
 class _SubletFilterPageState extends State<SubletFilterPage> {
   late SubletFilter subletFilter;
-  SubletFilterTypes subletFilterTypeSelected =
-      SubletFilterTypes.RoomateGenderPref;
+  SubletFilterTypes subletFilterTypeSelected = SubletFilterTypes.Location;
+  List<AutocompletePrediction> places = [];
+  final GooglePlaces googlePlaces = GetIt.I<GooglePlaces>();
+  BlocState searchingState = const BlocState(isLoading: false);
+  final Debouncer _debouncer = Debouncer(milliseconds: 500);
+  final TextEditingController _locationController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     subletFilter = widget.initialFilter ?? SubletFilter();
+  }
+
+  @override
+  void dispose() {
+    _locationController.dispose();
+    super.dispose();
+  }
+
+  void _onLocationChanged(String value) async {
+    _debouncer.run(() async {
+      if (value.isEmpty) {
+        setState(() {
+          places = [];
+        });
+        return;
+      }
+      setState(() {
+        searchingState = const BlocState(isLoading: true);
+      });
+      try {
+        final response = await googlePlaces.getAutoCompletePredictions(value);
+        places = response;
+      } on AppException catch (e) {
+        searchingState = searchingState.copyWith(exception: e);
+      } finally {
+        setState(() {
+          searchingState = searchingState.copyWith(isLoading: false);
+        });
+      }
+    });
+  }
+
+  Future<void> _getLocationDetails(String placeId) async {
+    try {
+      final response = await googlePlaces.fetchPlaceDetails(placeId);
+      final location = response.latLng;
+      if (location != null) {
+        subletFilter = subletFilter.copyWith(
+          address: response.address,
+          location: Location(
+            latitude: location.lat,
+            longitude: location.lng,
+          ),
+        );
+        places = [];
+      }
+      _locationController.clear();
+    } on AppException catch (e) {
+      searchingState = searchingState.copyWith(exception: e);
+    } finally {
+      setState(() {
+        searchingState = searchingState.copyWith(isLoading: false);
+      });
+    }
   }
 
   @override
@@ -164,6 +228,72 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
         ),
         child: SizedBox(
           child: switch (subletFilterTypeSelected) {
+            SubletFilterTypes.Location => ListView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: CustomTextField(
+                      hintText: "Enter Location",
+                      onChanged: (value) {
+                        _onLocationChanged(value);
+                      },
+                      controller: _locationController,
+                    ),
+                  ),
+                  if (subletFilter.address != null) ...[
+                    ListTile(
+                      title: Text(
+                        "Selected Location",
+                        style: AppTheme.titleSmall
+                            .copyWith(color: AppTheme.primary),
+                      ),
+                      dense: true,
+                      subtitle: Text(subletFilter.address ?? '',
+                          style: AppTheme.labelMedium),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.close_outlined),
+                        iconSize: 20,
+                        onPressed: () {
+                          _locationController.clear();
+                          places = [];
+                          subletFilter = subletFilter.copyWith(
+                              address: null, location: null);
+                          setState(() {});
+                        },
+                      ),
+                      contentPadding:
+                          const EdgeInsets.only(left: 12, top: 4, bottom: 4),
+                    ),
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                    ),
+                  ],
+                  if (searchingState.isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else if (searchingState.exception != null)
+                    ShowErrorWidget(
+                      error: searchingState.exception!,
+                    )
+                  else
+                    ...places.map(
+                      (e) => ListTile(
+                        title: Text(e.primaryText ?? ''),
+                        subtitle: Text(e.secondaryText ?? ''),
+                        dense: true,
+                        onTap: () {
+                          if (e.placeId == null) return;
+                          _getLocationDetails(e.placeId!);
+                        },
+                      ),
+                    ),
+                ],
+              ),
             SubletFilterTypes.RoomateGenderPref => ListView(
                 children: [
                   FilterTile(

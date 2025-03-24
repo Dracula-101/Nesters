@@ -273,11 +273,27 @@ class SubletRepositoryImpl implements SubletRepository {
   Future<List<SubletModel>> multiFilterSublet({
     required SubletFilter filter,
     required String userId,
-  }) {
+  }) async {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
           _supabaseClient.from(subletTable).select();
       queryBuilder = queryBuilder.eq("is_available", true);
+      List<SubletModel>? nearbySubletsByLocation;
+      if (filter.location != null) {
+        final response =
+            await _supabaseClient.rpc('get_nearby_sublets', params: {
+          'uid': userId,
+          'source_latitude': filter.location!.latitude,
+          'source_longitude': filter.location!.longitude,
+          'range_km': 30,
+          'page_limit': 50,
+          'offset_value': 0,
+        });
+        nearbySubletsByLocation = [];
+        for (final sublet in response) {
+          nearbySubletsByLocation.add(SubletModel.fromMap(sublet));
+        }
+      }
       if (filter.amenitiesAvailable != null &&
           filter.amenitiesAvailable!.hasAmenities()) {
         if (filter.amenitiesAvailable!.hasAC != null &&
@@ -385,8 +401,17 @@ class SubletRepositoryImpl implements SubletRepository {
       } else {
         response = response.order("id", ascending: false);
       }
-      return response
-          .then((value) => value.map((e) => SubletModel.fromMap(e)).toList());
+      final filteredSublets =
+          (await response).map((e) => SubletModel.fromMap(e)).toList();
+      if (nearbySubletsByLocation != null) {
+        return nearbySubletsByLocation
+            .where(
+              (element) =>
+                  filteredSublets.indexWhere((e) => e.id == element.id) != -1,
+            )
+            .toList();
+      }
+      return filteredSublets;
     } on supabase.PostgrestException catch (e) {
       throw SubletErrorFactory.createSubletError(
         SubletErrorCode.DB_ERR,

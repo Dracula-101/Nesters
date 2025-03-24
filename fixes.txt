@@ -32,6 +32,8 @@ offset method user profiles change, https://www.youtube.com/watch?v=poqTHxtDXwU&
 error handling delightful toast ust,
 
 add everywhere
+
+remove current logic of advanced searching by location and write a RPC to make request for multiple filters
 ==============
 schimer effect,
 image compression size reduce add to all sides, like profile is remaining

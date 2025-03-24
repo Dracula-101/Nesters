@@ -5,6 +5,7 @@ import 'package:nesters/data/repository/marketplace/marketplace_repository.dart'
 import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
+import 'package:nesters/domain/models/marketplace/searched_marketplace_model.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/utils/extensions/exception.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
@@ -355,8 +356,50 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
         transformBuilder =
             transformBuilder.order('created_at', ascending: false);
       }
-      return transformBuilder.then((response) =>
+      final filteredItems = await transformBuilder.select().then((response) =>
           response.map((e) => MarketplaceModel.fromJson(e)).toList());
+      return filteredItems;
+    } on supabase.PostgrestException catch (e) {
+      throw MarketplaceErrorFactory.fromCode(
+        MarketplaceErrorCode.DB_ERR,
+        hint: 'Database error: ${e.details}, ${e.message}, ${e.hint}',
+      );
+    } on SocketException catch (_) {
+      throw NoNetworkError();
+    } catch (e) {
+      if (e is Exception) {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.getException,
+        );
+      } else {
+        throw MarketplaceErrorFactory.fromCode(
+          MarketplaceErrorCode.GET_MULTIPLE_FILTERED_MARKETPLACES_ERR,
+          hint: e.toString(),
+        );
+      }
+    }
+  }
+
+  @override
+  Future<List<SearchedMarketplaceModel>> searchMarketplaces({
+    required String userId,
+    required String query,
+  }) async {
+    try {
+      final searchedResults = await _supabaseClient.rpc(
+        'search_marketplace_items',
+        params: {
+          'uid': userId,
+          'query': query,
+          'range_km': 100,
+        },
+      );
+      List<SearchedMarketplaceModel> marketplaces = [];
+      for (final item in searchedResults) {
+        marketplaces.add(SearchedMarketplaceModel.fromJson(item));
+      }
+      return marketplaces;
     } on supabase.PostgrestException catch (e) {
       throw MarketplaceErrorFactory.fromCode(
         MarketplaceErrorCode.DB_ERR,

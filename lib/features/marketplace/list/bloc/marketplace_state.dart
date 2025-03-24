@@ -48,6 +48,11 @@ enum MarketplaceFilterTypes {
 
   @override
   String toString() {
-    return this == MarketplaceFilterTypes.price ? 'Price' : 'Category';
+    switch (this) {
+      case MarketplaceFilterTypes.price:
+        return 'Price';
+      case MarketplaceFilterTypes.category:
+        return 'Category';
+    }
   }
 }

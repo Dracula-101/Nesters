@@ -766,6 +766,7 @@ class _SubletListViewState extends State<SubletListView> {
 }
 
 enum SubletFilterTypes {
+  Location,
   RoomateGenderPref,
   Rent,
   LeasePeriods,
@@ -776,6 +777,8 @@ enum SubletFilterTypes {
   @override
   String toString() {
     switch (this) {
+      case Location:
+        return "Location";
       case RoomateGenderPref:
         return "Roomate Gender";
       case Rent:

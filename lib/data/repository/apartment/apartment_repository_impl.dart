@@ -252,11 +252,27 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
   Future<List<ApartmentModel>> multiFilterApartment({
     required ApartmentFilter filter,
     required String userId,
-  }) {
+  }) async {
     try {
       PostgrestFilterBuilder<List<Map<String, dynamic>>> queryBuilder =
           _supabaseClient.from(apartmentsTable).select();
       queryBuilder = queryBuilder.eq("is_available", true);
+      List<ApartmentModel>? nearbyApartments;
+      if (filter.location != null) {
+        final response =
+            await _supabaseClient.rpc('get_nearby_apartments', params: {
+          'uid': userId,
+          'source_latitude': filter.location!.latitude,
+          'source_longitude': filter.location!.longitude,
+          'range_km': 50,
+          'page_limit': 50,
+          'offset_value': 0,
+        });
+        nearbyApartments = [];
+        for (final apartment in response) {
+          nearbyApartments.add(ApartmentModel.fromMap(apartment));
+        }
+      }
       if (filter.amenitiesAvailable != null &&
           filter.amenitiesAvailable!.hasAmenities()) {
         if (filter.amenitiesAvailable!.hasAC != null &&
@@ -362,8 +378,19 @@ class ApartmentRepositoryImpl implements ApartmentRepository {
       } else {
         transformBuilder = transformBuilder.order("id", ascending: false);
       }
-      return transformBuilder.select().then(
-          (value) => value.map((e) => ApartmentModel.fromMap(e)).toList());
+      final filteredApartments = await transformBuilder
+          .select()
+          .then((v) => v.map((e) => ApartmentModel.fromMap(e)).toList());
+      if (nearbyApartments != null) {
+        return nearbyApartments
+            .where(
+              (element) =>
+                  filteredApartments.indexWhere((e) => e.id == element.id) !=
+                  -1,
+            )
+            .toList();
+      }
+      return filteredApartments;
     } on SocketException {
       throw NoNetworkError();
     } on PostgrestException catch (e) {

@@ -554,6 +554,7 @@ class _ApartmentListViewState extends State<ApartmentListView> {
 }
 
 enum ApartmentFilterTypes {
+  Location,
   Rent,
   LeasePeriods,
   Ameneties,
@@ -562,6 +563,8 @@ enum ApartmentFilterTypes {
   @override
   String toString() {
     switch (this) {
+      case Location:
+        return "Location";
       case Rent:
         return "Rent";
       case LeasePeriods:

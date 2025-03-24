@@ -242,6 +242,12 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                     scrollDirection: Axis.horizontal,
                     children: [
                       TopActionButton(
+                        icon: Icons.search,
+                        title: 'Search',
+                        onTap: () {},
+                        isActive: marketplaceState.advancedFilter != null,
+                      ),
+                      TopActionButton(
                         icon: Icons.filter,
                         title: 'Filter',
                         onTap: () {

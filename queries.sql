@@ -481,3 +481,85 @@ BEGIN
     OFFSET offset_value LIMIT page_limit;
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION search_marketplace_items(
+    search_query TEXT,
+    uid UUID,
+    source_latitude DOUBLE PRECISION DEFAULT 100,
+    source_longitude DOUBLE PRECISION DEFAULT 100,
+    range_km DOUBLE PRECISION DEFAULT 100,
+) 
+RETURNS TABLE(
+    id bigint, 
+    name text, 
+    category json, 
+    description text, 
+    price integer, 
+    photos json, 
+    link json, 
+    period json, 
+    is_available boolean, 
+    user_id uuid, 
+    created_at bigint, 
+    address text, 
+    distance_m double precision, 
+    latitude double precision, 
+    longitude double precision,
+    match_by text,
+)
+AS $$
+DECLARE
+    search_location gis.geography;
+BEGIN
+    -- Convert source coordinates to geography if provided
+    IF source_latitude IS NOT NULL AND source_longitude IS NOT NULL THEN
+        search_location := gis.ST_SetSRID(
+            gis.ST_MakePoint(source_longitude, source_latitude), 4326
+        );
+    ELSE
+        -- Get university location for the given user_id if no source coordinates provided
+        SELECT u.location INTO search_location
+        FROM public.user_details AS ud
+        INNER JOIN const.universities AS u ON ud.college = u.title
+        WHERE ud.id = uid;
+    END IF;
+
+    RETURN QUERY
+    SELECT
+        m.id AS id,
+        m.name,
+        m.category,
+        m.description,
+        m.price,
+        m.photos,
+        m.link,
+        m.period,
+        m.is_available,
+        m.user_id,
+        m.created_at,
+        m.address,
+        gis.ST_Distance(m.location::gis.geography, search_location) AS distance_m,
+        gis.ST_Y(m.location::gis.geometry) AS latitude,
+        gis.ST_X(m.location::gis.geometry) AS longitude,
+        CASE
+            WHEN m.name ILIKE '%' || search_query || '%' THEN 'name'
+            WHEN m.description ILIKE '%' || search_query || '%' THEN 'description'
+            WHEN m.category->>'name' ILIKE '%' || search_query || '%' THEN 'category'
+            WHEN m.address ILIKE '%' || search_query || '%' THEN 'address'
+            ELSE 'unknown'
+        END AS match_by
+    FROM public.marketplaces AS m
+    WHERE gis.ST_DWithin(m.location::gis.geography, search_location, range_km * 1000)
+    AND (
+        m.name ILIKE '%' || search_query || '%' OR
+        m.description ILIKE '%' || search_query || '%' OR
+        m.category->>'name' ILIKE '%' || search_query || '%' OR
+        m.address ILIKE '%' || search_query || '%'
+    )
+    ORDER BY distance_m;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Example usage
+SELECT * FROM search_marketplace_items('furniture', '25f247de-78b8-4ebc-91ac-1451302dc9ff', 40.64151070303465, -74.01069425046444, 5);
