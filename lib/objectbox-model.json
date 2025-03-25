@@ -204,9 +204,33 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "8:3611462777671213450",
+      "lastPropertyId": "3:4658861248018371775",
+      "name": "RecentSearchMarketplaceItemEntity",
+      "properties": [
+        {
+          "id": "1:2949753273669102676",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3835405098039693620",
+          "name": "searchQuery",
+          "type": 9
+        },
+        {
+          "id": "3:4658861248018371775",
+          "name": "searchedAt",
+          "type": 10
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "7:6097212864037965260",
+  "lastEntityId": "8:3611462777671213450",
   "lastIndexId": "1:4054268718528892224",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

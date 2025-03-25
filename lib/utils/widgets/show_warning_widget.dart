@@ -16,7 +16,7 @@ class ShowWarningWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
-              Icons.warning,
+              Icons.warning_rounded,
               color: AppTheme.primaryShades.shade300,
               size: 90,
             ),

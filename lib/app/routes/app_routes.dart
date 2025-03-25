@@ -199,11 +199,11 @@ class AppRouterService {
                     favouritePosts,
                     (_) => const UserFavouritePostPage(),
                   ),
-                  AppRoute(
-                    marketplaceSearch,
-                    (_) => const MarketplaceSearchPage(),
-                  )
                 ],
+              ),
+              AppRoute(
+                marketplaceSearch,
+                (_) => const MarketplaceSearchPage(),
               )
             ],
           ),

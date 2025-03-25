@@ -244,7 +244,11 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                       TopActionButton(
                         icon: Icons.search,
                         title: 'Search',
-                        onTap: () {},
+                        onTap: () {
+                          GoRouter.of(context).go(
+                            '${AppRouterService.homeScreen}/${AppRouterService.marketplaceSearch}',
+                          );
+                        },
                         isActive: marketplaceState.advancedFilter != null,
                       ),
                       TopActionButton(

@@ -25,6 +25,10 @@ abstract class ObxStorageRepository {
   Future<void> saveMarketplaceCategories(
       List<MarketplaceCategoryModel> categories);
 
+  List<String> getRecentSearchMarketplace();
+  Future<void> addRecentSearchMarketplaceItem(String item);
+  Future<void> removeRecentSearchMarketplaceItem(String item);
+
   //Language
   List<Language> getLanguages();
   Future<void> saveLanguages(List<Language> languages);

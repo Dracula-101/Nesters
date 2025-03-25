@@ -7,6 +7,7 @@ import 'package:nesters/data/repository/database/object_box/models/chat/message/
 import 'package:nesters/data/repository/database/object_box/models/user/degree_entity.dart';
 import 'package:nesters/data/repository/database/object_box/models/user/language_entity.dart';
 import 'package:nesters/data/repository/database/object_box/models/user/marketplace_category_entity.dart';
+import 'package:nesters/data/repository/database/object_box/models/user/recent_marketplace_search.dart';
 import 'package:nesters/data/repository/database/object_box/models/user/university_entity.dart';
 import 'package:nesters/data/repository/database/object_box/repository/error/obx_storage_error.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
@@ -29,6 +30,8 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
   late Box<MarketplaceCategoryEntity> marketplaceCategoriesEntityBox;
   late Box<ChatEntity> chatEntityBox;
   late Box<MessageEntity> messageEntityBox;
+  late Box<RecentSearchMarketplaceItemEntity>
+      recentSearchMarketplaceItemEntityBox;
   static String objectBoxDirectory = 'objectbox';
 
   @override
@@ -49,6 +52,8 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
     degreeEntityBox = store.box<DegreeEntity>();
     languageEntityBox = store.box<LanguageEntity>();
     marketplaceCategoriesEntityBox = store.box<MarketplaceCategoryEntity>();
+    recentSearchMarketplaceItemEntityBox =
+        store.box<RecentSearchMarketplaceItemEntity>();
   }
 
   @override
@@ -270,6 +275,18 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
   }
 
   @override
+  List<String> getRecentSearchMarketplace() {
+    try {
+      return recentSearchMarketplaceItemEntityBox
+          .getAll()
+          .map((e) => e.searchQuery)
+          .toList();
+    } catch (e) {
+      throw ObxStorageValueGetError('recentSearchMarketplaceItems');
+    }
+  }
+
+  @override
   Future<void> saveDegrees(List<Degree> degrees) {
     try {
       degreeEntityBox.removeAll();
@@ -333,6 +350,48 @@ class ObjectBoxStorageRepository extends ObxStorageRepository {
       return Future.value();
     } catch (e) {
       throw ObxStorageValueSaveError('universityEntityBox');
+    }
+  }
+
+  @override
+  Future<void> addRecentSearchMarketplaceItem(String item) {
+    try {
+      // check if the item already exists
+      final recentSearchMarketplaceItemEntity =
+          recentSearchMarketplaceItemEntityBox
+              .query(
+                  RecentSearchMarketplaceItemEntity_.searchQuery.equals(item))
+              .build()
+              .findFirst();
+      if (recentSearchMarketplaceItemEntity?.id != null) {
+        recentSearchMarketplaceItemEntityBox
+            .remove(recentSearchMarketplaceItemEntity!.id!);
+      }
+      recentSearchMarketplaceItemEntityBox.put(
+          RecentSearchMarketplaceItemEntity(
+              searchQuery: item, searchedAt: DateTime.now()));
+      return Future.value();
+    } catch (e) {
+      throw ObxStorageValueSaveError('recentSearchMarketplaceItemEntityBox');
+    }
+  }
+
+  @override
+  Future<void> removeRecentSearchMarketplaceItem(String item) {
+    try {
+      final recentSearchMarketplaceItemEntity =
+          recentSearchMarketplaceItemEntityBox
+              .query(
+                  RecentSearchMarketplaceItemEntity_.searchQuery.equals(item))
+              .build()
+              .findFirst();
+      if (recentSearchMarketplaceItemEntity?.id != null) {
+        recentSearchMarketplaceItemEntityBox
+            .remove(recentSearchMarketplaceItemEntity!.id!);
+      }
+      return Future.value();
+    } catch (e) {
+      throw ObxStorageValueSaveError('recentSearchMarketplaceItemEntityBox');
     }
   }
 }

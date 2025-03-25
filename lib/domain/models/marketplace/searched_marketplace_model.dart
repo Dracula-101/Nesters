@@ -1,5 +1,6 @@
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_link_model.dart';
+import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_period_model.dart';
 import 'package:nesters/domain/models/user/location.dart';
 
@@ -81,6 +82,24 @@ class SearchedMarketplaceModel {
       'created_at': createdAt?.millisecondsSinceEpoch,
       'user_id': userId,
     };
+  }
+
+  MarketplaceModel toMarketplaceItem() {
+    return MarketplaceModel(
+      id: id,
+      name: name ?? '',
+      description: description ?? '',
+      price: price ?? 0,
+      category: category ?? MarketplaceCategoryModel(),
+      photos: photos ?? [],
+      reference: reference ?? MarketplaceLinkModel(),
+      address: address ?? '',
+      location: location ?? Location(),
+      period: period ?? MarketplacePeriodModel(),
+      isAvailable: isAvailable ?? false,
+      createdAt: createdAt ?? DateTime.now(),
+      userId: userId,
+    );
   }
 }
 

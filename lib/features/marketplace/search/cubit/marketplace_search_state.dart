@@ -1,52 +1,42 @@
 part of 'marketplace_search_cubit.dart';
 
 class MarketplaceSearchState extends Equatable {
-  const MarketplaceSearchState(
-      {this.searchResults = const [],
-      this.searchQuery = '',
-      this.state = const BlocState(isLoading: false)});
+  const MarketplaceSearchState({
+    required this.searchResults,
+    required this.recentSearches,
+    required this.searchQuery,
+    required this.searchState,
+  });
 
   final List<SearchedMarketplaceModel> searchResults;
+  final List<String> recentSearches;
   final String searchQuery;
-  final BlocState state;
+  final BlocState searchState;
 
   @override
-  List<Object> get props => [searchResults, searchQuery, state];
+  List<Object> get props =>
+      [searchResults, recentSearches, searchQuery, searchState];
 
-  factory MarketplaceSearchState.loading() {
+  factory MarketplaceSearchState.initial() {
     return const MarketplaceSearchState(
       searchResults: [],
       searchQuery: '',
-      state: const BlocState(isLoading: true),
+      recentSearches: [],
+      searchState: BlocState(isLoading: false),
     );
   }
 
-  factory MarketplaceSearchState.loaded(
-      {required List<SearchedMarketplaceModel> searchResults,
-      required String searchQuery}) {
-    return MarketplaceSearchState(
-      searchResults: searchResults,
-      searchQuery: searchQuery,
-      state: const BlocState(isLoading: false),
-    );
-  }
-
-  factory MarketplaceSearchState.error({required AppException error}) {
-    return MarketplaceSearchState(
-      searchResults: [],
-      searchQuery: '',
-      state: BlocState(isLoading: false, exception: error),
-    );
-  }
-
-  MarketplaceSearchState copyWith(
-      {List<SearchedMarketplaceModel>? searchResults,
-      String? searchQuery,
-      BlocState? state}) {
+  MarketplaceSearchState copyWith({
+    List<SearchedMarketplaceModel>? searchResults,
+    List<String>? recentSearches,
+    String? searchQuery,
+    BlocState? searchState,
+  }) {
     return MarketplaceSearchState(
       searchResults: searchResults ?? this.searchResults,
       searchQuery: searchQuery ?? this.searchQuery,
-      state: state ?? this.state,
+      searchState: searchState ?? this.searchState,
+      recentSearches: recentSearches ?? this.recentSearches,
     );
   }
 }

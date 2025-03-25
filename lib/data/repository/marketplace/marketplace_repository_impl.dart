@@ -391,8 +391,8 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
         'search_marketplace_items',
         params: {
           'uid': userId,
-          'query': query,
-          'range_km': 100,
+          'search_query': query,
+          'range_km': 10000,
         },
       );
       List<SearchedMarketplaceModel> marketplaces = [];
