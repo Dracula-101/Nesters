@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/widgets.dart';
@@ -11,6 +12,7 @@ import 'package:nesters/data/repository/marketplace/marketplace_repository_impl.
 import 'package:nesters/data/repository/media/media_compressor.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository.dart';
 import 'package:nesters/data/repository/sublet/sublet_repository_impl.dart';
+import 'package:nesters/data/repository/user/chat/firebase_chat_repository.dart';
 import 'package:nesters/data/repository/user/profile/firebase_user_profile_repository.dart';
 import 'package:nesters/data/repository/user/profile/user_chat_profile_repository.dart';
 import 'package:nesters/data/repository/user/user_repository_impl.dart';
@@ -24,7 +26,6 @@ import 'package:nesters/data/repository/device/device_info_repository_impl.dart'
 import 'package:nesters/data/repository/media/media_repository.dart';
 import 'package:nesters/data/repository/network/network_checker_repository.dart';
 import 'package:nesters/data/repository/network/network_checker_repository_impl.dart';
-import 'package:nesters/data/repository/user/chat/fireabase_chat_repository.dart';
 import 'package:nesters/data/repository/user/chat/remote_chat_repository.dart';
 import 'package:nesters/data/repository/notification/local/local_notification_repository.dart';
 import 'package:nesters/data/repository/notification/remote/firebase_notification_repository.dart';
@@ -50,7 +51,7 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   NetworkCheckerRepository networkCheckerRepository =
       NetworkCheckerRepositoryImpl()..init();
   DeviceInfoRepository deviceInfoRepository = DeviceInfoRepositoryImpl();
-  // deviceInfoRepository.intializeAppCheck();
+  unawaited(deviceInfoRepository.intializeAppCheck());
   AppRouterService appRouterService = AppRouterService();
   AuthRepository authRepository =
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);

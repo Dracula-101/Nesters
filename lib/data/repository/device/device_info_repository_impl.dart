@@ -5,7 +5,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nesters/data/repository/device/device_info_repository.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-// import 'package:firebase_app_check/firebase_app_check.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 
 class DeviceInfoRepositoryImpl implements DeviceInfoRepository {
   PackageInfo? packageInfo;
@@ -110,16 +110,15 @@ class DeviceInfoRepositoryImpl implements DeviceInfoRepository {
     return _store.collection('devices').doc(userId).set(deviceInfo);
   }
 
-  // @override
-  // Future<void> intializeAppCheck() async {
-  //   await FirebaseAppCheck.instance.activate(
-  //     webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
-  //     androidProvider:
-  //         kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-  //     appleProvider: kDebugMode
-  //         ? AppleProvider.debug
-  //         : AppleProvider.appAttestWithDeviceCheckFallback,
-  //   );
-  //   await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
-  // }
+  @override
+  Future<void> intializeAppCheck() async {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider:
+          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+      appleProvider: kDebugMode
+          ? AppleProvider.debug
+          : AppleProvider.appAttestWithDeviceCheckFallback,
+    );
+    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+  }
 }

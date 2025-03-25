@@ -173,7 +173,7 @@ class _MarketplaceSearchViewState extends State<MarketplaceSearchView> {
     return GestureDetector(
       onTap: () {
         GoRouter.of(context).go(
-          '${AppRouterService.homeScreen}/${AppRouterService.marketplaceDetail}',
+          '${AppRouterService.homeScreen}/${AppRouterService.marketplaceSearch}/${AppRouterService.marketplaceDetail}',
           extra: item.toMarketplaceItem(),
         );
       },
@@ -298,24 +298,30 @@ class _MarketplaceSearchViewState extends State<MarketplaceSearchView> {
   Widget _buildRichText(String text, String query, TextStyle style) {
     final queryIndex = text.toLowerCase().indexOf(query.toLowerCase());
     final queryLength = query.length;
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: text.substring(0, queryIndex),
+    bool isQuery = queryIndex != -1;
+    return isQuery
+        ? Text.rich(
+            TextSpan(
+              children: [
+                TextSpan(
+                  text: text.substring(0, queryIndex),
+                  style: style,
+                ),
+                TextSpan(
+                  text: text.substring(queryIndex, queryIndex + queryLength),
+                  style: style.copyWith(
+                      fontWeight: FontWeight.bold, color: AppTheme.primary),
+                ),
+                TextSpan(
+                  text: text.substring(queryIndex + queryLength),
+                  style: style,
+                ),
+              ],
+            ),
+          )
+        : Text(
+            text,
             style: style,
-          ),
-          TextSpan(
-            text: text.substring(queryIndex, queryIndex + queryLength),
-            style: style.copyWith(
-                fontWeight: FontWeight.bold, color: AppTheme.primary),
-          ),
-          TextSpan(
-            text: text.substring(queryIndex + queryLength),
-            style: style,
-          ),
-        ],
-      ),
-    );
+          );
   }
 }

@@ -6,6 +6,7 @@ import 'package:nesters/data/repository/network/network_error.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/marketplace/searched_marketplace_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 import 'package:nesters/utils/extensions/exception.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
@@ -385,6 +386,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   Future<List<SearchedMarketplaceModel>> searchMarketplaces({
     required String userId,
     required String query,
+    Location? location,
   }) async {
     try {
       final searchedResults = await _supabaseClient.rpc(
@@ -393,6 +395,8 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
           'uid': userId,
           'search_query': query,
           'range_km': 10000,
+          'source_latitude': location?.latitude,
+          'source_longitude': location?.longitude,
         },
       );
       List<SearchedMarketplaceModel> marketplaces = [];

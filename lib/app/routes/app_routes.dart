@@ -201,10 +201,15 @@ class AppRouterService {
                   ),
                 ],
               ),
-              AppRoute(
-                marketplaceSearch,
-                (_) => const MarketplaceSearchPage(),
-              )
+              AppRoute(marketplaceSearch, (_) => const MarketplaceSearchPage(),
+                  routes: [
+                    AppRoute(
+                      marketplaceDetail,
+                      (params) => MarketplaceDetailPage(
+                        marketplace: params.extra as MarketplaceModel,
+                      ),
+                    ),
+                  ])
             ],
           ),
           AppRoute(

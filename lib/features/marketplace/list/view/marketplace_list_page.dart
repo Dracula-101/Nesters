@@ -242,20 +242,20 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                     scrollDirection: Axis.horizontal,
                     children: [
                       TopActionButton(
+                        icon: Icons.filter,
+                        title: 'Filter',
+                        onTap: () {
+                          showMultipleFilterDialog(marketplaceState);
+                        },
+                        isActive: marketplaceState.advancedFilter != null,
+                      ),
+                      TopActionButton(
                         icon: Icons.search,
                         title: 'Search',
                         onTap: () {
                           GoRouter.of(context).go(
                             '${AppRouterService.homeScreen}/${AppRouterService.marketplaceSearch}',
                           );
-                        },
-                        isActive: marketplaceState.advancedFilter != null,
-                      ),
-                      TopActionButton(
-                        icon: Icons.filter,
-                        title: 'Filter',
-                        onTap: () {
-                          showMultipleFilterDialog(marketplaceState);
                         },
                         isActive: marketplaceState.advancedFilter != null,
                       ),

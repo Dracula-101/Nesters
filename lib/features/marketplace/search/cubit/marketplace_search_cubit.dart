@@ -4,10 +4,12 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
+import 'package:nesters/data/repository/database/local/local_storage_repository.dart';
 import 'package:nesters/data/repository/database/object_box/repository/obx_storage_repository.dart';
 import 'package:nesters/data/repository/marketplace/marketplace_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/marketplace/searched_marketplace_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/features/auth/bloc/auth_error.dart';
 import 'package:nesters/utils/bloc_state.dart';
 
@@ -23,6 +25,8 @@ class MarketplaceSearchCubit extends Cubit<MarketplaceSearchState> {
   final AuthRepository authRepository = GetIt.I<AuthRepository>();
   final ObxStorageRepository obxStorageRepository =
       GetIt.I<ObxStorageRepository>();
+  final LocalStorageRepository localStorageRepository =
+      GetIt.I<LocalStorageRepository>();
 
   void _loadRecentSearches() {
     final recentSearches = obxStorageRepository.getRecentSearchMarketplace();
@@ -36,9 +40,23 @@ class MarketplaceSearchCubit extends Cubit<MarketplaceSearchState> {
       if (userId == null) {
         throw UserNotAuthError();
       }
+      double? lat =
+          localStorageRepository.getDouble(LocalStorageKeys.locationLatitude) ??
+              0.0;
+      double? lng = localStorageRepository
+              .getDouble(LocalStorageKeys.locationLongitude) ??
+          0.0;
+      Location? location;
+      if (lat != 0.0 && lng != 0.0) {
+        location = Location(
+          latitude: lat,
+          longitude: lng,
+        );
+      }
       final result = await marketplaceRepository.searchMarketplaces(
         query: query,
         userId: userId,
+        location: location,
       );
       emit(state.copyWith(
         searchResults: result,

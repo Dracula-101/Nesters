@@ -1,6 +1,7 @@
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/domain/models/marketplace/searched_marketplace_model.dart';
+import 'package:nesters/domain/models/user/location.dart';
 import 'package:nesters/features/marketplace/list/bloc/marketplace_bloc.dart';
 
 abstract class MarketplaceRepository {
@@ -48,6 +49,7 @@ abstract class MarketplaceRepository {
   Future<List<SearchedMarketplaceModel>> searchMarketplaces({
     required String userId,
     required String query,
+    Location? location,
   });
 
   Future<List<MarketplaceModel>> getUserMarketplaces({required String userId});

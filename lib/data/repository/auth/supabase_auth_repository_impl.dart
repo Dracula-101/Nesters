@@ -11,7 +11,7 @@ import 'package:nesters/utils/extensions/exception.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
-
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'auth_repository.dart';
 import 'error/auth_error.dart';
 
@@ -26,6 +26,7 @@ class SupabaseAuthRepository extends AuthRepository {
 
   final supabase.SupabaseClient _supabaseClient =
       supabase.Supabase.instance.client;
+  final firebase.FirebaseAuth _firebaseAuth = firebase.FirebaseAuth.instance;
 
   late final GoogleSignIn _googleSignIn = GoogleSignIn(
     clientId: _appSecrets.getSecret(AppSecretsKeys.GOOGLE_IOS_CLIENT_ID),
@@ -40,6 +41,7 @@ class SupabaseAuthRepository extends AuthRepository {
 
   _init() {
     _supabaseClient.auth.onAuthStateChange.listen((event) async {
+      _setupFirebaseAuth(event.event);
       if (event.session?.user != null) {
         try {
           //  constraint user_details_college_fkey foreign KEY (college) references universities (id) on update CASCADE on delete set null
@@ -108,6 +110,14 @@ class SupabaseAuthRepository extends AuthRepository {
   @override
   Future<bool> isSignedIn() {
     return Future.value(_supabaseClient.auth.currentUser != null);
+  }
+
+  void _setupFirebaseAuth(supabase.AuthChangeEvent event) async {
+    if (event == supabase.AuthChangeEvent.signedIn) {
+      await _firebaseAuth.signInAnonymously();
+    } else if (event == supabase.AuthChangeEvent.signedOut) {
+      await _firebaseAuth.signOut();
+    }
   }
 
   @override
