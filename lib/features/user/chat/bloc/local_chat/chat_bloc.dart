@@ -40,7 +40,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
   // Streams
   Stream<List<Message>> get chatMessages =>
-      controller.liveChatStream.asBroadcastStream().distinctUnique();
+      controller.liveChatStream.asBroadcastStream().distinctUnique(
+            equals: (a, b) => listEquals(a, b),
+            hashCode: (a) => a.map((e) => e.id).toList().hashCode,
+          );
 
   final StreamController<UserStatus> _userStatusController =
       StreamController.broadcast();
@@ -148,8 +151,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         file: file,
         chatID: state.chatId!,
       );
-      emit(state.copyWith(
-          uploadTask: {source: DocumentUploadTask(isPreLoading: true)}));
+      // emit(state.copyWith(
+      //     uploadTask: {source: DocumentUploadTask(isPreLoading: true)}));
       await for (DocumentUploadTask task in uploadTask) {
         if (task.isComplete) {
           Message message = Message(
@@ -161,13 +164,12 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
             epochTime: DateTime.now(),
           );
           await _sendMessage(message, emit, attachmentMessage: true);
-          emit(state.copyWith(isLoadingMedia: false));
+          emit(state.copyWith(isLoadingMedia: false, uploadTask: null));
           break;
         } else if (task.progress > 0 && !task.isComplete) {
-          emit(state.copyWith(uploadTask: {source: task}));
+          // emit(state.copyWith(uploadTask: {source: task}));
         }
       }
-      emit(state.copyWith(uploadTask: null));
     } on AppException catch (e) {
       emit(state.copyWith(chatState: state.chatState?.failure(e)));
     }

@@ -1,10 +1,11 @@
 import 'package:dash_chat_2/dash_chat_2.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 @immutable
-class Message {
+class Message extends Equatable {
   final String id;
   final String? senderId;
   final String? content;
@@ -50,6 +51,10 @@ class Message {
   String toString() {
     return 'senderId: $senderId, content: $content, messageType: $messageType, sentAt: $sentAt, epochTime: $epochTime';
   }
+
+  @override
+  List<Object?> get props =>
+      [id, senderId, content, messageType, sentAt, epochTime];
 
   Message copyWith({
     String? id,

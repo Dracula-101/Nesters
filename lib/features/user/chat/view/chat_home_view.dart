@@ -44,9 +44,9 @@ class _ChatHomeViewState extends State<ChatHomeView> {
   Widget build(BuildContext context) {
     return BlocBuilder<CentralChatBloc, CentralChatState>(
       builder: (context, state) {
-        return state.chatState?.exception != null
-            ? _buildChatErrorView(state.chatState!.exception!)
-            : state.chatState?.isLoading == true
+        return state.chatState.exception != null
+            ? _buildChatErrorView(state.chatState.exception!)
+            : state.chatState.isLoading == true
                 ? const Center(
                     child: CircularProgressIndicator(),
                   )

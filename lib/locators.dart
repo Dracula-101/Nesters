@@ -55,7 +55,9 @@ Future<void> setupLocator(AppSecretsRepository appSecretsRepository) async {
   AppRouterService appRouterService = AppRouterService();
   AuthRepository authRepository =
       SupabaseAuthRepository(appSecretsRepository: appSecretsRepository);
-  RemoteChatRepository remoteChatRepository = FirebaseChatRepository();
+  RemoteChatRepository remoteChatRepository = FirebaseChatRepository(
+    appSecretsRepository: appSecretsRepository,
+  );
   RecipientUserRepository firebaseRecipientQuickUserRepository =
       FirebaseRecipientUserRepository();
   GooglePlaces googlePlaces = GooglePlaces();

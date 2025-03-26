@@ -10,7 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'dart:ui' as ui;
 
 class MediaCompressor {
-  Future<File> compressFile(File file, {int quality = 50}) async {
+  Future<File> compressFile(File file, {int quality = 35}) async {
     int fileSize = file.lengthSync();
     quality = _alterQuality(fileSize);
     final imageBytes = file.readAsBytesSync();
@@ -28,13 +28,13 @@ class MediaCompressor {
   int _alterQuality(int fileSize) {
     double mb = fileSize / (1024 * 1024);
     if (mb < 1) {
-      return 90;
+      return 75;
     } else if (mb < 5) {
-      return 70;
+      return 65;
     } else if (mb < 10) {
-      return 60;
+      return 50;
     } else if (mb < 20) {
-      return 40;
+      return 35;
     } else {
       return 30;
     }

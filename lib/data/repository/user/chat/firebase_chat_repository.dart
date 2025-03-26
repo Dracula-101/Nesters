@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:cloudinary/cloudinary.dart';
+import 'package:mime/mime.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/user/error/user_chat_error.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:path/path.dart' as path_provider;
@@ -16,8 +18,19 @@ import 'remote_chat_repository.dart';
 // import 'package:image_downloader/image_downloader.dart';
 
 class FirebaseChatRepository extends RemoteChatRepository {
+  FirebaseChatRepository({
+    required AppSecretsRepository appSecretsRepository,
+  }) : _appSecretsRepository = appSecretsRepository;
+
+  final AppSecretsRepository _appSecretsRepository;
   final FirebaseFirestore _store = FirebaseFirestore.instance;
-  final FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
+  late final Cloudinary _cloudinaryClient = Cloudinary.signedConfig(
+    apiKey: _appSecretsRepository.getSecret(AppSecretsKeys.CLOUDINARY_API_KEY),
+    apiSecret:
+        _appSecretsRepository.getSecret(AppSecretsKeys.CLOUDINARY_API_SECRET),
+    cloudName:
+        _appSecretsRepository.getSecret(AppSecretsKeys.CLOUDINARY_CLOUD_NAME),
+  );
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
   final HttpClient httpClient = HttpClient();
 
@@ -185,30 +198,30 @@ class FirebaseChatRepository extends RemoteChatRepository {
   }
 
   @override
-  Stream<DocumentUploadTask> uploadDocument(
-      {required File file, required String chatID}) {
-    Reference fileRef = _firebaseStorage
-        .ref(
-          'chats/$chatID',
-        )
-        .child(
-          '${DateTime.now().toIso8601String()}${path_provider.extension(file.path)}',
-        );
-
-    UploadTask uploadTask = fileRef.putFile(file);
-    return uploadTask.snapshotEvents.asyncMap(
-      (event) async {
-        if (event.state == TaskState.success) {
-          return DocumentUploadTask.success(
-            await fileRef.getDownloadURL(),
-          );
-        } else {
-          return DocumentUploadTask.inProgress(
-            event.bytesTransferred.toDouble() / event.totalBytes.toDouble(),
-          );
-        }
-      },
-    );
+  Stream<DocumentUploadTask> uploadDocument({
+    required File file,
+    required String chatID,
+  }) async* {
+    final String fileName = path_provider.basename(file.path);
+    try {
+      final uploadFuture = _cloudinaryClient.upload(
+        file: file.path,
+        folder: 'nesters_chat_images/$chatID',
+        resourceType: CloudinaryResourceType.image,
+        fileName: fileName,
+      );
+      final response = await uploadFuture;
+      yield DocumentUploadTask(
+        progress: 1.0,
+        isComplete: true,
+        url: response.secureUrl,
+      );
+    } catch (e) {
+      throw UserChatErrorFactory.create(
+        UserChatErrorCode.CHAT_UPLOAD_DOC_ERR,
+        'Upload Document Error: ${e.toString()}',
+      );
+    }
   }
 
   @override

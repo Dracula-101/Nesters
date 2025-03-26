@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:nesters/data/repository/auth/auth_repository.dart';
@@ -18,6 +19,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
+import 'package:rxdart/rxdart.dart';
 
 class UserChatPage extends StatelessWidget {
   final String chatId;
@@ -52,6 +54,8 @@ class _ChatViewState extends State<ChatView> {
   ChatUser? _currentChatUser, _otherChatUser;
   bool isInputMessageEmpty = true;
   bool isOtherChatUserDeleted = false;
+  List<ChatMessage> messages = [];
+  StreamSubscription? _chatSubscription;
 
   @override
   void initState() {
@@ -76,12 +80,27 @@ class _ChatViewState extends State<ChatView> {
             widget.receiverProf.id,
           ),
         );
+    _loadMessages();
   }
 
   @override
   void dispose() {
     _isInputMessageEmpty.dispose();
+    _chatSubscription?.cancel();
     super.dispose();
+  }
+
+  void _loadMessages() {
+    messages = context
+        .read<ChatBloc>()
+        .getInitialMessages()
+        .map((e) => e.toChatMessage())
+        .toList();
+    _chatSubscription = _getChatMessageStream().listen((event) {
+      setState(() {
+        messages = event;
+      });
+    });
   }
 
   @override
@@ -93,8 +112,7 @@ class _ChatViewState extends State<ChatView> {
       },
       child: Scaffold(
         appBar: _buildAppBarUI(context),
-        body: BlocConsumer<ChatBloc, ChatState>(
-          listener: (context, state) {},
+        body: BlocBuilder<ChatBloc, ChatState>(
           builder: (context, state) {
             return SafeArea(
               child: state.chatState?.isLoading ?? false
@@ -107,7 +125,7 @@ class _ChatViewState extends State<ChatView> {
                             'Start Messaging',
                           ),
                         )
-                      : _buildChatStreamBuilder(),
+                      : _buildChatView(),
             );
           },
         ),
@@ -177,53 +195,43 @@ class _ChatViewState extends State<ChatView> {
     );
   }
 
-  StreamBuilder<List<ChatMessage>> _buildChatStreamBuilder() {
-    return StreamBuilder<List<ChatMessage>>(
-      initialData: context
-          .read<ChatBloc>()
-          .getInitialMessages()
-          .map((e) => e.toChatMessage())
-          .toList(),
-      stream: _getChatMessageStream(),
-      builder: (context, snapshot) {
-        return DashChat(
-          currentUser: _currentChatUser!,
-          messages: snapshot.data ?? [],
-          messageOptions: MessageOptions(
-            showOtherUsersAvatar: false,
-            showTime: true,
-            showOtherUsersName: false,
-            currentUserContainerColor: AppTheme.primaryShades.shade500,
-            currentUserTimeTextColor: AppTheme.greyShades.shade400,
-            timeFormat: DateFormat('hh:mm a'),
-            onTapMedia: (media) async {
-              await showMedia(media);
+  Widget _buildChatView() {
+    return DashChat(
+      currentUser: _currentChatUser!,
+      messages: messages,
+      messageOptions: MessageOptions(
+        showOtherUsersAvatar: false,
+        showTime: true,
+        showOtherUsersName: false,
+        currentUserContainerColor: AppTheme.primaryShades.shade500,
+        currentUserTimeTextColor: AppTheme.greyShades.shade400,
+        timeFormat: DateFormat('hh:mm a'),
+        onTapMedia: (media) async {
+          await showMedia(media);
+        },
+      ),
+      messageListOptions: MessageListOptions(
+        dateSeparatorFormat: DateFormat('dd MMMM yyyy'),
+      ),
+      inputOptions: InputOptions(
+        alwaysShowSend: false,
+        showTraillingBeforeSend: false,
+        onTextChange: _handleTextChange,
+        leading: [
+          ValueListenableBuilder<bool>(
+            valueListenable: _isInputMessageEmpty,
+            builder: (context, isEmpty, child) {
+              return isEmpty
+                  ? _buildLeading(
+                      context,
+                    )
+                  : Container();
             },
           ),
-          messageListOptions: MessageListOptions(
-            dateSeparatorFormat: DateFormat('dd MMMM yyyy'),
-          ),
-          inputOptions: InputOptions(
-            alwaysShowSend: false,
-            showTraillingBeforeSend: false,
-            onTextChange: _handleTextChange,
-            leading: [
-              ValueListenableBuilder<bool>(
-                valueListenable: _isInputMessageEmpty,
-                builder: (context, isEmpty, child) {
-                  return isEmpty
-                      ? _buildLeading(
-                          context,
-                        )
-                      : Container();
-                },
-              ),
-            ],
-          ),
-          onSend: (message) {
-            _sendMessage(message, context);
-          },
-        );
+        ],
+      ),
+      onSend: (message) {
+        _sendMessage(message, context);
       },
     );
   }
@@ -332,34 +340,36 @@ class _ChatViewState extends State<ChatView> {
 
   Stream<List<ChatMessage>> _getChatMessageStream() {
     return context.read<ChatBloc>().chatMessages.map(
-          (event) => event.map(
-            (e) {
-              if (e.messageType == ChatMessageType.TEXT) {
-                return ChatMessage(
-                  user: e.senderId == currentUser.id
-                      ? _currentChatUser as ChatUser
-                      : _otherChatUser as ChatUser,
-                  createdAt: e.sentAt?.toDate() ?? DateTime.now(),
-                  text: e.content ?? '',
-                );
-              } else {
-                return ChatMessage(
-                  user: e.senderId == currentUser.id
-                      ? _currentChatUser!
-                      : _otherChatUser!,
-                  createdAt: e.sentAt!.toDate(),
-                  medias: [
-                    ChatMedia(
-                      url: e.content!,
-                      fileName: '',
-                      type: MediaType.image,
-                    ),
-                  ],
-                );
-              }
-            },
-          ).toList(),
-        );
+      (event) {
+        return event.map(
+          (e) {
+            if (e.messageType == ChatMessageType.TEXT) {
+              return ChatMessage(
+                user: e.senderId == currentUser.id
+                    ? _currentChatUser as ChatUser
+                    : _otherChatUser as ChatUser,
+                createdAt: e.sentAt?.toDate() ?? DateTime.now(),
+                text: e.content ?? '',
+              );
+            } else {
+              return ChatMessage(
+                user: e.senderId == currentUser.id
+                    ? _currentChatUser!
+                    : _otherChatUser!,
+                createdAt: e.sentAt!.toDate(),
+                medias: [
+                  ChatMedia(
+                    url: e.content!,
+                    fileName: '',
+                    type: MediaType.image,
+                  ),
+                ],
+              );
+            }
+          },
+        ).toList();
+      },
+    );
   }
 
   void _sendMessage(ChatMessage message, BuildContext context) {
