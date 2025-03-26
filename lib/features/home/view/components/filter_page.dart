@@ -42,6 +42,10 @@ class _UserFilterPageState extends State<UserFilterPage> {
     super.initState();
     userFilter = widget.initialFilter ?? UserFilter();
     filterUniversities = widget.universities;
+    if (userFilter.intakeYear != null) {
+      intakeYearController.text = userFilter.intakeYear.toString();
+      selectedYearDateTime = DateTime(userFilter.intakeYear!);
+    }
   }
 
   @override
@@ -223,8 +227,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                             setState(() {
                               if (userFilter.university?.id ==
                                   filterUniversities[index].id) {
-                                userFilter =
-                                    userFilter.copyWith(university: null);
+                                userFilter = userFilter.resetUniversity();
                               } else {
                                 userFilter = userFilter.copyWith(
                                   university: filterUniversities[index],
@@ -252,9 +255,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                         onTap: () {
                           setState(() {
                             if (userFilter.branchName == degrees[index].name) {
-                              // Unselect if already selected
-                              userFilter =
-                                  userFilter.copyWith(branchName: null);
+                              userFilter = userFilter.resetBranchName();
                             } else {
                               userFilter = userFilter.copyWith(
                                 branchName: degrees[index].name,
@@ -280,7 +281,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                       setState(() {
                         if (userFilter.intakePeriod ==
                             UserIntake.values[index]) {
-                          userFilter = userFilter.copyWith(intakePeriod: null);
+                          userFilter = userFilter.resetIntakePeriod();
                         } else {
                           userFilter = userFilter.copyWith(
                             intakePeriod: UserIntake.values[index],
@@ -348,7 +349,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                           setState(() {
                             intakeYearController.clear();
                             selectedYearDateTime = DateTime.now();
-                            userFilter = userFilter.copyWith(intakeYear: null);
+                            userFilter = userFilter.resetIntakeYear();
                           });
                         },
                         text: 'Reset',
@@ -364,8 +365,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                     onTap: () {
                       setState(() {
                         if (userFilter.flatmateGenderPref == 'Male') {
-                          userFilter =
-                              userFilter.copyWith(flatmateGenderPref: null);
+                          userFilter = userFilter.resetFlatmateGenderPref();
                         } else {
                           userFilter = userFilter.copyWith(
                             flatmateGenderPref: 'Male',
@@ -380,8 +380,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                     onTap: () {
                       setState(() {
                         if (userFilter.flatmateGenderPref == 'Female') {
-                          userFilter =
-                              userFilter.copyWith(flatmateGenderPref: null);
+                          userFilter = userFilter.resetFlatmateGenderPref();
                         } else {
                           userFilter = userFilter.copyWith(
                             flatmateGenderPref: 'Female',
@@ -401,8 +400,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                       onTap: () {
                         setState(() {
                           if (userFilter.foodHabit == e) {
-                            userFilter = userFilter.copyWith(
-                                foodHabit: UserFoodHabit.UNKNOWN);
+                            userFilter = userFilter.resetFoodHabit();
                           } else {
                             userFilter = userFilter.copyWith(foodHabit: e);
                           }
@@ -421,8 +419,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                       onTap: () {
                         setState(() {
                           if (userFilter.smokingHabit == e) {
-                            userFilter =
-                                userFilter.copyWith(smokingHabit: null);
+                            userFilter = userFilter.resetSmokingHabit();
                           } else {
                             userFilter = userFilter.copyWith(smokingHabit: e);
                           }
@@ -441,8 +438,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                       onTap: () {
                         setState(() {
                           if (userFilter.drinkingHabit == e) {
-                            userFilter =
-                                userFilter.copyWith(drinkingHabit: null);
+                            userFilter = userFilter.resetDrinkingHabit();
                           } else {
                             userFilter = userFilter.copyWith(drinkingHabit: e);
                           }
@@ -461,7 +457,7 @@ class _UserFilterPageState extends State<UserFilterPage> {
                       onTap: () {
                         setState(() {
                           if (userFilter.roomType == e) {
-                            userFilter = userFilter.copyWith(roomType: null);
+                            userFilter = userFilter.resetRoomType();
                           } else {
                             userFilter = userFilter.copyWith(roomType: e);
                           }

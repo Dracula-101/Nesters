@@ -102,6 +102,12 @@ class _UserPostViewState extends State<UserPostView> {
                       PostView.sublet => SubletModelWidget(
                           sublet: post as SubletModel,
                           action: const SizedBox(),
+                          onPressed: () {
+                            GoRouter.of(context).go(
+                              "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.userPosts}/${PostView.sublet}/${AppRouterService.subletDetail}",
+                              extra: post,
+                            );
+                          },
                           bottom: ActionBar(
                             onEdit: () {
                               GoRouter.of(context).pushReplacement(
@@ -233,6 +239,12 @@ class _UserPostViewState extends State<UserPostView> {
                       PostView.apartment => ApartmentModelWidget(
                           apartment: post as ApartmentModel,
                           action: const SizedBox(),
+                          onPressed: () {
+                            GoRouter.of(context).go(
+                              "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.userPosts}/${PostView.apartment}/${AppRouterService.apartmentDetail}",
+                              extra: post,
+                            );
+                          },
                           bottom: ActionBar(
                             onEdit: () {
                               GoRouter.of(context).pushReplacement(
@@ -362,7 +374,12 @@ class _UserPostViewState extends State<UserPostView> {
                         ),
                       PostView.marketplace => MarketplaceModelWidget(
                           marketplace: post as MarketplaceModel,
-                          onPressed: () {},
+                          onPressed: () {
+                            GoRouter.of(context).go(
+                              "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.userPosts}/${PostView.marketplace}/${AppRouterService.marketplaceDetail}",
+                              extra: post,
+                            );
+                          },
                           action: const SizedBox(),
                           bottom: ActionBar(
                             onEdit: () {

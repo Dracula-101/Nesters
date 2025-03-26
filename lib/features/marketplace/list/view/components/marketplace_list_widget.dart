@@ -275,11 +275,14 @@ class MarketplaceModelWidget extends StatelessWidget {
           color: AppTheme.primary,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(
-          '\$${marketplace.price}',
-          style: AppTheme.labelLarge.copyWith(
-            color: AppTheme.surface,
-            fontWeight: FontWeight.w700,
+        child: FittedBox(
+          child: Text(
+            '\$${marketplace.price}',
+            style: AppTheme.labelLarge.copyWith(
+              color: AppTheme.surface,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines: 1,
           ),
         ),
       ),

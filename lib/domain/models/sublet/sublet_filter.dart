@@ -40,15 +40,113 @@ class SubletFilter {
     UserRoomType? roomType,
   }) {
     return SubletFilter(
-      location: location,
-      address: address,
+      location: location ?? this.location,
+      address: address ?? this.address,
       roommateGenderPref: roommateGenderPref ?? this.roommateGenderPref,
-      startRent: startRent,
-      endRent: endRent,
+      startRent: startRent ?? this.startRent,
+      endRent: endRent ?? this.endRent,
       leasePeriod: leasePeriod ?? this.leasePeriod,
       amenitiesAvailable: amenitiesAvailable ?? this.amenitiesAvailable,
-      apartmentSize: apartmentSize,
+      apartmentSize: apartmentSize ?? this.apartmentSize,
       roomType: roomType ?? this.roomType,
+    );
+  }
+
+  SubletFilter resetLocation() {
+    return SubletFilter(
+      location: null,
+      address: null,
+      roommateGenderPref: roommateGenderPref,
+      startRent: startRent,
+      endRent: endRent,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+      roomType: roomType,
+    );
+  }
+
+  SubletFilter resetRoommateGenderPref() {
+    return SubletFilter(
+      location: location,
+      address: address,
+      roommateGenderPref: null,
+      startRent: startRent,
+      endRent: endRent,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+      roomType: roomType,
+    );
+  }
+
+  SubletFilter resetRent() {
+    return SubletFilter(
+      location: location,
+      address: address,
+      roommateGenderPref: roommateGenderPref,
+      startRent: null,
+      endRent: null,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+      roomType: roomType,
+    );
+  }
+
+  SubletFilter resetLeasePeriod() {
+    return SubletFilter(
+      location: location,
+      address: address,
+      roommateGenderPref: roommateGenderPref,
+      startRent: startRent,
+      endRent: endRent,
+      leasePeriod: null,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+      roomType: roomType,
+    );
+  }
+
+  SubletFilter resetAmenitiesAvailable() {
+    return SubletFilter(
+      location: location,
+      address: address,
+      roommateGenderPref: roommateGenderPref,
+      startRent: startRent,
+      endRent: endRent,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: null,
+      apartmentSize: apartmentSize,
+      roomType: roomType,
+    );
+  }
+
+  SubletFilter resetApartmentSize() {
+    return SubletFilter(
+      location: location,
+      address: address,
+      roommateGenderPref: roommateGenderPref,
+      startRent: startRent,
+      endRent: endRent,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: null,
+      roomType: roomType,
+    );
+  }
+
+  SubletFilter resetRoomType() {
+    return SubletFilter(
+      location: location,
+      address: address,
+      roommateGenderPref: roommateGenderPref,
+      startRent: startRent,
+      endRent: endRent,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+      roomType: null,
     );
   }
 }

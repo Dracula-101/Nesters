@@ -33,13 +33,7 @@ class ApartmentFilterDialogPage extends StatefulWidget {
 class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
   ApartmentFilterTypes apartmentFilterTypeSelected =
       ApartmentFilterTypes.Location;
-  Location? selectedLocation;
-  String? address;
-  double? rentStart;
-  double? rentEnd;
-  LeasePeriod? selectedLeasePeriod;
-  Map<AmenitiesType, bool> selectedAmenities = {};
-  ApartmentSize? selectedApartmentSize;
+  ApartmentFilter apartmentFilter = ApartmentFilter();
   List<AutocompletePrediction> places = [];
   BlocState searchingState = const BlocState(isLoading: false);
 
@@ -51,14 +45,7 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
   void initState() {
     super.initState();
     if (widget.filter != null) {
-      rentStart = widget.filter!.startRent;
-      rentEnd = widget.filter!.endRent;
-      selectedLeasePeriod = widget.filter!.leasePeriod;
-      selectedApartmentSize = widget.filter!.apartmentSize;
-      selectedAmenities =
-          widget.filter!.amenitiesAvailable?.toMapAmenitiesTypes() ?? {};
-      selectedLocation = widget.filter!.location;
-      address = widget.filter!.address;
+      apartmentFilter = widget.filter!;
     }
   }
 
@@ -91,10 +78,12 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
       final response = await googlePlaces.fetchPlaceDetails(placeId);
       final location = response.latLng;
       if (location != null) {
-        address = response.address;
-        selectedLocation = Location(
-          latitude: location.lat,
-          longitude: location.lng,
+        apartmentFilter = apartmentFilter.copyWith(
+          location: Location(
+            latitude: location.lat,
+            longitude: location.lng,
+          ),
+          address: response.address,
         );
         places = [];
       }
@@ -193,17 +182,6 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    final apartmentFilter = ApartmentFilter(
-                      startRent: rentStart,
-                      endRent: rentEnd,
-                      leasePeriod: selectedLeasePeriod,
-                      apartmentSize: selectedApartmentSize,
-                      amenitiesAvailable: Amenities.fromAmenitiesTypes(
-                        selectedAmenities.keys.toList(),
-                      ),
-                      address: address,
-                      location: selectedLocation,
-                    );
                     context
                         .read<ApartmentBloc>()
                         .add(ApartmentEvent.addFilterEvent(apartmentFilter));
@@ -252,22 +230,22 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
             controller: _locationController,
           ),
         ),
-        if (address != null) ...[
+        if (apartmentFilter.address != null) ...[
           ListTile(
             title: Text(
               "Selected Location",
               style: AppTheme.titleSmall.copyWith(color: AppTheme.primary),
             ),
             dense: true,
-            subtitle: Text(address ?? '', style: AppTheme.labelMedium),
+            subtitle: Text(apartmentFilter.address ?? '',
+                style: AppTheme.labelMedium),
             trailing: IconButton(
               icon: const Icon(Icons.close_outlined),
               iconSize: 20,
               onPressed: () {
                 _locationController.clear();
                 places = [];
-                selectedLocation = null;
-                address = null;
+                apartmentFilter = apartmentFilter.resetLocation();
                 setState(() {});
               },
             ),
@@ -333,11 +311,13 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
                   ).then((value) {
                     if (value != null) {
                       setState(() {
-                        rentStart = double.parse(value);
+                        apartmentFilter = apartmentFilter.copyWith(
+                          startRent: double.parse(value),
+                        );
                       });
                     } else {
                       setState(() {
-                        rentStart = null; // Unselect start rent
+                        apartmentFilter = apartmentFilter.resetStartRent();
                       });
                     }
                   });
@@ -351,7 +331,9 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    (rentStart == null) ? "Select" : "\$$rentStart",
+                    (apartmentFilter.startRent == null)
+                        ? "Select"
+                        : "\$${apartmentFilter.startRent}",
                     style: AppTheme.bodySmall,
                   ),
                 ),
@@ -367,7 +349,7 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
               Text(
                 "End Rent",
                 style: AppTheme.titleSmall.copyWith(
-                  color: rentStart == null
+                  color: apartmentFilter.startRent == null
                       ? AppTheme.greyShades.shade400
                       : AppTheme.onSurface,
                 ),
@@ -375,7 +357,7 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
               const Spacer(),
               GestureDetector(
                 onTap: () {
-                  if (rentStart == null) {
+                  if (apartmentFilter.startRent == null) {
                     return;
                   }
                   showDialog(
@@ -383,8 +365,11 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
                     builder: (ctx) {
                       return CustomValuePicker(
                         values: List.generate(
-                          rentStart != null ? rentStart!.toInt() : 100,
-                          (index) => ((rentStart ?? 100) + (index * 100))
+                          apartmentFilter.startRent != null
+                              ? apartmentFilter.startRent!.toInt()
+                              : 100,
+                          (index) => ((apartmentFilter.startRent ?? 100) +
+                                  (index * 100))
                               .toInt()
                               .toString(),
                         ),
@@ -394,11 +379,13 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
                   ).then((value) {
                     if (value != null) {
                       setState(() {
-                        rentEnd = double.parse(value);
+                        apartmentFilter = apartmentFilter.copyWith(
+                          endRent: double.parse(value),
+                        );
                       });
                     } else {
                       setState(() {
-                        rentEnd = null; // Unselect end rent
+                        apartmentFilter = apartmentFilter.resetEndRent();
                       });
                     }
                   });
@@ -412,9 +399,11 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    (rentEnd != null) ? "\$$rentEnd" : "Select",
+                    (apartmentFilter.endRent != null)
+                        ? "\$${apartmentFilter.endRent}"
+                        : "Select",
                     style: AppTheme.bodySmall.copyWith(
-                      color: rentStart == null
+                      color: apartmentFilter.startRent == null
                           ? AppTheme.greyShades.shade400
                           : AppTheme.onSurface,
                     ),
@@ -425,14 +414,14 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
           ),
         ),
         // reset button
-        if (rentStart != null || rentEnd != null)
+        if (apartmentFilter.startRent != null ||
+            apartmentFilter.endRent != null)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: CustomFlatButton(
               onPressed: () {
                 setState(() {
-                  rentStart = null;
-                  rentEnd = null;
+                  apartmentFilter = apartmentFilter.resetRent();
                 });
               },
               text: 'Reset',
@@ -448,17 +437,19 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Text(
-            "No of Beds: ${selectedApartmentSize?.beds ?? "1"}",
+            "No of Beds: ${apartmentFilter.apartmentSize?.beds ?? "1"}",
             style: AppTheme.titleMedium,
           ),
         ),
         Slider(
-          value: selectedApartmentSize?.beds?.toDouble() ?? 1,
+          value: apartmentFilter.apartmentSize?.beds?.toDouble() ?? 1,
           onChanged: (value) {
             setState(() {
-              selectedApartmentSize = ApartmentSize(
-                beds: value.toInt(),
-                baths: selectedApartmentSize?.baths ?? 1,
+              apartmentFilter = apartmentFilter.copyWith(
+                apartmentSize: ApartmentSize(
+                  beds: value.toInt(),
+                  baths: apartmentFilter.apartmentSize?.baths ?? 1,
+                ),
               );
             });
           },
@@ -473,17 +464,19 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: Text(
-            "No of Baths: ${selectedApartmentSize?.baths ?? "1"}",
+            "No of Baths: ${apartmentFilter.apartmentSize?.baths ?? "1"}",
             style: AppTheme.titleMedium,
           ),
         ),
         Slider(
-          value: selectedApartmentSize?.baths?.toDouble() ?? 1,
+          value: apartmentFilter.apartmentSize?.baths?.toDouble() ?? 1,
           onChanged: (value) {
             setState(() {
-              selectedApartmentSize = ApartmentSize(
-                baths: value.toInt(),
-                beds: selectedApartmentSize?.beds ?? 1,
+              apartmentFilter = apartmentFilter.copyWith(
+                apartmentSize: ApartmentSize(
+                  beds: apartmentFilter.apartmentSize?.beds ?? 1,
+                  baths: value.toInt(),
+                ),
               );
             });
           },
@@ -491,14 +484,13 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
           max: 5,
           divisions: 100,
         ),
-        if (selectedApartmentSize != null)
+        if (apartmentFilter.apartmentSize != null)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: CustomFlatButton(
               onPressed: () {
                 setState(() {
-                  selectedApartmentSize = null; // Unselect apartment size
-                  log("Selected apartment size: $selectedApartmentSize");
+                  apartmentFilter = apartmentFilter.resetApartmentSize();
                 });
               },
               text: 'Reset',
@@ -525,27 +517,29 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
                   showDatePicker(
                     context: context,
                     initialDate: DateTime.now(),
-                    lastDate: selectedLeasePeriod?.endDate ??
+                    lastDate: apartmentFilter.leasePeriod?.endDate ??
                         DateTime.now().add(const Duration(days: 365)),
                     firstDate: DateTime.now(),
                   ).then((value) {
                     if (value != null) {
                       setState(() {
-                        selectedLeasePeriod = LeasePeriod(
-                          startDate: value,
-                          endDate: selectedLeasePeriod?.endDate,
+                        apartmentFilter = apartmentFilter.copyWith(
+                          leasePeriod: LeasePeriod(
+                            startDate: value,
+                            endDate: apartmentFilter.leasePeriod?.endDate,
+                          ),
                         );
                       });
                     } else {
                       setState(() {
-                        selectedLeasePeriod = null; // Unselect start date
+                        apartmentFilter = apartmentFilter.resetLeasePeriod();
                       });
                     }
                   });
                 },
-                child: selectedLeasePeriod?.startDate != null
+                child: apartmentFilter.leasePeriod?.startDate != null
                     ? Text(
-                        "${selectedLeasePeriod?.startDate!.day}, ${selectedLeasePeriod?.startDate!.monthName(true)}, ${selectedLeasePeriod?.startDate!.year}",
+                        "${apartmentFilter.leasePeriod?.startDate!.day}, ${apartmentFilter.leasePeriod?.startDate!.monthName(true)}, ${apartmentFilter.leasePeriod?.startDate!.year}",
                         style: AppTheme.bodySmall,
                       )
                     : Container(
@@ -566,13 +560,13 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
           ),
         ),
         const SizedBox(height: 8),
-        if (selectedLeasePeriod != null)
+        if (apartmentFilter.leasePeriod != null)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: CustomFlatButton(
               onPressed: () {
                 setState(() {
-                  selectedLeasePeriod = null; // Unselect lease period
+                  apartmentFilter = apartmentFilter.resetLeasePeriod();
                 });
               },
               text: 'Reset',
@@ -591,14 +585,24 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
               ...AmenitiesType.values.map(
                 (e) => FilterTile(
                   title: e.toString(),
-                  isSelected: selectedAmenities.containsKey(e),
+                  isSelected: apartmentFilter.amenitiesAvailable
+                          ?.toAmenitiesTypes()
+                          .contains(e) ??
+                      false,
                   onTap: () {
+                    final amenities = apartmentFilter.amenitiesAvailable
+                            ?.toAmenitiesTypes() ??
+                        [];
+                    if (amenities.contains(e)) {
+                      amenities.remove(e);
+                    } else {
+                      amenities.add(e);
+                    }
                     setState(() {
-                      if (selectedAmenities.containsKey(e)) {
-                        selectedAmenities.remove(e); // Unselect amenity
-                      } else {
-                        selectedAmenities[e] = true;
-                      }
+                      apartmentFilter = apartmentFilter.copyWith(
+                        amenitiesAvailable:
+                            Amenities.fromAmenitiesTypes(amenities),
+                      );
                     });
                   },
                 ),
@@ -606,13 +610,13 @@ class _ApartmentFilterDialogPageState extends State<ApartmentFilterDialogPage> {
             ],
           ),
         ),
-        if (selectedAmenities.isNotEmpty)
+        if (apartmentFilter.amenitiesAvailable != null)
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: CustomFlatButton(
               onPressed: () {
                 setState(() {
-                  selectedAmenities.clear();
+                  apartmentFilter = apartmentFilter.resetAmenities();
                 });
               },
               text: 'Reset',

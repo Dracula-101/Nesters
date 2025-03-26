@@ -34,13 +34,97 @@ class ApartmentFilter {
     ApartmentSize? apartmentSize,
   }) {
     return ApartmentFilter(
+      location: location ?? this.location,
+      address: address ?? this.address,
+      startRent: startRent ?? this.startRent,
+      endRent: endRent ?? this.endRent,
+      leasePeriod: leasePeriod ?? this.leasePeriod,
+      amenitiesAvailable: amenitiesAvailable ?? this.amenitiesAvailable,
+      apartmentSize: apartmentSize ?? this.apartmentSize,
+    );
+  }
+
+  ApartmentFilter resetLocation() {
+    return ApartmentFilter(
+      location: null,
+      address: null,
+      startRent: startRent,
+      endRent: endRent,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+    );
+  }
+
+  ApartmentFilter resetStartRent() {
+    return ApartmentFilter(
+      location: location,
+      address: address,
+      startRent: null,
+      endRent: endRent,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+    );
+  }
+
+  ApartmentFilter resetEndRent() {
+    return ApartmentFilter(
+      location: location,
+      address: address,
+      startRent: startRent,
+      endRent: null,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+    );
+  }
+
+  ApartmentFilter resetRent() {
+    return ApartmentFilter(
+      location: location,
+      address: address,
+      startRent: null,
+      endRent: null,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+    );
+  }
+
+  ApartmentFilter resetLeasePeriod() {
+    return ApartmentFilter(
       location: location,
       address: address,
       startRent: startRent,
       endRent: endRent,
-      leasePeriod: leasePeriod ?? this.leasePeriod,
-      amenitiesAvailable: amenitiesAvailable ?? this.amenitiesAvailable,
-      apartmentSize: apartmentSize ?? this.apartmentSize,
+      leasePeriod: null,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: apartmentSize,
+    );
+  }
+
+  ApartmentFilter resetAmenities() {
+    return ApartmentFilter(
+      location: location,
+      address: address,
+      startRent: startRent,
+      endRent: endRent,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: null,
+      apartmentSize: apartmentSize,
+    );
+  }
+
+  ApartmentFilter resetApartmentSize() {
+    return ApartmentFilter(
+      location: location,
+      address: address,
+      startRent: startRent,
+      endRent: endRent,
+      leasePeriod: leasePeriod,
+      amenitiesAvailable: amenitiesAvailable,
+      apartmentSize: null,
     );
   }
 }

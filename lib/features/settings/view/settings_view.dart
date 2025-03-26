@@ -349,50 +349,63 @@ class _SettingsViewState extends State<SettingsView> {
                   showDialog(
                     context: context,
                     builder: (_) {
-                      return AlertDialog.adaptive(
-                        title: const Text('Delete Account'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                                'Are you sure you want to delete your account?'),
-                            const SizedBox(height: 20),
-                            Row(
-                              children: [
-                                Icon(Icons.warning, color: AppTheme.error),
-                                const SizedBox(width: 10),
-                                Text(
-                                  'This action cannot be undone.',
-                                  style: TextStyle(
-                                    color: AppTheme.error,
+                      bool isLoading = false;
+                      return StatefulBuilder(
+                        builder: (context, setState) {
+                          return PopScope(
+                            canPop: false,
+                            child: AlertDialog.adaptive(
+                              title: const Text('Delete Account'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                      'Are you sure you want to delete your account?'),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.warning,
+                                          color: AppTheme.error),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        'This action cannot be undone.',
+                                        style: TextStyle(
+                                          color: AppTheme.error,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(_).pop();
+                                  },
+                                  child:
+                                      Text('Cancel', style: AppTheme.bodyLarge),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    context
+                                        .read<AuthBloc>()
+                                        .add(const AuthEvent.deleteAccount());
+                                    Navigator.of(_).pop();
+                                    context.showSnackBar(
+                                      'Account deletion in progress, please wait...',
+                                    );
+                                  },
+                                  child: Text(
+                                    'Delete',
+                                    style: AppTheme.bodyLarge
+                                        .copyWith(color: AppTheme.error),
                                   ),
                                 ),
                               ],
-                            )
-                          ],
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(_).pop();
-                            },
-                            child: Text('Cancel', style: AppTheme.bodyLarge),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(_).pop();
-                              context
-                                  .read<AuthBloc>()
-                                  .add(const AuthEvent.deleteAccount());
-                            },
-                            child: Text(
-                              'Delete',
-                              style: AppTheme.bodyLarge
-                                  .copyWith(color: AppTheme.error),
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       );
                     },
                   );

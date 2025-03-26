@@ -215,11 +215,14 @@ class ApartmentModelWidget extends StatelessWidget {
           color: AppTheme.primary,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(
-          '\$${apartment.rent?.toInt()}',
-          style: AppTheme.labelLarge.copyWith(
-            color: AppTheme.surface,
-            fontWeight: FontWeight.w700,
+        child: FittedBox(
+          child: Text(
+            '\$${apartment.rent?.toInt()}',
+            style: AppTheme.labelLarge.copyWith(
+              color: AppTheme.surface,
+              fontWeight: FontWeight.w700,
+            ),
+            maxLines: 1,
           ),
         ),
       ),

@@ -1,4 +1,3 @@
-chat taking too much time and space.(App Check issue)
 ios app test,
 prod
 =============================================
@@ -46,4 +45,4 @@ end
 ====
 https://shorebird.dev/
 
-    
+

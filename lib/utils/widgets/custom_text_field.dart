@@ -95,9 +95,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
       ),
       child: GestureDetector(
           onTap: () {
-            if (widget.onTap != null) {
-              widget.onTap!();
-            }
+            widget.onTap?.call();
           },
           child: Padding(
             padding: widget.contentPadding ??

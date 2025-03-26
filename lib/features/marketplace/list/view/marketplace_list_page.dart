@@ -247,6 +247,10 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                         onTap: () {
                           showMultipleFilterDialog(marketplaceState);
                         },
+                        onClose: () {
+                          context.read<MarketplaceBloc>().add(
+                              const MarketplaceEvent.removeMultipleFilter());
+                        },
                         isActive: marketplaceState.advancedFilter != null,
                       ),
                       TopActionButton(
@@ -257,7 +261,7 @@ class _MarketplaceListViewState extends State<MarketplaceListView> {
                             '${AppRouterService.homeScreen}/${AppRouterService.marketplaceSearch}',
                           );
                         },
-                        isActive: marketplaceState.advancedFilter != null,
+                        isActive: false,
                       ),
                       if (marketplaceState.singleFilter == null ||
                           marketplaceState.singleFilter is LocationFilter)

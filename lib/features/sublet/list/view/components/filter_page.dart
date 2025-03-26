@@ -256,8 +256,7 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
                         onPressed: () {
                           _locationController.clear();
                           places = [];
-                          subletFilter = subletFilter.copyWith(
-                              address: null, location: null);
+                          subletFilter = subletFilter.resetLocation();
                           setState(() {});
                         },
                       ),
@@ -301,9 +300,13 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
                     isSelected: subletFilter.roommateGenderPref == 'Male',
                     onTap: () {
                       setState(() {
-                        subletFilter = subletFilter.copyWith(
-                          roommateGenderPref: 'Male',
-                        );
+                        if (subletFilter.roommateGenderPref == "Male") {
+                          subletFilter = subletFilter.resetRoommateGenderPref();
+                        } else {
+                          subletFilter = subletFilter.copyWith(
+                            roommateGenderPref: 'Male',
+                          );
+                        }
                       });
                     },
                   ),
@@ -312,9 +315,13 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
                     isSelected: subletFilter.roommateGenderPref == 'Female',
                     onTap: () {
                       setState(() {
-                        subletFilter = subletFilter.copyWith(
-                          roommateGenderPref: 'Female',
-                        );
+                        if (subletFilter.roommateGenderPref == "Female") {
+                          subletFilter = subletFilter.resetRoommateGenderPref();
+                        } else {
+                          subletFilter = subletFilter.copyWith(
+                            roommateGenderPref: 'Female',
+                          );
+                        }
                       });
                     },
                   ),
@@ -448,10 +455,7 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
                         text: "Reset",
                         onPressed: () {
                           setState(() {
-                            subletFilter = subletFilter.copyWith(
-                              startRent: null,
-                              endRent: null,
-                            );
+                            subletFilter = subletFilter.resetRent();
                           });
                         },
                       ),
@@ -519,9 +523,7 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
                         text: "Reset",
                         onPressed: () {
                           setState(() {
-                            subletFilter = subletFilter.copyWith(
-                              apartmentSize: null,
-                            );
+                            subletFilter = subletFilter.resetApartmentSize();
                           });
                         },
                       ),
@@ -536,7 +538,11 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
                       isSelected: subletFilter.roomType == e,
                       onTap: () {
                         setState(() {
-                          subletFilter = subletFilter.copyWith(roomType: e);
+                          if (subletFilter.roomType == e) {
+                            subletFilter = subletFilter.resetRoomType();
+                          } else {
+                            subletFilter = subletFilter.copyWith(roomType: e);
+                          }
                         });
                       },
                     ),
@@ -664,12 +670,7 @@ class _SubletFilterPageState extends State<SubletFilterPage> {
                         text: "Reset",
                         onPressed: () {
                           setState(() {
-                            subletFilter = subletFilter.copyWith(
-                              leasePeriod: LeasePeriod(
-                                startDate: null,
-                                endDate: null,
-                              ),
-                            );
+                            subletFilter = subletFilter.resetLeasePeriod();
                           });
                         },
                       ),

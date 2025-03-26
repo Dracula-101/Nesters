@@ -235,7 +235,8 @@ class _MarketplaceDetailsFormState extends State<MarketplaceDetailsForm>
             }
             return null;
           },
-          itemAsString: (item) => (item as MarketplaceCategoryModel).name ?? '',
+          itemAsString: (item) =>
+              (item is MarketplaceCategoryModel) ? (item.name ?? '') : item,
         );
       },
     );

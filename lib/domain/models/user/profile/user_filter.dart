@@ -57,4 +57,154 @@ class UserFilter {
       flatmateGenderPref: flatmateGenderPref ?? this.flatmateGenderPref,
     );
   }
+
+  UserFilter resetUniversity() {
+    return UserFilter(
+      university: null,
+      branchName: branchName,
+      intakePeriod: intakePeriod,
+      intakeYear: intakeYear,
+      foodHabit: foodHabit,
+      smokingHabit: smokingHabit,
+      drinkingHabit: drinkingHabit,
+      personType: personType,
+      roomType: roomType,
+      flatmateGenderPref: flatmateGenderPref,
+    );
+  }
+
+  UserFilter resetBranchName() {
+    return UserFilter(
+      university: university,
+      branchName: null,
+      intakePeriod: intakePeriod,
+      intakeYear: intakeYear,
+      foodHabit: foodHabit,
+      smokingHabit: smokingHabit,
+      drinkingHabit: drinkingHabit,
+      personType: personType,
+      roomType: roomType,
+      flatmateGenderPref: flatmateGenderPref,
+    );
+  }
+
+  UserFilter resetIntakePeriod() {
+    return UserFilter(
+      university: university,
+      branchName: branchName,
+      intakePeriod: null,
+      intakeYear: intakeYear,
+      foodHabit: foodHabit,
+      smokingHabit: smokingHabit,
+      drinkingHabit: drinkingHabit,
+      personType: personType,
+      roomType: roomType,
+      flatmateGenderPref: flatmateGenderPref,
+    );
+  }
+
+  UserFilter resetIntakeYear() {
+    return UserFilter(
+      university: university,
+      branchName: branchName,
+      intakePeriod: intakePeriod,
+      intakeYear: null,
+      foodHabit: foodHabit,
+      smokingHabit: smokingHabit,
+      drinkingHabit: drinkingHabit,
+      personType: personType,
+      roomType: roomType,
+      flatmateGenderPref: flatmateGenderPref,
+    );
+  }
+
+  UserFilter resetFoodHabit() {
+    return UserFilter(
+      university: university,
+      branchName: branchName,
+      intakePeriod: intakePeriod,
+      intakeYear: intakeYear,
+      foodHabit: null,
+      smokingHabit: smokingHabit,
+      drinkingHabit: drinkingHabit,
+      personType: personType,
+      roomType: roomType,
+      flatmateGenderPref: flatmateGenderPref,
+    );
+  }
+
+  UserFilter resetSmokingHabit() {
+    return UserFilter(
+      university: university,
+      branchName: branchName,
+      intakePeriod: intakePeriod,
+      intakeYear: intakeYear,
+      foodHabit: foodHabit,
+      smokingHabit: null,
+      drinkingHabit: drinkingHabit,
+      personType: personType,
+      roomType: roomType,
+      flatmateGenderPref: flatmateGenderPref,
+    );
+  }
+
+  UserFilter resetDrinkingHabit() {
+    return UserFilter(
+      university: university,
+      branchName: branchName,
+      intakePeriod: intakePeriod,
+      intakeYear: intakeYear,
+      foodHabit: foodHabit,
+      smokingHabit: smokingHabit,
+      drinkingHabit: null,
+      personType: personType,
+      roomType: roomType,
+      flatmateGenderPref: flatmateGenderPref,
+    );
+  }
+
+  UserFilter resetPersonType() {
+    return UserFilter(
+      university: university,
+      branchName: branchName,
+      intakePeriod: intakePeriod,
+      intakeYear: intakeYear,
+      foodHabit: foodHabit,
+      smokingHabit: smokingHabit,
+      drinkingHabit: drinkingHabit,
+      personType: null,
+      roomType: roomType,
+      flatmateGenderPref: flatmateGenderPref,
+    );
+  }
+
+  UserFilter resetRoomType() {
+    return UserFilter(
+      university: university,
+      branchName: branchName,
+      intakePeriod: intakePeriod,
+      intakeYear: intakeYear,
+      foodHabit: foodHabit,
+      smokingHabit: smokingHabit,
+      drinkingHabit: drinkingHabit,
+      personType: personType,
+      roomType: null,
+      flatmateGenderPref: flatmateGenderPref,
+    );
+  }
+
+  UserFilter resetFlatmateGenderPref() {
+    return UserFilter(
+      university: university,
+      branchName: branchName,
+      intakePeriod: intakePeriod,
+      intakeYear: intakeYear,
+      foodHabit: foodHabit,
+      smokingHabit: smokingHabit,
+      drinkingHabit: drinkingHabit,
+      personType: personType,
+      roomType: roomType,
+      flatmateGenderPref: null,
+    );
+  }
 }

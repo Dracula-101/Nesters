@@ -260,11 +260,13 @@ class SubletModelWidget extends StatelessWidget {
           color: AppTheme.primary,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(
-          '\$${sublet.rent?.toInt()}',
-          style: AppTheme.labelLarge.copyWith(
-            color: AppTheme.surface,
-            fontWeight: FontWeight.w700,
+        child: FittedBox(
+          child: Text(
+            '\$${sublet.rent?.toInt()}',
+            style: AppTheme.labelLarge.copyWith(
+              color: AppTheme.surface,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),

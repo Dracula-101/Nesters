@@ -16,6 +16,7 @@ import 'package:nesters/domain/models/sublet/sublet_model.dart';
 import 'package:nesters/features/apartment/list/view/components/apartment_list_widget.dart';
 import 'package:nesters/features/marketplace/list/view/components/marketplace_list_widget.dart';
 import 'package:nesters/features/sublet/list/view/components/sublet_list_widget.dart';
+import 'package:nesters/features/user/posts/cubit/user_post_state.dart';
 import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
@@ -149,7 +150,7 @@ class _UserFavouritePostPageState extends State<UserFavouritePostPage> {
                                 sublet: sublet,
                                 onPressed: () {
                                   GoRouter.of(context).go(
-                                    "${AppRouterService.homeScreen}/${AppRouterService.subletDetail}",
+                                    "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.favouritePosts}/${AppRouterService.subletDetail}",
                                     extra: sublet,
                                   );
                                 },
@@ -218,7 +219,7 @@ class _UserFavouritePostPageState extends State<UserFavouritePostPage> {
                                 apartment: apartment,
                                 onPressed: () {
                                   GoRouter.of(context).go(
-                                    "${AppRouterService.homeScreen}/${AppRouterService.apartmentDetail}",
+                                    "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.favouritePosts}/${AppRouterService.apartmentDetail}",
                                     extra: apartment,
                                   );
                                 },
@@ -288,7 +289,7 @@ class _UserFavouritePostPageState extends State<UserFavouritePostPage> {
                                 marketplace: marketplace,
                                 onPressed: () {
                                   GoRouter.of(context).go(
-                                    "${AppRouterService.homeScreen}/${AppRouterService.marketplaceDetail}",
+                                    "${AppRouterService.homeScreen}/${AppRouterService.settings}/${AppRouterService.favouritePosts}/${AppRouterService.marketplaceDetail}",
                                     extra: marketplace,
                                   );
                                 },

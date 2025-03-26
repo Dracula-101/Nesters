@@ -185,6 +185,7 @@ class UserRepositoryImpl implements UserRepository {
           .from(userDetailTable)
           .select()
           .eq('id', userId)
+          .neq('user_deleted', true)
           .limit(1);
       if (result.isEmpty) return false;
       return true;

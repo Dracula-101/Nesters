@@ -423,7 +423,7 @@ class _ChatViewState extends State<ChatView> {
                 ),
                 Positioned(
                   top: 10,
-                  left: 10,
+                  right: 10,
                   child: IconButton(
                     style: ButtonStyle(
                       backgroundColor: MaterialStateProperty.all<Color>(
@@ -439,34 +439,34 @@ class _ChatViewState extends State<ChatView> {
                     },
                   ),
                 ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: IconButton(
-                    style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                        AppTheme.greyShades.shade100,
-                      ),
-                    ),
-                    icon: Icon(
-                      Icons.download,
-                      color: AppTheme.primary,
-                    ),
-                    onPressed: () {
-                      context.read<ChatBloc>().add(
-                            ChatEvent.downloadDocument(
-                              media.url,
-                              () {
-                                Navigator.of(dialogContext).pop();
-                                dialogContext.showSuccessSnackBar(
-                                  'File downloaded successfully',
-                                );
-                              },
-                            ),
-                          );
-                    },
-                  ),
-                ),
+                // Positioned(
+                //   top: 10,
+                //   right: 10,
+                //   child: IconButton(
+                //     style: ButtonStyle(
+                //       backgroundColor: MaterialStateProperty.all<Color>(
+                //         AppTheme.greyShades.shade100,
+                //       ),
+                //     ),
+                //     icon: Icon(
+                //       Icons.download,
+                //       color: AppTheme.primary,
+                //     ),
+                //     onPressed: () {
+                //       context.read<ChatBloc>().add(
+                //             ChatEvent.downloadDocument(
+                //               media.url,
+                //               () {
+                //                 Navigator.of(dialogContext).pop();
+                //                 dialogContext.showSuccessSnackBar(
+                //                   'File downloaded successfully',
+                //                 );
+                //               },
+                //             ),
+                //           );
+                //     },
+                //   ),
+                // ),
               ],
             ),
           ),

@@ -193,11 +193,49 @@ class AppRouterService {
                           return MarketplaceFormPage(marketplace: marketplace);
                         },
                       ),
+                      AppRoute(
+                        subletDetail,
+                        (params) => SubletDetailPage(
+                          sublet: params.extra as SubletModel,
+                        ),
+                      ),
+                      AppRoute(
+                        apartmentDetail,
+                        (params) => ApartmentDetailPage(
+                          apartment: params.extra as ApartmentModel,
+                        ),
+                      ),
+                      AppRoute(
+                        marketplaceDetail,
+                        (params) => MarketplaceDetailPage(
+                          marketplace: params.extra as MarketplaceModel,
+                        ),
+                      ),
                     ],
                   ),
                   AppRoute(
                     favouritePosts,
                     (_) => const UserFavouritePostPage(),
+                    routes: [
+                      AppRoute(
+                        subletDetail,
+                        (params) => SubletDetailPage(
+                          sublet: params.extra as SubletModel,
+                        ),
+                      ),
+                      AppRoute(
+                        apartmentDetail,
+                        (params) => ApartmentDetailPage(
+                          apartment: params.extra as ApartmentModel,
+                        ),
+                      ),
+                      AppRoute(
+                        marketplaceDetail,
+                        (params) => MarketplaceDetailPage(
+                          marketplace: params.extra as MarketplaceModel,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
