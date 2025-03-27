@@ -2,8 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
+import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_model.dart';
 import 'package:nesters/features/marketplace/detail/cubit/marketplace_detail_cubit.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
@@ -66,8 +68,10 @@ class MarketplaceDetailPage extends StatelessWidget {
 class MarketplaceContactButton extends StatelessWidget {
   final String marketplaceId;
   final String ownerId;
-  const MarketplaceContactButton(
+  MarketplaceContactButton(
       {super.key, required this.marketplaceId, required this.ownerId});
+
+  final AuthRepository _authRepository = GetIt.I<AuthRepository>();
 
   @override
   Widget build(BuildContext context) {
@@ -92,38 +96,50 @@ class MarketplaceContactButton extends StatelessWidget {
           onPressed: () {
             ChatInfo? chatInfo =
                 context.read<CentralChatBloc>().checkChatExists(ownerId);
-            if (chatInfo != null) {
-              GoRouter.of(context).go(
-                "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatInfo.chatId}",
-                extra: chatInfo.recipientUser.toUser(),
+            if (_authRepository.currentUser?.id == ownerId) {
+              showProfileIncompleteDialog(
+                context,
+                'Complete your profile to contact the owner',
+                onNavigate: () {
+                  GoRouter.of(context).go(
+                    '${AppRouterService.homeScreen}/${AppRouterService.userProfileAdvanceFormScreen}',
+                  );
+                },
               );
             } else {
-              showDialog(
-                context: context,
-                builder: (ctx) => AlertDialog.adaptive(
-                  title: Text('Contact Owner', style: AppTheme.titleLarge),
-                  content: Text(
-                    'First, send a connection request to the owner. Would you like to proceed?',
-                    style: AppTheme.bodyMediumLightVariant,
+              if (chatInfo != null) {
+                GoRouter.of(context).go(
+                  "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatInfo.chatId}",
+                  extra: chatInfo.recipientUser.toUser(),
+                );
+              } else {
+                showDialog(
+                  context: context,
+                  builder: (ctx) => AlertDialog.adaptive(
+                    title: Text('Contact Owner', style: AppTheme.titleLarge),
+                    content: Text(
+                      'First, send a connection request to the owner. Would you like to proceed?',
+                      style: AppTheme.bodyMediumLightVariant,
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          context
+                              .read<RequestBloc>()
+                              .add(RequestEvent.sendRequest(ownerId));
+                        },
+                        child: const Text('Send'),
+                      ),
+                    ],
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        context
-                            .read<RequestBloc>()
-                            .add(RequestEvent.sendRequest(ownerId));
-                      },
-                      child: const Text('Send'),
-                    ),
-                  ],
-                ),
-              );
+                );
+              }
             }
           },
           child: Text(

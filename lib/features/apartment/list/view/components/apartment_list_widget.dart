@@ -176,13 +176,12 @@ class ApartmentModelWidget extends StatelessWidget {
           size: 18,
         ),
         const SizedBox(width: 4),
-        Flexible(
-          flex: 1,
-          fit: FlexFit.tight,
+        Expanded(
           child: Text(
             apartment.address?.toTitleCase ?? 'No Location Provided',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
         if (apartment.distanceFromUserInMeters != null &&

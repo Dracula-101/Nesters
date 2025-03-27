@@ -55,11 +55,11 @@ abstract class UserRepository {
 
   Future<bool> hasUserDeletedAccount({required String email});
 
-  Future<List<UserQuickProfile>> getUserQuickProfiles(
-    int offset,
-    int limit,
-    String userId,
-  );
+  Future<List<UserQuickProfile>> getUserQuickProfiles({
+    required int offset,
+    required int limit,
+    required String userId,
+  });
 
   Future<List<UserQuickProfile>> getSingleFilteredQuickProfiles(
     SingleUserFilter filter,

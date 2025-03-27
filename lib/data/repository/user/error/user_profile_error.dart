@@ -31,7 +31,7 @@ class GetProfileError extends UserChatProfileError {
   GetProfileError({required this.extra})
       : super(
           code: UserChatProfileErrorCode.GET_PROFILE_ERR,
-          message: 'Failed to get profile',
+          message: 'Failed to get profile: $extra',
         );
 }
 
@@ -41,7 +41,7 @@ class GetSentReqError extends UserChatProfileError {
   GetSentReqError({required this.extra})
       : super(
           code: UserChatProfileErrorCode.GET_SENT_REQ_ERR,
-          message: 'Failed to get sent requests',
+          message: 'Failed to get sent requests: $extra',
         );
 }
 
@@ -51,7 +51,7 @@ class GetReceivedReqError extends UserChatProfileError {
   GetReceivedReqError({required this.extra})
       : super(
           code: UserChatProfileErrorCode.GET_RECEIVED_REQ_ERR,
-          message: 'Failed to get received requests',
+          message: 'Failed to get received requests: $extra',
         );
 }
 
@@ -61,7 +61,7 @@ class CreateChatRoomError extends UserChatProfileError {
   CreateChatRoomError({required this.extra})
       : super(
           code: UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERR,
-          message: 'Failed to create chat room',
+          message: 'Failed to create chat room: $extra',
         );
 }
 
@@ -71,7 +71,7 @@ class SendReqError extends UserChatProfileError {
   SendReqError({required this.extra})
       : super(
           code: UserChatProfileErrorCode.SEND_REQ_ERR,
-          message: 'Failed to send request',
+          message: 'Failed to send request: $extra',
         );
 }
 
@@ -81,7 +81,7 @@ class AcceptReqError extends UserChatProfileError {
   AcceptReqError({required this.extra})
       : super(
           code: UserChatProfileErrorCode.ACCEPT_REQ_ERR,
-          message: 'Failed to accept request',
+          message: 'Failed to accept request: $extra',
         );
 }
 
@@ -91,7 +91,7 @@ class RejectReqError extends UserChatProfileError {
   RejectReqError({required this.extra})
       : super(
           code: UserChatProfileErrorCode.REJECT_REQ_ERR,
-          message: 'Failed to reject request',
+          message: 'Failed to reject request: $extra',
         );
 }
 
@@ -101,7 +101,7 @@ class DeleteUserError extends UserChatProfileError {
   DeleteUserError({required this.extra})
       : super(
           code: UserChatProfileErrorCode.DELETE_USER_ERR,
-          message: 'Failed to delete user',
+          message: 'Failed to delete user: $extra',
         );
 }
 

@@ -13,8 +13,8 @@ class RequestState {
     this.currentScreen = RequestScreen.RECEIVED,
     this.requestSentUsers = const [],
     this.requestReceivedUsers = const [],
-    this.requestUserState = const BlocState(),
-    this.requestSendState = const BlocState(),
+    this.requestUserState = const BlocState(isLoading: false),
+    this.requestSendState = const BlocState(isLoading: false),
   });
 
   RequestState copyWith({

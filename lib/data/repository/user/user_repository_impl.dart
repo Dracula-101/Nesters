@@ -337,11 +337,11 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<List<UserQuickProfile>> getUserQuickProfiles(
-    int offset,
-    int limit,
-    String userId,
-  ) async {
+  Future<List<UserQuickProfile>> getUserQuickProfiles({
+    required int offset,
+    required int limit,
+    required String userId,
+  }) async {
     try {
       String? userCollege = _authRepository.currentUserInfo?.userCollege;
       if (userCollege == null) {
@@ -594,13 +594,13 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<void> softDeleteAccount() {
+  Future<void> softDeleteAccount() async {
     try {
       final userId = _authRepository.currentUser?.id;
       if (userId == null) throw UserNotAuthError();
-      return _supabaseClient.from(userDetailTable).update({
-        'user_deleted': true,
-      }).eq('id', userId);
+      return await _supabaseClient.rpc('delete_user', params: {
+        'uid': userId,
+      });
     } on SocketException {
       throw NoNetworkError();
     } on AppException {

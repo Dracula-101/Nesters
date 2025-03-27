@@ -223,11 +223,12 @@ class SubletModelWidget extends StatelessWidget {
           size: 18,
         ),
         const SizedBox(width: 4),
-        Flexible(
+        Expanded(
           child: Text(
             sublet.address?.toTitleCase ?? '',
             style: AppTheme.bodyMediumLightVariant,
             overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
         if (sublet.distanceFromUserInMetres != null &&

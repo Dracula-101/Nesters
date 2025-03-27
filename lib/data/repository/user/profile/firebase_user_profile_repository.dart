@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:nesters/data/repository/config/app_secrets_repository.dart';
 import 'package:nesters/data/repository/user/error/user_profile_error.dart';
 import 'package:nesters/data/repository/user/profile/user_chat_profile_repository.dart';
+import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/chat/home/chat_quick_user.dart';
 import 'package:nesters/domain/models/user/request/request.dart';
 import 'package:nesters/domain/models/user/user.dart';
@@ -32,10 +33,15 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       } else {
         return null;
       }
+    } on FirebaseException catch (e) {
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.SEND_REQ_ERR,
+        e.message ?? 'Database Error',
+      );
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.GET_PROFILE_ERR,
-        'Get User Name And Profile Error',
+        'Unknown Error',
       );
     }
   }
@@ -65,10 +71,15 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
         requests.addAll(bannedRequests);
         return requests;
       });
+    } on FirebaseException catch (e) {
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.SEND_REQ_ERR,
+        e.message ?? 'Database Error',
+      );
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.GET_RECEIVED_REQ_ERR,
-        'Get Received User Requests Error',
+        'Unknown Error',
       );
     }
   }
@@ -98,10 +109,15 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
         requests.addAll(bannedRequests);
         return requests;
       });
+    } on FirebaseException catch (e) {
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.SEND_REQ_ERR,
+        e.message ?? 'Database Error',
+      );
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.GET_SENT_REQ_ERR,
-        'Get Sent User Requests Error',
+        'Unknown Error',
       );
     }
   }
@@ -113,7 +129,12 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
         getUserNameAndProfile(currentUserId),
         getUserNameAndProfile(recipientUserId)
       ]);
-      if (users.any((element) => element == null)) return;
+      if (users.contains(null)) {
+        throw UserChatProfileErrorFactory.create(
+          UserChatProfileErrorCode.SEND_REQ_ERR,
+          'User no longer exists',
+        );
+      }
       Request data = Request.createReq(users[0]!, users[1]!);
       CollectionReference senderCollection = _store
           .collection(_userCollectionName)
@@ -127,10 +148,17 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
         senderCollection.doc(recipientUserId).set(data.toReceiverMap()),
         receiverCollection.doc(currentUserId).set(data.toSenderMap())
       ]);
+    } on FirebaseException catch (e) {
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.SEND_REQ_ERR,
+        e.message ?? 'Database Error',
+      );
+    } on AppException {
+      rethrow;
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.SEND_REQ_ERR,
-        'Send Request Error',
+        'Unknown Error',
       );
     }
   }
@@ -154,10 +182,15 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
             .doc(currentUserId)
             .update({_acceptedRequestKey: true, _bannedRequestKey: false})
       ]);
+    } on FirebaseException catch (e) {
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.SEND_REQ_ERR,
+        e.message ?? 'Database Error',
+      );
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.ACCEPT_REQ_ERR,
-        'Accept Request Error',
+        'Unknown Error',
       );
     }
   }
@@ -181,10 +214,15 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
             .doc(recipientUserId)
             .update({_acceptedRequestKey: false, _bannedRequestKey: true})
       ]);
+    } on FirebaseException catch (e) {
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.SEND_REQ_ERR,
+        e.message ?? 'Database Error',
+      );
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.REJECT_REQ_ERR,
-        'Reject Request Error',
+        'Unknown Error',
       );
     }
   }
@@ -201,10 +239,15 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
           'receiverId': receiverId,
         },
       );
+    } on FirebaseException catch (e) {
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.SEND_REQ_ERR,
+        e.message ?? 'Database Error',
+      );
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERR,
-        'Create Chat Room Error',
+        'Unknown Error',
       );
     }
   }
@@ -215,10 +258,15 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
       await _store.collection(_userCollectionName).doc(userId).update({
         'isDeleted': true,
       });
+    } on FirebaseException catch (e) {
+      throw UserChatProfileErrorFactory.create(
+        UserChatProfileErrorCode.SEND_REQ_ERR,
+        e.message ?? 'Database Error',
+      );
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.DELETE_USER_ERR,
-        'Delete User Error',
+        'Unknown Error',
       );
     }
   }

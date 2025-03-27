@@ -22,6 +22,7 @@ import 'package:nesters/features/home/view/shimmer_home_view.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/request/bloc/request_bloc.dart';
 import 'package:nesters/theme/theme.dart';
+import 'package:nesters/utils/extensions/dimensions.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/widgets/widgets.dart';
 import 'package:nesters/constants/app_assets.dart';
@@ -100,9 +101,9 @@ class _UserListViewState extends State<UserListView> {
           );
       log("Fetching page $pageKey, page size $_pageSize");
       final newItems = await userRepository.getUserQuickProfiles(
-        pageKey,
-        _pageSize,
-        userId,
+        userId: userId,
+        offset: pageKey,
+        limit: _pageSize,
       );
       final isLastPage = newItems.length < _pageSize;
       if (isLastPage) {
@@ -655,37 +656,50 @@ class _UserListViewState extends State<UserListView> {
   Widget _buildUserList({
     required bool isAllowed,
   }) {
-    return PagedSliverList<int, UserQuickProfile>(
-      pagingController: _pagingController,
-      builderDelegate: PagedChildBuilderDelegate<UserQuickProfile>(
-        animateTransitions: true,
-        transitionDuration: const Duration(
-          milliseconds: 500,
+    return SliverPadding(
+      padding: const EdgeInsets.all(12),
+      sliver: PagedSliverGrid<int, UserQuickProfile>(
+        pagingController: _pagingController,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          crossAxisCount: MediaQuery.of(context).isTablet ? 2 : 1,
+          mainAxisExtent: 120,
         ),
-        itemBuilder: (context, item, index) => UserQuickProfileWidget(
-          key: ValueKey(item.id),
-          userQuickProfile: item,
-          canNavigate: isAllowed,
-        ),
-        firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
-        firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
-          error: _pagingController.error,
-        ),
-        newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
-          error: _pagingController.error,
-        ),
-        newPageProgressIndicatorBuilder: (_) => const SizedBox(
-          height: 100,
-          child: Center(
-            child: CircularProgressIndicator(),
+        showNewPageErrorIndicatorAsGridChild: false,
+        showNewPageProgressIndicatorAsGridChild: false,
+        showNoMoreItemsIndicatorAsGridChild: false,
+        builderDelegate: PagedChildBuilderDelegate<UserQuickProfile>(
+          itemBuilder: (context, user, index) {
+            return UserQuickProfileWidget(
+              key: ValueKey(user.id),
+              userQuickProfile: user,
+              canNavigate: isAllowed,
+              marginPadding: EdgeInsets.zero,
+            );
+          },
+          animateTransitions: true,
+          transitionDuration: const Duration(milliseconds: 500),
+          firstPageProgressIndicatorBuilder: (_) => const ShimmerHomePage(),
+          newPageProgressIndicatorBuilder: (_) => const SizedBox(
+            height: 100,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
           ),
+          firstPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+            error: _pagingController.error,
+          ),
+          newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
+            error: _pagingController.error,
+          ),
+          noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
+            title: 'No Profiles Found',
+            subtitle:
+                'There are no profiles at the moment, Please try again later.',
+          ),
+          noMoreItemsIndicatorBuilder: (_) => const SizedBox(height: 100),
         ),
-        noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
-          title: 'No Profiles Found',
-          subtitle:
-              'There are no profiles at the moment, Please try again later.',
-        ),
-        noMoreItemsIndicatorBuilder: (_) => const SizedBox(height: 100),
       ),
     );
   }
@@ -710,15 +724,27 @@ class _UserListViewState extends State<UserListView> {
                 : state.filterState.isSuccess &&
                         state.filteredProfiles != null &&
                         (state.filteredProfiles?.isNotEmpty == true)
-                    ? SliverList.builder(
-                        itemCount: state.filteredProfiles!.length,
-                        itemBuilder: (context, index) {
-                          return UserQuickProfileWidget(
-                            key: ValueKey(state.filteredProfiles![index].id),
-                            userQuickProfile: state.filteredProfiles![index],
-                            canNavigate: isAllowed,
-                          );
-                        },
+                    ? SliverPadding(
+                        padding: const EdgeInsets.all(12),
+                        sliver: SliverGrid.builder(
+                          itemCount: state.filteredProfiles!.length,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                            crossAxisCount:
+                                MediaQuery.of(context).isTablet ? 2 : 1,
+                            mainAxisExtent: 130,
+                          ),
+                          itemBuilder: (context, index) {
+                            return UserQuickProfileWidget(
+                              key: ValueKey(state.filteredProfiles![index].id),
+                              userQuickProfile: state.filteredProfiles![index],
+                              canNavigate: isAllowed,
+                              marginPadding: EdgeInsets.zero,
+                            );
+                          },
+                        ),
                       )
                     : const SliverFillRemaining(
                         child: ShowNoInfoWidget(

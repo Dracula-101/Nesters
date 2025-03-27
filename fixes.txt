@@ -46,3 +46,48 @@ end
 https://shorebird.dev/
 
 
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION prod.delete_user(uid uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+    -- Update user table
+    UPDATE prod.users
+    SET is_deleted = true, user_deleted_at = NOW()
+    WHERE id = uid;
+    
+    -- Update marketplaces table
+    UPDATE prod.marketplaces
+    SET is_available = false
+    WHERE user_id = uid;
+    
+    -- Update apartments table
+    UPDATE prod.apartments
+    SET is_available = false
+    WHERE user_id = uid;
+    
+    -- Update sublets table
+    UPDATE prod.sublets
+    SET is_available = false
+    WHERE user_id = uid;
+    
+    -- Delete from likes tables
+    DELETE FROM prod.sublet_likes
+    WHERE user_id = uid;
+    
+    DELETE FROM prod.marketplace_likes
+    WHERE user_id = uid;
+    
+    DELETE FROM prod.apartment_likes
+    WHERE user_id = uid;
+END;
+$$;
+
