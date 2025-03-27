@@ -349,44 +349,45 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
               ],
             ),
           ),
-          GestureDetector(
-            onTap: () {
-              if (widget.marketplace.reference?.link != null) {
-                _launchUrl(widget.marketplace.reference!.link!);
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.primary.withOpacity(0.1),
-                borderRadius:
-                    const BorderRadius.vertical(bottom: Radius.circular(8)),
-              ),
-              child: Row(
-                children: [
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.person_rounded,
-                    color: AppTheme.primary,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'View on Store',
-                    style: AppTheme.bodyMediumLightVariant.copyWith(
+          if(widget.marketplace.reference?.link != null)
+            GestureDetector(
+              onTap: () {
+                if (widget.marketplace.reference?.link != null) {
+                  _launchUrl(widget.marketplace.reference!.link!);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.1),
+                  borderRadius:
+                      const BorderRadius.vertical(bottom: Radius.circular(8)),
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.person_rounded,
                       color: AppTheme.primary,
+                      size: 18,
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: AppTheme.primary,
-                    size: 14,
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Text(
+                      'View on Store',
+                      style: AppTheme.bodyMediumLightVariant.copyWith(
+                        color: AppTheme.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: AppTheme.primary,
+                      size: 14,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          )
+            )
         ],
       ),
     );
