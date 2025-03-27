@@ -8,6 +8,8 @@ class RequestState {
   final List<Request> requestReceivedUsers;
   final BlocState requestUserState;
   final BlocState requestSendState;
+  final BlocState requestAcceptState;
+  final BlocState requestDeclineState;
 
   RequestState({
     this.currentScreen = RequestScreen.RECEIVED,
@@ -15,6 +17,8 @@ class RequestState {
     this.requestReceivedUsers = const [],
     this.requestUserState = const BlocState(isLoading: false),
     this.requestSendState = const BlocState(isLoading: false),
+    this.requestAcceptState = const BlocState(isLoading: false),
+    this.requestDeclineState = const BlocState(isLoading: false),
   });
 
   RequestState copyWith({
@@ -23,6 +27,8 @@ class RequestState {
     List<Request>? requestReceivedUsers,
     BlocState? requestUserState,
     BlocState? requestSendState,
+    BlocState? requestAcceptState,
+    BlocState? requestDeclineState,
   }) {
     return RequestState(
       currentScreen: currentScreen ?? this.currentScreen,
@@ -30,6 +36,8 @@ class RequestState {
       requestReceivedUsers: requestReceivedUsers ?? this.requestReceivedUsers,
       requestUserState: requestUserState ?? this.requestUserState,
       requestSendState: requestSendState ?? this.requestSendState,
+      requestAcceptState: requestAcceptState ?? this.requestAcceptState,
+      requestDeclineState: requestDeclineState ?? this.requestDeclineState,
     );
   }
 }

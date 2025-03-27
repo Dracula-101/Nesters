@@ -18,7 +18,7 @@ part 'request_event.dart';
 part 'request_state.dart';
 
 class RequestBloc extends Bloc<RequestEvent, RequestState> {
-  RequestBloc(): super(RequestState()) {
+  RequestBloc() : super(RequestState()) {
     on<RequestEvent>(_onRequestEvent);
     authRepository.user.listen((user) {
       if (user != null) {
@@ -141,33 +141,25 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
   Future<void> _acceptRequest(
       String receiverId, Emitter<RequestState> emit) async {
     try {
-      emit(state.copyWith(requestSendState: state.requestSendState.loading()));
+      emit(state.copyWith(
+          requestAcceptState: state.requestAcceptState.loading()));
       User? user = authRepository.currentUser;
       if (user == null) {
         emit(state.copyWith(
-            requestSendState:
-                state.requestSendState.failure(UserNotAuthError())));
+            requestAcceptState:
+                state.requestAcceptState.failure(UserNotAuthError())));
         return;
       }
       await chatRepository.acceptRequest(user.id, receiverId);
-      await _createChatRoom(user.id, receiverId, emit);
+      await chatRepository.createChatRoom(user.id, receiverId);
+      emit(state.copyWith(
+          requestAcceptState: state.requestAcceptState.success()));
     } on AppException catch (e) {
-      emit(state.copyWith(requestSendState: state.requestSendState.failure(e)));
+      emit(state.copyWith(
+          requestAcceptState: state.requestAcceptState.failure(e)));
     } finally {
       emit(state.copyWith(
-          requestSendState: state.requestSendState.resetLoading()));
-    }
-  }
-
-  Future<void> _createChatRoom(
-    String senderId,
-    String receiverId,
-    Emitter<RequestState> emit,
-  ) async {
-    try {
-      await chatRepository.createChatRoom(senderId, receiverId);
-    } on AppException catch (e) {
-      emit(state.copyWith(requestSendState: state.requestSendState.failure(e)));
+          requestAcceptState: state.requestAcceptState.resetLoading()));
     }
   }
 
@@ -176,20 +168,24 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
     Emitter<RequestState> emit,
   ) async {
     try {
-      emit(state.copyWith(requestSendState: state.requestSendState.loading()));
+      emit(state.copyWith(
+          requestDeclineState: state.requestDeclineState.loading()));
       User? user = authRepository.currentUser;
       if (user == null) {
         emit(state.copyWith(
-            requestSendState:
-                state.requestSendState.failure(UserNotAuthError())));
+            requestDeclineState:
+                state.requestDeclineState.failure(UserNotAuthError())));
         return;
       }
       await chatRepository.rejectRequest(user.id, receiverId);
+      emit(state.copyWith(
+          requestDeclineState: state.requestDeclineState.success()));
     } on AppException catch (e) {
-      emit(state.copyWith(requestSendState: state.requestSendState.failure(e)));
+      emit(state.copyWith(
+          requestDeclineState: state.requestDeclineState.failure(e)));
     } finally {
       emit(state.copyWith(
-          requestSendState: state.requestSendState.resetLoading()));
+          requestDeclineState: state.requestDeclineState.resetLoading()));
     }
   }
 

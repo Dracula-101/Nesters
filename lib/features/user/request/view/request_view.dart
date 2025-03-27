@@ -29,7 +29,21 @@ class RequestView extends StatefulWidget {
 class _RequestViewState extends State<RequestView> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<RequestBloc, RequestState>(
+    return BlocConsumer<RequestBloc, RequestState>(
+      listener: (context, state) {
+        if (state.requestAcceptState.exception != null) {
+          context.showErrorSnackBar(
+              state.requestAcceptState.exception?.message ?? '');
+        } else if (state.requestAcceptState.isSuccess) {
+          context.showSuccessSnackBar('Request accepted successfully');
+        }
+        if (state.requestDeclineState.exception != null) {
+          context.showErrorSnackBar(
+              state.requestDeclineState.exception?.message ?? '');
+        } else if (state.requestDeclineState.isSuccess) {
+          context.showSuccessSnackBar('Request rejected successfully');
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(

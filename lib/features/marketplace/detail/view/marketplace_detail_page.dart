@@ -365,7 +365,7 @@ class _MarketplaceDetailViewState extends State<MarketplaceDetailView> {
               ],
             ),
           ),
-          if(widget.marketplace.reference?.link != null)
+          if (widget.marketplace.reference?.link != null)
             GestureDetector(
               onTap: () {
                 if (widget.marketplace.reference?.link != null) {

@@ -1,4 +1,4 @@
-const functions = require("firebase-functions");
+const functions = require("firebase-functions/v1");
 const admin = require("firebase-admin");
 admin.initializeApp(functions.config().firebase);
 
@@ -62,84 +62,85 @@ exports.testNotification = functions.https.onRequest(async (req, res) => {
   }
 });
 
-
-exports.testMessageNotification = functions.https.onRequest(async (req, res) => {
-  try {
-    if (req.method != "POST") {
-      return res.status(405).send("Method Not Allowed");
-    }
-    if (!req.body.chatId) {
-      return res.status(400).send("Chat ID is required");
-    }
-    if (!req.body.senderId) {
-      return res.status(400).send("Sender ID is required");
-    }
-    const senderData = await admin
-      .firestore()
-      .collection("users")
-      .doc(req.body.senderId)
-      .get();
-    if (!senderData) {
-      return res.status(400).send("Sender data not found");
-    }
-    const chatId = req.body.chatId;
-    const senderId = req.body.senderId;
-    const senderName = senderData.data().fullName;
-    const senderPhotoUrl = senderData.data().photoUrl;
-    const senderToken = senderData.data().token;
-    if (!senderToken) {
-      return res.status(400).send("Sender token not found");
-    }
-    const isMessageImage = req.body.imageUrl.startsWith("https:");
-    const message = {
-      token: receiverFcmToken,
-      notification: {
-        title: senderName,
-        body: isMessageImage ? "Image 📷" : req.body.body,
-        image: isMessageImage ? req.body.imageUrl : null,
-      },
-      data: {
-        photoUrl: senderPhotoUrl,
-        notificationType: "chat",
-        chatId: chatId,
-        senderName: senderName,
-        senderId: senderId,
-      },
-      apns: {
-        headers: {
-          "apns-priority": "5",
+exports.testMessageNotification = functions.https.onRequest(
+  async (req, res) => {
+    try {
+      if (req.method != "POST") {
+        return res.status(405).send("Method Not Allowed");
+      }
+      if (!req.body.chatId) {
+        return res.status(400).send("Chat ID is required");
+      }
+      if (!req.body.senderId) {
+        return res.status(400).send("Sender ID is required");
+      }
+      const senderData = await admin
+        .firestore()
+        .collection("users")
+        .doc(req.body.senderId)
+        .get();
+      if (!senderData) {
+        return res.status(400).send("Sender data not found");
+      }
+      const chatId = req.body.chatId;
+      const senderId = req.body.senderId;
+      const senderName = senderData.data().fullName;
+      const senderPhotoUrl = senderData.data().photoUrl;
+      const senderToken = senderData.data().token;
+      if (!senderToken) {
+        return res.status(400).send("Sender token not found");
+      }
+      const isMessageImage = req.body.imageUrl.startsWith("https:");
+      const message = {
+        token: receiverFcmToken,
+        notification: {
+          title: senderName,
+          body: isMessageImage ? "Image 📷" : req.body.body,
+          image: isMessageImage ? req.body.imageUrl : null,
         },
-        payload: {
-          aps: {
-            category: "NEW_MESSAGE_CATEGORY",
+        data: {
+          photoUrl: senderPhotoUrl,
+          notificationType: "chat",
+          chatId: chatId,
+          senderName: senderName,
+          senderId: senderId,
+        },
+        apns: {
+          headers: {
+            "apns-priority": "5",
+          },
+          payload: {
+            aps: {
+              category: "NEW_MESSAGE_CATEGORY",
+            },
           },
         },
-      },
-      android: {
-        collapse_key: chatId,
-        priority: "high",
-        notification: {
-          channel_id: "nester_notification_channel",
-          notification_priority: "PRIORITY_HIGH",
-          sound: "message_notification.mp3",
-          tag: chatId,
+        android: {
+          collapse_key: chatId,
+          priority: "high",
+          notification: {
+            channel_id: "nester_notification_channel",
+            notification_priority: "PRIORITY_HIGH",
+            sound: "message_notification.mp3",
+            tag: chatId,
+          },
         },
-      },
-    };
-    const notificationResponse = await admin.messaging().send(message);
-    console.log("notificationResponse", notificationResponse);
-    res.send({
-      "message": "Notification sent successfully",
-      "response": notificationResponse,
-    });
-  } catch (e) {
-    console.log(e);
-    res.status(500).send({
-      error: JSON.stringify(e),
-      message: "An error occurred while sending notification",
-    });
+      };
+      const notificationResponse = await admin.messaging().send(message);
+      console.log("notificationResponse", notificationResponse);
+      res.send({
+        message: "Notification sent successfully",
+        response: notificationResponse,
+      });
+    } catch (e) {
+      console.log(e);
+      res.status(500).send({
+        error: JSON.stringify(e),
+        message: "An error occurred while sending notification",
+      });
+    }
   }
-});
+);
 
 exports.sendNotification = functions.firestore
   .document("chats/{chatId}/messages/{messageId}")
@@ -318,7 +319,6 @@ exports.sendAcceptNotification = functions.https.onRequest(async (req, res) => {
         },
       };
     }
-    console.log("notificationResponse", notificationResponse);
     // create a new chat document
     const chatCollection = admin.firestore().collection("chats");
     const chatData = {
@@ -441,13 +441,13 @@ exports.testRequest = functions.https.onRequest(async (req, res) => {
       };
       const addRequestPromises = !makeDuplicate
         ? [
-          senderRequestRef.doc(req.body.receiverId).set(senderRequestBody),
-          receiverRequestRef.doc(req.body.senderId).set(receiverRequestBody),
-        ]
+            senderRequestRef.doc(req.body.receiverId).set(senderRequestBody),
+            receiverRequestRef.doc(req.body.senderId).set(receiverRequestBody),
+          ]
         : [
-          senderRequestRef.add(senderRequestBody),
-          receiverRequestRef.add(receiverRequestBody),
-        ];
+            senderRequestRef.add(senderRequestBody),
+            receiverRequestRef.add(receiverRequestBody),
+          ];
       await Promise.all(addRequestPromises);
       res.send("Request sent successfully");
     }

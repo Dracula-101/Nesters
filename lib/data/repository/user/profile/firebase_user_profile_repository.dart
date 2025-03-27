@@ -232,13 +232,20 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
     try {
       String firebaseUrl =
           _appSecretsRepository.getSecret(AppSecretsKeys.CLOUD_FUNCTION_URL);
-      await http.post(
+      final response = await http.post(
         Uri.parse('$firebaseUrl/sendAcceptNotification'),
         body: {
           'senderId': senderId,
           'receiverId': receiverId,
         },
       );
+      print(response);
+      if (response.statusCode != 200) {
+        throw UserChatProfileErrorFactory.create(
+          UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERR,
+          'Failed to create chat room',
+        );
+      }
     } on FirebaseException catch (e) {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.SEND_REQ_ERR,

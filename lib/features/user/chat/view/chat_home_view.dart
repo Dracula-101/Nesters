@@ -42,22 +42,6 @@ class ChatHomeView extends StatefulWidget {
 class _ChatHomeViewState extends State<ChatHomeView> {
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CentralChatBloc, CentralChatState>(
-      builder: (context, state) {
-        return state.chatState.exception != null
-            ? _buildChatErrorView(state.chatState.exception!)
-            : state.chatState.isLoading == true
-                ? const Center(
-                    child: CircularProgressIndicator(),
-                  )
-                : state.chatStates.isNotEmpty
-                    ? _buildChatsView(state.chatStates)
-                    : _buildNoChatsView();
-      },
-    );
-  }
-
-  Widget _buildChatsView(List<ChatInfo> chatStates) {
     return RefreshIndicator(
       onRefresh: () {
         context.read<CentralChatBloc>().add(
@@ -65,128 +49,144 @@ class _ChatHomeViewState extends State<ChatHomeView> {
             );
         return Future<void>.value();
       },
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: GestureDetector(
-              onTap: () {
-                GoRouter.of(context).go(
-                    '${AppRouterService.homeScreen}/${AppRouterService.userRequest}');
-              },
-              child: Container(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 4.0,
-                ),
-                decoration: BoxDecoration(
-                  color: AppTheme.surface,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppTheme.greyShades.shade300,
-                      blurRadius: 4.0,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    children: [
-                      const SizedBox(width: 4.0),
-                      Icon(
-                        FontAwesomeIcons.telegram,
-                        color: AppTheme.primaryShades.shade400,
-                        size: 28,
-                      ),
-                      const SizedBox(width: 8.0),
-                      Text(
-                        'Requests',
-                        style: AppTheme.bodyMediumLightVariant,
-                      ),
-                      const Spacer(),
-                      BlocBuilder<RequestBloc, RequestState>(
-                        builder: (context, state) {
-                          int count = state.requestReceivedUsers.fold(0,
-                              (previousValue, element) {
-                            if (!element.isAccepted && !element.isBanned) {
-                              return (previousValue) + 1;
-                            } else {
-                              return previousValue;
-                            }
-                          });
-                          if (count != 0) {
-                            return Container(
-                              padding: const EdgeInsets.all(8.0),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primaryShades.shade400,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Text(
-                                count.toString(),
-                                style: AppTheme.labelSmall.copyWith(
-                                  color: AppTheme.surface,
-                                ),
-                              ),
-                            );
-                          } else {
-                            return const SizedBox();
-                          }
-                        },
-                      ),
-                      const SizedBox(width: 4.0),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: AppTheme.primaryShades.shade400,
-                      ),
-                      const SizedBox(width: 4.0),
-                    ],
+      child: BlocBuilder<CentralChatBloc, CentralChatState>(
+        builder: (context, state) {
+          return state.chatState.exception != null
+              ? _buildChatErrorView(state.chatState.exception!)
+              : state.chatState.isLoading == true
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : state.chatStates.isNotEmpty
+                      ? _buildChatsView(state.chatStates)
+                      : _buildNoChatsView();
+        },
+      ),
+    );
+  }
+
+  Widget _buildChatsView(List<ChatInfo> chatStates) {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: GestureDetector(
+            onTap: () {
+              GoRouter.of(context).go(
+                  '${AppRouterService.homeScreen}/${AppRouterService.userRequest}');
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 4.0,
+              ),
+              decoration: BoxDecoration(
+                color: AppTheme.surface,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.greyShades.shade300,
+                    blurRadius: 4.0,
+                    offset: const Offset(0, 2),
                   ),
+                ],
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 4.0),
+                    Icon(
+                      FontAwesomeIcons.telegram,
+                      color: AppTheme.primaryShades.shade400,
+                      size: 28,
+                    ),
+                    const SizedBox(width: 8.0),
+                    Text(
+                      'Requests',
+                      style: AppTheme.bodyMediumLightVariant,
+                    ),
+                    const Spacer(),
+                    BlocBuilder<RequestBloc, RequestState>(
+                      builder: (context, state) {
+                        int count = state.requestReceivedUsers.fold(0,
+                            (previousValue, element) {
+                          if (!element.isAccepted && !element.isBanned) {
+                            return (previousValue) + 1;
+                          } else {
+                            return previousValue;
+                          }
+                        });
+                        if (count != 0) {
+                          return Container(
+                            padding: const EdgeInsets.all(8.0),
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryShades.shade400,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              count.toString(),
+                              style: AppTheme.labelSmall.copyWith(
+                                color: AppTheme.surface,
+                              ),
+                            ),
+                          );
+                        } else {
+                          return const SizedBox();
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 4.0),
+                    Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: AppTheme.primaryShades.shade400,
+                    ),
+                    const SizedBox(width: 4.0),
+                  ],
                 ),
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: Divider(
-              color: AppTheme.greyShades.shade200,
-            ),
+        ),
+        SliverToBoxAdapter(
+          child: Divider(
+            color: AppTheme.greyShades.shade200,
           ),
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                QuickChatUser chatUser = chatStates[index].recipientUser;
-                return ChatUserWidget(
-                  user: chatUser,
-                  lastMessage: context
-                      .read<CentralChatBloc>()
-                      .getChatController(chatUser.chatId!)
-                      .latestMessageStream,
-                  newMessageCount: context
-                      .read<CentralChatBloc>()
-                      .getChatController(chatUser.chatId!)
-                      .newMessageCount,
-                  isDeleted: chatUser.isUserDeleted ?? false,
-                  onTap: () {
-                    if (chatUser.isUserDeleted ?? false) {
-                      context.showErrorSnackBar(
-                        'User has deleted their account',
-                      );
-                    } else {
-                      String route =
-                          '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatUser.chatId}';
-                      GoRouter.of(context).go(
-                        route,
-                        extra: chatUser.toUser(),
-                      );
-                    }
-                  },
-                );
-              },
-              childCount: chatStates.length,
-            ),
+        ),
+        SliverList(
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              QuickChatUser chatUser = chatStates[index].recipientUser;
+              return ChatUserWidget(
+                user: chatUser,
+                lastMessage: context
+                    .read<CentralChatBloc>()
+                    .getChatController(chatUser.chatId!)
+                    .latestMessageStream,
+                newMessageCount: context
+                    .read<CentralChatBloc>()
+                    .getChatController(chatUser.chatId!)
+                    .newMessageCount,
+                isDeleted: chatUser.isUserDeleted ?? false,
+                onTap: () {
+                  if (chatUser.isUserDeleted ?? false) {
+                    context.showErrorSnackBar(
+                      'User has deleted their account',
+                    );
+                  } else {
+                    String route =
+                        '${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/${chatUser.chatId}';
+                    GoRouter.of(context).go(
+                      route,
+                      extra: chatUser.toUser(),
+                    );
+                  }
+                },
+              );
+            },
+            childCount: chatStates.length,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -212,6 +212,16 @@ class _ChatHomeViewState extends State<ChatHomeView> {
             style: AppTheme.bodyMediumLightVariant,
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () {
+              context.read<CentralChatBloc>().add(
+                    const CentralChatEvent.forcedLoadProfiles(),
+                  );
+            },
+            child: const Text('Refresh'),
+          ),
+          const SizedBox(height: 8),
         ],
       ),
     );
@@ -236,6 +246,16 @@ class _ChatHomeViewState extends State<ChatHomeView> {
             error.message,
             style: AppTheme.bodyMedium,
           ),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () {
+              context.read<CentralChatBloc>().add(
+                    const CentralChatEvent.forcedLoadProfiles(),
+                  );
+            },
+            child: const Text('Retry'),
+          ),
+          const SizedBox(height: 8),
         ],
       ),
     );
