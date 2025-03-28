@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:go_router/go_router.dart';
+import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
 import 'package:nesters/domain/models/chat/message.dart';
 import 'package:nesters/domain/models/chat/message_type.dart';
@@ -9,6 +11,7 @@ import 'package:nesters/domain/models/user/status/user_status.dart';
 import 'package:nesters/domain/models/user/user.dart';
 import 'package:nesters/features/user/chat/bloc/central_chat/central_chat_bloc.dart';
 import 'package:nesters/features/user/chat/bloc/local_chat/chat_bloc.dart';
+import 'package:nesters/features/user/detail/view/profile.dart';
 import 'package:nesters/theme/theme.dart';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -31,7 +34,7 @@ class UserChatPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ChatBloc(
-        controller: context.read<CentralChatBloc>().getChatController(chatId),
+        controller: context.read<CentralChatBloc>().getChatController(chatId)!,
       ),
       child: ChatView(receiverProf: userProfile, chatId: chatId),
     );
@@ -149,40 +152,53 @@ class _ChatViewState extends State<ChatView> {
       ),
       leadingWidth: 45,
       titleSpacing: 0,
-      title: Row(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundImage: CachedNetworkImageProvider(
-              widget.receiverProf.photoUrl,
+      title: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UserProfilePage(
+                id: widget.receiverProf.id,
+                showRequestDialog: false,
+              ),
             ),
-          ),
-          const SizedBox(
-            width: 10,
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(widget.receiverProf.fullName.toTitleCase,
-                  style: AppTheme.labelLarge),
-              StreamBuilder<UserStatus?>(
-                stream: context.read<ChatBloc>().userStatus,
-                builder: (context, snapshot) {
-                  return Text(
-                    snapshot.data?.status == Status.ONLINE
-                        ? (snapshot.data?.status.toString() ?? '')
-                        : snapshot.data?.lastSeen != null
-                            ? 'Last Seen ${DateFormat('hh:mm a').format(snapshot.data!.lastSeen!)}'
-                            : 'Offline',
-                    style: AppTheme.bodySmall.copyWith(
-                      color: AppTheme.greyShades.shade400,
-                    ),
-                  );
-                },
-              )
-            ],
-          ),
-        ],
+          );
+        },
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundImage: CachedNetworkImageProvider(
+                widget.receiverProf.photoUrl,
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget.receiverProf.fullName.toTitleCase,
+                    style: AppTheme.labelLarge),
+                StreamBuilder<UserStatus?>(
+                  stream: context.read<ChatBloc>().userStatus,
+                  builder: (context, snapshot) {
+                    return Text(
+                      snapshot.data?.status == Status.ONLINE
+                          ? (snapshot.data?.status.toString() ?? '')
+                          : snapshot.data?.lastSeen != null
+                              ? 'Last Seen ${DateFormat('hh:mm a').format(snapshot.data!.lastSeen!)}'
+                              : 'Offline',
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.greyShades.shade400,
+                      ),
+                    );
+                  },
+                )
+              ],
+            ),
+          ],
+        ),
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),

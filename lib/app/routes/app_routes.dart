@@ -67,7 +67,7 @@ class AppRouterService {
       child: Scaffold(
         body: Center(
           child: Text(
-            'Page not found Route: ${state.fullPath}',
+            'Page not found Route: ${state.path}',
           ),
         ),
       ),
@@ -104,6 +104,17 @@ class AppRouterService {
                       chatId: params.pathParameters['chatId'] ?? '',
                       userProfile: params.extra as User,
                     ),
+                    routes: [
+                      AppRoute(
+                        '$userProfile/:id',
+                        (params) {
+                          return UserProfilePage(
+                            id: params.pathParameters['id'] ?? '',
+                            showRequestDialog: false,
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),

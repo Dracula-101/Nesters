@@ -156,16 +156,16 @@ class _ChatHomeViewState extends State<ChatHomeView> {
           delegate: SliverChildBuilderDelegate(
             (context, index) {
               QuickChatUser chatUser = chatStates[index].recipientUser;
+              final chatController = context
+                  .read<CentralChatBloc>()
+                  .getChatController(chatUser.chatId!);
+              if (chatController == null) {
+                return const SizedBox();
+              }
               return ChatUserWidget(
                 user: chatUser,
-                lastMessage: context
-                    .read<CentralChatBloc>()
-                    .getChatController(chatUser.chatId!)
-                    .latestMessageStream,
-                newMessageCount: context
-                    .read<CentralChatBloc>()
-                    .getChatController(chatUser.chatId!)
-                    .newMessageCount,
+                lastMessage: chatController.latestMessageStream,
+                newMessageCount: chatController!.newMessageCount,
                 isDeleted: chatUser.isUserDeleted ?? false,
                 onTap: () {
                   if (chatUser.isUserDeleted ?? false) {

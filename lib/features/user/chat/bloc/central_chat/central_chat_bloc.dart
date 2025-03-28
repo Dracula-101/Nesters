@@ -46,11 +46,11 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   // Socket
   late IO.Socket? socket;
 
-  ChatController getChatController(String chatId) {
+  ChatController? getChatController(String chatId) {
     try {
       return _chatControllers[chatId]!;
     } catch (e) {
-      throw Exception("Chat Controller not found");
+      return null;
     }
   }
 
@@ -123,7 +123,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
 
   FutureOr<void> _loadProfiles(Emitter<CentralChatState> emit) async {
     try {
-      emit(state.copyWith(chatState: state.chatState?.loading()));
+      emit(state.copyWith(chatState: state.chatState.loading()));
       // ================== Load from local storage ==================
       List<QuickChatUser> chatUsers =
           _obxStorageRepository.getChatUserProfiles();
