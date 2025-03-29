@@ -59,7 +59,7 @@ android {
     defaultConfig {
         applicationId "com.app.nesters"
         minSdkVersion 21
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
