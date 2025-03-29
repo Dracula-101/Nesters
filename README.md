@@ -18,13 +18,14 @@ Nesters is a platform designed to help you find your next roommate and home. Whe
 - **Sell Before You Leave**: Prepare for your move with ease by selling your items conveniently beforehand.
 
 ## Demo
-| ![User Network](docs/illustrations/User%20Network.png) | ![Apartment List](docs/illustrations/Sublet%20illustration.png) | ![Sublet Details](docs/illustrations/Sublet%20detail%20illustration.png) |
+| <img src="docs/illustrations/User%20Network.png" alt="User Network" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet%20illustration.png" alt="Apartment List" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet%20detail%20illustration.png" alt="Sublet Details" width="100%" style="max-width: 300px;"> |
 |:---:|:---:|:---:|
 | **User Network** | **Apartment List** | **Sublet Details** |
 
-| ![Marketplace](docs/illustrations/Marketplace%20illustrations.png) | ![Google Maps](docs/illustrations/Google%20Maps.png) | ![Nesters Chat](docs/illustrations/Nesters%20Chat.png) |
+| <img src="docs/illustrations/Marketplace%20illustrations.png" alt="Marketplace" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Google%20Maps.png" alt="Google Maps" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Nesters%20Chat.png" alt="Nesters Chat" width="100%" style="max-width: 300px;"> |
 |:---:|:---:|:---:|
 | **Marketplace** | **Google Maps** | **Nesters Chat** |
+
 ## Installation Instructions
 
 To set up the project locally, follow these steps:
