@@ -18,11 +18,11 @@ Nesters is a platform designed to help you find your next roommate and home. Whe
 - **Sell Before You Leave**: Prepare for your move with ease by selling your items conveniently beforehand.
 
 ## Demo
-| <img src="docs/illustrations/User%20Network.png" alt="User Network" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet%20illustration.png" alt="Apartment List" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet%20detail%20illustration.png" alt="Sublet Details" width="100%" style="max-width: 300px;"> |
+| <img src="docs/illustrations/User_Network.png" alt="User Network" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet_illustration.png" alt="Apartment List" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet_detail_illustration.png" alt="Sublet Details" width="100%" style="max-width: 300px;"> |
 |:---:|:---:|:---:|
 | **User Network** | **Apartment List** | **Sublet Details** |
 
-| <img src="docs/illustrations/Marketplace%20illustrations.png" alt="Marketplace" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Google%20Maps.png" alt="Google Maps" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Nesters%20Chat.png" alt="Nesters Chat" width="100%" style="max-width: 300px;"> |
+| <img src="docs/illustrations/Marketplace_illustrations.png" alt="Marketplace" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Google_Maps.png" alt="Google Maps" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Nesters_Chat.png" alt="Nesters Chat" width="100%" style="max-width: 300px;"> |
 |:---:|:---:|:---:|
 | **Marketplace** | **Google Maps** | **Nesters Chat** |
 
