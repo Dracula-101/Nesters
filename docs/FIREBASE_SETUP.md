@@ -86,7 +86,6 @@ Nesters uses Firebase for its chat service.
       }
     }
   }
-
   ```
 
 - Navigate to the `cloud_run` folder and copy the Firestore url from Firebase Console and Paste to the `secrets.json` file under the key `FIRESTORE_URL`.
@@ -97,16 +96,22 @@ Nesters uses Firebase for its chat service.
 
 - Base 64 encode the service account json file and paste it to the `secrets.json` file under the key `BASE64_SERVICE_ACCOUNT`.
 
-- Run the following command to deploy the Cloud Run service ([Reference](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-nodejs-service)):
+- Install the gcloud client ([Install](https://cloud.google.com/sdk/docs/install)) and run the following command to deploy the Cloud Run service ([Reference](https://cloud.google.com/run/docs/quickstarts/build-and-deploy/deploy-nodejs-service)):
   ```bash
   gcloud init
   gcloud config set project <PROJECT-ID>
   gcloud services enable run.googleapis.com cloudbuild.googleapis.com
   ```
-- Run the command to deploy the Cloud Run service and allow unauthenticated invocations and replace the <SERVICE*ACCOUNT> with the service account email (make sure to get the email contents before the @ symbol*):
+- Install the npm packages in the `cloud_run` folder by running the following command:
+  ```bash
+  cd cloud_run
+  npm install
+  ```
+
+- Run the command to deploy the Cloud Run service and allow unauthenticated invocations and replace the `SERVICE_ACCOUNT` with the service account email (make sure to get the email contents before the @ symbol*):
 
   ```bash
-  gcloud run deploy user-status-socket --source . --allow-unauthenticated --platform=managed --port=8080 --memory=512Mi --max-instances=3 --env-vars-file=secrets.json --service-account=<SERVICE_ACCOUNT>
+  gcloud run deploy user-status-socket --source  --allow-unauthenticated --platform=managed --port=8080 --memory=512Mi --max-instances=3 --env-vars-file=secrets.json --service-account=<SERVICE_ACCOUNT>
   ```
 
 - After successful deployment, copy the Cloud Run service URL and paste it to the `.env` file under the key `USER_STATUS_SOCKET_URL`.

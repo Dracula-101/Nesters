@@ -1,8 +1,13 @@
 # Nesters
 
-## Project Description
+<!-- make a div to occupy the whole width and color = 4A55A2 and put a image in there /docs/images/nesters_bg.png with padding-->
+<div style="width: 100%; background-color: #4A55A2; padding: 20px; text-align: center;">
+    <img src="docs/images/nesters_bg.png" alt="Nesters" style="width: 100%; max-width: 600px; height: auto;">
+</div>
 
-Nesters is a platform designed to help you find your next roommate and home. Whether you're looking for a roommate to share your space or searching for the ideal accommodation, Nesters' smart matching algorithm helps you find the perfect match. Say goodbye to endless scrolling and let us do the work for you.
+<aside style="display: block; height: 20px;"></aside>
+
+Nesters is a platform designed to help you find your next roommate and home. Whether you're looking for a roommate to share your space or searching for the ideal accommodation. Say goodbye to endless searching and let us do the work for you.
 
 ### Features
 
@@ -11,6 +16,46 @@ Nesters is a platform designed to help you find your next roommate and home. Whe
 - **Discover Your Ideal Living Space**: Post your vacant room or space and reach out to other students in need of accommodation.
 - **Sublet Your Room Effortlessly**: Easily find someone to take over your lease when a room is available in the apartment.
 - **Sell Before You Leave**: Prepare for your move with ease by selling your items conveniently beforehand.
+
+## Demo
+
+<table style="width: 100%; border-collapse: collapse; text-align: center;">
+    <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;">
+            <img src="docs\illustrations\User Network.png" alt="User Network" style="max-height: 400px;">
+        </td>
+        <td style="border: 1px solid #ddd; padding: 8px;">
+            <img src="docs\illustrations\Sublet illustration.png" alt="Demo 2" style="max-height: 400px;">
+        </td>
+        <td style="border: 1px solid #ddd; padding: 8px;">
+            <img src="docs\illustrations\Sublet detail illustration.png" alt="Demo 3" style="max-height: 400px;">
+        </td>
+    </tr>
+    <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;">User Network</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Apartment List</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Sublet Details</td>
+      </tr>
+</table>
+
+<table style="width: 100%; border-collapse: collapse; text-align: center;">
+    <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;">
+            <img src="docs\illustrations\Marketplace illustrations.png" alt="User Network" style="max-height: 400px;">
+        </td>
+        <td style="border: 1px solid #ddd; padding: 8px;">
+            <img src="docs\illustrations\Google Maps.png" alt="Demo 2" style="max-height: 400px;">
+        </td>
+        <td style="border: 1px solid #ddd; padding: 8px;">
+            <img src="docs\illustrations\Nesters Chat.png" alt="Demo 3" style="max-height: 400px;">
+        </td>
+    </tr>
+    <tr>
+        <td style="border: 1px solid #ddd; padding: 8px;">Marketplace</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Google Maps</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">Nesters Chat</td>
+      </tr>
+</table>
 
 ## Installation Instructions
 
@@ -35,12 +80,16 @@ To set up the project locally, follow these steps:
    - Add the `google-services.json` file to the `android/app` directory.
    - Add the `GoogleService-Info.plist` file to the `ios/Runner` directory.
 
-4. **Set up Supabase**:
+4. **Set up Google Maps and Places API**:
+
+   - Follow the instructions to set up [Google Maps and Places API](docs/GOOGLE_CONSOLE.md) for the project.
+
+5. **Set up Supabase**:
 
    - Follow the instructions to set up [Supabase](docs/SUPABASE_SETUP.md) for the project.
    - Copy the `.env.example` file to `.env` and add the necessary environment variables.
 
-5. **Setup Cloudinary**:
+6. **Setup Cloudinary**:
 
    - Sign up for a [Cloudinary](https://cloudinary.com/users/register_free) account and create a new project.
    - Get your Cloudinary details and add it to the `.env` file.
@@ -51,7 +100,7 @@ To set up the project locally, follow these steps:
    CLOUDINARY_API_SECRET=<your-api-secret>
    ```
 
-6. **Run the project**:
+7. **Run the project**:
    ```sh
    flutter pub run build_runner build --delete-conflicting-outputs
    flutter run

@@ -1,5 +1,5 @@
-# [Supabase](https://supabase.com/dashboard/projects) setup for Nesters
-
+# [Supabase](https://supabase.com/dashboard/projects) setup for Nesters 
+[![Made with Supabase](https://supabase.com/badge-made-with-supabase-dark.svg)](https://supabase.com)
 Nesters requires the following functionalities to work properly with Supabase
 
 - Authentication
@@ -27,6 +27,8 @@ Nesters requires the following functionalities to work properly with Supabase
 - Navigate to the SQL tab and run the following SQL commands to create the required tables.
 
 - Make sure to create a `prod` using the following commands and navigate to Project Settings > Data API and add the prod schema to Exposed schemas and extra search paths.
+
+- Install the PostGIS extension in the Supabase Dashboard in the `gis` schema.
 
 - Install postgres client in your system and run the following commands to create the tables and copy from the `connection url` from supabase.
 
