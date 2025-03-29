@@ -4,7 +4,6 @@ Nesters uses Firebase for its chat service.
 
 - **Firebase Firestore** is used to store chat rooms, messages and user details.
 - **Firebase Functions** are used to send push notifications to users.
-- **Firebase Storage** is used to store chat images and files.
 - **Firebase Realtime DB** is used to store the user status (Online, Offline).
 - **Firebase Cloud Messaging** is used to send push notifications to users.
 - **Firebase Crashlytics** is used to monitor app crashes.
@@ -34,33 +33,24 @@ Nesters uses Firebase for its chat service.
   ```js
   rules_version = '1';
   service cloud.firestore {
-      match /databases/{database}/documents {
-          // Allow read and write access to all
-          match /{document=**} {
-          allow read, write: if true
-          }
+    match /databases/{database}/documents {
+      match /chats/{chatId} {
+        allow read, write: if request.auth != null;
       }
+      match /users/{userId} {
+        allow read, write: if true;
+      }
+      match /devices/{deviceId} {
+        allow read, write: if true;
+      }
+    }
   }
+
   ```
 
 ## Firebase Functions
 
 - Make sure to enable billing (_switch to Blaze plan_) for the Firebase project to use Firebase Functions.
-
-- Create a new folder named `chats` in the root directory of the Firebase Storage.
-
-- Add rules to the Firebase Storage to allow read and write access to the `chats` folder:
-
-  ```js
-  rules_version = '1';
-  service firebase.storage {
-      match /b/{bucket}/o {
-          match /{allPaths=**} {
-          allow read, write: if true;
-          }
-      }
-  }
-  ```
 
 - Add the firebase tools to the project by running the following command:
   ```bash
@@ -76,8 +66,9 @@ Nesters uses Firebase for its chat service.
   ```
 - Attach the firebase project and select the `Functions` option.
 
-- Deploy the functions by running the following command:
+- Deploy the functions by running the following commands:
   ```bash
+  cd functions
   firebase deploy --only functions
   ```
 - After successful deployment, copy the function url to the `.env` file under the key `CLOUD_FUNCTION_URL`.
@@ -89,10 +80,13 @@ Nesters uses Firebase for its chat service.
   ```json
   {
     "rules": {
-      ".read": "true",
-      ".write": "true"
+      "user_status": {
+        ".read": true,
+        ".write": false,
+      }
     }
   }
+
   ```
 
 - Navigate to the `cloud_run` folder and copy the Firestore url from Firebase Console and Paste to the `secrets.json` file under the key `FIRESTORE_URL`.
@@ -109,7 +103,7 @@ Nesters uses Firebase for its chat service.
   gcloud config set project <PROJECT-ID>
   gcloud services enable run.googleapis.com cloudbuild.googleapis.com
   ```
-- Run the command to deploy the Cloud Run service and allow unauthenticated invocations and replace the <SERVICE*ACCOUNT> with the service account email (\_make sure to get the email contents before the @ symbol*):
+- Run the command to deploy the Cloud Run service and allow unauthenticated invocations and replace the <SERVICE*ACCOUNT> with the service account email (make sure to get the email contents before the @ symbol*):
 
   ```bash
   gcloud run deploy user-status-socket --source . --allow-unauthenticated --platform=managed --port=8080 --memory=512Mi --max-instances=3 --env-vars-file=secrets.json --service-account=<SERVICE_ACCOUNT>

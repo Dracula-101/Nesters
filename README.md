@@ -40,7 +40,18 @@ To set up the project locally, follow these steps:
    - Follow the instructions to set up [Supabase](docs/SUPABASE_SETUP.md) for the project.
    - Copy the `.env.example` file to `.env` and add the necessary environment variables.
 
-5. **Run the project**:
+5. **Setup Cloudinary**:
+
+   - Sign up for a [Cloudinary](https://cloudinary.com/users/register_free) account and create a new project.
+   - Get your Cloudinary details and add it to the `.env` file.
+
+   ```env
+   CLOUDINARY_CLOUD_NAME=<your-cloud-name>
+   CLOUDINARY_API_KEY=<your-api-key>
+   CLOUDINARY_API_SECRET=<your-api-secret>
+   ```
+
+6. **Run the project**:
    ```sh
    flutter pub run build_runner build --delete-conflicting-outputs
    flutter run
@@ -84,7 +95,3 @@ We welcome contributions to Nesters! If you'd like to contribute, please follow 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
-
-git commit -m "updated postgres apartments function nearby, integrated location on apartment page, seeded data for apartment, sublet and marketplace
-
-Co-authored-by: Dracula-101 <pratikpujari1000@gmail.com>"

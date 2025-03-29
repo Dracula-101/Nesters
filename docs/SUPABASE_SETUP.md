@@ -21,18 +21,25 @@ Nesters requires the following functionalities to work properly with Supabase
 - Make sure to add the correct client ID and secret in the settings.
 
 
-
 ## Database
+
 
 - Navigate to the SQL tab and run the following SQL commands to create the required tables.
 
 - Make sure to create a `prod` using the following commands and navigate to Project Settings > Data API and add the prod schema to Exposed schemas and extra search paths.
 
-- Copy the SQL commands from the [`dev_table_script`](../scripts/supabase_sql_dev_queries.sql), [`prod_table_script`](../scripts/supabase_sql_prod_queries.sql) files and paste them in the SQL editor.
+- Install postgres client in your system and run the following commands to create the tables and copy from the `connection url` from supabase.
 
-- Add the required RLS policies to the tables.
-
-- Populate the tables with the required data mainly the **universities**, **marketplace_categories**, **indian_states** and **indian_languages** tables.
+- Import the sql files into public and prod schema using the following command in root directory.
+    ```sql
+    cd schema_backups
+    psql <your-connection-url-from-supabase>
+    SET search_path TO public;
+    \i public_schema_backup.sql
+    SET search_path TO prod;
+    \i prod_schema_backup.sql
+    ```
+- Navigate to supabase dashboard and import the csv from `scripts\seed\data` into tables in `universities`, `marketplace_categories`, `degrees` and `languages` tables from `const` schema.
 
 ## Storage
 
@@ -45,4 +52,5 @@ Nesters requires the following functionalities to work properly with Supabase
 - Make sure to mark the bucket as public and restrict file-size upload limit.
 
 - Additionally, add the required policies to the buckets.
+
 
