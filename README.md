@@ -18,46 +18,13 @@ Nesters is a platform designed to help you find your next roommate and home. Whe
 - **Sell Before You Leave**: Prepare for your move with ease by selling your items conveniently beforehand.
 
 ## Demo
+| <img src="docs/illustrations/User_Network.png" alt="User Network" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet_illustration.png" alt="Apartment List" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet_detail_illustration.png" alt="Sublet Details" width="100%" style="max-width: 300px;"> |
+|:---:|:---:|:---:|
+| **User Network** | **Apartment List** | **Sublet Details** |
 
-<div>
-<table style="width: 100%; border-collapse: collapse; text-align: center;">
-    <tr>
-        <td style="border: 1px solid #ddd; padding: 8px; width: 33%;">
-            <img src="docs/illustrations/User Network.png" alt="User Network" style="width: 100%; max-width: 400px; height: auto;">
-        </td>
-        <td style="border: 1px solid #ddd; padding: 8px; width: 33%;">
-            <img src="docs/illustrations/Sublet illustration.png" alt="Apartment List" style="width: 100%; max-width: 400px; height: auto;">
-        </td>
-        <td style="border: 1px solid #ddd; padding: 8px; width: 33%;">
-            <img src="docs/illustrations/Sublet detail illustration.png" alt="Sublet Details" style="width: 100%; max-width: 400px; height: auto;">
-        </td>
-    </tr>
-    <tr>
-        <td style="border: 1px solid #ddd; padding: 8px;">User Network</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">Apartment List</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">Sublet Details</td>
-    </tr>
-</table>
-
-<table style="width: 100%; border-collapse: collapse; text-align: center; margin-top: 20px;">
-    <tr>
-        <td style="border: 1px solid #ddd; padding: 8px; width: 33%;">
-            <img src="docs/illustrations/Marketplace illustrations.png" alt="Marketplace" style="width: 100%; max-width: 400px; height: auto;">
-        </td>
-        <td style="border: 1px solid #ddd; padding: 8px; width: 33%;">
-            <img src="docs/illustrations/Google Maps.png" alt="Google Maps" style="width: 100%; max-width: 400px; height: auto;">
-        </td>
-        <td style="border: 1px solid #ddd; padding: 8px; width: 33%;">
-            <img src="docs/illustrations/Nesters Chat.png" alt="Nesters Chat" style="width: 100%; max-width: 400px; height: auto;">
-        </td>
-    </tr>
-    <tr>
-        <td style="border: 1px solid #ddd; padding: 8px;">Marketplace</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">Google Maps</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">Nesters Chat</td>
-    </tr>
-</table>
-</div>
+| <img src="docs/illustrations/Marketplace_illustrations.png" alt="Marketplace" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Google_Maps.png" alt="Google Maps" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Nesters_Chat.png" alt="Nesters Chat" width="100%" style="max-width: 300px;"> |
+|:---:|:---:|:---:|
+| **Marketplace** | **Google Maps** | **Nesters Chat** |
 
 ## Installation Instructions
 
