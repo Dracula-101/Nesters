@@ -24,6 +24,7 @@ import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/language.dart';
 import 'package:nesters/domain/models/marketplace/marketplace_category_model.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/theme/theme.dart';
 import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/extensions/extensions.dart';
 import 'package:nesters/utils/logger/logger.dart';
@@ -38,6 +39,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         load: () => _loadApp(event, emit),
         loaded: (isSuccessful, isOnboaringComplete) =>
             _loadedApp(event, emit, isSuccessful),
+        changeThemeMode: (themeMode) =>
+            _changeThemeMode(event, emit, themeMode),
         networkChange: (data, isOnline) =>
             _handleNetworkChange(emit, data, isOnline),
         loadDegrees: () async => await _loadDegrees(event, emit),
@@ -88,15 +91,25 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       _remoteChatRepository.tokenChangeListener();
       _loggerService.info(
           "Local Storage: ${repositoryIntialize[0]} ms\nObject Box: ${repositoryIntialize[1]} ms\nLocal Notification: ${repositoryIntialize[2]} ms\nDevice Info: ${repositoryIntialize[3]} ms");
+
+      print(
+          "AppTheme- ${_localStorageRepository.getString(LocalStorageKeys.themeMode)}");
+      AppThemeMode themeMode = AppThemeMode.fromString(
+        _localStorageRepository.getString(LocalStorageKeys.themeMode) ?? "",
+      );
       add(AppEvent.loaded(
         isSuccessful: true,
         isOnboaringComplete: isOnboardingCompleted,
+        themeMode: themeMode,
       ));
     } on Exception catch (error, stacktrace) {
       _loggerService.error('Error loading app: $error');
       _crashServiceRepository.recordError(error, stackTrace: stacktrace);
       add(const AppEvent.loaded(
-          isSuccessful: false, isOnboaringComplete: false));
+        isSuccessful: false,
+        isOnboaringComplete: false,
+        themeMode: AppThemeMode.light,
+      ));
     }
   }
 
@@ -140,6 +153,20 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     } else {
       emit(AppState(error: Exception('Error loading app)'), isLoading: false));
     }
+  }
+
+  void _changeThemeMode(
+    AppEvent event,
+    Emitter<AppState> emit,
+    AppThemeMode themeMode,
+  ) {
+    emit(state.copyWith(themeMode: themeMode));
+    unawaited(
+      _localStorageRepository.saveString(
+        themeMode.toString(),
+        LocalStorageKeys.themeMode,
+      ),
+    );
   }
 
   void _authHandler(User? user) {

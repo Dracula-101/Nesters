@@ -33,21 +33,27 @@ class RootApp extends StatelessWidget with WidgetsBindingObserver {
           create: (context) => SettingsBloc(),
         ),
       ],
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        routerConfig: appRouterService.appRouter,
-        title: 'Nesters',
-        theme: AppTheme.lightTheme,
-        builder: (context, child) {
-          return MediaQuery(
-            data: MediaQuery.of(context).copyWith(
-              textScaler: const TextScaler.linear(
-                1.0,
-              ),
-            ),
-            child: child!,
+      child: BlocBuilder<AppBloc, AppState>(
+        builder: (context, state) {
+          return MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            routerConfig: appRouterService.appRouter,
+            title: 'Nesters',
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: state.themeMode == AppThemeMode.light
+                ? ThemeMode.light
+                : ThemeMode.dark,
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: const TextScaler.linear(1.0),
+                ),
+                child: child!,
+              );
+            },
           );
-        },
+        }
       ),
     );
   }

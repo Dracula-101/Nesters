@@ -11,13 +11,9 @@ class RootAppScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return KeyedSubtree(
       key: const ValueKey('AppScaffold'),
-      child: BlocBuilder<AppBloc, AppState>(
+      child: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
-          return BlocBuilder<AuthBloc, AuthState>(
-            builder: (context, state) {
-              return child;
-            },
-          );
+          return child;
         },
       ),
     );

@@ -39,10 +39,10 @@ class ShimmerApartmentModelWidget extends StatelessWidget {
                 child: Stack(
                   children: [
                     Shimmer.fromColors(
-                      baseColor: Colors.grey[300]!,
-                      highlightColor: Colors.grey[100]!,
+                      baseColor: AppTheme.greyShades.shade300,
+                      highlightColor: AppTheme.greyShades.shade100,
                       child: Container(
-                        color: Colors.white,
+                        color: AppTheme.greyShades.shade200,
                       ),
                     ),
                     Positioned(
@@ -92,12 +92,12 @@ class ShimmerApartmentModelWidget extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Shimmer.fromColors(
-          baseColor: Colors.grey[100]!,
-          highlightColor: Colors.grey[300]!,
+          baseColor: AppTheme.greyShades.shade100,
+          highlightColor: AppTheme.greyShades.shade300,
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              color: AppTheme.greyShades.shade200,
             ),
             width: 275,
             height: 25,
@@ -121,12 +121,12 @@ class ShimmerApartmentModelWidget extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Shimmer.fromColors(
-              baseColor: Colors.grey[300]!,
+              baseColor: AppTheme.greyShades.shade300,
               highlightColor: Colors.grey[600]!,
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
+                  color: AppTheme.greyShades.shade200,
                 ),
                 width: 125,
                 height: 25,
@@ -147,12 +147,12 @@ class ShimmerApartmentModelWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Shimmer.fromColors(
-              baseColor: Colors.grey[100]!,
-              highlightColor: Colors.grey[300]!,
+              baseColor: AppTheme.greyShades.shade100,
+              highlightColor: AppTheme.greyShades.shade300,
               child: Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
+                  color: AppTheme.greyShades.shade200,
                 ),
                 width: 225,
                 height: 20,
@@ -168,12 +168,12 @@ class ShimmerApartmentModelWidget extends StatelessWidget {
 
   Widget _buildLeasePeriod() {
     return Shimmer.fromColors(
-      baseColor: Colors.grey[100]!,
-      highlightColor: Colors.grey[300]!,
+      baseColor: AppTheme.greyShades.shade100,
+      highlightColor: AppTheme.greyShades.shade300,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: Colors.white,
+          color: AppTheme.greyShades.shade200,
         ),
         width: 275,
         height: 25,
@@ -191,12 +191,12 @@ class ShimmerApartmentModelWidget extends StatelessWidget {
           vertical: 2,
         ),
         child: Shimmer.fromColors(
-          baseColor: Colors.indigo,
-          highlightColor: Colors.indigoAccent,
+          baseColor: AppTheme.primaryShades.shade200,
+          highlightColor: AppTheme.primaryShades.shade100,
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
+              color: AppTheme.greyShades.shade200,
             ),
             width: 50,
             height: 25,

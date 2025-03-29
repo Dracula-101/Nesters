@@ -59,4 +59,5 @@ class LocalStorageKeys {
   static const settingInfoStatus = 'settingInfoStatus';
   static const locationLatitude = 'locationLatitude';
   static const locationLongitude = 'locationLongitude';
+  static const themeMode = 'themeMode';
 }

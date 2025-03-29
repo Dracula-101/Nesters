@@ -25,13 +25,13 @@ class ShimmeringUserQuickProfileWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: AppTheme.greyShades.shade300,
+            highlightColor: AppTheme.greyShades.shade100,
             child: Container(
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppTheme.greyShades.shade200,
                 borderRadius: BorderRadius.circular(
                   8,
                 ),
@@ -47,22 +47,22 @@ class ShimmeringUserQuickProfileWidget extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: AppTheme.greyShades.shade300,
+                  highlightColor: AppTheme.greyShades.shade100,
                   child: Container(
                     width: double.infinity,
                     height: 20,
-                    color: Colors.white,
+                    color: AppTheme.greyShades.shade200,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Shimmer.fromColors(
-                  baseColor: Colors.grey[300]!,
-                  highlightColor: Colors.grey[100]!,
+                  baseColor: AppTheme.greyShades.shade300,
+                  highlightColor: AppTheme.greyShades.shade100,
                   child: Container(
                     width: 60,
                     height: 20,
-                    color: Colors.white,
+                    color: AppTheme.greyShades.shade200,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -84,13 +84,13 @@ class ShimmeringUserQuickProfileWidget extends StatelessWidget {
                             Container(
                               width: double.infinity,
                               height: 16,
-                              color: Colors.white,
+                              color: AppTheme.greyShades.shade200,
                             ),
                             const SizedBox(height: 2),
                             Container(
                               width: double.infinity,
                               height: 16,
-                              color: Colors.white,
+                              color: AppTheme.greyShades.shade200,
                             ),
                           ],
                         ),

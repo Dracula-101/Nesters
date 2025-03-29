@@ -17,7 +17,7 @@ extension CustomSnackBar on BuildContext {
               ? Text(subtitle, style: AppTheme.labelMedium)
               : null,
           leading: icon,
-          shadowColor: AppTheme.blackShades.shade100,
+          shadowColor: AppTheme.greyShades.shade100,
         );
       },
     ).show(this);

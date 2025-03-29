@@ -46,7 +46,7 @@ Future<void> setupSupabase(AppSecretsRepository appSecrets) {
     url: appSecrets.getSecret(AppSecretsKeys.SUPABASE_URL),
     anonKey: appSecrets.getSecret(AppSecretsKeys.SUPABASE_ANON_KEY),
     postgrestOptions:
-        const PostgrestClientOptions(schema: !kDebugMode ? 'public' : 'prod'),
+        const PostgrestClientOptions(schema: kDebugMode ? 'public' : 'prod'),
     debug: false,
   );
 }

@@ -36,8 +36,12 @@ class SettingsPage extends StatelessWidget {
       builder: (context, state) {
         return Scaffold(
           body: SafeArea(
-            child: SettingsView(
-              state: state,
+            child: BlocBuilder<AppBloc, AppState>(
+              buildWhen: (previousState, nowState) =>
+                  previousState.themeMode != nowState.themeMode,
+              builder: (context, _) {
+                return SettingsView(state: state);
+              },
             ),
           ),
         );
@@ -269,6 +273,32 @@ class _SettingsViewState extends State<SettingsView> {
                   "General",
                   style: AppTheme.titleLarge,
                 ),
+              ),
+              const Divider(thickness: 1, height: 1),
+              BlocBuilder<AppBloc, AppState>(
+                builder: (context, state) {
+                  return SettingSwitch(
+                    title: "Dark Theme",
+                    subtitle: "Switch to dark theme",
+                    icon: Icons.visibility,
+                    value: AppThemeMode.dark == state.themeMode,
+                    isLoading: false,
+                    onChanged: (value) {
+                      context.read<AppBloc>().add(
+                            AppEvent.changeThemeMode(
+                              themeMode: value
+                                  ? AppThemeMode.dark
+                                  : AppThemeMode.light,
+                            ),
+                          );
+                      Future.delayed(const Duration(milliseconds: 500), () {
+                        context.showSnackBar(
+                            'Theme changed to ${value ? 'Dark' : 'Light'}');
+                        setState(() {});
+                      });
+                    },
+                  );
+                },
               ),
               const Divider(thickness: 1, height: 1),
               SettingsTile(

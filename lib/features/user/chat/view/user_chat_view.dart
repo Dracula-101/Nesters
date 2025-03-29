@@ -190,7 +190,9 @@ class _ChatViewState extends State<ChatView> {
                               ? 'Last Seen ${DateFormat('hh:mm a').format(snapshot.data!.lastSeen!)}'
                               : 'Offline',
                       style: AppTheme.bodySmall.copyWith(
-                        color: AppTheme.greyShades.shade400,
+                        color: snapshot.data?.status == Status.ONLINE
+                            ? AppTheme.primary
+                            : AppTheme.greyShades.shade500,
                       ),
                     );
                   },
@@ -219,8 +221,12 @@ class _ChatViewState extends State<ChatView> {
         showOtherUsersAvatar: false,
         showTime: true,
         showOtherUsersName: false,
-        currentUserContainerColor: AppTheme.primaryShades.shade500,
-        currentUserTimeTextColor: AppTheme.greyShades.shade400,
+        currentUserContainerColor: AppTheme.primaryShades.shade200,
+        currentUserTextColor: AppTheme.onPrimary,
+        currentUserTimeTextColor: AppTheme.onPrimary,
+        containerColor: AppTheme.greyShades.shade200,
+        textColor: AppTheme.onSurface,
+        timeTextColor: AppTheme.onSurface,
         timeFormat: DateFormat('hh:mm a'),
         onTapMedia: (media) async {
           await showMedia(media);
@@ -231,6 +237,24 @@ class _ChatViewState extends State<ChatView> {
       ),
       inputOptions: InputOptions(
         alwaysShowSend: false,
+        inputDecoration: InputDecoration(
+          hintText: 'Type a message',
+          hintStyle: AppTheme.bodyMedium.copyWith(
+            color: AppTheme.greyShades.shade500,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 10,
+            horizontal: 16,
+          ),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(32),
+            ),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: AppTheme.greyShades.shade200,
+        ),
         showTraillingBeforeSend: false,
         onTextChange: _handleTextChange,
         leading: [
@@ -415,7 +439,7 @@ class _ChatViewState extends State<ChatView> {
         return PopScope(
           canPop: false,
           child: Material(
-            color: AppTheme.blackShades.shade400,
+            color: AppTheme.greyShades.shade400,
             child: Stack(
               children: [
                 Positioned.fill(

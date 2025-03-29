@@ -11,11 +11,26 @@ ThemeData _lightThemeData = ThemeData(
   dialogBackgroundColor: surfaceLight,
   brightness: Brightness.light,
   disabledColor: onSurfaceVariantLight,
-  textTheme: _appTextTheme,
+  textTheme: _lightTextTheme,
   colorScheme: _lightColorScheme,
   fontFamily: _poppinsFontFamily,
-  snackBarTheme: _appSnackBarTheme,
-  elevatedButtonTheme: _appElevatedButtonTheme,
+  snackBarTheme: _lightSnackBarTheme,
+  elevatedButtonTheme: _lightElevatedButtonTheme,
+);
+
+ThemeData _darkThemeData = ThemeData(
+  primaryColor: primaryDark,
+  primaryColorLight: primaryDark,
+  primaryColorDark: primaryDark,
+  scaffoldBackgroundColor: backgroundDark,
+  dialogBackgroundColor: surfaceDark,
+  brightness: Brightness.dark,
+  disabledColor: onSurfaceVariantDark,
+  textTheme: _darkTextTheme,
+  colorScheme: _darkColorScheme,
+  fontFamily: _poppinsFontFamily,
+  snackBarTheme: _darkSnackBarTheme,
+  elevatedButtonTheme: _darkElevatedButtonTheme,
 );
 
 class AppTheme {
@@ -24,9 +39,14 @@ class AppTheme {
   static final BuildContext _context =
       AppRouterService.navigatorKey.currentContext!;
   static ThemeData get lightTheme => _lightThemeData;
+  static ThemeData get darkTheme => _darkThemeData;
+
+  static bool get isDarkMode =>
+      Theme.of(_context).brightness == Brightness.dark;
 
   static Color get primary => Theme.of(_context).primaryColor;
-  static Color get lightPrimary => AppColor.primaryBlueLight2;
+  static Color get lightPrimary =>
+      isDarkMode ? AppColor.primaryBlueVariant : AppColor.primaryBlueLight2;
   static Color get secondary => Theme.of(_context).colorScheme.secondary;
   static Color get error => Theme.of(_context).colorScheme.error;
   static Color get background => Theme.of(_context).colorScheme.background;
@@ -66,7 +86,8 @@ class AppTheme {
       Theme.of(_context).textTheme.headlineSmall!.copyWith(fontSize: 28);
 
   // Light Variant Fonts
-  static final Color _lightVariantColor = AppColor.grey;
+  static final Color _lightVariantColor =
+      isDarkMode ? AppColor.greyVariant : AppColor.grey;
   static TextStyle get displayLargeLightVariant =>
       displayLarge.copyWith(color: _lightVariantColor);
   static TextStyle get displayMediumLightVariant =>
@@ -103,16 +124,30 @@ class AppTheme {
   static ColorShades get primaryShades => PrimaryShades();
   static ColorShades get secondaryShades => SecondaryShades();
   static ColorShades get greyShades => GreyShades();
-  static ColorShades get blackShades => BlackShades();
+}
 
-  static LinearGradient get shimmerGradient => LinearGradient(
-        begin: Alignment.centerLeft,
-        end: Alignment.centerRight,
-        colors: [
-          greyShades.shade100,
-          greyShades.shade300,
-          greyShades.shade100,
-        ],
-        stops: const [0.1, 0.5, 0.9],
-      );
+enum AppThemeMode {
+  light,
+  dark;
+
+  @override
+  String toString() {
+    switch (this) {
+      case AppThemeMode.light:
+        return 'Light';
+      case AppThemeMode.dark:
+        return 'Dark';
+    }
+  }
+
+  static AppThemeMode fromString(String value) {
+    switch (value) {
+      case 'Light':
+        return AppThemeMode.light;
+      case 'Dark':
+        return AppThemeMode.dark;
+      default:
+        return AppThemeMode.light;
+    }
+  }
 }

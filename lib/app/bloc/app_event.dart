@@ -6,7 +6,11 @@ class AppEvent {
   const factory AppEvent.loaded({
     required bool isSuccessful,
     required bool isOnboaringComplete,
+    required AppThemeMode themeMode,
   }) = _Loaded;
+  const factory AppEvent.changeThemeMode({
+    required AppThemeMode themeMode,
+  }) = _ChangeThemeMode;
   const factory AppEvent.networkChange({
     required NetworkData data,
     required bool isOnline,
@@ -20,6 +24,7 @@ class AppEvent {
   Future<void> when<R>({
     required Future<void> Function() load,
     required void Function(bool isSuccessful, bool isOnboaringComplete) loaded,
+    required void Function(AppThemeMode themeMode) changeThemeMode,
     required void Function(NetworkData data, bool isOnline) networkChange,
     required Future<void> Function() loadUniversities,
     required Future<void> Function() loadDegrees,
@@ -31,6 +36,9 @@ class AppEvent {
     } else if (this is _Loaded) {
       loaded((this as _Loaded).isSuccessful,
           (this as _Loaded).isOnboaringComplete);
+      return Future.value();
+    } else if (this is _ChangeThemeMode) {
+      changeThemeMode((this as _ChangeThemeMode).themeMode);
       return Future.value();
     } else if (this is _NetworkChange) {
       networkChange(
@@ -52,6 +60,7 @@ class AppEvent {
   R maybeWhen<R>({
     R Function()? load,
     R Function(bool isSuccessful, bool isOnboaringComplete)? loaded,
+    R Function(AppThemeMode themeMode)? changeThemeMode,
     R Function(NetworkData data, bool isOnline)? networkChange,
     R Function()? loadUniversities,
     R Function()? loadDegrees,
@@ -65,6 +74,10 @@ class AppEvent {
       return loaded != null
           ? loaded((this as _Loaded).isSuccessful,
               (this as _Loaded).isOnboaringComplete)
+          : orElse();
+    }  else if (this is _ChangeThemeMode) {
+      return changeThemeMode != null
+          ? changeThemeMode((this as _ChangeThemeMode).themeMode)
           : orElse();
     } else if (this is _NetworkChange) {
       return networkChange != null
@@ -89,6 +102,7 @@ class AppEvent {
   R whenOrNull<R>({
     R Function()? load,
     R Function(bool isSuccessful, bool isOnboaringComplete)? loaded,
+    R Function(AppThemeMode themeMode)? changeThemeMode,
     R Function(NetworkData data, bool isOnline)? networkChange,
     R Function()? loadUniversities,
     R Function()? loadDegrees,
@@ -102,6 +116,10 @@ class AppEvent {
       return loaded != null
           ? loaded((this as _Loaded).isSuccessful,
               (this as _Loaded).isOnboaringComplete)
+          : orElse();
+    }  else if (this is _ChangeThemeMode) {
+      return changeThemeMode != null
+          ? changeThemeMode((this as _ChangeThemeMode).themeMode)
           : orElse();
     } else if (this is _NetworkChange) {
       return networkChange != null
@@ -131,10 +149,12 @@ class _Load extends AppEvent {
 class _Loaded extends AppEvent {
   final bool isSuccessful;
   final bool isOnboaringComplete;
+  final AppThemeMode themeMode;
 
   const _Loaded({
     required this.isSuccessful,
     required this.isOnboaringComplete,
+    required this.themeMode,
   }) : super();
 
   @override
@@ -143,11 +163,31 @@ class _Loaded extends AppEvent {
 
     return other is _Loaded &&
         other.isSuccessful == isSuccessful &&
-        other.isOnboaringComplete == isOnboaringComplete;
+        other.isOnboaringComplete == isOnboaringComplete &&
+        other.themeMode == themeMode;
   }
 
   @override
-  int get hashCode => isSuccessful.hashCode ^ isOnboaringComplete.hashCode;
+  int get hashCode => isSuccessful.hashCode ^ isOnboaringComplete.hashCode ^
+      themeMode.hashCode;
+}
+
+class _ChangeThemeMode extends AppEvent {
+  final AppThemeMode themeMode;
+
+  const _ChangeThemeMode({
+    required this.themeMode,
+  }) : super();
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is _ChangeThemeMode && other.themeMode == themeMode;
+  }
+
+  @override
+  int get hashCode => themeMode.hashCode;
 }
 
 class _NetworkChange extends AppEvent {

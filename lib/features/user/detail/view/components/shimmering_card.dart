@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nesters/theme/theme.dart';
 import 'package:shimmer/shimmer.dart';
 
 class ShimmeringCard extends StatelessWidget {
@@ -14,8 +15,8 @@ class ShimmeringCard extends StatelessWidget {
       ),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Shimmer.fromColors(
-        baseColor: Colors.grey[300] as Color,
-        highlightColor: Colors.grey[100] as Color,
+        baseColor: AppTheme.greyShades.shade300,
+        highlightColor: AppTheme.greyShades.shade100,
         child: ListTile(
           leading: Container(
             width: 56, // Adjust the width as needed

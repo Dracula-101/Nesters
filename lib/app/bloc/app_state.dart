@@ -2,6 +2,7 @@ part of 'app_bloc.dart';
 
 class AppState extends Equatable {
   final bool isLoading;
+  final AppThemeMode themeMode;
   final bool isOnline;
   final NetworkData networkData;
   final Exception? error;
@@ -18,6 +19,7 @@ class AppState extends Equatable {
   const AppState({
     this.isLoading = true,
     this.isOnline = true,
+    this.themeMode = AppThemeMode.light,
     this.networkData = NetworkData.UNKNOWN,
     this.error,
     this.universities = const [],
@@ -33,6 +35,7 @@ class AppState extends Equatable {
   AppState copyWith({
     bool? isLoading,
     bool? isOnline,
+    AppThemeMode? themeMode,
     NetworkData? networkData,
     Exception? error,
     List<University>? universities,
@@ -47,6 +50,7 @@ class AppState extends Equatable {
     return AppState(
       isLoading: isLoading ?? this.isLoading,
       isOnline: isOnline ?? this.isOnline,
+      themeMode: themeMode ?? this.themeMode,
       networkData: networkData ?? this.networkData,
       error: error ?? this.error,
       universities: universities ?? this.universities,
@@ -65,6 +69,7 @@ class AppState extends Equatable {
   List<Object?> get props => [
         isLoading,
         isOnline,
+        themeMode,
         networkData,
         error,
         universities,

@@ -85,14 +85,13 @@ class ShimmerProfile extends StatelessWidget {
             width: 150.0, // Adjust the width as needed
             height: 150.0, // Adjust the height as needed
             child: Shimmer.fromColors(
-              baseColor: Colors.grey[300] as Color,
-              highlightColor: Colors.grey[100] as Color,
+              baseColor: AppTheme.greyShades.shade300,
+              highlightColor: AppTheme.greyShades.shade100,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(
                     75.0), // Half of width or height for a circular clip
                 child: Container(
-                  color: Colors
-                      .white, // Shimmer effect will be applied to this container
+                  color: AppTheme.greyShades.shade200, // Shimmer effect will be applied to this container
                 ),
               ),
             ),
