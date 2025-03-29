@@ -19,6 +19,7 @@ Nesters is a platform designed to help you find your next roommate and home. Whe
 
 ## Demo
 
+<div>
 <table style="width: 100%; border-collapse: collapse; text-align: center;">
     <tr>
         <td style="border: 1px solid #ddd; padding: 8px; width: 33%;">
@@ -56,6 +57,7 @@ Nesters is a platform designed to help you find your next roommate and home. Whe
         <td style="border: 1px solid #ddd; padding: 8px;">Nesters Chat</td>
     </tr>
 </table>
+</div>
 
 ## Installation Instructions
 
