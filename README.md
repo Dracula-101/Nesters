@@ -1,8 +1,8 @@
 # Nesters
 
 <!-- make a div to occupy the whole width and color = 4A55A2 and put a image in there /docs/images/nesters_bg.png with padding-->
-<div style="width: 100%; background-color: #4A55A2; padding: 20px; text-align: center;">
-    <img src="docs/images/nesters_bg.png" alt="Nesters" style="width: 100%; max-width: 600px; height: auto;">
+<div>
+    <img src="docs/images/nesters_bg.png" alt="Nesters" style="width: 100%; max-width: 500px; height: auto;">
 </div>
 
 <aside style="display: block; height: 20px;"></aside>
