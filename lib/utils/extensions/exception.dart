@@ -50,7 +50,7 @@ extension ExceptionExtension on Exception {
     } else if (this is ProcessException) {
       return "A system process failed to execute.";
     } else {
-      return "An unknown error occurred.";
+      return "An error occurred.";
     }
   }
 

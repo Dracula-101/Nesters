@@ -79,7 +79,7 @@ class SubletContactButton extends StatelessWidget {
       listener: (context, state) {
         if (state.requestSendState.exception != null) {
           context.showErrorSnackBar(
-              state.requestSendState.exception?.message ?? "Unknown Error");
+              state.requestSendState.exception?.message ?? "Error");
         } else if (state.requestSendState.isSuccess) {
           context.showSuccessSnackBar("Request sent successfully to the owner");
         }

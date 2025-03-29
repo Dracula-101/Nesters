@@ -149,7 +149,7 @@ class UnknownApartmentError extends ApartmentError {
   UnknownApartmentError({required this.extra})
       : super(
           code: ApartmentErrorCode.CREATE_APARTMENT_ERR,
-          message: 'An unknown error occurred',
+          message: 'An error occurred',
         );
 }
 

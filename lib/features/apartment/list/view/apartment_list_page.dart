@@ -216,9 +216,11 @@ class _ApartmentListViewState extends State<ApartmentListView> {
         newPageErrorIndicatorBuilder: (_) => ShowErrorWidget(
           error: _pagingController.error,
         ),
-        newPageProgressIndicatorBuilder: (_) => ShowErrorWidget(
-          error: _pagingController.error,
-          height: 300,
+        newPageProgressIndicatorBuilder: (_) => const SizedBox(
+          height: 100,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
         ),
         noItemsFoundIndicatorBuilder: (_) => const ShowNoInfoWidget(
           title: "No Apartments Found",

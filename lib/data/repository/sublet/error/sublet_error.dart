@@ -119,7 +119,7 @@ class UnknownSubletError extends SubletError {
   UnknownSubletError({required String extra})
       : super(
             code: SubletErrorCode.CREATE_SUBLET_ERR,
-            message: 'An unknown error occurred',
+            message: 'An error occurred',
             extra: extra);
 }
 

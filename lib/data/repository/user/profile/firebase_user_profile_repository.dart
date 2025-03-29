@@ -41,7 +41,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.GET_PROFILE_ERR,
-        'Unknown Error',
+        'Error',
       );
     }
   }
@@ -79,7 +79,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.GET_RECEIVED_REQ_ERR,
-        'Unknown Error',
+        'Error',
       );
     }
   }
@@ -117,7 +117,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.GET_SENT_REQ_ERR,
-        'Unknown Error',
+        'Error',
       );
     }
   }
@@ -158,7 +158,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.SEND_REQ_ERR,
-        'Unknown Error',
+        'Error',
       );
     }
   }
@@ -190,7 +190,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.ACCEPT_REQ_ERR,
-        'Unknown Error',
+        'Error',
       );
     }
   }
@@ -222,7 +222,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.REJECT_REQ_ERR,
-        'Unknown Error',
+        'Error',
       );
     }
   }
@@ -254,7 +254,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.CREATE_CHAT_ROOM_ERR,
-        'Unknown Error',
+        'Error',
       );
     }
   }
@@ -273,7 +273,7 @@ class FirebaseUserChatProfileRepository implements UserChatProfileRepository {
     } on Exception {
       throw UserChatProfileErrorFactory.create(
         UserChatProfileErrorCode.DELETE_USER_ERR,
-        'Unknown Error',
+        'Error',
       );
     }
   }

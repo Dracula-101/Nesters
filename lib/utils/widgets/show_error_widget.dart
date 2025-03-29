@@ -36,19 +36,19 @@ class ShowErrorWidget extends StatelessWidget {
                     ? "Error"
                     : (error is NoNetworkError)
                         ? "Network Issue"
-                            : (error is SocketException)
-                                ? 'Network Issue'
-                                : (error is TimeoutException)
-                                    ? 'Time Out'
-                                    : (error is FormatException)
-                                        ? 'Invalid Response'
-                                        : (error is HttpException)
-                                            ? 'Server Error'
-                                            : (error is FileSystemException)
-                                                ? 'File system error'
-                                                : (error is AppException)
-                                                    ? "Error"
-                                                    : 'Unknown Error',
+                        : (error is SocketException)
+                            ? 'Network Issue'
+                            : (error is TimeoutException)
+                                ? 'Time Out'
+                                : (error is FormatException)
+                                    ? 'Invalid Response'
+                                    : (error is HttpException)
+                                        ? 'Server Error'
+                                        : (error is FileSystemException)
+                                            ? 'File system error'
+                                            : (error is AppException)
+                                                ? "Error"
+                                                : 'Error',
                 style:
                     AppTheme.titleLarge.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
