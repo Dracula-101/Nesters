@@ -1,6 +1,3 @@
-ios app test,
-Liked marketplace user settings
-message
 
 prod
 =============================================

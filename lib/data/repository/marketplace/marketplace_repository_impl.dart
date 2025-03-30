@@ -28,7 +28,8 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
   final String marketplaceCategoriesTable = 'marketplace_categories';
   final String marketplaceSelectQuery =
       '*, marketplaces_likes!marketplaces_likes_marketplace_id_fkey!left(*)';
-
+  final String marketplaceLikeSelectQuery =
+      '*, marketplaces_likes!marketplaces_likes_marketplace_id_fkey!inner(*)';
   @override
   Future<String> createMarketplace(
       {required String userId, required MarketplaceModel item}) async {
@@ -499,7 +500,7 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
     try {
       return _supabaseClient
           .from(marketplaceTable)
-          .select(marketplaceSelectQuery)
+          .select(marketplaceLikeSelectQuery)
           .eq('marketplaces_likes.user_id', userId)
           .eq('marketplaces_likes.is_liked', true)
           .order('id', ascending: false)
