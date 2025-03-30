@@ -149,9 +149,16 @@ class _GoogleMapLocationState extends State<GoogleMapLocation> {
   }
 
   Future<void> _loadCustomIcon() async {
-    final Uint8List markerIcon =
-        await getBytesFromAsset('assets/images/icons/home_map_marker.png', 110);
-    customIcon = BitmapDescriptor.fromBytes(markerIcon);
+    Uint8List? iconBytes;
+    iconBytes = _localStorageRepository.getBytes(LocalStorageKeys.mapLocationIcon);
+    if (iconBytes == null) {
+      iconBytes = await getBytesFromAsset('assets/images/icons/home_map_marker.png', 110);
+      await _localStorageRepository.saveBytes(LocalStorageKeys.mapLocationIcon, iconBytes);
+    }
+    customIcon = BitmapDescriptor.fromBytes(iconBytes);
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _searchLocation(String query) async {

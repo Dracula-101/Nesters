@@ -45,10 +45,17 @@ class _MarketplaceSearchViewState extends State<MarketplaceSearchView> {
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: CustomTextField(
                   hintText: 'Search',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: IconButton(
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: () {
+                      GoRouter.of(context).pop();
+                    },
+                  ),
                   onChanged: (value) {},
                   onFieldSubmitted: (value) {
-                    context.read<MarketplaceSearchCubit>().search(value);
+                    if (value.isNotEmpty) {
+                      context.read<MarketplaceSearchCubit>().search(value);
+                    }
                   },
                   autofocus: true,
                   controller: _searchController,

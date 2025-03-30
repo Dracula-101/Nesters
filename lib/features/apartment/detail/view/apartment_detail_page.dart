@@ -18,17 +18,18 @@ import 'package:nesters/utils/widgets/widgets.dart';
 
 class ApartmentDetailPage extends StatelessWidget {
   final ApartmentModel apartment;
-  const ApartmentDetailPage({super.key, required this.apartment});
+  final bool isOwnApartment;
+  const ApartmentDetailPage({super.key, required this.apartment, required this.isOwnApartment});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ApartmentDetailCubit(),
       child: Scaffold(
-        bottomNavigationBar: ApartmentContactButton(
+        bottomNavigationBar: !isOwnApartment? ApartmentContactButton(
           apartmentId: apartment.id.toString(),
           ownerId: apartment.userId ?? '',
-        ),
+        ) : null,
         body: Stack(
           children: [
             ApartmentDetailView(apartment: apartment),

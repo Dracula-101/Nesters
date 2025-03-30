@@ -667,27 +667,30 @@ class _CustomDynamicSearchableDropDropFieldState
             _filteredItems = null;
           });
         },
-        child: AlertDialog.adaptive(
-          clipBehavior: Clip.none,
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
-          actionsPadding: EdgeInsets.zero,
-          contentPadding: EdgeInsets.zero,
-          content: Column(
-            children: [
-              _buildSearchBar(),
-              const Divider(),
-              Expanded(
-                child: _buildItemList(context),
+        child: Material(
+          color: Colors.transparent,
+          child: AlertDialog(
+            clipBehavior: Clip.none,
+            actionsAlignment: MainAxisAlignment.center,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Close'),
               ),
-              const Divider(),
             ],
-          ),
+            actionsPadding: EdgeInsets.zero,
+            contentPadding: EdgeInsets.zero,
+            content: Column(
+              children: [
+                _buildSearchBar(),
+                const Divider(),
+                Expanded(
+                  child: _buildItemList(context),
+                ),
+                const Divider(),
+              ],
+            ),
+          )
         ),
       ),
     );

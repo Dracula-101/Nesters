@@ -714,7 +714,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       itemBuilder: (context, value) {
         return ListTile(
           title: Text(value.cityName ?? ''),
-          subtitle: Text("${value.stateName}, ${value.countryName}"),
+          subtitle: Text(value.countryName),
         );
       },
       itemAsString: (value) => "${value.cityName}, ${value.countryName}",
