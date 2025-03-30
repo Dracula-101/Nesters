@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nesters - Student Housing & Marketplace Hub</title>
+    <link rel="stylesheet" href="support-website/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <div class="logo">
+          <img src="assets/web/nesters-logo.png" alt="Nesters Logo" />
+          <h1>Nesters</h1>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="container">
+        <div class="hero-content">
+          <h2>Your Student Housing & Marketplace Hub</h2>
+          <p>
+            Find roommates, apartments, sublets, and affordable items in your
+            college community - all without broker fees!
+          </p>
+          <div
+            style="
+              display: flex;
+              justify-content: start;
+              align-items: center;
+              gap: 0px;
+              margin-top: 0px;
+            "
+          >
+            <!-- iOS App Store Button -->
+            <a href="/"
+              ><img
+                src="assets/web/app-store.webp"
+                alt="Download on the App Store"
+                style="width: 180px; height: 60px; object-fit: contain"
+            /></a>
+
+            <!-- Google Play Store Button -->
+            <a
+              ><img
+                src="assets/web/play-store.webp"
+                alt="Get it on Google Play"
+                style="width: 280px; height: 130px; object-fit: contain"
+            /></a>
+          </div>
+        </div>
+        <div class="hero-images">
+          <img
+            src="assets/web/5.png"
+            alt="Nesters App Screenshot 1"
+            class="screenshot top"
+          />
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="about">
+      <div class="container">
+        <h2>About Nesters</h2>
+        <p>
+          Nesters is the ultimate app designed by students, for students!
+          Whether you're looking for a roommate, an apartment (without broker
+          fees!), a sublet, or affordable items in your college community,
+          Nesters makes it easy.
+        </p>
+
+        <div class="screenshot-carousel">
+          <button class="carousel-btn prev-btn" aria-label="Previous image">
+            &lt;
+          </button>
+
+          <div class="carousel-container">
+            <div class="carousel-track">
+              <div class="carousel-slide">
+                <img src="assets/web/1.png" alt="User Network Screenshot" />
+              </div>
+              <div class="carousel-slide">
+                <img src="assets/web/2.png" alt="Apartments Screenshot" />
+              </div>
+              <div class="carousel-slide">
+                <img src="assets/web/3.png" alt="Marketplace Screenshot" />
+              </div>
+              <div class="carousel-slide">
+                <img src="assets/web/4.png" alt="App Screenshot 4" />
+              </div>
+              <div class="carousel-slide">
+                <img src="assets/web/5.png" alt="App Screenshot 5" />
+              </div>
+              <div class="carousel-slide">
+                <img src="assets/web/6.png" alt="App Screenshot 6" />
+              </div>
+            </div>
+          </div>
+
+          <button class="carousel-btn next-btn" aria-label="Next image">
+            &gt;
+          </button>
+
+          <div class="carousel-dots">
+            <!-- Dots will be added by JavaScript -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features">
+      <div class="container">
+        <h2>Key Features</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <i class="fas fa-user-friends"></i>
+            <h3>Find Roommates</h3>
+            <p>Connect with like-minded students to share a place.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-home"></i>
+            <h3>Rent & Sublet</h3>
+            <p>Discover apartments & sublets from students moving out.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-shopping-cart"></i>
+            <h3>Student Marketplace</h3>
+            <p>Buy & sell second-hand items affordably.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fas fa-graduation-cap"></i>
+            <h3>Student-Exclusive</h3>
+            <p>A community built just for students!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq">
+      <div class="container">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-item">
+          <button class="faq-question">Is Nesters really free to use?</button>
+          <div class="faq-answer">
+            <p>
+              Yes! Nesters is completely free for students to use. We don't
+              charge any broker fees for housing.
+            </p>
+          </div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-question">
+            How do I verify my student status?
+          </button>
+          <div class="faq-answer">
+            <p>
+              We verify students through their .edu email address or by
+              uploading a current student ID.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">Is my personal information safe?</button>
+          <div class="faq-answer">
+            <p>
+              We take privacy seriously. Your personal information is protected
+              and never shared without your consent.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact">
+      <div class="container">
+        <h2>Contact Us</h2>
+        <div class="contact-info">
+          <div class="contact-method">
+            <i class="fas fa-envelope"></i>
+            <h3>Email</h3>
+            <p>
+              <a href="mailto:support@nestersapp.com"
+                >contact.nesters@gmail.com</a
+              >
+            </p>
+          </div>
+          <div class="contact-method">
+            <i class="fas fa-phone"></i>
+            <h3>Phone</h3>
+            <p><a href="tel:+11234567890">+1 (718) 314-5488</a></p>
+          </div>
+          <div class="contact-method">
+            <i class="fas fa-map-marker-alt"></i>
+            <h3>Address</h3>
+            <p>54th St, 6th Ave<br />Brooklyn, NY 11220<br />United States</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Nesters. All rights reserved.</p>
+      </div>
+    </footer>
+
+    <script src="support-website/script.js"></script>
+  </body>
+</html>

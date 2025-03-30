@@ -1,5 +1,6 @@
 ios app test,
 prod
+when testing, add updated aab file, change images screenshpts,
 =============================================
 images while editing for sublet and marketplace we are not deleting the previous ones.
 
