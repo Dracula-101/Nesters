@@ -137,12 +137,14 @@ class AppRouterService {
                 subletDetail,
                 (params) => SubletDetailPage(
                   sublet: params.extra as SubletModel,
+                  isOwnSublet: false,
                 ),
               ),
               AppRoute(
                 apartmentDetail,
                 (params) => ApartmentDetailPage(
                   apartment: params.extra as ApartmentModel,
+                  isOwnApartment: false,
                 ),
               ),
               AppRoute(
@@ -165,6 +167,7 @@ class AppRouterService {
                 marketplaceDetail,
                 (params) => MarketplaceDetailPage(
                   marketplace: params.extra as MarketplaceModel,
+                  isOwnMarketplace: false,
                 ),
               ),
               AppRoute(
@@ -208,18 +211,21 @@ class AppRouterService {
                         subletDetail,
                         (params) => SubletDetailPage(
                           sublet: params.extra as SubletModel,
+                          isOwnSublet: true,
                         ),
                       ),
                       AppRoute(
                         apartmentDetail,
                         (params) => ApartmentDetailPage(
                           apartment: params.extra as ApartmentModel,
+                          isOwnApartment: true,
                         ),
                       ),
                       AppRoute(
                         marketplaceDetail,
                         (params) => MarketplaceDetailPage(
                           marketplace: params.extra as MarketplaceModel,
+                          isOwnMarketplace: true,
                         ),
                       ),
                     ],
@@ -232,33 +238,40 @@ class AppRouterService {
                         subletDetail,
                         (params) => SubletDetailPage(
                           sublet: params.extra as SubletModel,
+                          isOwnSublet: false,
                         ),
                       ),
                       AppRoute(
                         apartmentDetail,
                         (params) => ApartmentDetailPage(
                           apartment: params.extra as ApartmentModel,
+                          isOwnApartment: false,
                         ),
                       ),
                       AppRoute(
                         marketplaceDetail,
                         (params) => MarketplaceDetailPage(
                           marketplace: params.extra as MarketplaceModel,
+                          isOwnMarketplace: false,
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-              AppRoute(marketplaceSearch, (_) => const MarketplaceSearchPage(),
-                  routes: [
-                    AppRoute(
-                      marketplaceDetail,
-                      (params) => MarketplaceDetailPage(
-                        marketplace: params.extra as MarketplaceModel,
-                      ),
+              AppRoute(
+                marketplaceSearch,
+                (_) => const MarketplaceSearchPage(),
+                routes: [
+                  AppRoute(
+                    marketplaceDetail,
+                    (params) => MarketplaceDetailPage(
+                      marketplace: params.extra as MarketplaceModel,
+                      isOwnMarketplace: false,
                     ),
-                  ])
+                  ),
+                ],
+              )
             ],
           ),
           AppRoute(

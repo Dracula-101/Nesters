@@ -115,9 +115,7 @@ class DeviceInfoRepositoryImpl implements DeviceInfoRepository {
     await FirebaseAppCheck.instance.activate(
       androidProvider:
           kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      appleProvider: kDebugMode
-          ? AppleProvider.debug
-          : AppleProvider.appAttestWithDeviceCheckFallback,
+      appleProvider: AppleProvider.appAttestWithDeviceCheckFallback,
     );
     await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
   }

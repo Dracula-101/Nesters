@@ -18,17 +18,21 @@ import 'package:nesters/utils/widgets/widgets.dart';
 
 class SubletDetailPage extends StatelessWidget {
   final SubletModel sublet;
-  const SubletDetailPage({super.key, required this.sublet});
+  final bool isOwnSublet;
+  const SubletDetailPage(
+      {super.key, required this.sublet, required this.isOwnSublet});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SubletDetailCubit(),
       child: Scaffold(
-        bottomNavigationBar: SubletContactButton(
-          subletId: sublet.id.toString(),
-          ownerId: sublet.userId ?? '',
-        ),
+        bottomNavigationBar: !isOwnSublet
+            ? SubletContactButton(
+                subletId: sublet.id.toString(),
+                ownerId: sublet.userId ?? '',
+              )
+            : null,
         body: Stack(
           children: [
             SubletDetailView(sublet: sublet),

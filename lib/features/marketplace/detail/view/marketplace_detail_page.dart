@@ -17,18 +17,22 @@ import 'package:url_launcher/url_launcher.dart';
 
 class MarketplaceDetailPage extends StatelessWidget {
   final MarketplaceModel marketplace;
-  const MarketplaceDetailPage({super.key, required this.marketplace});
+  final bool isOwnMarketplace;
+  const MarketplaceDetailPage(
+      {super.key, required this.marketplace, required this.isOwnMarketplace});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => MarketplaceDetailCubit(),
       child: Scaffold(
-        bottomNavigationBar: MarketplaceContactButton(
-          // Contact Button
-          marketplaceId: marketplace.id.toString(),
-          ownerId: marketplace.userId ?? '',
-        ),
+        bottomNavigationBar: !isOwnMarketplace
+            ? MarketplaceContactButton(
+                // Contact Button
+                marketplaceId: marketplace.id.toString(),
+                ownerId: marketplace.userId ?? '',
+              )
+            : null,
         body: Stack(
           children: [
             MarketplaceDetailView(marketplace: marketplace),

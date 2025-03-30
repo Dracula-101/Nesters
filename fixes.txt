@@ -1,4 +1,4 @@
-ios app test,
+
 prod
 when testing, add updated aab file, change images screenshpts,
 =============================================

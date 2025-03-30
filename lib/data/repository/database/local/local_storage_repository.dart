@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 abstract class LocalStorageRepository {
   // ================= Intialize =================
   Future<void> init();
@@ -21,6 +23,10 @@ abstract class LocalStorageRepository {
   // ================= Double =================
   double? getDouble(String key);
   Future<void> saveDouble(String key, double value);
+
+  // ================= Bytes =================
+  Uint8List? getBytes(String key);
+  Future<void> saveBytes(String key, Uint8List value);
 
   // ================= List<Object> =================
   List<Object?>? getListObject(String key);
@@ -59,4 +65,5 @@ class LocalStorageKeys {
   static const settingInfoStatus = 'settingInfoStatus';
   static const locationLatitude = 'locationLatitude';
   static const locationLongitude = 'locationLongitude';
+  static const mapLocationIcon = 'mapLocationIcon';
 }

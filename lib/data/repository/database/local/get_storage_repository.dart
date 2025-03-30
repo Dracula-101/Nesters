@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:get_storage/get_storage.dart';
 
@@ -130,6 +131,29 @@ class GetStorageRepository extends LocalStorageRepository {
 
   @override
   Future<void> saveDouble(String key, double value) async {
+    try {
+      await _getStorage.write(key, value);
+    } catch (e) {
+      throw LocalStorageSaveError.fromKey(key);
+    }
+  }
+
+  @override
+  Uint8List? getBytes(String key) {
+    try {
+      final value = _getStorage.read(key);
+      if (value is! List<dynamic>?) {
+        throw LocalStorageObjectMisMatchError.fromMisMatchType(
+            Uint8List, value.runtimeType);
+      }
+      return value == null ? null : Uint8List.fromList(value.cast<int>());
+    } catch (e) {
+      throw LocalStorageGetKeyError(key);
+    }
+  }
+
+  @override
+  Future<void> saveBytes(String key, Uint8List value) async {
     try {
       await _getStorage.write(key, value);
     } catch (e) {

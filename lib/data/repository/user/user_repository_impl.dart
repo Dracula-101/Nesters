@@ -160,15 +160,24 @@ class UserRepositoryImpl implements UserRepository {
   @override
   Future<List<CityInfo>> searchCities({required String searchQuery}) async {
     try {
-      String baseUrl =
-          "https://api.thecompaniesapi.com/v2/locations/cities?search=$searchQuery";
-      http.Response response = await http.get(Uri.parse(baseUrl));
-      if (response.statusCode != 200) {
-        throw GetUserInfoError(message: 'Error in getting cities');
+      final response = await _placesRepository.getAutoCompletePredictions(
+        searchQuery,
+        placeTypes: [PlaceType.locality, PlaceType.administrativeAreaLevel3],
+      );
+      if (response.isEmpty) {
+        return [];
       }
-      CityInfoResponse cityInfoResponse =
-          CityInfoResponse.fromJson(jsonDecode(response.body));
-      return CityInfo.fromResponse(cityInfoResponse);
+      final List<CityInfo> cities = [];
+      for (var prediction in response) {
+        cities.add(
+          CityInfo(
+            cityName: prediction.primaryText ?? "",
+            countryName: prediction.secondaryText ?? "",
+            stateName: prediction.secondaryText ?? "",
+          ),
+        );
+      }
+      return cities;
     } on SocketException {
       throw NoNetworkError();
     } on AppException {

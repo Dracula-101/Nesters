@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/routes/app_routes.dart';
 import 'package:nesters/data/repository/auth/auth_repository.dart';
@@ -267,6 +268,7 @@ class _ChatViewState extends State<ChatView> {
         ),
         GestureDetector(
           onTap: () {
+            SystemChannels.textInput.invokeMethod('TextInput.hide');
             showModalBottomSheet(
               context: context,
               builder: (BuildContext context) {

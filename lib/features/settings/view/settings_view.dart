@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'package:flutter_google_places_sdk/flutter_google_places_sdk.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
