@@ -1,4 +1,4 @@
-name: Nesters Release Build Workflow
+name: Nesters iOS Build and Upload to App Store Connect
 
 on:
   workflow_dispatch:
