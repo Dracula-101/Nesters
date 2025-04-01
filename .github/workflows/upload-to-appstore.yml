@@ -37,7 +37,7 @@ jobs:
             echo "is_released=false" >> $GITHUB_OUTPUT
           fi
 
-  ios-build:
+  ios-build-and-upload:
     needs: setup
     runs-on: macos-latest
     steps:
@@ -149,11 +149,11 @@ jobs:
         run: |
           # decode the p8 file and save it to a ./private_keys
           mkdir -p $RUNNER_TEMP/private_keys
-          echo ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_BASE64 }} | base64 -d > $RUNNER_TEMP/private_keys/AuthKey_${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }}.p8
+          echo ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_BASE64 }} | base64 -d > $RUNNER_TEMP/private_keys/AuthKey_${{ secrets.IOS_APPSTORE_API_KEY_ID }}.p8
           xcrun altool --validate-app \
             --file build/ios/ipa/nesters.ipa \
             --type ios \
-            --apiKey ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }} \
+            --apiKey ${{ secrets.IOS_APPSTORE_API_KEY_ID }} \
             --apiIssuer ${{ secrets.IOS_APP_STORE_CONNECT_API_ISSUER_ID }} \
             --show-progress \
             --verbose \
@@ -164,7 +164,7 @@ jobs:
           xcrun altool --upload-app \
             --file build/ios/ipa/nesters.ipa \
             --type ios \
-            --apiKey ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }} \
+            --apiKey ${{ secrets.IOS_APPSTORE_API_KEY_ID }} \
             --apiIssuer ${{ secrets.IOS_APP_STORE_CONNECT_API_ISSUER_ID }} \
             --show-progress \
             --verbose \
