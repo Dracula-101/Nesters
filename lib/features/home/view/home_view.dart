@@ -90,12 +90,6 @@ class _HomeScaffoldState extends State<HomeScaffold> {
   void initState() {
     super.initState();
     if (mounted) {
-      context.read<CentralChatBloc>().add(
-          CentralChatEvent.initalizeUserStatusSocket(
-              authRepository.currentUser!.id));
-      context
-          .read<CentralChatBloc>()
-          .add(const CentralChatEvent.loadProfiles());
       SystemChannels.textInput.invokeMethod('TextInput.hide');
       _listener = AppLifecycleListener(
         onStateChange: (state) {

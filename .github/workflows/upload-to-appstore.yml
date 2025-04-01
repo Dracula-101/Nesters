@@ -1,0 +1,183 @@
+name: Nesters Release Build Workflow
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.store_version.outputs.version }}
+      version_code: ${{ steps.store_version.outputs.version_code }}
+      is_released: ${{ steps.check_release.outputs.is_released }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Store Version
+        id: store_version
+        run: |
+          version=$(grep "version" pubspec.yaml | cut -d' ' -f2 | cut -d'+' -f1 | tr -d '\r')
+          version_code=$(grep "version" pubspec.yaml | cut -d' ' -f2 | cut -d'+' -f2 | tr -d '\r')
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "version_code=$version_code" >> $GITHUB_OUTPUT
+
+      - name: Check if release version exists
+        id: check_release
+        run: |
+          version=${{ steps.store_version.outputs.version }}
+          git fetch --tags
+          # check if the tag already exists in the repository and store the result in the output
+          if git rev-parse $version >/dev/null 2>&1; then
+            echo "is_released=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_released=false" >> $GITHUB_OUTPUT
+          fi
+
+  ios-build:
+    needs: setup
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.16.0"
+          channel: "stable"
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: |
+          flutter pub get
+
+      - name: Cache Pods
+        uses: actions/cache@v4
+        id: pods-cache
+        with:
+          path: ./ios/Pods
+          key: ${{ runner.os }}-ios-pods-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-ios-pods-
+
+      - name: Install Pod dependencies
+        if: steps.pods-cache.outputs.cache-hit != 'true'
+        run: |
+          cd ios
+          pod install
+          cd ..
+
+      - name: Cache Object Box
+        uses: actions/cache@v4
+        id: objectbox-cache
+        with:
+          path: ./lib/objectbox.g.dart
+          key: ${{ runner.os }}-flutter-objectbox-${{ hashFiles('lib/objectbox-model.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-objectbox-
+
+      - name: Build Object Box
+        if: steps.objectbox-cache.outputs.cache-hit != 'true'
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Setup Config
+        run: |
+          echo ${{ secrets.BASE64_GOOGLE_SERVICE_PLIST }} | base64 -d > ios/Runner/GoogleService-Info.plist
+          echo ${{ secrets.ENCODED_ENV }} | base64 -d > .env
+
+      - name: Install the Apple certificate and provisioning profile
+        env:
+          DEV_BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_DEV_CERTIFICATE_BASE64 }}
+          ADHOC_BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_ADHOC_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.IOS_BUILD_CERTIFICATE_PASSWORD }}
+          ADHOC_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_ADHOC_PROFILE_BASE64 }}
+          DEV_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_DEV_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
+        run: |
+          DEV_CERTIFICATE_PATH=$RUNNER_TEMP/build_dev_certificate.p12
+          ADHOC_CERTIFICATE_PATH=$RUNNER_TEMP/build_adhoc_certificate.p12
+          DEV_PP_PATH=$RUNNER_TEMP/build_dev_pp.mobileprovision
+          ADHOC_PP_PATH=$RUNNER_TEMP/build_adhoc_pp.mobileprovision
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          echo $DEV_BUILD_CERTIFICATE_BASE64 | base64 -d > $DEV_CERTIFICATE_PATH
+          echo $ADHOC_BUILD_CERTIFICATE_BASE64 | base64 -d > $ADHOC_CERTIFICATE_PATH
+          echo $DEV_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $DEV_PP_PATH
+          echo $ADHOC_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $ADHOC_PP_PATH
+
+          # Creating temp keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Importing certificates to keychain
+          security import $DEV_CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security import $ADHOC_CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+          echo "List current keychains"
+          security list-keychains -s $KEYCHAIN_PATH
+          security find-identity -v -p codesigning $KEYCHAIN_PATH
+
+          # Copying provisioning profile to Xcode
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp $DEV_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+          cp $ADHOC_PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+
+      - name: Build IPA
+        run: |
+          echo "Building Nesters release - Version: ${{ needs.setup.outputs.version }}"
+          flutter build ipa --release --verbose --export-options-plist=ios/Runner/ExportOptions.plist > build-ios.log 2>&1
+
+      - name: Upload build log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-ios-log
+          path: build-ios.log
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nesters_v${{ needs.setup.outputs.version }}.ipa
+          path: build/ios/ipa/nesters.ipa
+
+      - name: Validate IPA
+        run: |
+          # decode the p8 file and save it to a ./private_keys
+          mkdir -p $RUNNER_TEMP/private_keys
+          echo ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_BASE64 }} | base64 -d > $RUNNER_TEMP/private_keys/AuthKey_${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }}.p8
+          xcrun altool --validate-app \
+            --file build/ios/ipa/nesters.ipa \
+            --type ios \
+            --apiKey ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }} \
+            --apiIssuer ${{ secrets.IOS_APP_STORE_CONNECT_API_ISSUER_ID }} \
+            --show-progress \
+            --verbose \
+            --output-format json
+
+      - name: Upload to App Store Connect
+        run: |
+          xcrun altool --upload-app \
+            --file build/ios/ipa/nesters.ipa \
+            --type ios \
+            --apiKey ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }} \
+            --apiIssuer ${{ secrets.IOS_APP_STORE_CONNECT_API_ISSUER_ID }} \
+            --show-progress \
+            --verbose \
+            --output-format json
+
+      - name: Clean up keychain and provisioning profile
+        if: ${{ always() }}
+        run: |
+          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
+          rm -f $RUNNER_TEMP/*.p12
+          rm -f $RUNNER_TEMP/*.mobileprovision
+          rm -f $RUNNER_TEMP/*.p8
+          rm -f $RUNNER_TEMP/private_keys
+          rm -f ~/Library/MobileDevice/Provisioning\ Profiles/*
+          rm -f ios/Runner/GoogleService-Info.plist
+          rm -f .env

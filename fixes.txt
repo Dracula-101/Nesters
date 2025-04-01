@@ -1,6 +1,10 @@
+delete apple account.
 
+name issue.
 prod
 when testing, add updated aab file, change images screenshpts,
+requst block, requst event, central chat block central event.
+on logout, chat system still listening. same for request block,
 =============================================
 images while editing for sublet and marketplace we are not deleting the previous ones.
 

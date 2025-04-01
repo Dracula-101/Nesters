@@ -7,6 +7,7 @@ import 'package:nesters/data/repository/user/profile/user_chat_profile_repositor
 import 'package:nesters/data/repository/user/user_repository.dart';
 import 'package:nesters/data/repository/utils/app_exception.dart';
 import 'package:nesters/domain/models/user/user.dart';
+import 'package:nesters/utils/bloc_state.dart';
 import 'package:nesters/utils/logger/logger.dart';
 
 part 'auth_state.dart';
@@ -48,9 +49,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(const AuthState.googleSignInLoading());
       await _authRepository.signInWithGoogle();
     } on AuthException catch (error) {
-      print(error);
       _loggerService.error(error);
       emit(AuthState.error(error));
+    } finally {
+      emit(const AuthState.initial());
     }
   }
 
@@ -63,6 +65,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on AuthException catch (error) {
       _loggerService.error(error);
       emit(AuthState.error(error));
+    } finally {
+      emit(const AuthState.initial());
     }
   }
 
@@ -97,6 +101,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onDeleteAccount(
     Emitter<AuthState> emit,
   ) async {
+    emit(const AuthState.deleteAccountLoading());
     final userId = _authRepository.currentUser?.id;
     if (userId == null) {
       _loggerService.error("User id is null");

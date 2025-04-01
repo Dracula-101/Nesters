@@ -8,6 +8,7 @@ abstract class AuthState {
   const factory AuthState.unauthenticated() = _Unauthenticated;
   const factory AuthState.googleSignInLoading() = _GoogleSignInLoading;
   const factory AuthState.appleSignInLoading() = _AppleSignInLoading;
+  const factory AuthState.deleteAccountLoading() = _DeleteAccountLoading;
   const factory AuthState.error(AppException error) = _AuthError;
   const factory AuthState.logInSuccess({
     required bool fromGoogleSignIn,
@@ -26,6 +27,7 @@ abstract class AuthState {
     required R Function()? initial,
     required R Function()? googleSignInLoading,
     required R Function()? appleSignInLoading,
+    required R Function()? deleteAccountLoading,
     required R Function(AppException error)? error,
     required R Function(bool fromGoogleSignIn, bool fromAppleSignIn)?
         logInSuccess,
@@ -43,6 +45,9 @@ abstract class AuthState {
           (throw Exception('Loading state: $this'));
     } else if (this is _AppleSignInLoading) {
       return appleSignInLoading?.call() ??
+          (throw Exception('Loading state: $this'));
+    } else if (this is _DeleteAccountLoading) {
+      return deleteAccountLoading?.call() ??
           (throw Exception('Loading state: $this'));
     } else if (this is _AuthError) {
       return error?.call((this as _AuthError).error) ??
@@ -63,6 +68,7 @@ abstract class AuthState {
     R Function()? initial,
     R Function()? googleSignInLoading,
     R Function()? appleSignInLoading,
+    R Function()? deleteAccountLoading,
     R Function(AppException error)? error,
     R Function(bool fromGoogleSignIn, bool fromAppleSignIn)? logInSuccess,
     required R Function() orElse,
@@ -78,6 +84,8 @@ abstract class AuthState {
       return googleSignInLoading?.call() ?? orElse.call();
     } else if (this is _AppleSignInLoading) {
       return appleSignInLoading?.call() ?? orElse.call();
+    } else if (this is _DeleteAccountLoading) {
+      return deleteAccountLoading?.call() ?? orElse.call();
     } else if (this is _AuthError) {
       return error?.call((this as _AuthError).error) ?? orElse.call();
     } else if (this is _LogInSuccess) {
@@ -96,6 +104,7 @@ abstract class AuthState {
     required R Function() initial,
     required R Function() googleSignInLoading,
     required R Function() appleSignInLoading,
+    required R Function() deleteAccountLoading,
     required R Function(AppException) error,
     required R Function(bool fromGoogleSignIn, bool fromAppleSignIn)
         logInSuccess,
@@ -110,6 +119,8 @@ abstract class AuthState {
       return googleSignInLoading();
     } else if (this is _AppleSignInLoading) {
       return appleSignInLoading();
+    } else if (this is _DeleteAccountLoading) {
+      return deleteAccountLoading();
     } else if (this is _AuthError) {
       return error((this as _AuthError).error);
     } else if (this is _LogInSuccess) {
@@ -127,6 +138,7 @@ abstract class AuthState {
     R Function()? initial,
     R Function()? googleSignInLoading,
     R Function()? appleSignInLoading,
+    R Function()? deleteAccountLoading,
     R Function(AppException)? error,
     R Function(AuthState)? orElse,
     R Function(bool fromGoogleSignIn, bool fromAppleSignIn)? logInSuccess,
@@ -142,6 +154,8 @@ abstract class AuthState {
       return googleSignInLoading?.call() ?? orElse?.call(this);
     } else if (this is _AppleSignInLoading) {
       return appleSignInLoading?.call() ?? orElse?.call(this);
+    } else if (this is _DeleteAccountLoading) {
+      return deleteAccountLoading?.call() ?? orElse?.call(this);
     } else if (this is _AuthError) {
       return error?.call((this as _AuthError).error) ?? orElse?.call(this);
     } else if (this is _LogInSuccess) {
@@ -175,6 +189,10 @@ class _GoogleSignInLoading extends AuthState {
 
 class _AppleSignInLoading extends AuthState {
   const _AppleSignInLoading();
+}
+
+class _DeleteAccountLoading extends AuthState {
+  const _DeleteAccountLoading();
 }
 
 class _AuthError extends AuthState {

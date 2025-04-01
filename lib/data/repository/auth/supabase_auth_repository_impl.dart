@@ -85,7 +85,12 @@ class SupabaseAuthRepository extends AuthRepository {
       return User(
         id: user.id,
         email: user.email ?? "",
-        fullName: _userInfo?.fullName ?? user.userMetadata?['name'] ?? '',
+        fullName: _userInfo?.fullName ??
+            user.userMetadata?['name'] ??
+            user.email
+                ?.split('@')[0]
+                .replaceAll(RegExp(r'[^a-zA-Z0-9]'), ' ') ??
+            'Unknown',
         photoUrl:
             _userInfo?.profileImage ?? user.userMetadata?['avatar_url'] ?? '',
         accessToken: accessToken,
@@ -124,7 +129,7 @@ class SupabaseAuthRepository extends AuthRepository {
   Future<void> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) {
-      return;
+      return Future.value();
     }
     try {
       GoogleSignInAuthentication googleAuth = await googleUser.authentication;
@@ -179,7 +184,6 @@ class SupabaseAuthRepository extends AuthRepository {
       ],
       nonce: hashedNonce,
     );
-
     final idToken = credential.identityToken;
     if (idToken == null) return;
     try {

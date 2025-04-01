@@ -339,21 +339,27 @@ class _SettingsViewState extends State<SettingsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SettingsTile(
-                title: 'Delete Account',
-                subtitle: 'Delete your account permanently',
-                icon: Icons.delete,
-                color: AppTheme.error,
-                onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) {
-                      bool isLoading = false;
-                      return StatefulBuilder(
-                        builder: (context, setState) {
-                          return PopScope(
-                            canPop: false,
-                            child: AlertDialog.adaptive(
+              BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  return state.maybeWhen(
+                    deleteAccountLoading: () => SettingsTile(
+                      title: 'Please Wait',
+                      subtitle: 'Deleting your account...',
+                      icon: Icons.delete,
+                      isLoading: true,
+                      color: AppTheme.error,
+                    ),
+                    orElse: () => SettingsTile(
+                      title: 'Delete Account',
+                      subtitle: 'Delete your account permanently',
+                      icon: Icons.delete,
+                      isLoading: false,
+                      color: AppTheme.error,
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (_) {
+                            return AlertDialog.adaptive(
                               title: const Text('Delete Account'),
                               content: Column(
                                 mainAxisSize: MainAxisSize.min,
@@ -391,9 +397,6 @@ class _SettingsViewState extends State<SettingsView> {
                                         .read<AuthBloc>()
                                         .add(const AuthEvent.deleteAccount());
                                     Navigator.of(_).pop();
-                                    context.showSnackBar(
-                                      'Account deletion in progress, please wait...',
-                                    );
                                   },
                                   child: Text(
                                     'Delete',
@@ -402,11 +405,11 @@ class _SettingsViewState extends State<SettingsView> {
                                   ),
                                 ),
                               ],
-                            ),
-                          );
-                        },
-                      );
-                    },
+                            );
+                          },
+                        );
+                      },
+                    ),
                   );
                 },
               ),
@@ -483,15 +486,18 @@ class SettingsTile extends StatelessWidget {
   final double iconSize;
   final VoidCallback? onTap;
   final Color? color;
-  const SettingsTile(
-      {super.key,
-      required this.title,
-      this.titleStyle,
-      this.subtitle,
-      this.icon,
-      this.onTap,
-      this.iconSize = 24,
-      this.color});
+  final bool? isLoading;
+  const SettingsTile({
+    super.key,
+    required this.title,
+    this.titleStyle,
+    this.subtitle,
+    this.icon,
+    this.onTap,
+    this.iconSize = 24,
+    this.color,
+    this.isLoading,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -528,11 +534,17 @@ class SettingsTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 20,
-              color: (color ?? AppTheme.primary).withOpacity(0.5),
-            ),
+            isLoading == true
+                ? const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(strokeWidth: 1.5),
+                  )
+                : Icon(
+                    Icons.arrow_forward_ios,
+                    size: 20,
+                    color: (color ?? AppTheme.primary).withOpacity(0.5),
+                  ),
           ],
         ),
       ),

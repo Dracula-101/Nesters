@@ -614,7 +614,7 @@ class UserRepositoryImpl implements UserRepository {
       throw NoNetworkError();
     } on AppException {
       rethrow;
-    } on Exception {
+    } on Exception catch (e) {
       throw UserDeleteError(message: 'Error in deleting user account');
     }
   }

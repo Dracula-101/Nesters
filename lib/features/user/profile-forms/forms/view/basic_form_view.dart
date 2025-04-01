@@ -82,9 +82,9 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final TextEditingController _intakeYearController = TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
   final TextEditingController _locationContoller = TextEditingController();
-  DateTime selectedDate = DateTime.now();
+  DateTime? selectedDate;
   DateTime _selectedYear = DateTime.now();
-  bool isLoading = false;
+  bool isLoading = false, isEditing = false;
   University? _selectedUniversity;
 
   @override
@@ -103,7 +103,6 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
     _intakeYearController.dispose();
     _birthdateController.dispose();
     _locationContoller.dispose();
-
     super.dispose();
   }
 
@@ -202,7 +201,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
               children: [
                 _buildHeaderText(),
                 _buildProfileImage(context),
-                _buildSpacing(40),
+                _buildSpacing(isEditing ? 40 : 20),
                 _buildFullNameField(),
                 _buildSpacing(20),
                 _buildBirthDate(context),
@@ -244,31 +243,56 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   }
 
   Widget _buildFullNameField() {
-    return CustomTextField(
-      controller: _fullNameController,
-      validator: (value) {
-        if (value.isEmpty) {
-          return 'Please enter your name';
-        }
-        return null;
-      },
-      labelText: 'Full Name',
-      prefixIcon: Icon(
-        Icons.person,
-        color: AppTheme.primary,
-      ),
-    );
+    if (isEditing) {
+      return CustomTextField(
+        controller: _fullNameController,
+        validator: (value) {
+          if (value.isEmpty) {
+            return 'Please enter your name';
+          }
+          return null;
+        },
+        labelText: '${Platform.isAndroid ? 'Full Name' : 'Name'}*',
+        prefixIcon: Icon(
+          Icons.person,
+          color: AppTheme.primary,
+        ),
+      );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(
+            width: 20,
+          ),
+          Text(
+            _fullNameController.text,
+            style: AppTheme.titleLarge.copyWith(
+              color: AppTheme.primary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              setState(() {
+                isEditing = true;
+              });
+            },
+            icon: Icon(
+              Icons.edit,
+              color: AppTheme.primary,
+              size: 18,
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildBirthDate(BuildContext context) {
     return CustomTextField(
       controller: _birthdateController,
-      validator: (value) {
-        if (value.isEmpty) {
-          return 'Birthdate';
-        }
-        return null;
-      },
       labelText: 'Birthdate',
       enabled: false,
       prefixIcon: Icon(
@@ -290,7 +314,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         }
         return null;
       },
-      labelText: 'Intake Year',
+      labelText: 'Intake Year*',
       enabled: false,
       prefixIcon: Icon(
         Icons.calendar_today,
@@ -573,7 +597,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         dropdownDecoratorProps: DropDownDecoratorProps(
           baseStyle: Theme.of(context).textTheme.bodyLarge,
           dropdownSearchDecoration: InputDecoration(
-            labelText: 'Degree Name',
+            labelText: 'Degree Name*',
             prefixIcon: Icon(
               Icons.school,
               color: AppTheme.primary,
@@ -652,7 +676,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         size: 20.0,
         color: AppTheme.primary,
       ),
-      labelText: 'Gender',
+      labelText: 'Gender*',
       validatorText: 'Please select your gender',
       controller: _genderController,
       items: const [
@@ -671,7 +695,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         size: 20.0,
         color: AppTheme.primary,
       ),
-      labelText: 'Intake Period',
+      labelText: 'Intake Period*',
       validatorText: 'Please select your intake period',
       controller: _intakePeriodController,
       items: UserIntake.values.map((e) => e.toString()).toList(),
@@ -681,7 +705,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   Widget _buildLocationField() {
     return CustomDynamicSearchableDropDropField(
       controller: _locationContoller,
-      labelText: 'City',
+      labelText: 'City*',
       prefixIcon: Icon(
         Icons.location_on,
         color: AppTheme.primary,

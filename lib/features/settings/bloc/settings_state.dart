@@ -9,7 +9,7 @@ class SettingsState extends Equatable {
   });
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [user ?? '', userVisibilityState];
 
   SettingsState copyWith({
     UserInfo? user,

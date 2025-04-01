@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:bloc/bloc.dart';
-import 'package:flutter/foundation.dart';
 
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
@@ -44,7 +43,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   final _rNotificationRepository = GetIt.I<RemoteNotificationRepository>();
 
   // Socket
-  late IO.Socket? socket;
+  IO.Socket? socket;
 
   ChatController? getChatController(String chatId) {
     try {
@@ -161,7 +160,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
               .toList();
           _updateChatController(chatStates);
           return state.copyWith(
-              chatStates: chatStates, chatState: state.chatState?.success());
+              chatStates: chatStates, chatState: state.chatState.success());
         },
       );
       emit(
@@ -172,7 +171,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
       );
       add(const CentralChatEvent.loadChats());
     } on AppException catch (e) {
-      emit(state.copyWith(chatState: state.chatState?.failure(e)));
+      emit(state.copyWith(chatState: state.chatState.failure(e)));
     }
   }
 
@@ -181,7 +180,7 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
   Future<void> _forceLoadProfiles(Emitter<CentralChatState> emit) async {
     try {
       // ================== Load from remote (force) ==================
-      emit(state.copyWith(chatState: state.chatState?.loading()));
+      emit(state.copyWith(chatState: state.chatState.loading()));
       List<ChatInfo> chatStates = [];
       List<ChatController> chatControllers = await _fetchRemoteRecipientUsers();
       for (ChatController chatHandler in chatControllers) {
@@ -189,13 +188,13 @@ class CentralChatBloc extends Bloc<CentralChatEvent, CentralChatState> {
       }
       _updateChatController(chatStates);
       emit(state.copyWith(
-          chatStates: chatStates, chatState: state.chatState?.success()));
+          chatStates: chatStates, chatState: state.chatState.success()));
       if (initialChatRoute != null) {
         GoRouter.maybeOf(AppRouterService.navigatorKey.currentContext!)?.push(
             "${AppRouterService.homeScreen}/${AppRouterService.userChatHome}/${AppRouterService.userChatPage}/$initialChatRoute");
       }
     } on AppException catch (e) {
-      emit(state.copyWith(chatState: state.chatState?.failure(e)));
+      emit(state.copyWith(chatState: state.chatState.failure(e)));
     }
   }
 
