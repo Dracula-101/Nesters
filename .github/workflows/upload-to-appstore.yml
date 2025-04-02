@@ -145,11 +145,18 @@ jobs:
           name: Nesters_v${{ needs.setup.outputs.version }}.ipa
           path: build/ios/ipa/nesters.ipa
 
-      - name: Validate IPA
+      - name: Add Api Key Certificate
         run: |
           mkdir -p ~/private_keys
-          echo ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_BASE64 }} | base64 --decode --output ~/private_keys/AuthKey_${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }}.p8
-          chmod 600 ~/private_keys/AuthKey_${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }}.p8
+          echo ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_BASE64 }} | base64 --decode --output ~/private_keys/AuthKey_${{ secrets.IOS_APPSTORE_API_KEY_ID }}.p8
+          chmod 600 ~/private_keys/AuthKey_${{ secrets.IOS_APPSTORE_API_KEY_ID }}.p8
+
+      - name: Check Certificate
+        run: |
+          ls -la ~/private_keys
+
+      - name: Validate IPA
+        run: |
           xcrun altool --validate-app \
             --file build/ios/ipa/nesters.ipa \
             --type ios \
