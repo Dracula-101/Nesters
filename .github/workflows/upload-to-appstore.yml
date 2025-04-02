@@ -147,9 +147,9 @@ jobs:
 
       - name: Validate IPA
         run: |
-          # decode the p8 file and save it to a ./private_keys
-          mkdir -p $RUNNER_TEMP/private_keys
-          echo ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_BASE64 }} | base64 -d > $RUNNER_TEMP/private_keys/AuthKey_${{ secrets.IOS_APPSTORE_API_KEY_ID }}.p8
+          mkdir -p ~/private_keys
+          echo ${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_BASE64 }} | base64 --decode --output ~/private_keys/AuthKey_${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }}.p8
+          chmod 600 ~/private_keys/AuthKey_${{ secrets.IOS_APP_STORE_CONNECT_API_KEY_ID }}.p8
           xcrun altool --validate-app \
             --file build/ios/ipa/nesters.ipa \
             --type ios \
@@ -177,7 +177,7 @@ jobs:
           rm -f $RUNNER_TEMP/*.p12
           rm -f $RUNNER_TEMP/*.mobileprovision
           rm -f $RUNNER_TEMP/*.p8
-          rm -f $RUNNER_TEMP/private_keys
+          rm -rf ~/private_keys
           rm -f ~/Library/MobileDevice/Provisioning\ Profiles/*
           rm -f ios/Runner/GoogleService-Info.plist
           rm -f .env
