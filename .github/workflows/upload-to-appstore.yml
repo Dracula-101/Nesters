@@ -1,4 +1,4 @@
-name: Nesters iOS Build and Upload to App Store Connect
+name: Nesters iOS Upload to App Store Connect
 
 on:
   workflow_dispatch:
@@ -94,7 +94,7 @@ jobs:
           DEV_BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_DEV_CERTIFICATE_BASE64 }}
           ADHOC_BUILD_CERTIFICATE_BASE64: ${{ secrets.IOS_BUILD_ADHOC_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.IOS_BUILD_CERTIFICATE_PASSWORD }}
-          ADHOC_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_ADHOC_PROFILE_BASE64 }}
+          APP_CONNECT_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_APP_CONNECT_PROFILE_BASE64 }}
           DEV_BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_MOBILE_PROVISIONING_DEV_PROFILE_BASE64 }}
           KEYCHAIN_PASSWORD: ${{ secrets.IOS_GITHUB_KEYCHAIN_PASSWORD }}
         run: |
@@ -107,7 +107,7 @@ jobs:
           echo $DEV_BUILD_CERTIFICATE_BASE64 | base64 -d > $DEV_CERTIFICATE_PATH
           echo $ADHOC_BUILD_CERTIFICATE_BASE64 | base64 -d > $ADHOC_CERTIFICATE_PATH
           echo $DEV_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $DEV_PP_PATH
-          echo $ADHOC_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $ADHOC_PP_PATH
+          echo $APP_CONNECT_BUILD_PROVISION_PROFILE_BASE64 | base64 -d > $ADHOC_PP_PATH
 
           # Creating temp keychain
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
