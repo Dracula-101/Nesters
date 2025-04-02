@@ -59,10 +59,29 @@ jobs:
         uses: actions/cache@v4
         id: pods-cache
         with:
-          path: ./ios/Pods
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
           key: ${{ runner.os }}-ios-pods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-ios-pods-
+              
+      - name: SPM cache
+        uses: actions/cache@v4
+        with:
+          path: ios/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/Podfile.lock') }} # Or Package.resolved, or other relevant file
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-        
 
       - name: Install Pod dependencies
         if: steps.pods-cache.outputs.cache-hit != 'true'
