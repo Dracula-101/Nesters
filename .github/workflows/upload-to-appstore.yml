@@ -163,8 +163,7 @@ jobs:
           --apiKey ${{ secrets.IOS_APPSTORE_API_KEY_ID }} \
           --apiIssuer ${{ secrets.IOS_APP_STORE_CONNECT_API_ISSUER_ID }} \
           --show-progress \
-          --verbose \
-          --output-format json > validate-app.log 2>&1
+          --output-format json
           echo "Validated successfully!"
 
       - name: Upload to App Store Connect
@@ -175,17 +174,8 @@ jobs:
           --apiKey ${{ secrets.IOS_APPSTORE_API_KEY_ID }} \
           --apiIssuer ${{ secrets.IOS_APP_STORE_CONNECT_API_ISSUER_ID }} \
           --show-progress \
-          --verbose \
-          --output-format json > upload-to-appstore.log 2>&1
+          --output-format json
           echo "Uploaded successfully!"
-
-      - name: Upload Logs as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: altool-logs
-          path: |
-            validate-app.log
-            upload-to-appstore.log
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}
