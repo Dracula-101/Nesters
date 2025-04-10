@@ -47,6 +47,8 @@
 		<string>Nesters uses your real-time location so you can filter posts based on nearby areas or specific locations.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Nesters uses your location so you can filter posts based on nearby areas or specific locations.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Nesters uses your location so you can filter posts and users based on nearby areas.</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<key>UIBackgroundModes</key>
