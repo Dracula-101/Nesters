@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>destination</key>
-	<string>export</string>
-	<key>method</key>
-	<string>release-testing</string>
-	<key>provisioningProfiles</key>
 	<dict>
-		<key>com.app.nesters.ios</key>
-		<string>Nesters App Distribution Profile</string>
+		<key>destination</key>
+		<string>export</string>
+		<key>method</key>
+		<string>app-store-connect</string>
+		<key>provisioningProfiles</key>
+		<dict>
+			<key>com.app.nesters.ios</key>
+			<string>Nesters App Connect Profile</string>
+		</dict>
+		<key>signingCertificate</key>
+		<string>05B30A2575B0CC70DD4C30402E2BEB2780F0B1F9</string>
+		<key>signingStyle</key>
+		<string>manual</string>
+		<key>stripSwiftSymbols</key>
+		<true/>
+		<key>teamID</key>
+		<string>PVA47334J2</string>
+		<key>thinning</key>
+		<string>&lt;none&gt;</string>
 	</dict>
-	<key>signingCertificate</key>
-	<string>05B30A2575B0CC70DD4C30402E2BEB2780F0B1F9</string>
-	<key>signingStyle</key>
-	<string>manual</string>
-	<key>stripSwiftSymbols</key>
-	<true/>
-	<key>teamID</key>
-	<string>PVA47334J2</string>
-	<key>thinning</key>
-	<string>&lt;none&gt;</string>
-</dict>
 </plist>

@@ -82,7 +82,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   final TextEditingController _intakeYearController = TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
   final TextEditingController _locationContoller = TextEditingController();
-  DateTime? selectedDate;
+  DateTime selectedDate = DateTime.now();
   DateTime _selectedYear = DateTime.now();
   bool isLoading = false, isEditing = false;
   University? _selectedUniversity;
@@ -204,8 +204,10 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
                 _buildSpacing(isEditing ? 40 : 20),
                 _buildFullNameField(),
                 _buildSpacing(20),
-                _buildBirthDate(context),
-                _buildSpacing(20),
+                if (Platform.isAndroid) ...[
+                  _buildBirthDate(context),
+                  _buildSpacing(20),
+                ],
                 _buildGenderField(),
                 _buildSpacing(20),
                 _buildCollegeNameField(),

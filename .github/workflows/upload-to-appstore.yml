@@ -1,4 +1,4 @@
-name: Nesters iOS Build and Upload to App Store Connect
+name: Nesters iOS Upload to App Store Connect
 
 on:
   workflow_dispatch:
@@ -59,10 +59,29 @@ jobs:
         uses: actions/cache@v4
         id: pods-cache
         with:
-          path: ./ios/Pods
+          path: |
+            ios/Pods
+            ~/Library/Caches/CocoaPods
+            ~/.cocoapods
           key: ${{ runner.os }}-ios-pods-${{ hashFiles('ios/Podfile.lock') }}
           restore-keys: |
             ${{ runner.os }}-ios-pods-
+
+      - name: SPM cache
+        uses: actions/cache@v4
+        with:
+          path: ios/.build
+          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('**/Podfile.lock') }} # Or Package.resolved, or other relevant file
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-        
 
       - name: Install Pod dependencies
         if: steps.pods-cache.outputs.cache-hit != 'true'
@@ -158,32 +177,24 @@ jobs:
       - name: Validate IPA
         run: |
           xcrun altool --validate-app \
-          --file build/ios/ipa/nesters.ipa \
+          --file build/ios/ipa/*.ipa \
           --type ios \
           --apiKey ${{ secrets.IOS_APPSTORE_API_KEY_ID }} \
           --apiIssuer ${{ secrets.IOS_APP_STORE_CONNECT_API_ISSUER_ID }} \
           --show-progress \
-          --verbose \
-          --output-format json | tee validate.log
+          --output-format json
+          echo "Validated successfully!"
 
       - name: Upload to App Store Connect
         run: |
           xcrun altool --upload-app \
-          --file build/ios/ipa/nesters.ipa \
+          --file build/ios/ipa/*.ipa \
           --type ios \
           --apiKey ${{ secrets.IOS_APPSTORE_API_KEY_ID }} \
           --apiIssuer ${{ secrets.IOS_APP_STORE_CONNECT_API_ISSUER_ID }} \
           --show-progress \
-          --verbose \
-          --output-format json | tee upload.log
-
-      - name: Upload Logs as Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: altool-logs
-          path: |
-            validate.log
-            upload.log
+          --output-format json
+          echo "Uploaded successfully!"
 
       - name: Clean up keychain and provisioning profile
         if: ${{ always() }}
