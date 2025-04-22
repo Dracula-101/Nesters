@@ -20,6 +20,12 @@ abstract class AuthState {
 
   User get user => (this as _Authenticated).user;
 
+  bool hasError() {
+    return this is _AuthError;
+  }
+
+  AppException get error => (this as _AuthError).error;
+
   //whenorNull
   R when<R>({
     required R Function(User user)? authenticated,

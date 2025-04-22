@@ -339,7 +339,12 @@ class _SettingsViewState extends State<SettingsView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              BlocBuilder<AuthBloc, AuthState>(
+              BlocConsumer<AuthBloc, AuthState>(
+                listener: (context, state) {
+                  if (state.hasError()) {
+                    context.showErrorSnackBar(state.error.message);
+                  }
+                },
                 builder: (context, state) {
                   return state.maybeWhen(
                     deleteAccountLoading: () => SettingsTile(

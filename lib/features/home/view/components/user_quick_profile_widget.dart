@@ -84,6 +84,9 @@ class UserQuickProfileWidget extends StatelessWidget {
                               size: 60,
                             ),
                           ),
+                          errorListener: (error) {
+                            debugPrint('Error loading image: $error');
+                          },
                           placeholder: (context, url) => Container(
                             color: AppTheme.greyShades.shade300,
                             padding: const EdgeInsets.only(bottom: 20),

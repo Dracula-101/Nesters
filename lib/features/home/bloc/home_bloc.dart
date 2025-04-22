@@ -65,6 +65,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             singleUserFilter: event.filter,
           ),
         );
+        _logger.debug(
+            "Filtered User: ${filteredUser.length} with filter: ${event.filter}");
       } on AppException catch (e) {
         emit(
           state.copyWith(

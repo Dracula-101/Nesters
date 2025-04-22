@@ -66,6 +66,8 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
   //image variable
   File? _image;
   String? photoUrl;
+  String placeholderImage =
+      "https://ellkdthdiuqbbbilufmq.supabase.co/storage/v1/object/public/profile_images/placeholder/user_image_placeholder.png";
   CityInfo? userCityInfo;
 
   // Full Name, Email, profile image, college name, course name, gender, birthdate, intake period and year
@@ -155,7 +157,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       userId: widget.user.id,
       fullName: _fullNameController.text,
       email: widget.user.email,
-      photoUrl: photoUrl ?? widget.user.photoUrl,
+      photoUrl: photoUrl ?? widget.user.photoUrl ?? placeholderImage,
       birthDate: selectedDate,
       userCollege: _selectedUniversity,
       selectedCourseName: _courseNameController.text,
