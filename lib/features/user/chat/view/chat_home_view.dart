@@ -40,6 +40,7 @@ class ChatHomeView extends StatefulWidget {
 }
 
 class _ChatHomeViewState extends State<ChatHomeView> {
+
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
