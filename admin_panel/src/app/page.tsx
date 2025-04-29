@@ -1,42 +1,55 @@
 "use client";
 
-import { signOut, useSession } from "next-auth/react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import Button from "@/app/components/Button/Button";
 
+const intents = [
+  "primary",
+  "secondary",
+  "danger",
+  "success",
+  "warning",
+  "info",
+  "light",
+  "dark",
+  "ghost",
+  "link",
+];
+
+const sizes = ["sm", "md", "lg", "xl"];
+
+const btnTypes = ["button", "icon"]; // only 2 types
 export default function Home() {
-  const { data: session } = useSession();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Render a loading state or nothing during SSR to avoid mismatch
-  if (!isMounted) {
-    return <div className="p-8">Loading...</div>;
-  }
-
   return (
-    <div className="p-8">
-      {session ? (
-        <>
-          <p>Welcome, {session.user?.name}!</p>
-          <button
-            onClick={() => signOut({ callbackUrl: "/login" })}
-            className="p-2 bg-red-500 text-white rounded"
-          >
-            Sign Out
-          </button>
-          <Link href="/" className="ml-4 text-blue-500">
-            Go to Protected Page
-          </Link>
-        </>
-      ) : (
-        <Link href="/login" className="text-blue-500">
-          Please log in
-        </Link>
-      )}
+    <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+      {btnTypes.map((btnType) => (
+        <div key={btnType}>
+          <h2 className="text-2xl font-bold mb-4 capitalize">
+            {btnType} Buttons
+          </h2>
+          <div className="flex flex-col gap-6">
+            {intents.map((intent) => (
+              <div key={intent}>
+                <h3 className="text-lg font-semibold capitalize mb-2">
+                  {intent}
+                </h3>
+                <div className="flex flex-wrap gap-4 items-center">
+                  {sizes.map((size) => (
+                    <Button
+                      key={`${btnType}-${intent}-${size}`}
+                      intent={intent}
+                      size={size}
+                      btnType={btnType}
+                      // className="mb-2"
+                    >
+                      {btnType === "icon" ? "+" : `${intent} ${size}`}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
