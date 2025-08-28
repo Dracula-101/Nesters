@@ -5,10 +5,11 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:nesters/data/repository/device/device_info_repository.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
+// import 'package:firebase_app_check/firebase_app_check.dart';
 
 class DeviceInfoRepositoryImpl implements DeviceInfoRepository {
   PackageInfo? packageInfo;
+
   DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
   AndroidDeviceInfo? androidInfo;
   IosDeviceInfo? iosInfo;
@@ -60,7 +61,7 @@ class DeviceInfoRepositoryImpl implements DeviceInfoRepository {
           'bootloader': androidInfo?.bootloader ?? 'unknown',
           'display': {
             'model': androidInfo?.display ?? 'unknown',
-            'metrics': androidInfo?.displayMetrics.toMap(),
+            'data': androidInfo?.data.entries.toList() ?? [],
           },
           'host': androidInfo?.host ?? 'unknown',
           'serialNumber': androidInfo?.serialNumber ?? 'unknown',
@@ -112,11 +113,12 @@ class DeviceInfoRepositoryImpl implements DeviceInfoRepository {
 
   @override
   Future<void> intializeAppCheck() async {
-    await FirebaseAppCheck.instance.activate(
-      androidProvider:
-          kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      appleProvider: AppleProvider.appAttestWithDeviceCheckFallback,
-    );
-    await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
+    // Removed Firebase App check for now
+    // await FirebaseAppCheck.instance.activate(
+    //   androidProvider:
+    //       kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
+    //   appleProvider: AppleProvider.appAttestWithDeviceCheckFallback,
+    // );
+    // await FirebaseAppCheck.instance.setTokenAutoRefreshEnabled(true);
   }
 }

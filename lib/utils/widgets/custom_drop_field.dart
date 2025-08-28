@@ -227,19 +227,19 @@ class CustomSearchableDropDownFieldState<T>
           }
           return true;
         },
-        dropdownDecoratorProps: DropDownDecoratorProps(
+        decoratorProps: DropDownDecoratorProps(
           baseStyle: Theme.of(context).textTheme.bodyLarge,
-          dropdownSearchDecoration: InputDecoration(
+          decoration: InputDecoration(
             labelText: widget.labelText,
             prefixIcon: widget.prefixIcon,
             border: InputBorder.none,
           ),
         ),
-        asyncItems: (filter) {
+        items: (filter, infiniteScrollProps) async {
           if (widget.asyncItems != null) {
-            return widget.asyncItems!(filter) as Future<List<T>>;
+            return await widget.asyncItems!(filter) as List<T>;
           }
-          return Future.value([]);
+          return <T>[];
         },
         popupProps: PopupProps.dialog(
           dialogProps: DialogProps(
@@ -292,7 +292,7 @@ class CustomSearchableDropDownFieldState<T>
               ),
             ),
           ),
-          itemBuilder: (context, item, isSelected) {
+          itemBuilder: (context, item, isSelected, isHighlighted) {
             if (widget.itemBuilder != null) {
               return widget.itemBuilder!(context, item, isSelected);
             }
@@ -387,15 +387,15 @@ class _CustomBottomSheetDropdownFieldState<T>
       ),
       padding: const EdgeInsets.only(left: 4),
       child: DropdownSearch<T>(
-        dropdownDecoratorProps: DropDownDecoratorProps(
+        decoratorProps: DropDownDecoratorProps(
           baseStyle: Theme.of(context).textTheme.labelLarge,
-          dropdownSearchDecoration: InputDecoration(
+          decoration: InputDecoration(
             labelText: widget.labelText,
             prefixIcon: widget.prefixIcon,
             border: InputBorder.none,
           ),
         ),
-        items: widget.items as List<T>,
+        items: (filter, infiniteScrollProps) async => widget.items as List<T>,
         popupProps: PopupProps.modalBottomSheet(
           containerBuilder: (context, child) {
             return Padding(
@@ -412,7 +412,7 @@ class _CustomBottomSheetDropdownFieldState<T>
               subtitle: 'No data related to \'$searchEntry\' found',
             );
           },
-          itemBuilder: (context, T? item, isSelected) {
+          itemBuilder: (context, T? item, isSelected, isHighlighted) {
             return Row(
               children: [
                 Checkbox(
@@ -668,30 +668,29 @@ class _CustomDynamicSearchableDropDropFieldState
           });
         },
         child: Material(
-          color: Colors.transparent,
-          child: AlertDialog(
-            clipBehavior: Clip.none,
-            actionsAlignment: MainAxisAlignment.center,
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Close'),
-              ),
-            ],
-            actionsPadding: EdgeInsets.zero,
-            contentPadding: EdgeInsets.zero,
-            content: Column(
-              children: [
-                _buildSearchBar(),
-                const Divider(),
-                Expanded(
-                  child: _buildItemList(context),
+            color: Colors.transparent,
+            child: AlertDialog(
+              clipBehavior: Clip.none,
+              actionsAlignment: MainAxisAlignment.center,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Close'),
                 ),
-                const Divider(),
               ],
-            ),
-          )
-        ),
+              actionsPadding: EdgeInsets.zero,
+              contentPadding: EdgeInsets.zero,
+              content: Column(
+                children: [
+                  _buildSearchBar(),
+                  const Divider(),
+                  Expanded(
+                    child: _buildItemList(context),
+                  ),
+                  const Divider(),
+                ],
+              ),
+            )),
       ),
     );
   }

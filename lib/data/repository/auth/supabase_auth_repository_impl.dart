@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -28,10 +27,7 @@ class SupabaseAuthRepository extends AuthRepository {
       supabase.Supabase.instance.client;
   final firebase.FirebaseAuth _firebaseAuth = firebase.FirebaseAuth.instance;
 
-  late final GoogleSignIn _googleSignIn = GoogleSignIn(
-    clientId: _appSecrets.getSecret(AppSecretsKeys.GOOGLE_IOS_CLIENT_ID),
-    serverClientId: _appSecrets.getSecret(AppSecretsKeys.GOOGLE_WEB_CLIENT_ID),
-  );
+  GoogleSignIn get _googleSignIn => GoogleSignIn.instance;
 
   UserInfo? _userInfo;
   User? _currentUser;
@@ -61,6 +57,11 @@ class SupabaseAuthRepository extends AuthRepository {
         _userInfo = null;
       }
     });
+    _googleSignIn.initialize(
+      clientId: _appSecrets.getSecret(AppSecretsKeys.GOOGLE_IOS_CLIENT_ID),
+      serverClientId:
+          _appSecrets.getSecret(AppSecretsKeys.GOOGLE_WEB_CLIENT_ID),
+    );
   }
 
   Future<UserInfo?> _getUserInfo(String userId) async {
@@ -127,30 +128,19 @@ class SupabaseAuthRepository extends AuthRepository {
 
   @override
   Future<void> signInWithGoogle() async {
-    final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) {
-      return Future.value();
-    }
+    final googleUser = await _googleSignIn.authenticate();
     try {
-      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      GoogleSignInAuthentication googleAuth = googleUser.authentication;
       if (googleAuth.idToken == null || googleAuth.idToken?.isEmpty == true) {
         throw GoogleSignInFailedException(
           message: 'User id token not found',
           authErrorCode: AuthErrorCode.GOOGLE_USER_ID_TOKEN_FAILED,
         );
       }
-      if (googleAuth.accessToken == null ||
-          googleAuth.accessToken?.isEmpty == true) {
-        throw GoogleSignInFailedException(
-          message: 'User access token not found',
-          authErrorCode: AuthErrorCode.GOOGLE_USER_TOKEN_FAILED,
-        );
-      }
       supabase.AuthResponse response =
           await _supabaseClient.auth.signInWithIdToken(
         provider: supabase.OAuthProvider.google,
         idToken: googleAuth.idToken!,
-        accessToken: googleAuth.accessToken ?? '',
       );
       if (response.user == null) {
         throw GoogleSignInFailedException(

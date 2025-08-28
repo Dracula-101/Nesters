@@ -6,7 +6,6 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nesters/app/bloc/app_bloc.dart';
 import 'package:nesters/data/repository/media/media_repository.dart';
-import 'package:nesters/domain/models/college/university.dart';
 import 'package:nesters/domain/models/room/room_type.dart';
 import 'package:nesters/domain/models/user/person_type.dart';
 import 'package:nesters/domain/models/user/pref/user_habit.dart';

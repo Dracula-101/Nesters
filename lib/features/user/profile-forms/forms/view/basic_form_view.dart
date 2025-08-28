@@ -157,7 +157,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
       userId: widget.user.id,
       fullName: _fullNameController.text,
       email: widget.user.email,
-      photoUrl: photoUrl ?? widget.user.photoUrl ?? placeholderImage,
+      photoUrl: photoUrl ?? widget.user.photoUrl,
       birthDate: selectedDate,
       userCollege: _selectedUniversity,
       selectedCourseName: _courseNameController.text,
@@ -489,9 +489,9 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         filterFn: (user, filter) {
           return user!.title!.toLowerCase().contains(filter.toLowerCase());
         },
-        dropdownDecoratorProps: DropDownDecoratorProps(
+        decoratorProps: DropDownDecoratorProps(
           baseStyle: Theme.of(context).textTheme.bodyLarge,
-          dropdownSearchDecoration: InputDecoration(
+          decoration: InputDecoration(
             labelText: 'College Name',
             prefixIcon: Icon(
               Icons.school,
@@ -500,7 +500,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
             border: InputBorder.none,
           ),
         ),
-        asyncItems: (value) => getUniversities(value),
+        items: (filter, infiniteScrollProps) => getUniversities(filter),
         popupProps: PopupProps.dialog(
           containerBuilder: (context, child) {
             return Padding(
@@ -540,7 +540,8 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
               contentPadding: EdgeInsets.zero,
             ),
           ),
-          itemBuilder: (context, University? university, isSelected) {
+          itemBuilder:
+              (context, University? university, isSelected, isHighlighted) {
             return ListTile(
               leading: Image.network(
                 university!.logo!,
@@ -598,9 +599,9 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
         filterFn: (user, filter) {
           return user!.name.toLowerCase().contains(filter.toLowerCase());
         },
-        dropdownDecoratorProps: DropDownDecoratorProps(
+        decoratorProps: DropDownDecoratorProps(
           baseStyle: Theme.of(context).textTheme.bodyLarge,
-          dropdownSearchDecoration: InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Degree Name*',
             prefixIcon: Icon(
               Icons.school,
@@ -609,7 +610,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
             border: InputBorder.none,
           ),
         ),
-        asyncItems: (value) => getMastersDegree(value),
+        items: (filter, infiniteScrollProps) => getMastersDegree(filter),
         popupProps: PopupProps.dialog(
           containerBuilder: (context, child) {
             return Padding(
@@ -649,7 +650,7 @@ class _UserProfileBasicFormViewState extends State<UserProfileBasicFormView> {
               contentPadding: EdgeInsets.zero,
             ),
           ),
-          itemBuilder: (context, Degree? degree, isSelected) {
+          itemBuilder: (context, Degree? degree, isSelected, isHighlighted) {
             return ListTile(
               title: Text(degree?.name ?? ''),
               selected: isSelected,
