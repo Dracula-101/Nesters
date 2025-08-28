@@ -57,11 +57,11 @@ class SupabaseAuthRepository extends AuthRepository {
         _userInfo = null;
       }
     });
-    _googleSignIn.initialize(
+    unawaited(_googleSignIn.initialize(
       clientId: _appSecrets.getSecret(AppSecretsKeys.GOOGLE_IOS_CLIENT_ID),
       serverClientId:
           _appSecrets.getSecret(AppSecretsKeys.GOOGLE_WEB_CLIENT_ID),
-    );
+    ));
   }
 
   Future<UserInfo?> _getUserInfo(String userId) async {
