@@ -61,7 +61,6 @@ dependencies:
   url_launcher: 6.1.5
   url_launcher_ios: 6.1.5
   firebase_analytics: ^10.8.9
-  sign_in_with_apple: ^5.0.0
   crypto: ^3.0.3
   tutorial_coach_mark: ^1.2.12
   google_places_sdk: ^1.2.1
@@ -71,6 +70,7 @@ dependencies:
   mime: ^1.0.6
   cloudinary: ^1.2.0
   async: ^2.11.0
+  sign_in_with_apple: ^7.0.1
 
 dev_dependencies:
   flutter_test:
