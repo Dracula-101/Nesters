@@ -215,7 +215,7 @@ npm run dev
 
 ## Usage
 
-## Mobile app flow
+### Mobile app flow
 
 After launching the app:
 
@@ -224,7 +224,7 @@ After launching the app:
 3. Open details, create/edit your own posts, and save favorites.
 4. Send/receive requests and chat with other users.
 
-## Firebase Functions API surface (from `functions/index.js`)
+### Firebase Functions API surface (from `functions/index.js`)
 
 The following HTTPS functions exist in code:
 
