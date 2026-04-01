@@ -1,115 +1,323 @@
 # Nesters
 
-<!-- make a div to occupy the whole width and color = 4A55A2 and put a image in there /docs/images/nesters_bg.png with padding-->
-<div>
-    <img src="docs/images/nesters_bg.png" alt="Nesters" style="width: 100%; max-width: 500px; height: auto;">
-</div>
+Nesters is a multi-service project centered on a Flutter mobile app for finding roommates and housing options, with supporting backend services for chat notifications and user presence.
 
-<aside style="display: block; height: 20px;"></aside>
+## Overview
 
-Nesters is a platform designed to help you find your next roommate and home. Whether you're looking for a roommate to share your space or searching for the ideal accommodation. Say goodbye to endless searching and let us do the work for you.
+Nesters helps users discover roommates and housing-related listings in one app:
 
-### Features
+- **Who it is for:** people looking for roommates or housing options, and users posting housing/marketplace listings.
+- **Problem it solves:** combines roommate discovery, listing workflows, messaging, and request handling into a single mobile experience.
+- **Primary use cases:**
+  - browse and post **sublets**
+  - browse and post **apartments**
+  - browse and post **marketplace** items
+  - connect with users through **chat** and **requests**
 
-- **Find Your Perfect Roommate**: Nesters' smart matching algorithm helps you find the perfect roommate based on your preferences.
-- **Connect with Your College Community**: Explore a vibrant community of students from your college.
-- **Discover Your Ideal Living Space**: Post your vacant room or space and reach out to other students in need of accommodation.
-- **Sublet Your Room Effortlessly**: Easily find someone to take over your lease when a room is available in the apartment.
-- **Sell Before You Leave**: Prepare for your move with ease by selling your items conveniently beforehand.
+The repository also includes:
 
-## Demo
-| <img src="docs/illustrations/User_Network.png" alt="User Network" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet_illustration.png" alt="Apartment List" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Sublet_detail_illustration.png" alt="Sublet Details" width="100%" style="max-width: 300px;"> |
-|:---:|:---:|:---:|
-| **User Network** | **Apartment List** | **Sublet Details** |
+- a Firebase Cloud Functions service for push-notification flows
+- a Node.js Cloud Run socket service for online/offline user status
+- an admin_panel (Next.js) app scaffold/component playground
+- scripts for seed-data generation and ingestion
 
-| <img src="docs/illustrations/Marketplace_illustrations.png" alt="Marketplace" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Google_Maps.png" alt="Google Maps" width="100%" style="max-width: 300px;"> | <img src="docs/illustrations/Nesters_Chat.png" alt="Nesters Chat" width="100%" style="max-width: 300px;"> |
-|:---:|:---:|:---:|
-| **Marketplace** | **Google Maps** | **Nesters Chat** |
+## Tech Stack
 
-## Installation Instructions
+### Mobile application (`/`)
 
-To set up the project locally, follow these steps:
+- **Language:** Dart (SDK `>=3.2.0 <4.0.0`)
+- **Framework:** Flutter
+- **State management:** `bloc`, `flutter_bloc`, `equatable`, `rxdart`
+- **Navigation / DI / storage:** `go_router`, `get_it`, `get_storage`, `shared_preferences`, `objectbox`
+- **Backend integrations:**
+  - Supabase (`supabase_flutter`) for auth/data integration
+  - Firebase (`firebase_core`, `cloud_firestore`, `firebase_auth`, `firebase_messaging`, `firebase_database`, `firebase_crashlytics`, `firebase_analytics`)
+- **Maps / location:** `google_maps_flutter`, `google_places_sdk`, `geolocator`
+- **Media / networking:** `http`, `cached_network_image`, `image_picker`, `flutter_image_compress`, `cloudinary`, `socket_io_client`
+- **Notifications:** `flutter_local_notifications`
 
-1. **Clone the repository**:
+### Firebase Functions (`/functions`)
 
-   ```sh
-   git clone https://github.com/Dracula-101/Nesters.git
-   cd Nesters
-   ```
+- **Runtime:** Node.js 18
+- **Libraries:** `firebase-functions`, `firebase-admin`
+- **Linting:** ESLint (Google style config)
 
-2. **Install dependencies**:
+### User status socket service (`/cloud_run`)
 
-   ```sh
-   flutter pub get
-   ```
+- **Runtime:** Node.js (`>=16.0.0`)
+- **Libraries:** `express`, `socket.io`, `firebase-admin`, `dotenv`
+- Intended for deployment to **Google Cloud Run**.
 
-3. **Set up Firebase**:
+### Admin panel (`/admin_panel`)
 
-   - Follow the instructions to set up [Firebase](docs/FIREBASE_SETUP.md) for the project.
-   - Add the `google-services.json` file to the `android/app` directory.
-   - Add the `GoogleService-Info.plist` file to the `ios/Runner` directory.
+- **Framework:** Next.js 15 (App Router)
+- **Language:** TypeScript/JavaScript + React 19
+- **Styling:** Tailwind CSS, class-variance-authority, tailwind-merge
+- **Auth dependency present:** `next-auth`
 
-4. **Set up Google Maps and Places API**:
+### Data generation scripts (`/scripts`)
 
-   - Follow the instructions to set up [Google Maps and Places API](docs/GOOGLE_CONSOLE.md) for the project.
+- **Python scripts:** `pandas`, `geopy`, optional Selenium-based scraping utilities
+- **Node.js seed scripts:** `@supabase/supabase-js`, `@faker-js/faker`, `@turf/turf`, etc.
 
-5. **Set up Supabase**:
+## Features
 
-   - Follow the instructions to set up [Supabase](docs/SUPABASE_SETUP.md) for the project.
-   - Copy the `.env.example` file to `.env` and add the necessary environment variables.
+From the code and routes in `lib/`:
 
-6. **Setup Cloudinary**:
+- User onboarding and authentication flows
+- Profile setup/editing and roommate visibility controls
+- Multi-tab home experience: **Network, Sublet, Apartments, Marketplace**
+- Listing workflows for:
+  - sublets (list/detail/form)
+  - apartments (list/detail/form)
+  - marketplace items (list/detail/form/search)
+- In-app chat with request flow and unread/request counts
+- Favorite posts and user post management
+- Push notifications via Firebase Cloud Messaging
+- User online/offline presence via socket service
+- Crash reporting and analytics integration
 
-   - Sign up for a [Cloudinary](https://cloudinary.com/users/register_free) account and create a new project.
-   - Get your Cloudinary details and add it to the `.env` file.
+## Project Structure
 
-   ```env
-   CLOUDINARY_CLOUD_NAME=<your-cloud-name>
-   CLOUDINARY_API_KEY=<your-api-key>
-   CLOUDINARY_API_SECRET=<your-api-secret>
-   ```
+```text
+/home/runner/work/Nesters/Nesters
+├── lib/                    # Flutter application code
+│   ├── app/                # App bootstrap, routing, app shell/blocs
+│   ├── features/           # Feature modules (auth, home, sublet, apartment, marketplace, user, settings)
+│   ├── data/repository/    # Repository implementations and service integrations
+│   ├── domain/models/      # Domain entities/models
+│   ├── theme/              # App theming
+│   └── utils/              # Shared utilities/widgets/extensions
+├── assets/                 # Fonts, images, SVGs, lottie assets
+├── android/                # Android Flutter host app + Gradle config
+├── ios/                    # iOS Flutter host app + Xcode project
+├── functions/              # Firebase Cloud Functions project
+├── cloud_run/              # Node.js socket presence service for Cloud Run
+├── admin_panel/            # Next.js app scaffold/admin UI playground
+├── scripts/                # Seed generation/scraping utilities
+├── schema_backups/         # SQL/schema backup files used for Supabase setup
+├── docs/                   # Setup documentation and supporting website/media
+└── .github/workflows/      # CI/release workflows
+```
 
-7. **Run the project**:
-   ```sh
-   flutter pub run build_runner build --delete-conflicting-outputs
-   flutter run
-   ```
+### Architecture notes
 
-## Usage Instructions
+The Flutter app follows a **feature-first modular structure** with repository-based data access and BLoC state management. Routing is centralized with `go_router` in `lib/app/routes/app_routes.dart`.
 
-Once you have the project set up, you can start using it by following these steps:
+## Installation and Setup
 
-1. **Sign Up / Log In**: Create an account or log in with your existing account.
-2. **Create a Profile**: Fill in your profile details to help others find you.
-3. **Search for Roommates**: Use the search feature to find potential roommates based on your preferences.
-4. **Post a Room**: If you have a vacant room, post it on the platform to reach out to others in need of accommodation.
-5. **Connect with Others**: Use the chat feature to connect with potential roommates and discuss further details.
+### Prerequisites
+
+- Flutter SDK (compatible with Dart `>=3.2.0 <4.0.0`)
+- Dart SDK (bundled with Flutter)
+- Node.js:
+  - Node 18 for `/functions`
+  - Node >=16 for `/cloud_run`
+- Xcode (for iOS builds) and Android toolchain (for Android builds)
+- External service accounts/projects as used by code/docs:
+  - Firebase
+  - Supabase
+  - Google Maps / Places APIs
+  - Cloudinary
+
+### 1) Clone and install Flutter dependencies
+
+```bash
+git clone https://github.com/Dracula-101/Nesters.git
+cd Nesters
+flutter pub get
+```
+
+### 2) Configure environment variables
+
+Create a root `.env` file from `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Populate required keys (from `lib/data/repository/config/app_secrets_repository.dart`):
+
+```env
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_JWT_TOKEN=
+GOOGLE_WEB_CLIENT_ID=
+GOOGLE_IOS_CLIENT_ID=
+USER_STATUS_SOCKET_URL=
+CLOUD_FUNCTION_URL=
+GOOGLE_ANDROID_PLACES_API_KEY=
+GOOGLE_IOS_PLACES_API_KEY=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+```
+
+### 3) Configure platform/service files
+
+- Firebase config files:
+  - `android/app/google-services.json`
+  - `ios/Runner/GoogleService-Info.plist`
+- Android Google Maps keys in `android/google-maps.properties`
+- iOS Google Maps key in `ios/Runner/AppDelegate.swift` (as currently used by code)
+
+See:
+
+- `docs/FIREBASE_SETUP.md`
+- `docs/GOOGLE_CONSOLE.md`
+- `docs/SUPABASE_SETUP.md`
+
+### 4) Generate ObjectBox code
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+## Running the Project
+
+### Flutter app (development)
+
+```bash
+flutter run
+```
+
+### Flutter release builds
+
+```bash
+flutter build apk --release
+flutter build ipa --release
+```
+
+### Firebase Functions (local)
+
+```bash
+cd functions
+npm install
+npm run serve
+```
+
+### Cloud Run socket service (local)
+
+```bash
+cd cloud_run
+npm install
+npm start
+```
+
+### Admin panel (local)
+
+```bash
+cd admin_panel
+npm install
+npm run dev
+```
+
+## Usage
+
+## Mobile app flow
+
+After launching the app:
+
+1. Authenticate and complete profile flows.
+2. Browse tabs for Network, Sublet, Apartments, and Marketplace.
+3. Open details, create/edit your own posts, and save favorites.
+4. Send/receive requests and chat with other users.
+
+## Firebase Functions API surface (from `functions/index.js`)
+
+The following HTTPS functions exist in code:
+
+- `testNotification`
+- `testMessageNotification`
+- `sendAcceptNotification`
+- `testMessage`
+- `testRequest`
+
+Firestore-triggered functions:
+
+- `sendNotification` on `chats/{chatId}/messages/{messageId}` create
+- `sendRequestNotification` on `users/{userId}/receivedRequests/{requestId}` create
+
+> Function deployment URLs and regions depend on your Firebase project configuration.
+
+## Scripts and Commands
+
+### Root / Flutter
+
+- `flutter pub get` — install Dart/Flutter dependencies
+- `flutter run` — run app locally
+- `dart run build_runner build --delete-conflicting-outputs` — regenerate generated code
+- `flutter analyze` — static analysis
+- `flutter test` — run Flutter tests (if test files are present)
+
+### `functions/`
+
+- `npm run serve` — start Firebase emulator for functions
+- `npm run shell` / `npm start` — functions shell
+- `npm run deploy` — deploy functions
+- `npm run logs` — fetch function logs
+
+### `cloud_run/`
+
+- `npm start` — start socket service
+
+### `admin_panel/`
+
+- `npm run dev` — run Next.js dev server (HTTPS)
+- `npm run dev:http` — run Next.js dev server (HTTP)
+- `npm run build` — build Next.js app
+- `npm run start` — start production Next.js server
+- `npm run lint` — run Next.js linting
+
+### `scripts/seed/`
+
+- `npm start` — run seed script
+
+## Testing
+
+- Flutter test dependency is configured (`flutter_test`) but no `_test.dart` files are currently present in this repository.
+- Firebase Functions includes `firebase-functions-test` as a dev dependency, but no test files were found.
+
+Useful commands:
+
+```bash
+flutter analyze
+flutter test
+cd admin_panel && npm run lint
+```
+
+## Configuration
+
+Primary runtime configuration is environment-variable driven:
+
+- Root app secrets via `.env` (loaded by `flutter_dotenv`)
+- `cloud_run` uses environment variables such as:
+  - `FIREBASE_DATABASE_URL`
+  - `BASE64_SERVICE_ACCOUNT`
+  - `PORT` (default `8080`)
+- `scripts/seed/.env.example` includes Supabase keys used by seeding scripts
+
+Additional config files:
+
+- `analysis_options.yaml` (Dart lint config)
+- `scripts/config.json` (seed toggles/counts)
+- `android/google-maps.properties` (Android map keys)
 
 ## Contributing
 
-We welcome contributions to Nesters! If you'd like to contribute, please follow these guidelines:
-
-1. **Fork the repository**: Click the "Fork" button at the top right of the repository page.
-2. **Clone your fork**:
-   ```sh
-   git clone https://github.com/your-username/Nesters.git
-   cd Nesters
+1. Fork the repository.
+2. Create a feature branch:
+   ```bash
+   git checkout -b feature/your-change
    ```
-3. **Create a new branch**:
-   ```sh
-   git checkout -b feature/your-feature-name
-   ```
-4. **Make your changes**: Implement your feature or fix the bug.
-5. **Commit your changes**:
-   ```sh
-   git commit -m "Add your commit message"
-   ```
-6. **Push to your branch**:
-   ```sh
-   git push origin feature/your-feature-name
-   ```
-7. **Create a pull request**: Go to the original repository and click the "New Pull Request" button.
+3. Make focused changes.
+4. Run relevant checks:
+   - `flutter analyze`
+   - `flutter test` (when tests exist)
+   - `cd admin_panel && npm run lint` (if touching admin panel)
+5. Commit with clear messages and open a pull request.
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+This repository includes an **Apache License 2.0** license file (`LICENSE`).
