@@ -125,7 +125,7 @@ For detailed diagrams and flow notes, see [`docs/ARCHITECTURE.md`](docs/ARCHITEC
 ## Project Structure
 
 ```text
-/home/runner/work/Nesters/Nesters
+Nesters/
 ├── lib/                    # Flutter source code
 │   ├── app/                # App root, routing, scaffold, global blocs
 │   ├── features/           # Feature modules (auth, home, listings, user, settings)
@@ -349,4 +349,4 @@ cd admin_panel && npm run lint
 
 ## License
 
-This repository is licensed under the **Apache License 2.0**. See [`LICENSE`](LICENSE).
+This repository currently includes the **Apache License 2.0** text in [`LICENSE`](LICENSE).
